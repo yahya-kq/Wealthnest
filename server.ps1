@@ -1,1 +1,63 @@
-cGFyYW0oCiAgICBbaW50XSRQb3J0ID0gMzAwMAopCgokcHJlZml4ID0gImh0dHA6Ly9sb2NhbGhvc3Q6JFBvcnQvIgokbGlzdGVuZXIgPSBOZXctT2JqZWN0IFN5c3RlbS5OZXQuSHR0cExpc3RlbmVyCiRsaXN0ZW5lci5QcmVmaXhlcy5BZGQoJHByZWZpeCkKCnRyeSB7CiAgICAkbGlzdGVuZXIuU3RhcnQoKQogICAgV3JpdGUtSG9zdCAiV2VhbHRoTmVzdCBsb2NhbCBzZXJ2ZXIgcnVubmluZyBhdCAkcHJlZml4IiAtRm9yZWdyb3VuZENvbG9yIEdyZWVuCn0gY2F0Y2ggewogICAgV3JpdGUtSG9zdCAiRmFpbGVkIHRvIHN0YXJ0IGxpc3RlbmVyOiAkXyIgLUZvcmVncm91bmRDb2xvciBSZWQKICAgIGV4aXQgMQp9CgoiJGJhc2VEaXIgPSAkUFNTY3JpcHRSb290Cgp3aGlsZSAoJGxpc3RlbmVyLklzTGlzdGVuaW5nKSB7CiAgICB0cnkgewogICAgICAgICRjb250ZXh0ID0gJGxpc3RlbmVyLkdldENvbnRleHQoKQogICAgICAgICRyZXF1ZXN0ID0gJGNvbnRleHQuUmVxdWVzdAogICAgICAgICRyZXNwb25zZSA9ICRjb250ZXh0LlJlc3BvbnNlCgogICAgICAgICRyYXdVcmwgPSAkcmVxdWVzdC5SYXdVcmwKICAgICAgICAkcGF0aCA9ICRyYXdVcmwuU3BsaXQoJz8nKVswXS5UcmltU3RhcnQoJy8nKQoKICAgICAgICBpZiAoW3N0cmluZ106OklzTnVsbE9yV2hpdGVTcGFjZSgkcGF0aCkpIHsKICAgICAgICAgICAgJHBhdGggPSAiaW5kZXguaHRtbCIKICAgICAgICB9CgogICAgICAgICRsb2NhbFBhdGggPSBKb2luLVBhdGggJGJhc2VEaXIgJHBhdGgKCiAgICAgICAgaWYgKC1ub3QgKFRlc3QtUGF0aCAkbG9jYWxQYXRoIC1QYXRoVHlwZSBMZWFmKSkgewogICAgICAgICAgICAkbG9jYWxQYXRoID0gSm9pbi1QYXRoICRiYXNlRGlyICJpbmRleC5odG1sIgogICAgICAgIH0KCiAgICAgICAgaWYgKFRlc3QtUGF0aCAkbG9jYWxQYXRoIC1QYXRoVHlwZSBMZWFmKSB7CiAgICAgICAgICAgICRieXRlcyA9IFtTeXN0ZW0uSU8uRmlsZV06OlJlYWRBbGxCeXRlcygkbG9jYWxQYXRoKQogICAgICAgICAgICAKICAgICAgICAgICAgJGV4dCA9IFtTeXN0ZW0uSU8uUGF0aF06OkdldEV4dGVuc2lvbigkbG9jYWxQYXRoKS5Ub0xvd2VyKCkKICAgICAgICAgICAgJGNvbnRlbnRUeXBlID0gInRleHQvaHRtbDsgY2hhcnNldD11dGYtOCIKICAgICAgICAgICAgaWYgKCRleHQgLWVxICIuanMiKSB7ICRjb250ZW50VHlwZSA9ICJhcHBsaWNhdGlvbi9qYXZhc2NyaXB0OyBjaGFyc2V0PXV0Zi04IiB9CiAgICAgICAgICAgIGVsc2VpZiAoJGV4dCAtZXEgIi5jc3MiKSB7ICRjb250ZW50VHlwZSA9ICJ0ZXh0L2Nzczsgb29jaGFyc2V0PXV0Zi04IiB9CiAgICAgICAgICAgIGVsc2VpZiAoJGV4dCAtZXEgIi5qc29uIikgeyAkY29udGVudFR5cGUgPSAiYXBwbGljYXRpb24vanNvbjsgY2hhcnNldD11dGYtOCIgfQogICAgICAgICAgICBlbHNlaWYgKCRleHQgLWVxICIuc3ZnIikgeyAkY29udGVudFR5cGUgPSAiaW1hZ2Uvc3ZnK3htbCIgfQogICAgICAgICAgICBlbHNlaWYgKCRleHQgLWVxICIucG5nIikgeyAkY29udGVudFR5cGUgPSAiaW1hZ2UvcG5nIiB9CgogICAgICAgICAgICAkcmVzcG9uc2UuQ29udGVudFR5cGUgPSAkY29udGVudFR5cGUKICAgICAgICAgICAgJHJlc3BvbnNlLkNvbnRlbnRMZW5ndGg2NCA9ICRieXRlcy5MZW5ndGgKICAgICAgICAgICAgJHJlc3BvbnNlLlN0YXR1c0NvZGUgPSAyMDAKICAgICAgICAgICAgJHJlc3BvbnNlLk91dHB1dFN0cmVhbS5Xcml0ZSgkYnl0ZXMsIDAsICRieXRlcy5MZW5ndGgpCiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgJHJlc3BvbnNlLlN0YXR1c0NvZGUgPSA0MDQKICAgICAgICAgICAgJGVyckJ5dGVzID0gW1N5c3RlbS5UZXh0LkVuY29kaW5nXTo6VVRGOC5HZXRCeXRlcygiTm90IEZvdW5kIikKICAgICAgICAgICAgJHJlc3BvbnNlLk91dHB1dFN0cmVhbS5Xcml0ZSgkZXJyQnl0ZXMsIDAsICRlcnJCeXRlcy5MZW5ndGgpCiAgICAgICAgfQoKICAgICAgICAkcmVzcG9uc2UuQ2xvc2UoKQogICAgfSBjYXRjaCB7CiAgICAgICAgIyBpZ25vcmUgY2xpZW50IGRpc2Nvbm5lY3RzCiAgICB9Cn0K
+param(
+    [int]$Port = 3000
+)
+
+$prefix = "http://localhost:$Port/"
+$listener = New-Object System.Net.HttpListener
+$listener.Prefixes.Add($prefix)
+
+try {
+    $listener.Start()
+    Write-Host "WealthNest local server running at $prefix" -ForegroundColor Green
+} catch {
+    Write-Host "Failed to start listener: $_" -ForegroundColor Red
+    exit 1
+}
+
+$baseDir = $PSScriptRoot
+
+while ($listener.IsListening) {
+    try {
+        $context = $listener.GetContext()
+        $request = $context.Request
+        $response = $context.Response
+
+        $rawUrl = $request.RawUrl
+        $path = $rawUrl.Split('?')[0].TrimStart('/')
+
+        if ([string]::IsNullOrWhiteSpace($path)) {
+            $path = "index.html"
+        }
+
+        $localPath = Join-Path $baseDir $path
+
+        if (-not (Test-Path $localPath -PathType Leaf)) {
+            $localPath = Join-Path $baseDir "index.html"
+        }
+
+        if (Test-Path $localPath -PathType Leaf) {
+            $bytes = [System.IO.File]::ReadAllBytes($localPath)
+            
+            $ext = [System.IO.Path]::GetExtension($localPath).ToLower()
+            $contentType = "text/html; charset=utf-8"
+            if ($ext -eq ".js") { $contentType = "application/javascript; charset=utf-8" }
+            elseif ($ext -eq ".css") { $contentType = "text/css; charset=utf-8" }
+            elseif ($ext -eq ".json") { $contentType = "application/json; charset=utf-8" }
+            elseif ($ext -eq ".svg") { $contentType = "image/svg+xml" }
+            elseif ($ext -eq ".png") { $contentType = "image/png" }
+
+            $response.ContentType = $contentType
+            $response.ContentLength64 = $bytes.Length
+            $response.StatusCode = 200
+            $response.OutputStream.Write($bytes, 0, $bytes.Length)
+        } else {
+            $response.StatusCode = 404
+            $errBytes = [System.Text.Encoding]::UTF8.GetBytes("Not Found")
+            $response.OutputStream.Write($errBytes, 0, $errBytes.Length)
+        }
+
+        $response.Close()
+    } catch {
+        # ignore client disconnects
+    }
+}

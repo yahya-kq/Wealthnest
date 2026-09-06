@@ -1,1 +1,49 @@
-LS0gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tIFdlYWx0aE5lc3Q6IENvbXBsZXRlIEFjY291bnQgJiBEYXRhIERlbGV0aW9uIEZ1bmN0aW9uIChSUEMpCi0tID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLSBSdW4gdGhpcyBzY3JpcHQgaW4geW91ciBTdXBhYmFzZSBEYXNoYm9hcmQgLT4gU1FMIEVkaXRvci4KLS0gVGhpcyBmdW5jdGlvbiBhbGxvd3MgYXV0aGVudGljYXRlZCB1c2VycyB0byBwZXJtYW5lbnRseSBkZWxldGUgdGhlaXIgb3duIAotLSBhY2NvdW50IGFuZCBhbGwgYXNzb2NpYXRlZCBwZXJzb25hbCBmaW5hbmNpYWwgZGF0YS4KLS0gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgotLSAxLiBDcmVhdGUgb3IgcmVwbGFjZSB0aGUgZGVsZXRlX3VzZXJfYWNjb3VudCBSUEMgZnVuY3Rpb24KQ1JFQVRFIE9SIFJFUExBQ0UgRlVOQ1RJT04gcHVibGljLmRlbGV0ZV91c2VyX2FjY291bnQoKQpSRVRVUk5TIGJvb2xlYW4KTEFOR1VBR0UgcGxwZ3NxbApTRUNVUklUWSBERUZJTkVSClNFVCBzZWFyY2hfcGF0aCA9IHB1YmxpYywgYXV0aApBUyAkJApERUNMQVJFCiAgY2FsbGluZ191c2VyX2lkIHV1aWQ7CkJFR0lOCiAgLS0gUmV0cmlldmUgdGhlIGF1dGhlbnRpY2F0ZWQgdXNlciBJRCBmcm9tIGNvbnRleHQKICBjYWxsaW5nX3VzZXJfaWQgOj0gYXV0aC51aWQoKTsKCiAgLS0gU2FmZWd1YXJkOiBFbnN1cmUgY2FsbGluZyB1c2VyIGV4aXN0cwogIElGIGNhbGxpbmdfdXNlcl9pZCBJUyBOVUxMIFRIRU4KICAgIFJBSVNFIEVYQ0VQVElPTiAnTm90IGF1dGhvcml6ZWQuIFlvdSBtdXN0IGJlIHNpZ25lZCBpbiB0byBkZWxldGUgeW91ciBhY2NvdW50Lic7CiAgRU5EIElGOwoKICAtLSAxLiBEZWxldGUgdXNlcidzIGZpbmFuY2lhbCB0cmFuc2FjdGlvbnMsIGJ1ZGdldHMsIGdvYWxzICYgc2V0dGluZ3MKICBERUxFVEUgRlJPTSBwdWJsaWMudXNlcl9maW5hbmNlcwogIFdIRVJFIHVzZXJfaWQgPSBjYWxsaW5nX3VzZXJfaWQ7CgogIC0tIDIuIERlbGV0ZSB1c2VyIHByb2ZpbGUKICBERUxFVEUgRlJPTSBwdWJsaWMucHJvZmlsZXMKICBXSEVSRSBpZCA9IGNhbGxpbmdfdXNlcl9pZDsKCiAgLS0gMy4gRGVsZXRlIGF1dGhlbnRpY2F0aW9uIGNyZWRlbnRpYWxzIGZyb20gU3VwYWJhc2UgYXV0aC51c2VycwogIERFTEVURSBGUk9NIGF1dGgudXNlcnMKICBXSEVSRSBpZCA9IGNhbGxpbmdfdXNlcl9pZDsKCiAgUkVUVVJOIHRydWU7CkVORDsKJCQ7CgotLSAyLiBHcmFudCBleGVjdXRlIHBlcm1pc3Npb25zIHRvIGF1dGhlbnRpY2F0ZWQgdXNlcnMKUkVWT0tFIEFMTCBPTiBGVU5DVElPTiBwdWJsaWMuZGVsZXRlX3VzZXJfYWNjb3VudCgpIEZST00gcHVibGljOwpHUkFOVCBFWEVDVVRFIE9OIEZVTkNUSU9OIHB1YmxpYy5kZWxldGVfdXNlcl9hY2NvdW50KCkgVE8gYXV0aGVudGljYXRlZDsKCi0tIENvbW1lbnQgZm9yIGRvY3VtZW50YXRpb24KQ09NTUVOVCBPTiBGVU5DVElPTiBwdWJsaWMuZGVsZXRlX3VzZXJfYWNjb3VudCgpIElTIAogICdTZWN1cmVseSBkZWxldGVzIHRoZSBjYWxsaW5nIHVzZXIgZmluYW5jaWFsIGRhdGEsIHByb2ZpbGUsIGFuZCBhdXRoIHJlY29yZCBmcm9tIFdlYWx0aE5lc3QuJzsK
+-- =============================================================================
+-- WealthNest: Complete Account & Data Deletion Function (RPC)
+-- =============================================================================
+-- Run this script in your Supabase Dashboard -> SQL Editor.
+-- This function allows authenticated users to permanently delete their own 
+-- account and all associated personal financial data.
+-- =============================================================================
+
+-- 1. Create or replace the delete_user_account RPC function
+CREATE OR REPLACE FUNCTION public.delete_user_account()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+  calling_user_id uuid;
+BEGIN
+  -- Retrieve the authenticated user ID from context
+  calling_user_id := auth.uid();
+
+  -- Safeguard: Ensure calling user exists
+  IF calling_user_id IS NULL THEN
+    RAISE EXCEPTION 'Not authorized. You must be signed in to delete your account.';
+  END IF;
+
+  -- 1. Delete user's financial transactions, budgets, goals & settings
+  DELETE FROM public.user_finances
+  WHERE user_id = calling_user_id;
+
+  -- 2. Delete user profile
+  DELETE FROM public.profiles
+  WHERE id = calling_user_id;
+
+  -- 3. Delete authentication credentials from Supabase auth.users
+  DELETE FROM auth.users
+  WHERE id = calling_user_id;
+
+  RETURN true;
+END;
+$$;
+
+-- 2. Grant execute permissions to authenticated users
+REVOKE ALL ON FUNCTION public.delete_user_account() FROM public;
+GRANT EXECUTE ON FUNCTION public.delete_user_account() TO authenticated;
+
+-- Comment for documentation
+COMMENT ON FUNCTION public.delete_user_account() IS 
+  'Securely deletes the calling user financial data, profile, and auth record from WealthNest.';

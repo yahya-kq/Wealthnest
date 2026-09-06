@@ -1,1 +1,9 @@
-ewogICJuYW1lIjogIndlYWx0aG5lc3QiLAogICJ2ZXJzaW9uIjogIjEuMC4wIiwKICAicHJpdmF0ZSI6IHRydWUsCiAgInNjcmlwdHMiOiB7CiAgICAiZGV2IjogIm5weCBzZXJ2ZSAuIgogIH0KfQo=
+{
+  "name": "wealthnest",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static build ready'"
+  }
+}

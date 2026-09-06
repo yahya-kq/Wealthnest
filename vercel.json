@@ -1,1 +1,11 @@
-ewogICJjbGVhblVybHMiOiB0cnVlLAogICJ0cmFpbGluZ1NsYXNoIjogZmFsc2UsCiAgInJld3JpdGVzIjogW3sgInNvdXJjZSI6ICIvKC4qKSIsICJkZXN0aW5hdGlvbiI6ICIvaW5kZXguaHRtbCIgfV0KfQo=
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

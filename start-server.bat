@@ -1,1 +1,4 @@
-QGVjaG8gb2ZmCmVjaG8gU3RhcnRpbmcgV2VhbHRoTmVzdCBvbiBodHRwOi8vbG9jYWxob3N0OjMwMDAgLi4uCnBvd2Vyc2hlbGwgLUV4ZWN1dGlvblBvbGljeSBCeXBhc3MgLUZpbGUgIiV+ZHAwc2VydmVyLnBzMSIKcGF1c2UK
+@echo off
+echo Starting WealthNest on http://localhost:3000 ...
+powershell -ExecutionPolicy Bypass -File "%~dp0server.ps1"
+pause
