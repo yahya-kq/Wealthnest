@@ -1,1 +1,87 @@
-IyBXZWFsdGhOZXN0CgpXZWFsdGhOZXN0IGlzIGEgcGVyc29uYWwgZmluYW5jZSB0cmFja2VyIHRoYXQgcnVucyBlbnRpcmVseSBpbiB0aGUgYnJvd3Nlci4gVGhlIG5hbWUgY29tYmluZXMgKip3ZWFsdGgqKiAoeW91ciBtb25leSBhbmQgZmluYW5jaWFsIGdvYWxzKSB3aXRoICoqbmVzdCoqIChhIHNhZmUsIG9yZ2FuaXplZCBwbGFjZSB0byBrZWVwIGFuZCBncm93IHdoYXQgbWF0dGVycykg4oCUIHRoZSBpZGVhIGJlaW5nIHRoYXQgeW91ciBmaW5hbmNlcyBoYXZlIGEgc2VjdXJlIGhvbWUuCgojIyBXaGF0IEl0J3MgRm9yCgpXZWFsdGhOZXN0IGhlbHBzIGluZGl2aWR1YWxzIHRyYWNrIHRoZWlyIGluY29tZSwgZXhwZW5zZXMsIHNhdmluZ3MgZ29hbHMsIGFuZCBidWRnZXRzIGluIG9uZSBwbGFjZS4gSXQncyBidWlsdCBmb3IgcGVvcGxlIHdobyB3YW50IGEgY2xlYW4sIHByaXZhdGUgdmlldyBvZiB0aGVpciBmaW5hbmNlcyB3aXRob3V0IGNvbm5lY3RpbmcgdG8gYSBiYW5rIG9yIGluc3RhbGxpbmcgYW4gYXBwLgoKIyMgRmVhdHVyZXMKCi0gKipEYXNoYm9hcmQqKiDigJQgbW9udGhseSBzdW1tYXJ5IG9mIGluY29tZSwgZXhwZW5zZXMsIGFuZCBzYXZpbmdzIGF0IGEgZ2xhbmNlCi0gKipUcmFuc2FjdGlvbnMqKiDigJQgbG9nIGluY29tZSwgZXhwZW5zZXMsIGFuZCBzYXZpbmdzIGNvbnRyaWJ1dGlvbnMgd2l0aCBjYXRlZ29yaWVzIGFuZCBzdWJjYXRlZ29yaWVzCi0gKipCdWRnZXRzKiog4oCUIHNldCBtb250aGx5IHNwZW5kaW5nIGxpbWl0cyBwZXIgY2F0ZWdvcnkgYW5kIHRyYWNrIHByb2dyZXNzCi0gKipTYXZpbmdzIEdvYWxzKiog4oCUIGNyZWF0ZSBnb2Fscyb3aXRoIHRhcmdldCBhbW91bnRzIGFuZCBkZWFkbGluZXMKLSAqKlJlcG9ydHMqKiDigJQgdmlzdWFsIGJyZWFrZG93biBvZiBzcGVuZGluZyBieSBjYXRlZ29yeSBhbmQgbW9udGgtb3Zlci1tb250aCBjb21wYXJpc29uCi0gKipTZXR0aW5ncyoqIOKAlCBtYW5hZ2UgY2F0ZWdvcmllcywgY3VycmVuY3ksIGFuZCBhY2NvdW50IGRldGFpbHMKLSAqKkNsb3VkIFN5bmMqKiDigJQgc2lnbiBpbiB0byBzYXZlIGRhdGEgdG8gdGhlIGNsb3VkOyB3b3JrcyBvZmZsaW5lIGluIGxvY2FsIGRlbW8gbW9kZQotICoqQXV0aGVudGljYXRpb24qKiDigJQgZW1haWwvcGFzc3dvcmQgc2lnbi11cCBvciBHb29nbGUgT0F1dGggdmlhIFN1cGFiYXNlCi0gKipBY2NvdW50IERlbGV0aW9uKiog4oCUIHVzZXJzIGNhbiBwZXJtYW5lbnRseSBkZWxldGUgdGhlaXIgYWNjb3VudCBhbmQgYWxsIGRhdGEgZnJvbSB3aXRoaW4gdGhlIGFwcAoKIyMgVGVjaG5vbG9naWVzCgp8IExheWVyIHwgVGVjaG5vbG9neSB8CnwtLS0tLS0tfC0tLS0tLS0tLS0tfAp8IEZyb250ZW5kIHwgSFRNTCwgQ1NTLCBKYXZhU2NyaXB0IChzaW5nbGUgZmlsZSwgbm8gZnJhbWV3b3JrKSB8CnwgQ2hhcnRzIHwgW0NoYXJ0LmpzXShodHRwczovL3d3dy5jaGFydGpzLm9yZy8pIHwKfCBBdXRoICYgRGF0YWJhc2UgfCBbU3VwYWJhc2VdKGh0dHBzOi8vc3VwYWJhc2UuY29tLykgKFBvc3RncmVTUUwgKyBBdXRoKSB8CnwgRm9udHMgfCBHb29nbGUgRm9udHMgKFBsdXMgSmFrYXJ0YSBTYW5zLCBNYW5yb3BlLCBKZXRCcmFpbnMgTW9ubykgfAp8IEhvc3RpbmcgfCBbVmVyY2VsXShodHRwczovL3ZlcmNlbC5jb20vKSB8CnwgVmVyc2lvbiBDb250cm9sIHwgW0dpdEh1Yl0oaHR0cHM6Ly9naXRodWIuY29tLykgfAp8IEJ1aWx0IHdpdGggfCBbQW50aWdyYXZpdHldKGh0dHBzOi8vYW50aWdyYXZpdHkuZGV2LykgKEFJIGNvZGluZyBhc3Npc3RhbnQgYnkgR29vZ2xlIERlZXBNaW5kKSB8CgojIyBIb3cgdGhlIFRvb2xzIFdvcmsgVG9nZXRoZXIKCmBgYApBbnRpZ3Jhdml0eSAg4oaSICB3cm90ZSBhbmQgaXRlcmF0ZWQgb24gdGhlIGVudGlyZSBjb2RlYmFzZQpHaXRIdWIgICAgICAg4oaSICBzdG9yZXMgYW5kIHZlcnNpb25zIHRoZSBzb3VyY2UgY29kZQpWZXJjZWwgICAgICAg4oaSICBkZXBsb3lzIGZyb20gR2l0SHViIGF1dG9tYXRpY2FsbHkgb24gZXZlcnkgcHVzaApTdXBhYmFzZSAgICAg4oaSICBoYW5kbGVzIHVzZXIgYXV0aGVudGljYXRpb24gYW5kIHN0b3JlcyBmaW5hbmNpYWwgZGF0YSBzZWN1cmVseQpgYGAKCi0gKipBbnRpZ3Jhdml0eSoqIChHb29nbGUgRGVlcE1pbmQncyBBSSBjb2RpbmcgYXNzaXN0YW50KSB3YXMgdXNlZCB0byBidWlsZCB0aGUgZW50aXJlIHByb2plY3Qg4oCUIGZyb20gVUkgZGVzaWduIHRvIGRhdGFiYXNlIGludGVncmF0aW9uIOKAlCBpbiBhIHNpbmdsZSBjb252ZXJzYXRpb24uCi0gKipHaXRIdWIqKiBob3N0cyB0aGUgc291cmNlIGNvZGUuIFZlcmNlbCBpcyBjb25uZWN0ZWQgdG8gdGhpcyByZXBvLgotICoqVmVyY2VsKiogZGVwbG95cyB0aGUgYXBwIGF1dG9tYXRpY2FsbHkgd2hlbmV2ZXIgdGhlIGBtYWluYCBicmFuY2ggaXMgdXBkYXRlZC4gTm8gYnVpbGQgc3RlcCBpcyBuZWVkZWQg4oCUIFZlcmNlbCBzZXJ2ZXMgYGluZGV4Lmh0bWxgIGRpcmVjdGx5LgotICoqU3VwYWJhc2UqKiBwcm92aWRlcyBhdXRoZW50aWNhdGlvbiAoZW1haWwvcGFzc3dvcmQgYW5kIEdvb2dsZSBPQXV0aCkgYW5kIGEgUG9zdGdyZVNRTCBkYXRhYmFzZS4gRWFjaCB1c2VyJ3MgZmluYW5jaWFsIGRhdGEgaXMgc3RvcmVkIGluIGEgYHVzZXJfZmluYW5jZXNgIHRhYmxlLCBwcm90ZWN0ZWQgYnkgUm93IExldmVsIFNlY3VyaXR5IChSTFMpIHNvIHVzZXJzIGNhbiBvbmx5IGFjY2VzcyB0aGVpciBvd24gZGF0YS4KCiMjIFJ1bm5pbmcgTG9jYWxseQoKWW91IG5lZWQgW05vZGUuanNdKGh0dHBzOi8vbm9kZWpzLm9yZy8pIGluc3RhbGxlZC4KCmBgYGJhc2gKbnB4IHNlcnZlIC4KYGBgCgpUaGVuIG9wZW4gW2h0dHA6Ly9sb2NhbGhvc3Q6MzAwMF0oaHR0cDovL2xvY2FsaG9zdDozMDAwKSBpbiB5b3VyIGJyb3dzZXIuCgpBbHRlcm5hdGl2ZWx5LCBvcGVuIGBpbmRleC5odG1sYCBkaXJlY3RseSBpbiBhIGJyb3dzZXIuIE1vc3QgZmVhdHVyZXMgd29yayB3aXRob3V0IGEgc2VydmVyOyBPQXV0aCBzaWduLWluIHJlcXVpcmVzIGEgcHJvcGVyIG9yaWdpbiAodXNlIGBucHggc2VydmUgLmAgZm9yIHRoYXQpLgoKIyMgRGVwbG95aW5nIHRvIFZlcmNlbAoKIyMjIE9wdGlvbiBBIOKAlCBHaXRIdWIgSW1wb3J0IChyZWNvbW1lbmRlZCkKCjEuIFB1c2ggdGhpcyByZXBvIHRvIEdpdEh1YiAoYWxyZWFkeSBkb25lKS4KMi4gR28gdG8gW3ZlcmNlbC5jb21dKGh0dHBzOi8vdmVyY2VsLmNvbS8pIOKGkiAqKkFkZCBOZXcgUHJvamVjdCoqIOKGkiBpbXBvcnQgdGhlIGBXZWFsdGhuZXN0YCByZXBvLgozLiBGcmFtZXdvcmsgcHJlc2V0OiAqKk90aGVyKiogKHN0YXRpYyBzaXRlKS4KNC4gTm8gYnVpbGQgY29tbWFuZCwgbm8gb3V0cHV0IGRpcmVjdG9yeSBuZWVkZWQuCjUuIENsaWNrICoqRGVwbG95KiouCgojIyMgT3B0aW9uIEIg4oCUIFZlcmNlbCBDTEkKCmBgYGJhc2gKbnBtIGluc3RhbGwgLWcgdmVyY2VsCnZlcmNlbApgYGAKCkZvbGxvdyB0aGUgcHJvbXB0cy4gUnVuIGB2ZXJjZWwgLS1wcm9kYCB0byBkZXBsb3kgdG8gcHJvZHVjdGlvbi4KCiMjIFN1cGFiYXNlIFNldHVwIE5vdGVzCgpXZWFsdGhOZXN0IGNvbm5lY3RzIHRvIGFuIGV4aXN0aW5nIFN1cGFiYXNlIHByb2plY3QuIElmIHlvdSdyZSBzZXR0aW5nIHVwIHlvdXIgb3duOgoKMS4gQ3JlYXRlIGEgcHJvamVjdCBhdCBbc3VwYWJhc2UuY29tXShodHRwczovL3N1cGFiYXNlLmNvbS8pLgoyLiBSZXBsYWNlIGBTVVBBQkFTRV9VUkxgIGFuZCBgU1VQQUJBU0VfQU5PTl9LRVlgIGluIGBpbmRleC5odG1sYCAobGluZXMgfjE3MzHigJMxNzMyKSB3aXRoIHlvdXIgb3duIHZhbHVlcy4KMy4gRW5hYmxlIEdvb2dsZSBPQXV0aCB1bmRlciAqKkF1dGhlbnRpY2F0aW9uIOKGkiBQcm92aWRlcnMg4oaSIEdvb2dsZSoqIGlmIG5lZWRlZC4KNC4gUnVuIGBzdXBhYmFzZS1kZWxldGUtYWNjb3VudC5zcWxgIGluIHRoZSBTdXBhYmFzZSBTUUwgRWRpdG9yIHRvIGVuYWJsZSBpbi1hcHAgYWNjb3VudCBkZWxldGlvbi4KClRoZSBTdXBhYmFzZSBhbm9uIGtleSBpbiB0aGUgc291cmNlIGNvZGUgaXMgYSBwdWJsaWMgYnJvd3NlciBrZXkg4oCUIGl0IGlzIHNhZmUgdG8gY29tbWl0LiBVc2VyIGRhdGEgaXMgcHJvdGVjdGVkIGJ5IFJvdyBMZXZlbCBTZWN1cml0eSAoUkxTKSBwb2xpY2llcywgbm90IGJ5IGhpZGluZyB0aGlzIGtleS4K
+# WealthNest
+
+WealthNest is a personal finance tracker that runs entirely in the browser. The name combines **wealth** (your money and financial goals) with **nest** (a safe, organized place to keep and grow what matters) — the idea being that your finances have a secure home.
+
+## What It's For
+
+WealthNest helps individuals track their income, expenses, savings goals, and budgets in one place. It's built for people who want a clean, private view of their finances without connecting to a bank or installing an app.
+
+## Features
+
+- **Dashboard** — monthly summary of income, expenses, and savings at a glance
+- **Transactions** — log income, expenses, and savings contributions with categories and subcategories
+- **Budgets** — set monthly spending limits per category and track progress
+- **Savings Goals** — create goals with target amounts and deadlines
+- **Reports** — visual breakdown of spending by category and month-over-month comparison
+- **Settings** — manage categories, currency, and account details
+- **Cloud Sync** — sign in to save data to the cloud; works offline in local demo mode
+- **Authentication** — email/password sign-up or Google OAuth via Supabase
+- **Account Deletion** — users can permanently delete their account and all data from within the app
+
+## Technologies
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | HTML, CSS, JavaScript (single file, no framework) |
+| Charts | [Chart.js](https://www.chartjs.org/) |
+| Auth & Database | [Supabase](https://supabase.com/) (PostgreSQL + Auth) |
+| Fonts | Google Fonts (Plus Jakarta Sans, Manrope, JetBrains Mono) |
+| Hosting | [Vercel](https://vercel.com/) |
+| Version Control | [GitHub](https://github.com/) |
+| Built with | [Antigravity](https://antigravity.dev/) (AI coding assistant by Google DeepMind) |
+
+## How the Tools Work Together
+
+```
+Antigravity  →  wrote and iterated on the entire codebase
+GitHub       →  stores and versions the source code
+Vercel       →  deploys from GitHub automatically on every push
+Supabase     →  handles user authentication and stores financial data securely
+```
+
+- **Antigravity** (Google DeepMind's AI coding assistant) was used to build the entire project — from UI design to database integration — in a single conversation.
+- **GitHub** hosts the source code. Vercel is connected to this repo.
+- **Vercel** deploys the app automatically whenever the `main` branch is updated. No build step is needed — Vercel serves `index.html` directly.
+- **Supabase** provides authentication (email/password and Google OAuth) and a PostgreSQL database. Each user's financial data is stored in a `user_finances` table, protected by Row Level Security (RLS) so users can only access their own data.
+
+## Running Locally
+
+You need [Node.js](https://nodejs.org/) installed.
+
+```bash
+npx serve .
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
+
+Alternatively, open `index.html` directly in a browser. Most features work without a server; OAuth sign-in requires a proper origin (use `npx serve .` for that).
+
+## Deploying to Vercel
+
+### Option A — GitHub Import (recommended)
+
+1. Push this repo to GitHub (already done).
+2. Go to [vercel.com](https://vercel.com/) → **Add New Project** → import the `Wealthnest` repo.
+3. Framework preset: **Other** (static site).
+4. No build command, no output directory needed.
+5. Click **Deploy**.
+
+### Option B — Vercel CLI
+
+```bash
+npm install -g vercel
+vercel
+```
+
+Follow the prompts. Run `vercel --prod` to deploy to production.
+
+## Supabase Setup Notes
+
+WealthNest connects to an existing Supabase project. If you're setting up your own:
+
+1. Create a project at [supabase.com](https://supabase.com/).
+2. Replace `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `index.html` (lines ~1731–1732) with your own values.
+3. Enable Google OAuth under **Authentication → Providers → Google** if needed.
+4. Run `supabase-delete-account.sql` in the Supabase SQL Editor to enable in-app account deletion.
+
+The Supabase anon key in the source code is a public browser key — it is safe to commit. User data is protected by Row Level Security (RLS) policies, not by hiding this key.
