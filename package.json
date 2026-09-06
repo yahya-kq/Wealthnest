@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npx serve .",
-    "build": "echo 'Static build ready'"
+    "build": "echo 'Build completed'",
+    "dev": "npx serve ."
   }
 }
