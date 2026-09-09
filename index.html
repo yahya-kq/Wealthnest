@@ -98,7 +98,7 @@
   /* Left Column */
   .hero-text-col{
     width:100%;
-    max-width:520px;
+    max-width:560px;
     box-sizing:border-box;
     display:flex;
     flex-direction:column;
@@ -219,6 +219,50 @@
   }
   .hero-btn-secondary:active{
     transform:translateY(0);
+  }
+
+  /* Feature Highlights Row (Matching Reference) */
+  .hero-features-row{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    margin-top:36px;
+    padding-top:4px;
+    flex-wrap:wrap;
+  }
+  .hero-feature-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .hero-feature-icon{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#F3E8FF;
+    color:#7C3AED;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    box-shadow:0 2px 6px rgba(124,58,237,0.08);
+  }
+  .hero-feature-text{
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+  }
+  .hero-feature-text strong{
+    font-size:14px;
+    font-weight:700;
+    color:#0F172A;
+    line-height:1.2;
+    font-family:var(--font-display);
+  }
+  .hero-feature-text span{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.3;
   }
 
   /* Right Column: Purple Panel wrapping the Card */
@@ -558,6 +602,11 @@
       white-space:nowrap;
       text-align:center;
     }
+    .hero-features-row{
+      gap:16px;
+      margin-top:24px;
+      justify-content:flex-start;
+    }
     .hero-visual-col{
       width:100%;
       max-width:440px;
@@ -827,10 +876,33 @@
   .comparison-close:hover{background:var(--surface-2); color:var(--ink);}
   .comparison-card{background:var(--surface-2); border:1px solid var(--line-soft); border-radius:var(--radius-sm); padding:16px 18px; margin-bottom:14px;}
   .comparison-controls{display:flex; flex-wrap:wrap; align-items:flex-start; gap:16px;}
-  .comparison-control{min-width:140px;}
+  .comparison-control{min-width:160px;}
   .comparison-metrics{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;}
   .comparison-table th,.comparison-table td{padding:10px 14px;}
   .comparison-delta{font-size:11px; margin-top:3px;}
+
+  /* Excel-style Multi-Month Filter */
+  .excel-filter-dropdown-wrap{position:relative; width:100%; min-width:170px;}
+  .excel-filter-trigger{width:100%; height:38px; padding:0 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13.5px; font-weight:500; color:var(--ink); cursor:pointer; transition:border-color .15s, box-shadow .15s; text-align:left; box-sizing:border-box;}
+  .excel-filter-trigger:hover{border-color:var(--primary);}
+  .excel-filter-trigger:focus-visible{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-light);}
+  .excel-filter-summary{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; text-transform:none !important;}
+  .excel-filter-caret{color:var(--muted); flex-shrink:0; transition:transform .2s ease;}
+  .excel-filter-dropdown-wrap.open .excel-filter-caret{transform:rotate(180deg);}
+  .excel-filter-popover{position:absolute; top:calc(100% + 4px); left:0; min-width:220px; width:100%; background:#FFFFFF; border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 30px -4px rgba(15,23,42,0.18), 0 4px 6px -2px rgba(15,23,42,0.06); z-index:200; padding:8px 0; display:flex; flex-direction:column; animation:filterFadeIn .15s ease-out;}
+  @keyframes filterFadeIn{from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);}}
+  .excel-filter-popover-header{display:flex; align-items:center; justify-content:space-between; padding:6px 12px 8px; border-bottom:1px solid var(--line-soft);}
+  .excel-filter-select-all-label{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--ink); cursor:pointer; user-select:none;}
+  .excel-filter-select-all-label input[type="checkbox"], .excel-filter-item input[type="checkbox"]{width:15px; height:15px; accent-color:var(--primary); cursor:pointer; border-radius:4px; margin:0;}
+  .excel-filter-text-btn{background:none; border:none; font-size:11.5px; color:var(--primary); font-weight:700; cursor:pointer; padding:2px 4px; border-radius:4px;}
+  .excel-filter-text-btn:hover{text-decoration:underline;}
+  .excel-filter-popover-list{max-height:210px; overflow-y:auto; padding:4px 6px; display:flex; flex-direction:column; gap:1px;}
+  .excel-filter-item{display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; font-size:13px; font-weight:500; color:var(--ink); cursor:pointer; user-select:none; transition:background .1s;}
+  .excel-filter-item:hover{background:var(--surface-2);}
+  .excel-filter-item.selected{font-weight:600; color:var(--primary-dark);}
+  .excel-filter-popover-footer{display:flex; align-items:center; justify-content:space-between; padding:8px 12px 4px; border-top:1px solid var(--line-soft); margin-top:4px;}
+  .excel-filter-count-label{font-size:11.5px; color:var(--muted); font-weight:600; text-transform:none !important;}
+
   h1,h2,h3,.section-title,.section-sub,.field-label,.btn-primary,.btn-dark,.btn-ghost,.btn-small,.btn-chip,.nav-link,.nav-section-label,.badge,.link-sm,.topbar p,.modal h2{ text-transform:capitalize; }
   .label-eyebrow{ text-transform:uppercase; }
   .report-budget-summary .muted{ text-transform:capitalize; }
@@ -1025,11 +1097,41 @@
     <!-- Left Column -->
     <div class="hero-text-col">
       <div class="hero-badge">YOUR MONEY, YOUR CONTROL</div>
-      <h1 class="hero-title">Financial Clarity for <strong>Smarter Decisions</strong></h1>
+      <h1 class="hero-title">Financial Clarity For<br><strong>Smarter Decisions</strong></h1>
       <p id="landing-subline" class="hero-subline">Track spending, manage budgets, and reach your savings goals.</p>
       <div class="hero-btn-group">
         <a href="#" id="hero-cta-btn" onclick="handleCtaClick(); return false;" class="hero-btn-primary">Get Started</a>
         <a href="#" onclick="goToApp('dashboard'); return false;" class="hero-btn-secondary">Live Demo</a>
+      </div>
+      <!-- Hero Feature Highlights (Track Spending, Plan Budget, Grow Savings) -->
+      <div class="hero-features-row">
+        <div class="hero-feature-item">
+          <div class="hero-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          <div class="hero-feature-text">
+            <strong>Track</strong>
+            <span>Your Spending</span>
+          </div>
+        </div>
+        <div class="hero-feature-item">
+          <div class="hero-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <div class="hero-feature-text">
+            <strong>Plan</strong>
+            <span>Your Budget</span>
+          </div>
+        </div>
+        <div class="hero-feature-item">
+          <div class="hero-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
+          <div class="hero-feature-text">
+            <strong>Grow</strong>
+            <span>Your Savings</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1178,8 +1280,30 @@
 
       <div class="card" style="padding:14px 20px; margin-bottom:16px;">
         <div class="dashboard-filter">
-          <div class="dashboard-filter-field"><label class="field-label" for="dashboard-period-select">Period</label><select id="dashboard-period-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="month">This month</option><option value="quarter">This quarter</option><option value="year">Whole year</option></select></div>
-          <div class="dashboard-filter-field" id="dashboard-month-field"><label class="field-label" for="dashboard-month-select">Month</label><select id="dashboard-month-select" class="field-input" onchange="onDashboardPeriodChange()"></select></div>
+          <div class="dashboard-filter-field"><label class="field-label" for="dashboard-period-select">Period</label><select id="dashboard-period-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="month">Filter Month(s)</option><option value="quarter">This quarter</option><option value="year">Whole year</option></select></div>
+          <div class="dashboard-filter-field" id="dashboard-month-field">
+            <label class="field-label" for="dashboard-month-trigger">Month</label>
+            <div class="excel-filter-dropdown-wrap" id="dashboard-filter-wrap">
+              <button type="button" id="dashboard-month-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('dashboard', event)">
+                <span id="dashboard-month-summary" class="excel-filter-summary">June</span>
+                <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="excel-filter-popover hidden" id="dashboard-month-popover" onclick="event.stopPropagation()">
+                <div class="excel-filter-popover-header">
+                  <label class="excel-filter-select-all-label">
+                    <input type="checkbox" id="dashboard-select-all" onchange="toggleSelectAllMonths('dashboard', this.checked)">
+                    <span>(Select All)</span>
+                  </label>
+                  <button type="button" class="excel-filter-text-btn" onclick="clearAllMonths('dashboard')">Clear</button>
+                </div>
+                <div class="excel-filter-popover-list" id="dashboard-month-list"></div>
+                <div class="excel-filter-popover-footer">
+                  <span class="excel-filter-count-label" id="dashboard-selected-count">1 selected</span>
+                  <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('dashboard')">Done</button>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="dashboard-filter-field hidden" id="dashboard-quarter-field"><label class="field-label" for="dashboard-quarter-select">Quarter</label><select id="dashboard-quarter-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="1">Q1 · Jan–Mar</option><option value="2">Q2 · Apr–Jun</option><option value="3">Q3 · Jul–Sep</option><option value="4">Q4 · Oct–Dec</option></select></div>
           <div class="dashboard-filter-field"><label class="field-label" for="dashboard-year-select">Year</label><select id="dashboard-year-select" class="field-input" onchange="onDashboardPeriodChange()"></select></div>
         </div>
@@ -1298,8 +1422,27 @@
                   <select id="comparison-year" class="field-input" onchange="onComparisonChange()"></select>
                 </div>
                 <div class="comparison-control">
-                  <label class="field-label" for="comparison-month-select">Month Filter</label>
-                  <select id="comparison-month-select" class="field-input" onchange="onComparisonChange()"></select>
+                  <label class="field-label" for="comparison-month-trigger">Month Filter</label>
+                  <div class="excel-filter-dropdown-wrap" id="comparison-filter-wrap">
+                    <button type="button" id="comparison-month-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('comparison', event)">
+                      <span id="comparison-month-summary" class="excel-filter-summary">All Months (12)</span>
+                      <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="excel-filter-popover hidden" id="comparison-month-popover" onclick="event.stopPropagation()">
+                      <div class="excel-filter-popover-header">
+                        <label class="excel-filter-select-all-label">
+                          <input type="checkbox" id="comparison-select-all" onchange="toggleSelectAllMonths('comparison', this.checked)">
+                          <span>(Select All)</span>
+                        </label>
+                        <button type="button" class="excel-filter-text-btn" onclick="clearAllMonths('comparison')">Clear</button>
+                      </div>
+                      <div class="excel-filter-popover-list" id="comparison-month-list"></div>
+                      <div class="excel-filter-popover-footer">
+                        <span class="excel-filter-count-label" id="comparison-selected-count">12 selected</span>
+                        <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('comparison')">Done</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div style="margin-top:14px;">
@@ -1831,6 +1974,170 @@ const DEFAULT_EXPENSE_CATEGORIES = [
 ];
 const PAYMENT_METHODS = ["Cash","Bank Transfer","Debit Card","Credit Card","Easypaisa","Other"];
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+/* ---------------- Excel-Style Multi-Month Filter Engine ---------------- */
+let comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
+let dashboardSelectedMonths = [];
+
+function getExcelMonths(type){
+  return type === 'comparison' ? comparisonSelectedMonths : dashboardSelectedMonths;
+}
+
+function setExcelMonths(type, months){
+  if(type === 'comparison'){
+    comparisonSelectedMonths = months;
+  } else {
+    dashboardSelectedMonths = months;
+  }
+}
+
+function toggleExcelFilter(type, e){
+  if(e) e.stopPropagation();
+  const popover = document.getElementById(`${type}-month-popover`);
+  const wrap = document.getElementById(`${type}-filter-wrap`);
+  if(!popover) return;
+  const isHidden = popover.classList.contains('hidden');
+  closeAllExcelFilters();
+  if(isHidden){
+    popover.classList.remove('hidden');
+    if(wrap) wrap.classList.add('open');
+  }
+}
+
+function closeExcelFilter(type){
+  const popover = document.getElementById(`${type}-month-popover`);
+  const wrap = document.getElementById(`${type}-filter-wrap`);
+  if(popover) popover.classList.add('hidden');
+  if(wrap) wrap.classList.remove('open');
+}
+
+function closeAllExcelFilters(){
+  ['comparison', 'dashboard'].forEach(type => {
+    closeExcelFilter(type);
+  });
+}
+
+window.addEventListener('click', () => {
+  closeAllExcelFilters();
+});
+
+window.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    closeAllExcelFilters();
+  }
+});
+
+function renderExcelFilterList(type){
+  const container = document.getElementById(`${type}-month-list`);
+  if(!container) return;
+  const selected = getExcelMonths(type);
+
+  container.innerHTML = MONTH_NAMES.map((name, idx) => {
+    const monthNum = idx + 1;
+    const isChecked = selected.includes(monthNum);
+    return `
+      <label class="excel-filter-item ${isChecked ? 'selected' : ''}" onclick="event.stopPropagation()">
+        <input type="checkbox" value="${monthNum}" ${isChecked ? 'checked' : ''} onchange="onExcelMonthToggle('${type}', ${monthNum}, this.checked)">
+        <span>${name}</span>
+      </label>
+    `;
+  }).join('');
+
+  updateExcelFilterUI(type);
+}
+
+function updateExcelFilterUI(type){
+  const selected = getExcelMonths(type);
+  const summaryEl = document.getElementById(`${type}-month-summary`);
+  const countEl = document.getElementById(`${type}-selected-count`);
+  const selectAllCb = document.getElementById(`${type}-select-all`);
+
+  if(selectAllCb){
+    if(selected.length === 12){
+      selectAllCb.checked = true;
+      selectAllCb.indeterminate = false;
+    } else if(selected.length > 0){
+      selectAllCb.checked = false;
+      selectAllCb.indeterminate = true;
+    } else {
+      selectAllCb.checked = false;
+      selectAllCb.indeterminate = false;
+    }
+  }
+
+  if(countEl){
+    countEl.textContent = `${selected.length} selected`;
+  }
+
+  if(summaryEl){
+    if(selected.length === 0){
+      summaryEl.textContent = 'Select Month(s)';
+    } else if(selected.length === 12){
+      summaryEl.textContent = 'All Months (12)';
+    } else if(selected.length === 1){
+      summaryEl.textContent = MONTH_NAMES[selected[0] - 1];
+    } else if(selected.length <= 3){
+      const sorted = selected.slice().sort((a,b) => a - b);
+      summaryEl.textContent = sorted.map(m => SHORT_MONTH_NAMES[m - 1]).join(', ');
+    } else {
+      summaryEl.textContent = `${selected.length} Months Selected`;
+    }
+  }
+
+  const items = document.querySelectorAll(`#${type}-month-list .excel-filter-item`);
+  items.forEach(item => {
+    const input = item.querySelector('input');
+    if(input){
+      item.classList.toggle('selected', input.checked);
+    }
+  });
+}
+
+function onExcelMonthToggle(type, monthNum, isChecked){
+  let selected = getExcelMonths(type).slice();
+  if(isChecked){
+    if(!selected.includes(monthNum)) selected.push(monthNum);
+  } else {
+    selected = selected.filter(m => m !== monthNum);
+  }
+  selected.sort((a,b) => a - b);
+  setExcelMonths(type, selected);
+  updateExcelFilterUI(type);
+
+  if(type === 'comparison'){
+    renderComparison();
+  } else {
+    renderDashboard();
+  }
+}
+
+function toggleSelectAllMonths(type, isChecked){
+  const newMonths = isChecked ? [...Array(12)].map((_, i) => i + 1) : [];
+  setExcelMonths(type, newMonths);
+  const cbs = document.querySelectorAll(`#${type}-month-list input[type="checkbox"]`);
+  cbs.forEach(cb => cb.checked = isChecked);
+  updateExcelFilterUI(type);
+
+  if(type === 'comparison'){
+    renderComparison();
+  } else {
+    renderDashboard();
+  }
+}
+
+function clearAllMonths(type){
+  setExcelMonths(type, []);
+  const cbs = document.querySelectorAll(`#${type}-month-list input[type="checkbox"]`);
+  cbs.forEach(cb => cb.checked = false);
+  updateExcelFilterUI(type);
+
+  if(type === 'comparison'){
+    renderComparison();
+  } else {
+    renderDashboard();
+  }
+}
 const CURRENCIES = [
   { code:"USD", symbol:"$", label:"US Dollar", position:"prefix" },
   { code:"EUR", symbol:"€", label:"Euro", position:"prefix" },
@@ -2801,15 +3108,10 @@ function toggleReportComparison(){
 }
 function initComparison(){
   document.getElementById('comparison-year').innerHTML=yearSelectOptions(reportSelYear);
-  const monthSelect = document.getElementById('comparison-month-select');
-  if(monthSelect){
-    let options = '<option value="all">All Months</option>';
-    MONTH_NAMES.forEach((name, idx) => {
-      options += `<option value="${idx + 1}">${name}</option>`;
-    });
-    monthSelect.innerHTML = options;
-    monthSelect.value = 'all';
+  if(!comparisonSelectedMonths || !comparisonSelectedMonths.length){
+    comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
   }
+  renderExcelFilterList('comparison');
   document.getElementById('comparison-metrics').innerHTML=REPORT_METRICS.map(metric=>`<label class="btn-chip active" style="border:1px solid var(--line);"><input type="checkbox" value="${metric.key}" checked onchange="renderComparison()" style="accent-color:var(--primary); margin-right:5px;">${metric.label}</label>`).join('');
   renderComparison();
 }
@@ -2818,21 +3120,19 @@ function comparisonBudget(month,year){ return DB.budgets.filter(b=>b.month===mon
 function comparisonValue(metric,month,year){ const totals=monthTotals(DB.transactions,month,year); return metric==='budget'?comparisonBudget(month,year):totals[metric]; }
 function renderComparison(){
   const year=parseInt(document.getElementById('comparison-year').value,10);
-  const monthChoice = document.getElementById('comparison-month-select') ? document.getElementById('comparison-month-select').value : 'all';
-  let months = [];
-  if(monthChoice === 'all'){
-    months = [...Array(12)].map((_, i) => i + 1);
-  } else {
-    months = [parseInt(monthChoice, 10)];
-  }
+  const months = comparisonSelectedMonths.slice().sort((a,b) => a - b);
   const selected=[...document.querySelectorAll('#comparison-metrics input:checked')].map(input=>input.value);
-  const labels=months.map(month=>`${MONTH_NAMES[month-1]} ${year}`);
   const output = document.getElementById('comparison-output');
   if(!output) return;
-  if(!selected.length || !months.length){
+  if(!selected.length){
     output.innerHTML = '<p class="empty-note">Select at least one metric to compare.</p>';
     return;
   }
+  if(!months.length){
+    output.innerHTML = '<p class="empty-note">Select at least one month from the Month Filter to compare.</p>';
+    return;
+  }
+  const labels=months.map(month=>`${MONTH_NAMES[month-1]} ${year}`);
   output.innerHTML = `
     <div class="report-table-wrap">
       <table class="comparison-table">
@@ -2974,7 +3274,10 @@ let dashboardSelPeriod = 'month', dashboardSelMonth, dashboardSelYear;
 function initDashboardSelectors(){
   const now = new Date();
   if(dashboardSelMonth===undefined){ dashboardSelMonth = now.getMonth()+1; dashboardSelYear = now.getFullYear(); }
-  document.getElementById('dashboard-month-select').innerHTML = periodSelectOptions(dashboardSelMonth);
+  if(!dashboardSelectedMonths || !dashboardSelectedMonths.length){
+    dashboardSelectedMonths = [dashboardSelMonth];
+  }
+  renderExcelFilterList('dashboard');
   document.getElementById('dashboard-year-select').innerHTML = yearSelectOptions(dashboardSelYear);
   document.getElementById('dashboard-period-select').value = dashboardSelPeriod;
   document.getElementById('dashboard-month-field').classList.toggle('hidden', dashboardSelPeriod !== 'month');
@@ -2983,9 +3286,22 @@ function initDashboardSelectors(){
 }
 function onDashboardPeriodChange(){
   dashboardSelPeriod = document.getElementById('dashboard-period-select').value;
-  dashboardSelMonth = parseInt(document.getElementById('dashboard-month-select').value,10);
   dashboardSelYear = parseInt(document.getElementById('dashboard-year-select').value,10);
-  if(dashboardSelPeriod==='quarter') dashboardSelMonth = (parseInt(document.getElementById('dashboard-quarter-select').value,10)-1)*3+1;
+  if(dashboardSelPeriod==='quarter'){
+    const qVal = parseInt(document.getElementById('dashboard-quarter-select').value,10);
+    const start = (qVal-1)*3+1;
+    dashboardSelMonth = start;
+    dashboardSelectedMonths = [start, start+1, start+2];
+    renderExcelFilterList('dashboard');
+  } else if(dashboardSelPeriod==='year'){
+    dashboardSelectedMonths = [...Array(12)].map((_,i)=>i+1);
+    renderExcelFilterList('dashboard');
+  } else {
+    if(!dashboardSelectedMonths || !dashboardSelectedMonths.length){
+      dashboardSelectedMonths = [dashboardSelMonth || (new Date().getMonth()+1)];
+    }
+    renderExcelFilterList('dashboard');
+  }
   renderDashboard();
 }
 function selectedDashboardPeriod(){
@@ -2994,7 +3310,20 @@ function selectedDashboardPeriod(){
     const start = Math.floor((dashboardSelMonth-1)/3)*3+1;
     return {label:`Q${Math.ceil(start/3)} ${dashboardSelYear}`, months:[start,start+1,start+2], year:dashboardSelYear};
   }
-  return {label:`${MONTH_NAMES[dashboardSelMonth-1]} ${dashboardSelYear}`, months:[dashboardSelMonth], year:dashboardSelYear};
+  const months = (dashboardSelectedMonths && dashboardSelectedMonths.length)
+    ? dashboardSelectedMonths.slice().sort((a,b)=>a-b)
+    : [dashboardSelMonth || (new Date().getMonth()+1)];
+  let label = '';
+  if(months.length === 1){
+    label = `${MONTH_NAMES[months[0]-1]} ${dashboardSelYear}`;
+  } else if(months.length === 12){
+    label = `All Months ${dashboardSelYear}`;
+  } else if(months.length <= 3){
+    label = `${months.map(m=>SHORT_MONTH_NAMES[m-1]).join(', ')} ${dashboardSelYear}`;
+  } else {
+    label = `${months.length} Months (${dashboardSelYear})`;
+  }
+  return {label, months, year:dashboardSelYear};
 }
 function getPriorDashboardPeriod(){
   if(dashboardSelPeriod==='year'){
@@ -3007,9 +3336,16 @@ function getPriorDashboardPeriod(){
     const start = (priorQ - 1) * 3 + 1;
     return { months:[start, start + 1, start + 2], year:priorYear };
   }
-  const priorM = dashboardSelMonth === 1 ? 12 : dashboardSelMonth - 1;
-  const priorY = dashboardSelMonth === 1 ? dashboardSelYear - 1 : dashboardSelYear;
-  return { months:[priorM], year:priorY };
+  const months = (dashboardSelectedMonths && dashboardSelectedMonths.length)
+    ? dashboardSelectedMonths.slice().sort((a,b)=>a-b)
+    : [dashboardSelMonth || (new Date().getMonth()+1)];
+  if(months.length === 1){
+    const m = months[0];
+    const priorM = m === 1 ? 12 : m - 1;
+    const priorY = m === 1 ? dashboardSelYear - 1 : dashboardSelYear;
+    return { months:[priorM], year:priorY };
+  }
+  return { months, year: dashboardSelYear - 1 };
 }
 function calcPctChange(current, prior, isExpense = false){
   if(prior === 0){
@@ -3264,21 +3600,32 @@ function renderDashboardTrendChart(period){
     return;
   }
 
-  const endMonth = period.months[period.months.length - 1];
-  const endYear = period.year;
-  const trendMonths = [];
-
-  for(let i = 5; i >= 0; i--){
-    const dt = new Date(endYear, endMonth - 1 - i, 1);
-    const m = dt.getMonth() + 1;
-    const y = dt.getFullYear();
-    const t = monthTotals(DB.transactions, m, y);
-    trendMonths.push({
-      label: dt.toLocaleDateString(undefined, { month:'short' }),
-      income: t.income,
-      expense: t.expense,
-      savings: t.savings
+  let trendMonths = [];
+  if(period.months.length > 1){
+    trendMonths = period.months.map(m => {
+      const t = monthTotals(DB.transactions, m, period.year);
+      return {
+        label: SHORT_MONTH_NAMES[m - 1],
+        income: t.income,
+        expense: t.expense,
+        savings: t.savings
+      };
     });
+  } else {
+    const endMonth = period.months[0] || (new Date().getMonth() + 1);
+    const endYear = period.year;
+    for(let i = 5; i >= 0; i--){
+      const dt = new Date(endYear, endMonth - 1 - i, 1);
+      const m = dt.getMonth() + 1;
+      const y = dt.getFullYear();
+      const t = monthTotals(DB.transactions, m, y);
+      trendMonths.push({
+        label: dt.toLocaleDateString(undefined, { month:'short' }),
+        income: t.income,
+        expense: t.expense,
+        savings: t.savings
+      });
+    }
   }
 
   if(chartDashboardTrend) chartDashboardTrend.destroy();
