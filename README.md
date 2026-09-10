@@ -1,5 +1,7 @@
 # WealthNest
 
+**Live App**: [https://wealthnest-yahya-kq.vercel.app](https://wealthnest-yahya-kq.vercel.app)
+
 WealthNest is a personal finance tracker that runs entirely in the browser. The name combines **wealth** (your money and financial goals) with **nest** (a safe, organized place to keep and grow what matters) — the idea being that your finances have a secure home.
 
 ## What It's For
@@ -82,6 +84,9 @@ WealthNest connects to an existing Supabase project. If you're setting up your o
 1. Create a project at [supabase.com](https://supabase.com/).
 2. Replace `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `index.html` (lines ~1731–1732) with your own values.
 3. Enable Google OAuth under **Authentication → Providers → Google** if needed.
-4. Run `supabase-delete-account.sql` in the Supabase SQL Editor to enable in-app account deletion.
+4. Under **Authentication → URL Configuration**:
+   - Set **Site URL** to your production domain: `https://wealthnest-yahya-kq.vercel.app`
+   - Add to **Redirect URLs**: `https://wealthnest-yahya-kq.vercel.app/**`
+5. Run `supabase-delete-account.sql` in the Supabase SQL Editor to enable in-app account deletion.
 
 The Supabase anon key in the source code is a public browser key — it is safe to commit. User data is protected by Row Level Security (RLS) policies, not by hiding this key.
