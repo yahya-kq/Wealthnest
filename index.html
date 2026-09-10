@@ -1502,7 +1502,7 @@
     <section id="page-transactions" class="page hidden">
       <div class="topbar"><div><h1>Transactions</h1><p id="tx-count-label"></p></div><div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div></div>
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:18px;">
-        <div class="transaction-filters"><div class="transaction-filter-field"><label class="field-label" for="tx-filter-type">Transaction type</label><div class="chip-row" id="tx-filter-chips"></div></div><div class="transaction-filter-field hidden" id="tx-filter-category-field"><label class="field-label" id="tx-filter-category-label" for="tx-filter-category">Category</label><select id="tx-filter-category" class="field-input" onchange="setTxCategoryFilter(this.value)"></select></div><div class="transaction-filter-field hidden" id="tx-filter-subcategory-field"><label class="field-label" id="tx-filter-subcategory-label">Subcategory</label><div class="chip-row" id="tx-filter-subcat-chips"></div></div></div>
+        <div class="transaction-filters"><div class="transaction-filter-field"><label class="field-label" for="tx-filter-type">Transaction type</label><div class="chip-row" id="tx-filter-chips"></div></div><div class="transaction-filter-field hidden" id="tx-filter-category-field"><select id="tx-filter-category" class="field-input" onchange="setTxCategoryFilter(this.value)"></select></div><div class="transaction-filter-field hidden" id="tx-filter-subcategory-field"><div class="chip-row" id="tx-filter-subcat-chips"></div></div></div>
         <div class="transaction-date-nav" style="display:inline-flex; align-items:center; gap:5px;">
           <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(-1)" title="Previous day">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1518,7 +1518,7 @@
       </div>
       <div class="card" style="overflow-x:auto;">
         <table>
-          <thead><tr><th>Date</th><th>Category</th><th id="tx-th-subcategory">Subcategory</th><th>Description</th><th>Method</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Actions</th></tr></thead>
+          <thead><tr><th id="tx-th-date" onclick="toggleTxDateSort()" style="cursor:pointer; user-select:none; white-space:nowrap;" title="Click to change date sort order"><span style="display:inline-flex; align-items:center; gap:4px;">Date <span id="tx-date-sort-icon"></span></span></th><th>Category</th><th id="tx-th-subcategory">Subcategory</th><th>Description</th><th>Method</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Actions</th></tr></thead>
           <tbody id="tx-table-body"></tbody>
         </table>
       </div>
@@ -4000,9 +4000,7 @@ function transactionCategories(type){
 function renderTxCategoryFilter(){
   const selector=document.getElementById('tx-filter-category');
   const field=document.getElementById('tx-filter-category-field');
-  const label=document.getElementById('tx-filter-category-label');
   field.classList.toggle('hidden',txFilter==='all');
-  label.textContent=txFilter==='income'?'Income category':txFilter==='expense'?'Expense category':'Savings goal';
   const categories=transactionCategories(txFilter);
   if(!categories.includes(txCategoryFilter)) txCategoryFilter='all';
   selector.innerHTML='<option value="all">All categories</option>'+categories.map(category=>`<option value="${category.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">${category}</option>`).join('');
@@ -4068,6 +4066,13 @@ function setTxCategoryFilter(category){
   renderTransactions();
 }
 let highlightedTxId = null;
+let txDateSortOrder = (typeof localStorage !== 'undefined' && localStorage.getItem('wealthnest_tx_sort_order')) || 'desc';
+
+function toggleTxDateSort(){
+  txDateSortOrder = (txDateSortOrder === 'desc') ? 'asc' : 'desc';
+  try { localStorage.setItem('wealthnest_tx_sort_order', txDateSortOrder); } catch(e){}
+  renderTransactions();
+}
 
 function renderTransactions(){
   document.getElementById('tx-count-label').textContent = `${DB.transactions.length} logged`;
@@ -4082,14 +4087,27 @@ function renderTransactions(){
   const subcatTh = document.getElementById('tx-th-subcategory');
   if(subcatTh) subcatTh.classList.toggle('hidden', !showSubcat);
 
+  const sortIcon = document.getElementById('tx-date-sort-icon');
+  if(sortIcon){
+    sortIcon.innerHTML = txDateSortOrder === 'desc'
+      ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>'
+      : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:2px;"><polyline points="18 15 12 9 6 15"/></svg>';
+  }
+
   const rows = DB.transactions
     .filter(t => txFilter==='all' ? true : t.type===txFilter)
     .filter(t => txCategoryFilter==='all' ? true : t.category===txCategoryFilter)
     .filter(t => txSubCategoryFilter==='all' ? true : (t.subCategory && t.subCategory.split(',').map(s=>s.trim()).includes(txSubCategoryFilter)))
     .filter(t => txDateFilter ? t.date === txDateFilter : true)
     .filter(t => query ? `${t.category} ${t.description||''} ${t.subCategory||''} ${t.paymentMethod||''}`.toLowerCase().includes(query) : true)
-    // Chronological sequence ascending (earlier dates at top, later dates below)
-    .sort((a,b)=> a.date > b.date ? 1 : a.date < b.date ? -1 : (a.id > b.id ? 1 : -1));
+    .sort((a,b)=> {
+      if(a.date !== b.date){
+        return txDateSortOrder === 'desc'
+          ? (a.date < b.date ? 1 : -1)
+          : (a.date > b.date ? 1 : -1);
+      }
+      return txDateSortOrder === 'desc' ? (a.id < b.id ? 1 : -1) : (a.id > b.id ? 1 : -1);
+    });
 
   const activeExpenseMap = new Map((DB.categories.expense || []).map(c => [c.name, c.subcategories || []]));
   const activeIncomeSet = new Set(DB.categories.income || []);
@@ -4149,6 +4167,10 @@ function renderTransactions(){
   }).join('') : `<tr><td colspan="${showSubcat ? 7 : 6}" style="text-align:center; padding:40px; color:var(--muted-2);">No transactions match. Try clearing filters or add a new one.</td></tr>`;
 
   if(highlightedTxId){
+    setTimeout(() => {
+      const hlRow = document.querySelector('.tx-row-highlight');
+      if(hlRow) hlRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
     setTimeout(() => { highlightedTxId = null; }, 2500);
   }
 }
