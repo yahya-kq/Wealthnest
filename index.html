@@ -769,8 +769,13 @@
   .btn-chip{padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; text-transform:capitalize; background:none; border:1px solid transparent; color:var(--muted);}
   .btn-chip.active{background:var(--ink); color:#fff;}
   .chip-row{display:inline-flex; gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px;}
-  .icon-btn{background:none; border:none; color:var(--muted-2); padding:4px; border-radius:6px; display:inline-flex;}
-  .icon-btn:hover{color:var(--rose); background:var(--rose-light);}
+  .icon-btn{background:none; border:none; color:var(--muted-2); padding:5px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; transition:color .15s, background .15s, transform .1s;}
+  .icon-btn:hover{color:var(--ink); background:var(--surface-2);}
+  .icon-btn:active{transform:scale(0.94);}
+  .icon-btn-edit:hover{color:var(--primary); background:var(--primary-light);}
+  .icon-btn-delete:hover{color:var(--rose); background:var(--rose-light);}
+  @keyframes rowPulse { 0% { background: rgba(124,58,237,0.22); } 50% { background: rgba(124,58,237,0.10); } 100% { background: transparent; } }
+  .tx-row-highlight { animation: rowPulse 2.2s ease-out; }
   .btn-small{padding:6px 12px; border-radius:8px; font-size:12.5px; font-weight:600; border:1px solid var(--line); background:var(--surface); color:var(--ink);}
   .btn-small:hover{background:var(--surface-2);}
   .icon-circle-btn{width:30px; height:30px; border-radius:9px; border:1px solid var(--line); background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--muted);}
@@ -1495,7 +1500,7 @@
       </div>
       <div class="card" style="overflow-x:auto;">
         <table>
-          <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Method</th><th style="text-align:right;">Amount</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Category</th><th>Subcategory</th><th>Description</th><th>Method</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Actions</th></tr></thead>
           <tbody id="tx-table-body"></tbody>
         </table>
       </div>
@@ -1626,6 +1631,30 @@
         </div>
       </div>
 
+      <div id="settings-payment-methods" class="hidden">
+        <div class="card" style="padding:22px; margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h2 class="section-title">Payment Methods</h2>
+              <p class="text-xs muted" style="margin:4px 0 0;">Manage your available payment options for transactions and savings contributions.</p>
+            </div>
+            <span class="badge badge-ok" id="payment-methods-count-badge">Active</span>
+          </div>
+
+          <div id="payment-methods-list" style="margin:18px 0 20px; display:flex; flex-direction:column; gap:10px;"></div>
+
+          <div class="settings-add-section" style="margin-top:16px;">
+            <h3 class="section-title">Add Payment Method</h3>
+            <p class="text-xs muted">Add a custom payment method (e.g. SadaPay, Nayapay, JazzCash, PayPal, or Crypto Wallet).</p>
+            <form onsubmit="handleAddPaymentMethod(event)" class="settings-add-form">
+              <input type="text" id="new-payment-method-name" placeholder="Payment Method Name (e.g. SadaPay)" class="field-input" autocomplete="off" required oninput="const m=document.getElementById('payment-method-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+              <span id="payment-method-add-message" class="text-xs muted settings-add-message"></span>
+              <button type="submit" class="btn-dark" style="white-space:nowrap;">+ Add Method</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <div id="settings-account" class="hidden">
         <div class="grid grid-2">
           <div class="card" style="padding:22px;">
@@ -1666,8 +1695,8 @@
 <div id="tx-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal">
     <button class="modal-close" onclick="closeTxModal()">✕</button>
-    <h2>Add Transaction</h2>
-    <form onsubmit="handleAddTransaction(event)">
+    <h2 id="tx-modal-title">Add Transaction</h2>
+    <form onsubmit="handleSaveTransaction(event)">
       <div class="chip-row" style="width:100%; display:grid; grid-template-columns:repeat(3,1fr); margin-bottom:16px;" id="tx-type-chips"></div>
       <label class="field-label">Date</label>
       <input type="date" id="tx-date" class="field-input mb-3" required>
@@ -1683,7 +1712,7 @@
         <div><label class="field-label">Payment method</label><select id="tx-payment" class="field-input"></select></div>
         <div><label class="field-label">Amount</label><input type="number" step="0.01" min="0" id="tx-amount" placeholder="0.00" class="field-input figure" required></div>
       </div>
-      <button type="submit" class="btn-primary" style="width:100%;">Save Transaction</button>
+      <button type="submit" id="tx-modal-submit" class="btn-primary" style="width:100%;">Save Transaction</button>
     </form>
   </div>
 </div>
@@ -1972,7 +2001,14 @@ const DEFAULT_EXPENSE_CATEGORIES = [
   { name: "Leisure & Activities", subcategories: ["Games", "Hobbies", "Sports & Recreation", "Concerts", "Events", "Books & Reading", "Other Activities"] },
   { name: "Miscellaneous", subcategories: ["Other Expense"] }
 ];
-const PAYMENT_METHODS = ["Cash","Bank Transfer","Debit Card","Credit Card","Easypaisa","Other"];
+const DEFAULT_PAYMENT_METHODS = ["Cash","Bank Transfer","Debit Card","Credit Card","Easypaisa","Other"];
+function getPaymentMethods(){
+  if(typeof DB !== 'undefined' && Array.isArray(DB.paymentMethods) && DB.paymentMethods.length > 0){
+    return DB.paymentMethods;
+  }
+  return DEFAULT_PAYMENT_METHODS;
+}
+const PAYMENT_METHODS = DEFAULT_PAYMENT_METHODS;
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -2187,7 +2223,7 @@ function buildSeed(){
     savings: [...DEFAULT_SAVINGS_CATEGORIES],
   };
   const currency = DEFAULT_CURRENCY;
-  return { transactions, budgets, yearlyBudget, savingsGoals, categories, currency, currencyMigrationDone:true, activityLog:[], recycleBin:[] };
+  return { transactions, budgets, yearlyBudget, savingsGoals, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[] };
 }
 
 function mergeDefaultCategories(cats){
@@ -2232,6 +2268,9 @@ let DB = loadDB();
 function ensureDemoBudgetData(){
   DB.categories = mergeDefaultCategories(DB.categories || {});
   DB.budgets = DB.budgets || [];
+  if(!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length){
+    DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
+  }
 }
 ensureDemoBudgetData();
 
@@ -2255,6 +2294,7 @@ function loadDB(){
       parsed.transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
       parsed.budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
       parsed.savingsGoals = Array.isArray(parsed.savingsGoals) ? parsed.savingsGoals : [];
+      parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
       if(!parsed.currency) parsed.currency = DEFAULT_CURRENCY;
       if(!parsed.currencyMigrationDone){
         if(parsed.currency.code === 'USD') parsed.currency = DEFAULT_CURRENCY;
@@ -2280,10 +2320,34 @@ function loadDB(){
   return seed;
 }
 
-function saveDB(){
+async function flushCloudSyncNow(){
+  if (!supabaseClient || !currentUser) return;
+  clearTimeout(syncTimer);
+  try {
+    const nowIso = new Date().toISOString();
+    const { error } = await supabaseClient.from('user_finances').upsert({
+      user_id: currentUser.id,
+      data: DB,
+      updated_at: nowIso
+    });
+    if (!error) {
+      lastSyncedAt = new Date();
+      updateCloudSyncStatus();
+    }
+  } catch(err) {
+    console.warn("Immediate cloud sync warning:", err);
+  }
+}
+
+function saveDB(immediateSync = false){
+  DB._lastModified = Date.now();
   if (currentUser && currentUser.id) {
     localStorage.setItem("wealthnest_user_" + currentUser.id, JSON.stringify(DB));
-    scheduleCloudSync();
+    if (immediateSync) {
+      flushCloudSyncNow();
+    } else {
+      scheduleCloudSync();
+    }
   } else {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
   }
@@ -2293,20 +2357,7 @@ function scheduleCloudSync(){
   if (!supabaseClient || !currentUser) return;
   clearTimeout(syncTimer);
   syncTimer = setTimeout(async () => {
-    try {
-      const nowIso = new Date().toISOString();
-      const { error } = await supabaseClient.from('user_finances').upsert({
-        user_id: currentUser.id,
-        data: DB,
-        updated_at: nowIso
-      });
-      if (!error) {
-        lastSyncedAt = new Date();
-        updateCloudSyncStatus();
-      }
-    } catch(err) {
-      console.warn("Cloud sync warning:", err);
-    }
+    await flushCloudSyncNow();
   }, 1000);
 }
 
@@ -2409,6 +2460,13 @@ async function handleSignOut(){
   }
   currentUser = null;
   currentProfile = null;
+  localStorage.removeItem('wealthnest_view_mode');
+  localStorage.removeItem('wealthnest_current_page');
+  if (window.history.replaceState) {
+    window.history.replaceState(null, '', window.location.pathname);
+  } else {
+    window.location.hash = '';
+  }
   DB = loadDB();
   updateAuthUI();
   renderAllForCurrentPage();
@@ -2549,12 +2607,17 @@ async function initAuth(){
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session && session.user) {
       await onUserAuthenticated(session.user);
+      const savedPage = localStorage.getItem('wealthnest_current_page') || 'dashboard';
+      goToApp(savedPage);
       if (hasAuthRedirect) {
         closeAuthModal();
-        goToApp('dashboard');
       }
     } else {
       onUserSignedOut();
+      const savedView = localStorage.getItem('wealthnest_view_mode');
+      if (savedView !== 'app') {
+        showLanding();
+      }
     }
   } catch(e) {
     console.warn("Session check error:", e);
@@ -2566,9 +2629,10 @@ async function initAuth(){
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
       if (session && session.user) {
         await onUserAuthenticated(session.user);
-        if (event === 'SIGNED_IN' && hasAuthRedirect) {
+        if (event === 'SIGNED_IN') {
           closeAuthModal();
-          goToApp('dashboard');
+          const savedPage = localStorage.getItem('wealthnest_current_page') || 'dashboard';
+          goToApp(savedPage);
         }
       }
     } else if (event === 'SIGNED_OUT') {
@@ -2612,14 +2676,27 @@ async function loadUserFinancesFromSupabase(userId){
       .maybeSingle();
 
     if (data && data.data && typeof data.data === 'object' && Object.keys(data.data).length > 0) {
-      DB = data.data;
-      lastSyncedAt = data.updated_at ? new Date(data.updated_at) : new Date();
-      localStorage.setItem('wealthnest_user_' + userId, JSON.stringify(DB));
+      const cloudTime = data.updated_at ? new Date(data.updated_at).getTime() : 0;
+      const localTime = (DB && DB._lastModified) ? DB._lastModified : 0;
+      if (localTime > cloudTime + 1000) {
+        // Local state has newer changes! Push to cloud so we never overwrite user's work
+        flushCloudSyncNow();
+      } else {
+        DB = data.data;
+        if (!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length) {
+          DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
+        }
+        lastSyncedAt = data.updated_at ? new Date(data.updated_at) : new Date();
+        localStorage.setItem('wealthnest_user_' + userId, JSON.stringify(DB));
+      }
     } else {
       const localUserKey = 'wealthnest_user_' + userId;
       const cached = localStorage.getItem(localUserKey);
       if (cached) {
         try { DB = JSON.parse(cached); } catch(e){}
+      }
+      if (!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length) {
+        DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
       }
       const nowIso = new Date().toISOString();
       await supabaseClient.from('user_finances').upsert({
@@ -2936,6 +3013,9 @@ function changeCurrencyFromSettings(){
   renderAllForCurrentPage();
 }
 function goToApp(page){
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'settings'];
+  if(!validPages.includes(page)) page = 'dashboard';
+
   const pageTitles = {
     dashboard: 'Dashboard – WealthNest',
     reports: 'Reports – WealthNest',
@@ -2948,8 +3028,20 @@ function goToApp(page){
   document.getElementById('landing-page').classList.add('hidden');
   document.getElementById('app-shell').classList.remove('hidden');
   currentPage = page;
+
+  localStorage.setItem('wealthnest_view_mode', 'app');
+  localStorage.setItem('wealthnest_current_page', page);
+  if(window.location.hash !== '#' + page){
+    if(window.history.replaceState){
+      window.history.replaceState(null, '', '#' + page);
+    } else {
+      window.location.hash = '#' + page;
+    }
+  }
+
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-  document.getElementById('page-' + page).classList.remove('hidden');
+  const targetPageEl = document.getElementById('page-' + page);
+  if(targetPageEl) targetPageEl.classList.remove('hidden');
   renderSidebar();
   renderPage(page);
 }
@@ -3782,6 +3874,8 @@ function renderTxCategoryFilter(){
 }
 function setTxFilter(f){ txFilter = f; txCategoryFilter='all'; renderTxFilterChips(); renderTransactions(); }
 function setTxCategoryFilter(category){ txCategoryFilter=category; renderTransactions(); }
+let highlightedTxId = null;
+
 function renderTransactions(){
   document.getElementById('tx-count-label').textContent = `${DB.transactions.length} logged`;
   const query = (document.getElementById('tx-search').value || '').toLowerCase();
@@ -3791,17 +3885,32 @@ function renderTransactions(){
     .filter(t => query ? `${t.category} ${t.description||''} ${t.subCategory||''}`.toLowerCase().includes(query) : true)
     .sort((a,b)=> a.date < b.date ? 1 : -1);
 
-  document.getElementById('tx-table-body').innerHTML = rows.length ? rows.map(t => `
-    <tr>
-      <td class="muted" style="white-space:nowrap;">${t.date}</td>
-      <td><span class="dot dot-${t.type}"></span>${t.category}${t.subCategory ? `<span class="muted"> → ${t.subCategory}</span>`:''}</td>
-      <td class="muted">${t.description||'-'}</td>
-      <td class="muted">${t.paymentMethod}</td>
+  document.getElementById('tx-table-body').innerHTML = rows.length ? rows.map(t => {
+    const isHighlight = t.id === highlightedTxId;
+    return `
+    <tr class="${isHighlight ? 'tx-row-highlight' : ''}">
+      <td class="muted" style="white-space:nowrap;">${escapeHtml(t.date)}</td>
+      <td><span class="dot dot-${escapeHtml(t.type)}"></span><strong>${escapeHtml(t.category)}</strong></td>
+      <td class="muted">${t.subCategory ? escapeHtml(t.subCategory) : '<span style="color:var(--muted-2);">-</span>'}</td>
+      <td class="muted">${t.description ? escapeHtml(t.description) : '<span style="color:var(--muted-2);">-</span>'}</td>
+      <td class="muted"><span class="badge badge-off" style="font-size:12px; font-weight:500;">${escapeHtml(t.paymentMethod || 'Other')}</span></td>
       <td class="figure" style="text-align:right; font-weight:600; color:${t.type==='income'?'var(--teal)':t.type==='savings'?'var(--amber)':'var(--rose)'};">${t.type==='expense'?'-':'+'}${fmt(t.amount)}</td>
-      <td style="text-align:right;"><button onclick="deleteTx('${t.id}')" class="icon-btn" title="Delete">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-      </button></td>
-    </tr>`).join('') : `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--muted-2);">No transactions match. Try clearing filters or add a new one.</td></tr>`;
+      <td style="text-align:right; white-space:nowrap;">
+        <div style="display:inline-flex; align-items:center; gap:4px; justify-content:flex-end;">
+          <button onclick="openTxModal('${escapeHtml(t.id)}')" class="icon-btn icon-btn-edit" title="Edit transaction">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button onclick="deleteTx('${escapeHtml(t.id)}')" class="icon-btn icon-btn-delete" title="Delete transaction">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--muted-2);">No transactions match. Try clearing filters or add a new one.</td></tr>`;
+
+  if(highlightedTxId){
+    setTimeout(() => { highlightedTxId = null; }, 2500);
+  }
 }
 function deleteTx(id){
   const transaction=DB.transactions.find(item=>item.id===id);
@@ -3948,12 +4057,48 @@ function confirmDelete(){
 }
 
 /* tx modal */
-function openTxModal(){
+let editingTxId = null;
+
+function openTxModal(editId = null){
+  editingTxId = editId || null;
+  const modalTitle = document.getElementById('tx-modal-title');
+  const modalSubmit = document.getElementById('tx-modal-submit');
   document.getElementById('tx-modal-backdrop').classList.remove('hidden');
+
+  if(editingTxId){
+    const tx = DB.transactions.find(t => t.id === editingTxId);
+    if(tx){
+      if(modalTitle) modalTitle.textContent = 'Edit Transaction';
+      if(modalSubmit) modalSubmit.textContent = 'Update Transaction';
+      document.getElementById('tx-date').value = tx.date || ymd(new Date());
+      setTxType(tx.type || 'expense');
+      document.getElementById('tx-category').value = tx.category || '';
+      onTxCategoryChange();
+      if(tx.subCategory){
+        const subSel = document.getElementById('tx-subcategory');
+        if(subSel) subSel.value = tx.subCategory;
+      }
+      document.getElementById('tx-description').value = tx.description || '';
+      document.getElementById('tx-payment').value = tx.paymentMethod || 'Other';
+      document.getElementById('tx-amount').value = tx.amount !== undefined ? tx.amount : '';
+      return;
+    }
+  }
+
+  // Add Mode
+  if(modalTitle) modalTitle.textContent = 'Add Transaction';
+  if(modalSubmit) modalSubmit.textContent = 'Save Transaction';
   document.getElementById('tx-date').value = ymd(new Date());
+  document.getElementById('tx-description').value = '';
+  document.getElementById('tx-amount').value = '';
   setTxType('expense');
 }
-function closeTxModal(){ document.getElementById('tx-modal-backdrop').classList.add('hidden'); }
+
+function closeTxModal(){
+  editingTxId = null;
+  document.getElementById('tx-modal-backdrop').classList.add('hidden');
+}
+
 let txType = 'expense';
 function setTxType(t){
   txType = t;
@@ -3965,7 +4110,7 @@ function setTxType(t){
   else if(t==='savings') cats = (DB.savingsGoals||[]).map(goal=>goal.name);
   else cats = DB.categories.expense.map(c=>c.name);
   document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join('');
-  document.getElementById('tx-payment').innerHTML = PAYMENT_METHODS.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('tx-payment').innerHTML = getPaymentMethods().map(p=>`<option value="${p}">${p}</option>`).join('');
   onTxCategoryChange();
 }
 function onTxCategoryChange(){
@@ -3982,21 +4127,74 @@ function onTxCategoryChange(){
     wrap.classList.add('hidden');
   }
 }
-function handleAddTransaction(e){
+function handleSaveTransaction(e){
   e.preventDefault();
   const amount = parseFloat(document.getElementById('tx-amount').value);
   if(!amount || amount<=0) return;
-  const subVal = document.getElementById('tx-subcategory-wrap').classList.contains('hidden') ? undefined : (document.getElementById('tx-subcategory').value || undefined);
-  DB.transactions.unshift({
-    id: uid(), date: document.getElementById('tx-date').value, type: txType,
-    category: document.getElementById('tx-category').value,
-    subCategory: subVal,
-    description: document.getElementById('tx-description').value || undefined,
-    paymentMethod: document.getElementById('tx-payment').value, amount,
-  });
-  saveDB(); closeTxModal();
-  document.getElementById('tx-description').value=''; document.getElementById('tx-amount').value='';
+  const dateVal = document.getElementById('tx-date').value || ymd(new Date());
+  const catVal = document.getElementById('tx-category').value;
+  const subWrap = document.getElementById('tx-subcategory-wrap');
+  const subVal = (!subWrap || subWrap.classList.contains('hidden')) ? undefined : (document.getElementById('tx-subcategory').value || undefined);
+  const descVal = document.getElementById('tx-description').value.trim() || undefined;
+  const payVal = document.getElementById('tx-payment').value || 'Other';
+
+  if(editingTxId){
+    const index = DB.transactions.findIndex(t => t.id === editingTxId);
+    if(index !== -1){
+      DB.transactions[index] = {
+        ...DB.transactions[index],
+        date: dateVal,
+        type: txType,
+        category: catVal,
+        subCategory: subVal,
+        description: descVal,
+        paymentMethod: payVal,
+        amount: amount
+      };
+      highlightedTxId = editingTxId;
+      showToast('Transaction updated successfully', 'success');
+    }
+  } else {
+    const newId = uid();
+    DB.transactions.unshift({
+      id: newId,
+      date: dateVal,
+      type: txType,
+      category: catVal,
+      subCategory: subVal,
+      description: descVal,
+      paymentMethod: payVal,
+      amount: amount
+    });
+    highlightedTxId = newId;
+
+    // Reset filters if current filter would conceal the new transaction
+    if(txFilter !== 'all' && txFilter !== txType){
+      txFilter = 'all';
+      renderTxFilterChips();
+    }
+    if(txCategoryFilter !== 'all' && txCategoryFilter !== catVal){
+      txCategoryFilter = 'all';
+      const catFilterEl = document.getElementById('tx-filter-category');
+      if(catFilterEl) catFilterEl.value = 'all';
+    }
+    const searchEl = document.getElementById('tx-search');
+    if(searchEl && searchEl.value) {
+      searchEl.value = '';
+    }
+
+    showToast('Transaction added successfully', 'success');
+  }
+
+  saveDB(true);
+  closeTxModal();
+  document.getElementById('tx-description').value='';
+  document.getElementById('tx-amount').value='';
   renderAllForCurrentPage();
+}
+
+function handleAddTransaction(e){
+  handleSaveTransaction(e);
 }
 
 /* ---------------- render: budgets ---------------- */
@@ -4360,7 +4558,7 @@ function showContributeRow(id){
       <div>
         <label class="field-label" style="font-size:11px; margin-bottom:5px;">Payment</label>
         <select id="contribute-payment-${id}" class="field-input">
-          ${PAYMENT_METHODS.map(p => `<option value="${p}">${p}</option>`).join('')}
+          ${getPaymentMethods().map(p => `<option value="${p}">${p}</option>`).join('')}
         </select>
       </div>
       <div style="grid-column:1 / -1; display:flex; align-items:center; gap:8px;">
@@ -4416,12 +4614,15 @@ let catTypeTab = 'expense';
 function renderSettingsTabs(){
   const tabs = [
     {id:'categories', label:'Categories'},
+    {id:'payment-methods', label:'Payment Methods'},
     {id:'account', label:'Account'},
     {id:'activity', label:'Recent Changes'},
     {id:'recycle', label:'Recycle Bin'}
   ];
   document.getElementById('settings-tabs').innerHTML = tabs.map(t => `<button class="btn-chip ${settingsTab===t.id?'active':''}" onclick="setSettingsTab('${t.id}')">${t.label}</button>`).join('');
   document.getElementById('settings-categories').classList.toggle('hidden', settingsTab!=='categories');
+  const pmEl = document.getElementById('settings-payment-methods');
+  if(pmEl) pmEl.classList.toggle('hidden', settingsTab!=='payment-methods');
   document.getElementById('settings-account').classList.toggle('hidden', settingsTab!=='account');
   const actEl = document.getElementById('settings-activity');
   if(actEl) actEl.classList.toggle('hidden', settingsTab!=='activity');
@@ -4430,8 +4631,104 @@ function renderSettingsTabs(){
 function setSettingsTab(t){
   settingsTab = t;
   renderSettingsTabs();
+  if(t==='payment-methods') renderPaymentMethodsSettings();
   if(t==='recycle') renderRecycleBin();
   if(t==='activity') renderActivityLog();
+}
+
+function renderPaymentMethodsSettings(){
+  const listEl = document.getElementById('payment-methods-list');
+  const badgeEl = document.getElementById('payment-methods-count-badge');
+  if(!listEl) return;
+  const methods = getPaymentMethods();
+  if(badgeEl) badgeEl.textContent = `${methods.length} Active`;
+
+  const counts = {};
+  (DB.transactions || []).forEach(t => {
+    const m = t.paymentMethod || 'Other';
+    counts[m] = (counts[m] || 0) + 1;
+  });
+
+  listEl.innerHTML = methods.map(name => {
+    const count = counts[name] || 0;
+    let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`;
+    const lower = name.toLowerCase();
+    if(lower.includes('cash')) {
+      iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>`;
+    } else if(lower.includes('bank') || lower.includes('transfer')) {
+      iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"/></svg>`;
+    } else if(lower.includes('easypaisa') || lower.includes('pay') || lower.includes('wallet') || lower.includes('jazz')) {
+      iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg>`;
+    }
+
+    return `
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); transition:background .15s;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:34px; height:34px; border-radius:8px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            ${iconSvg}
+          </div>
+          <div>
+            <div style="font-weight:600; font-size:13.5px; color:var(--ink);">${escapeHtml(name)}</div>
+            <div class="text-xs muted">${count > 0 ? `${count} logged transaction${count === 1 ? '' : 's'}` : 'No logged transactions'}</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="badge ${count > 0 ? 'badge-ok' : 'badge-off'}" style="font-size:11px;">${count > 0 ? 'In Use' : 'Ready'}</span>
+          ${methods.length > 1 ? `
+            <button onclick="handleDeletePaymentMethod('${escapeHtml(name)}')" class="icon-btn icon-btn-delete" title="Delete payment method">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function handleAddPaymentMethod(e){
+  e.preventDefault();
+  const input = document.getElementById('new-payment-method-name');
+  const msg = document.getElementById('payment-method-add-message');
+  if(!input) return;
+  const val = input.value.trim();
+  if(!val){
+    if(msg){ msg.textContent = 'Please enter a name.'; msg.className = 'text-xs tone-neg settings-add-message'; }
+    return;
+  }
+  const methods = getPaymentMethods();
+  if(methods.some(m => m.toLowerCase() === val.toLowerCase())){
+    if(msg){ msg.textContent = 'A payment method with this name already exists.'; msg.className = 'text-xs tone-neg settings-add-message'; }
+    input.style.borderColor = 'var(--rose)';
+    return;
+  }
+  DB.paymentMethods = [...methods, val];
+  saveDB(true);
+  input.value = '';
+  if(msg){ msg.textContent = `Added "${val}" successfully.`; msg.className = 'text-xs tone-pos settings-add-message'; }
+  showToast(`Added "${val}" to payment methods`, 'success');
+  renderPaymentMethodsSettings();
+  const txPay = document.getElementById('tx-payment');
+  if(txPay) txPay.innerHTML = getPaymentMethods().map(p=>`<option value="${p}">${p}</option>`).join('');
+}
+
+function handleDeletePaymentMethod(name){
+  const methods = getPaymentMethods();
+  if(methods.length <= 1){
+    showToast('You must keep at least one payment method.', 'error');
+    return;
+  }
+  const count = (DB.transactions || []).filter(t => (t.paymentMethod || 'Other') === name).length;
+  if(count > 0){
+    if(!confirm(`"${name}" is used in ${count} transaction(s). Are you sure you want to delete this payment method? Those transactions will retain their historical record.`)){
+      return;
+    }
+  }
+  DB.paymentMethods = methods.filter(m => m !== name);
+  saveDB(true);
+  showToast(`Deleted payment method "${name}"`, 'info');
+  renderPaymentMethodsSettings();
+  const txPay = document.getElementById('tx-payment');
+  if(txPay) txPay.innerHTML = getPaymentMethods().map(p=>`<option value="${p}">${p}</option>`).join('');
 }
 function cleanupRecycleBin(){
   const now=Date.now();
@@ -4759,6 +5056,7 @@ function renderSettings(){
   renderCatTypeChips();
   renderLinkedSubcategorySelector();
   renderCategoryList();
+  renderPaymentMethodsSettings();
   populateCurrencySelect('settings-currency-select', DB.currency.code);
   renderSettingsAccount();
   renderActivityLog();
@@ -4818,7 +5116,39 @@ window.addEventListener('resize', () => {
 
 initSidebar();
 injectLogos();
-showLanding();
+
+// Restore previous app view and page on refresh/reload
+(function restoreAppSession(){
+  const hashPage = window.location.hash ? window.location.hash.replace('#', '') : null;
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'settings'];
+  const savedPage = localStorage.getItem('wealthnest_current_page');
+  const savedView = localStorage.getItem('wealthnest_view_mode');
+
+  const targetPage = (hashPage && validPages.includes(hashPage)) 
+    ? hashPage 
+    : (savedPage && validPages.includes(savedPage) ? savedPage : 'dashboard');
+
+  if(savedView === 'app' || (hashPage && validPages.includes(hashPage))){
+    goToApp(targetPage);
+  } else {
+    showLanding();
+  }
+})();
+
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash.replace('#', '');
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'settings'];
+  if(validPages.includes(hash) && currentPage !== hash){
+    goToApp(hash);
+  }
+});
+
+window.addEventListener('beforeunload', () => {
+  if (typeof flushCloudSyncNow === 'function') {
+    flushCloudSyncNow();
+  }
+});
+
 initAuth();
 </script>
 </body>
