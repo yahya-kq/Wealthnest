@@ -902,11 +902,19 @@
   .excel-filter-text-btn{background:none; border:none; font-size:11.5px; color:var(--primary); font-weight:700; cursor:pointer; padding:2px 4px; border-radius:4px;}
   .excel-filter-text-btn:hover{text-decoration:underline;}
   .excel-filter-popover-list{max-height:210px; overflow-y:auto; padding:4px 6px; display:flex; flex-direction:column; gap:1px;}
-  .excel-filter-item{display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; font-size:13px; font-weight:500; color:var(--ink); cursor:pointer; user-select:none; transition:background .1s;}
+  .excel-filter-item{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 8px; border-radius:6px; font-size:13px; font-weight:500; color:var(--ink); cursor:pointer; user-select:none; transition:background .1s;}
   .excel-filter-item:hover{background:var(--surface-2);}
   .excel-filter-item.selected{font-weight:600; color:var(--primary-dark);}
+  .excel-filter-item-left{display:flex; align-items:center; gap:8px; flex:1; min-width:0;}
+  .excel-filter-only-btn{opacity:0; pointer-events:none; font-size:11px; font-weight:700; color:var(--primary); background:var(--primary-light); border:none; border-radius:4px; padding:2px 7px; cursor:pointer; transition:opacity .15s;}
+  .excel-filter-item:hover .excel-filter-only-btn{opacity:1; pointer-events:auto;}
+  .excel-filter-only-btn:hover{background:var(--primary); color:#FFFFFF;}
   .excel-filter-popover-footer{display:flex; align-items:center; justify-content:space-between; padding:8px 12px 4px; border-top:1px solid var(--line-soft); margin-top:4px;}
   .excel-filter-count-label{font-size:11.5px; color:var(--muted); font-weight:600; text-transform:none !important;}
+
+  .tx-subcat-chip{display:inline-flex; align-items:center; padding:5px 11px; border-radius:20px; font-size:12.5px; font-weight:500; cursor:pointer; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); transition:all .15s ease; user-select:none;}
+  .tx-subcat-chip:hover{border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark);}
+  .tx-subcat-chip.active{background:var(--primary); border-color:var(--primary); color:#FFFFFF; font-weight:600;}
 
   h1,h2,h3,.section-title,.section-sub,.field-label,.btn-primary,.btn-dark,.btn-ghost,.btn-small,.btn-chip,.nav-link,.nav-section-label,.badge,.link-sm,.topbar p,.modal h2{ text-transform:capitalize; }
   .label-eyebrow{ text-transform:uppercase; }
@@ -1285,12 +1293,12 @@
 
       <div class="card" style="padding:14px 20px; margin-bottom:16px;">
         <div class="dashboard-filter">
-          <div class="dashboard-filter-field"><label class="field-label" for="dashboard-period-select">Period</label><select id="dashboard-period-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="month">Filter Month(s)</option><option value="quarter">This quarter</option><option value="year">Whole year</option></select></div>
+          <div class="dashboard-filter-field"><label class="field-label" for="dashboard-period-select">Period</label><select id="dashboard-period-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="month">Monthly</option><option value="quarter">This quarter</option><option value="year">Whole year</option></select></div>
           <div class="dashboard-filter-field" id="dashboard-month-field">
             <label class="field-label" for="dashboard-month-trigger">Month</label>
             <div class="excel-filter-dropdown-wrap" id="dashboard-filter-wrap">
               <button type="button" id="dashboard-month-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('dashboard', event)">
-                <span id="dashboard-month-summary" class="excel-filter-summary">June</span>
+                <span id="dashboard-month-summary" class="excel-filter-summary">Select Month</span>
                 <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <div class="excel-filter-popover hidden" id="dashboard-month-popover" onclick="event.stopPropagation()">
@@ -1299,7 +1307,7 @@
                     <input type="checkbox" id="dashboard-select-all" onchange="toggleSelectAllMonths('dashboard', this.checked)">
                     <span>(Select All)</span>
                   </label>
-                  <button type="button" class="excel-filter-text-btn" onclick="clearAllMonths('dashboard')">Clear</button>
+                  <button type="button" class="excel-filter-text-btn" onclick="clearAllMonths('dashboard')">Select None</button>
                 </div>
                 <div class="excel-filter-popover-list" id="dashboard-month-list"></div>
                 <div class="excel-filter-popover-footer">
@@ -1439,7 +1447,7 @@
                           <input type="checkbox" id="comparison-select-all" onchange="toggleSelectAllMonths('comparison', this.checked)">
                           <span>(Select All)</span>
                         </label>
-                        <button type="button" class="excel-filter-text-btn" onclick="clearAllMonths('comparison')">Clear</button>
+                        <button type="button" class="excel-filter-text-btn" onclick="clearAllMonths('comparison')">Select None</button>
                       </div>
                       <div class="excel-filter-popover-list" id="comparison-month-list"></div>
                       <div class="excel-filter-popover-footer">
@@ -1494,7 +1502,7 @@
     <section id="page-transactions" class="page hidden">
       <div class="topbar"><div><h1>Transactions</h1><p id="tx-count-label"></p></div><div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div></div>
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:18px;">
-        <div class="transaction-filters"><div class="transaction-filter-field"><label class="field-label" for="tx-filter-type">Transaction type</label><div class="chip-row" id="tx-filter-chips"></div></div><div class="transaction-filter-field hidden" id="tx-filter-category-field"><label class="field-label" id="tx-filter-category-label" for="tx-filter-category">Category</label><select id="tx-filter-category" class="field-input" onchange="setTxCategoryFilter(this.value)"></select></div></div>
+        <div class="transaction-filters"><div class="transaction-filter-field"><label class="field-label" for="tx-filter-type">Transaction type</label><div class="chip-row" id="tx-filter-chips"></div></div><div class="transaction-filter-field hidden" id="tx-filter-category-field"><label class="field-label" id="tx-filter-category-label" for="tx-filter-category">Category</label><select id="tx-filter-category" class="field-input" onchange="setTxCategoryFilter(this.value)"></select></div><div class="transaction-filter-field hidden" id="tx-filter-subcategory-field"><label class="field-label" id="tx-filter-subcategory-label">Subcategory</label><div class="chip-row" id="tx-filter-subcat-chips"></div></div></div>
         <input type="text" id="tx-search" placeholder="Search category or note..." class="field-input" style="flex:1; min-width:180px;" oninput="renderTransactions()">
         <button onclick="openTxModal()" class="btn-primary" style="margin-left:auto;">+ Add transaction</button>
       </div>
@@ -2073,14 +2081,38 @@ function renderExcelFilterList(type){
     const monthNum = idx + 1;
     const isChecked = selected.includes(monthNum);
     return `
-      <label class="excel-filter-item ${isChecked ? 'selected' : ''}" onclick="event.stopPropagation()">
-        <input type="checkbox" value="${monthNum}" ${isChecked ? 'checked' : ''} onchange="onExcelMonthToggle('${type}', ${monthNum}, this.checked)">
-        <span>${name}</span>
-      </label>
+      <div class="excel-filter-item ${isChecked ? 'selected' : ''}" onclick="onExcelMonthRowClick('${type}', ${monthNum}, event)">
+        <div class="excel-filter-item-left">
+          <input type="checkbox" value="${monthNum}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation()" onchange="onExcelMonthToggle('${type}', ${monthNum}, this.checked)">
+          <span>${name}</span>
+        </div>
+        <button type="button" class="excel-filter-only-btn" onclick="onExcelMonthSelectOnly('${type}', ${monthNum}, event)">Only</button>
+      </div>
     `;
   }).join('');
 
   updateExcelFilterUI(type);
+}
+
+function onExcelMonthRowClick(type, monthNum, event){
+  if(event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON') return;
+  const selected = getExcelMonths(type);
+  const isChecked = !selected.includes(monthNum);
+  onExcelMonthToggle(type, monthNum, isChecked);
+}
+
+function onExcelMonthSelectOnly(type, monthNum, event){
+  if(event) event.stopPropagation();
+  setExcelMonths(type, [monthNum]);
+  if(type === 'dashboard'){
+    dashboardSelMonth = monthNum;
+  }
+  updateExcelFilterUI(type);
+  if(type === 'comparison'){
+    renderComparison();
+  } else {
+    renderDashboard();
+  }
 }
 
 function updateExcelFilterUI(type){
@@ -2139,6 +2171,9 @@ function onExcelMonthToggle(type, monthNum, isChecked){
   }
   selected.sort((a,b) => a - b);
   setExcelMonths(type, selected);
+  if(type === 'dashboard' && selected.length === 1){
+    dashboardSelMonth = selected[0];
+  }
   updateExcelFilterUI(type);
 
   if(type === 'comparison'){
@@ -3088,7 +3123,19 @@ function renderSidebar(){
 }
 
 /* ---------------- selectors ---------------- */
-function inMonth(tx, month, year){ const dt = new Date(tx.date); return dt.getMonth()+1===month && dt.getFullYear()===year; }
+function parseTxDate(dateStr){
+  if(!dateStr) return { year: 0, month: 0, day: 0 };
+  const parts = String(dateStr).split('T')[0].split('-');
+  const y = parseInt(parts[0], 10) || 0;
+  const m = parseInt(parts[1], 10) || 0;
+  const d = parseInt(parts[2], 10) || 0;
+  return { year: y, month: m, day: d };
+}
+
+function inMonth(tx, month, year){
+  const pd = parseTxDate(tx.date);
+  return pd.month === month && pd.year === year;
+}
 function sumByType(txs, type){ return txs.filter(t=>t.type===type).reduce((s,t)=>s+t.amount,0); }
 function monthTotals(txs, month, year){
   const mt = txs.filter(t=>inMonth(t,month,year));
@@ -3096,7 +3143,7 @@ function monthTotals(txs, month, year){
   return { income, expense, savings, net: income-expense };
 }
 function yearTotals(txs, year){
-  const yt = txs.filter(t=> new Date(t.date).getFullYear()===year);
+  const yt = txs.filter(t=> parseTxDate(t.date).year === year);
   const income = sumByType(yt,"income"), expense = sumByType(yt,"expense"), savings = sumByType(yt,"savings");
   return { income, expense, savings, net: income-expense };
 }
@@ -3145,14 +3192,14 @@ function reportYearOptions(){
   const years = new Set();
   const currentYear = new Date().getFullYear();
   (DB.transactions || []).forEach(t => {
-    const y = new Date(t.date).getFullYear();
-    if (!isNaN(y) && y <= currentYear) years.add(y);
+    const y = parseTxDate(t.date).year;
+    if (y > 0) years.add(y);
   });
   (DB.budgets || []).forEach(b => {
-    if (b.year && b.year <= currentYear) years.add(b.year);
+    if (b.year) years.add(b.year);
   });
   years.add(currentYear);
-  return [...years].filter(y => y <= currentYear).sort((a,b)=>a-b);
+  return [...years].sort((a,b)=>a-b);
 }
 function periodSelectOptions(selected){ return MONTH_NAMES.map((name,i)=>`<option value="${i+1}" ${i+1===selected?'selected':''}>${name}</option>`).join(''); }
 function yearSelectOptions(selected){ return reportYearOptions().map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}</option>`).join(''); }
@@ -3494,7 +3541,10 @@ function calcNetBalanceTrend(currentNet, priorNet){
   };
 }
 function periodTransactions(period){
-  return DB.transactions.filter(t=>period.months.includes(new Date(t.date).getMonth()+1) && new Date(t.date).getFullYear()===period.year);
+  return DB.transactions.filter(t => {
+    const pd = parseTxDate(t.date);
+    return period.months.includes(pd.month) && pd.year === period.year;
+  });
 }
 function dashboardBudgetRows(period){
   return DB.budgets.filter(b=>period.months.includes(b.month)&&b.year===period.year&&!b.subCategory).map(b=>{
@@ -3850,6 +3900,8 @@ function barChartConfig(trend){
 /* ---------------- render: transactions ---------------- */
 let txFilter = 'all';
 let txCategoryFilter = 'all';
+let txSubCategoryFilter = 'all';
+
 function renderTxFilterChips(){
   const chips = [{key:'all',label:'All'},{key:'income',label:'Income'},{key:'expense',label:'Expenses'},{key:'savings',label:'Savings goals'}];
   document.getElementById('tx-filter-chips').innerHTML = chips.map(f => `<button class="btn-chip ${txFilter===f.key?'active':''}" onclick="setTxFilter('${f.key}')">${f.label}</button>`).join('');
@@ -3871,9 +3923,65 @@ function renderTxCategoryFilter(){
   selector.innerHTML='<option value="all">All categories</option>'+categories.map(category=>`<option value="${category.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">${category}</option>`).join('');
   selector.value=txCategoryFilter;
   selector.disabled=categories.length===0;
+  renderTxSubCategoryFilter();
 }
-function setTxFilter(f){ txFilter = f; txCategoryFilter='all'; renderTxFilterChips(); renderTransactions(); }
-function setTxCategoryFilter(category){ txCategoryFilter=category; renderTransactions(); }
+
+function renderTxSubCategoryFilter(){
+  const field = document.getElementById('tx-filter-subcategory-field');
+  const container = document.getElementById('tx-filter-subcat-chips');
+  if(!field || !container) return;
+
+  if(txCategoryFilter === 'all'){
+    field.classList.add('hidden');
+    txSubCategoryFilter = 'all';
+    return;
+  }
+
+  let subcats = [];
+  if(txFilter === 'expense'){
+    const catObj = (DB.categories.expense || []).find(c => c.name === txCategoryFilter);
+    if(catObj && Array.isArray(catObj.subcategories)) subcats = catObj.subcategories;
+  }
+  const recorded = DB.transactions
+    .filter(t => t.category === txCategoryFilter && t.subCategory)
+    .map(t => t.subCategory);
+  const allSubcats = [...new Set([...subcats, ...recorded])].filter(Boolean).sort((a,b)=>a.localeCompare(b));
+
+  if(allSubcats.length === 0){
+    field.classList.add('hidden');
+    txSubCategoryFilter = 'all';
+    return;
+  }
+
+  field.classList.remove('hidden');
+  if(!allSubcats.includes(txSubCategoryFilter)) txSubCategoryFilter = 'all';
+
+  const chips = [{key:'all', label:'All'}, ...allSubcats.map(s => ({key:s, label:s}))];
+  container.innerHTML = chips.map(c => `
+    <button class="tx-subcat-chip ${txSubCategoryFilter === c.key ? 'active' : ''}" onclick="setTxSubCategoryFilter('${escapeHtml(c.key)}')">${escapeHtml(c.label)}</button>
+  `).join('');
+}
+
+function setTxSubCategoryFilter(subcat){
+  txSubCategoryFilter = subcat;
+  renderTxSubCategoryFilter();
+  renderTransactions();
+}
+
+function setTxFilter(f){
+  txFilter = f;
+  txCategoryFilter = 'all';
+  txSubCategoryFilter = 'all';
+  renderTxFilterChips();
+  renderTransactions();
+}
+
+function setTxCategoryFilter(category){
+  txCategoryFilter = category;
+  txSubCategoryFilter = 'all';
+  renderTxSubCategoryFilter();
+  renderTransactions();
+}
 let highlightedTxId = null;
 
 function renderTransactions(){
@@ -3882,16 +3990,39 @@ function renderTransactions(){
   const rows = DB.transactions
     .filter(t => txFilter==='all' ? true : t.type===txFilter)
     .filter(t => txCategoryFilter==='all' ? true : t.category===txCategoryFilter)
+    .filter(t => txSubCategoryFilter==='all' ? true : t.subCategory===txSubCategoryFilter)
     .filter(t => query ? `${t.category} ${t.description||''} ${t.subCategory||''}`.toLowerCase().includes(query) : true)
     .sort((a,b)=> a.date < b.date ? 1 : -1);
 
+  const activeExpenseMap = new Map((DB.categories.expense || []).map(c => [c.name, c.subcategories || []]));
+  const activeIncomeSet = new Set(DB.categories.income || []);
+  const activeSavingsSet = new Set((DB.savingsGoals || []).map(g => g.name));
+
   document.getElementById('tx-table-body').innerHTML = rows.length ? rows.map(t => {
     const isHighlight = t.id === highlightedTxId;
+    let isCategoryDeleted = false;
+    let isSubCategoryDeleted = false;
+
+    if(t.type === 'expense'){
+      if(!activeExpenseMap.has(t.category)) {
+        isCategoryDeleted = true;
+      } else if(t.subCategory && !activeExpenseMap.get(t.category).includes(t.subCategory)) {
+        isSubCategoryDeleted = true;
+      }
+    } else if(t.type === 'income'){
+      if(!activeIncomeSet.has(t.category)) isCategoryDeleted = true;
+    } else if(t.type === 'savings'){
+      if(!activeSavingsSet.has(t.category)) isCategoryDeleted = true;
+    }
+
+    const catDeletedBadge = isCategoryDeleted ? `<span class="badge badge-off" style="font-size:10px; margin-left:5px; padding:1px 5px;">Deleted</span>` : '';
+    const subcatDeletedBadge = isSubCategoryDeleted ? `<span class="badge badge-off" style="font-size:10px; margin-left:5px; padding:1px 5px;">Deleted</span>` : '';
+
     return `
     <tr class="${isHighlight ? 'tx-row-highlight' : ''}">
       <td class="muted" style="white-space:nowrap;">${escapeHtml(t.date)}</td>
-      <td><span class="dot dot-${escapeHtml(t.type)}"></span><strong>${escapeHtml(t.category)}</strong></td>
-      <td class="muted">${t.subCategory ? escapeHtml(t.subCategory) : '<span style="color:var(--muted-2);">-</span>'}</td>
+      <td><span class="dot dot-${escapeHtml(t.type)}"></span><strong>${escapeHtml(t.category)}</strong>${catDeletedBadge}</td>
+      <td class="muted">${t.subCategory ? `${escapeHtml(t.subCategory)}${subcatDeletedBadge}` : '<span style="color:var(--muted-2);">-</span>'}</td>
       <td class="muted">${t.description ? escapeHtml(t.description) : '<span style="color:var(--muted-2);">-</span>'}</td>
       <td class="muted"><span class="badge badge-off" style="font-size:12px; font-weight:500;">${escapeHtml(t.paymentMethod || 'Other')}</span></td>
       <td class="figure" style="text-align:right; font-weight:600; color:${t.type==='income'?'var(--teal)':t.type==='savings'?'var(--amber)':'var(--rose)'};">${t.type==='expense'?'-':'+'}${fmt(t.amount)}</td>
@@ -4643,14 +4774,7 @@ function renderPaymentMethodsSettings(){
   const methods = getPaymentMethods();
   if(badgeEl) badgeEl.textContent = `${methods.length} Active`;
 
-  const counts = {};
-  (DB.transactions || []).forEach(t => {
-    const m = t.paymentMethod || 'Other';
-    counts[m] = (counts[m] || 0) + 1;
-  });
-
   listEl.innerHTML = methods.map(name => {
-    const count = counts[name] || 0;
     let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`;
     const lower = name.toLowerCase();
     if(lower.includes('cash')) {
@@ -4662,18 +4786,14 @@ function renderPaymentMethodsSettings(){
     }
 
     return `
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); transition:background .15s;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:34px; height:34px; border-radius:8px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); transition:background .15s;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="width:36px; height:36px; border-radius:8px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             ${iconSvg}
           </div>
-          <div>
-            <div style="font-weight:600; font-size:13.5px; color:var(--ink);">${escapeHtml(name)}</div>
-            <div class="text-xs muted">${count > 0 ? `${count} logged transaction${count === 1 ? '' : 's'}` : 'No logged transactions'}</div>
-          </div>
+          <div style="font-weight:600; font-size:14px; color:var(--ink);">${escapeHtml(name)}</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span class="badge ${count > 0 ? 'badge-ok' : 'badge-off'}" style="font-size:11px;">${count > 0 ? 'In Use' : 'Ready'}</span>
+        <div>
           ${methods.length > 1 ? `
             <button onclick="handleDeletePaymentMethod('${escapeHtml(name)}')" class="icon-btn icon-btn-delete" title="Delete payment method">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -4712,23 +4832,31 @@ function handleAddPaymentMethod(e){
 }
 
 function handleDeletePaymentMethod(name){
-  const methods = getPaymentMethods();
+  let methods = getPaymentMethods();
   if(methods.length <= 1){
     showToast('You must keep at least one payment method.', 'error');
     return;
   }
-  const count = (DB.transactions || []).filter(t => (t.paymentMethod || 'Other') === name).length;
-  if(count > 0){
-    if(!confirm(`"${name}" is used in ${count} transaction(s). Are you sure you want to delete this payment method? Those transactions will retain their historical record.`)){
-      return;
-    }
+  if(!confirm(`Delete payment method "${name}"? Any transactions using this method will be safely reassigned to "Other".`)){
+    return;
   }
+  if(!methods.some(m => m.toLowerCase() === 'other')){
+    methods.push('Other');
+  }
+  let reassignedCount = 0;
+  (DB.transactions || []).forEach(t => {
+    if((t.paymentMethod || 'Other') === name){
+      t.paymentMethod = 'Other';
+      reassignedCount++;
+    }
+  });
   DB.paymentMethods = methods.filter(m => m !== name);
   saveDB(true);
-  showToast(`Deleted payment method "${name}"`, 'info');
+  showToast(`Deleted "${name}"${reassignedCount > 0 ? ` (${reassignedCount} transaction(s) reassigned to Other)` : ''}`, 'info');
   renderPaymentMethodsSettings();
   const txPay = document.getElementById('tx-payment');
   if(txPay) txPay.innerHTML = getPaymentMethods().map(p=>`<option value="${p}">${p}</option>`).join('');
+  renderTransactions();
 }
 function cleanupRecycleBin(){
   const now=Date.now();
