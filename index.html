@@ -2376,7 +2376,10 @@ async function handleGoogleSignIn(){
   if (googleText) googleText.textContent = 'Redirecting to Google...';
   
   try {
-    const redirectUrl = window.location.origin + window.location.pathname;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const redirectUrl = isLocal 
+      ? (window.location.origin + window.location.pathname) 
+      : 'https://wealthnest-yahya-kq.vercel.app/';
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -2532,12 +2535,13 @@ async function initAuth(){
   }
 
   // Handle URL hash or params from OAuth redirect
-  if (window.location.hash.includes('access_token=') || window.location.search.includes('code=')) {
+  const hasAuthRedirect = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
+  if (hasAuthRedirect) {
     setTimeout(() => {
       if (window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname);
       }
-    }, 600);
+    }, 800);
   }
 
   // Check current session
@@ -2545,6 +2549,10 @@ async function initAuth(){
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session && session.user) {
       await onUserAuthenticated(session.user);
+      if (hasAuthRedirect) {
+        closeAuthModal();
+        goToApp('dashboard');
+      }
     } else {
       onUserSignedOut();
     }
@@ -2558,6 +2566,10 @@ async function initAuth(){
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
       if (session && session.user) {
         await onUserAuthenticated(session.user);
+        if (event === 'SIGNED_IN' && hasAuthRedirect) {
+          closeAuthModal();
+          goToApp('dashboard');
+        }
       }
     } else if (event === 'SIGNED_OUT') {
       onUserSignedOut();
