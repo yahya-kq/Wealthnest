@@ -791,10 +791,11 @@
   .dot-income{background:var(--teal);} .dot-expense{background:var(--rose);} .dot-savings{background:var(--amber);}
 
   /* ---------- Modal ---------- */
-  .modal-backdrop{position:fixed; inset:0; background:rgba(17,19,33,.42); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px; backdrop-filter:blur(2px);}
-  .modal{background:var(--surface); width:100%; max-width:440px; padding:24px; border-radius:16px; border:1px solid var(--line); box-shadow:var(--shadow-lg); position:relative; max-height:90vh; overflow-y:auto;}
-  .modal-close{position:absolute; top:18px; right:18px; background:none; border:none; color:var(--muted-2); font-size:16px;}
-  .modal h2{font-family:var(--font-display); font-weight:700; font-size:20px; margin:0 0 18px;}
+  .modal-backdrop{position:fixed; inset:0; background:rgba(17,19,33,.45); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px; backdrop-filter:blur(3px); overflow-y:auto;}
+  .modal{background:var(--surface); width:100%; max-width:440px; padding:20px 24px; border-radius:16px; border:1px solid var(--line); box-shadow:var(--shadow-lg); position:relative; max-height:calc(100vh - 32px); overflow-y:auto; scrollbar-width:none;}
+  .modal::-webkit-scrollbar{display:none;}
+  .modal-close{position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted-2); font-size:16px; cursor:pointer;}
+  .modal h2{font-family:var(--font-display); font-weight:700; font-size:19px; margin:0 0 14px;}
 
   /* ---------- Badges ---------- */
   .badge{font-size:11px; font-weight:600; padding:3px 9px; border-radius:99px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;}
@@ -1018,15 +1019,15 @@
     .transaction-filters-group .chip-row{display:flex; width:100%; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:3px;}
     .transaction-filters-group .chip-row .btn-chip{flex:1; min-width:0; padding:7px 6px; font-size:12px; text-align:center; justify-content:center; white-space:nowrap;}
     .transaction-dropdowns-row{display:flex; gap:8px; width:100%; flex-wrap:wrap;}
-    .transaction-dropdown-wrap{flex:1; min-width:140px; width:auto;}
+    .transaction-dropdown-wrap, .transaction-dropdowns-row .excel-filter-dropdown-wrap{flex:1; min-width:140px; width:auto;}
     .transaction-dropdown-wrap select{width:100%;}
     .transaction-actions-group{display:flex; flex-direction:column; align-items:stretch; gap:10px; width:100%; margin-left:0;}
     .transaction-date-nav{display:flex; align-items:center; width:100%; gap:6px; justify-content:space-between;}
     .transaction-date-nav input[type="date"]{flex:1; width:auto !important;}
     #tx-search{width:100% !important; max-width:none !important; min-width:0 !important;}
     .transaction-actions-group .btn-primary{width:100% !important; margin-left:0 !important;}
-    .modal-backdrop{align-items:flex-start; padding:12px; overflow-y:auto;}
-    .modal{max-height:calc(100vh - 24px); padding:20px;}
+    .modal-backdrop{align-items:center; justify-content:center; padding:16px 12px; overflow-y:auto;}
+    .modal{max-height:calc(100vh - 32px); padding:18px 20px;}
   }
 
   /* ---------- Supabase Auth & User Profile Styles ---------- */
@@ -1308,7 +1309,7 @@
         <div class="dashboard-filter">
           <div class="dashboard-filter-field"><label class="field-label" for="dashboard-period-select">Period</label><select id="dashboard-period-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="month">Monthly</option><option value="quarter">This quarter</option><option value="year">Whole year</option></select></div>
           <div class="dashboard-filter-field" id="dashboard-month-field">
-            <label class="field-label" for="dashboard-month-trigger">Month</label>
+            <label class="field-label" for="dashboard-month-trigger">Months</label>
             <div class="excel-filter-dropdown-wrap" id="dashboard-filter-wrap">
               <button type="button" id="dashboard-month-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('dashboard', event)">
                 <span id="dashboard-month-summary" class="excel-filter-summary">September</span>
@@ -1491,15 +1492,15 @@
             </div>
             <span class="text-xs muted" id="report-trend-label">Monthly Trend</span>
           </div>
-          <div style="position:relative; min-height:160px;">
-            <canvas id="chart-trend" height="140"></canvas>
+          <div style="position:relative; height:200px; min-height:180px;">
+            <canvas id="chart-trend"></canvas>
           </div>
         </div>
         <div class="card" style="padding:20px;">
           <h2 class="section-title" style="margin-bottom:2px;">Spending By Category</h2>
           <p class="section-sub" style="margin-bottom:14px;">Expense distribution share</p>
-          <div style="position:relative; min-height:160px;">
-            <canvas id="chart-category-pie" height="150"></canvas>
+          <div style="position:relative; height:200px; min-height:180px;">
+            <canvas id="chart-category-pie"></canvas>
           </div>
         </div>
       </div>
@@ -1518,11 +1519,48 @@
         <div class="transaction-filters-group">
           <div class="chip-row" id="tx-filter-chips"></div>
           <div class="transaction-dropdowns-row">
-            <div class="transaction-dropdown-wrap hidden" id="tx-filter-category-field">
-              <select id="tx-filter-category" class="field-input" onchange="setTxCategoryFilter(this.value)"></select>
+            <!-- Category Excel Filter -->
+            <div class="excel-filter-dropdown-wrap hidden" id="tx-category-filter-wrap">
+              <button type="button" id="tx-category-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('tx-category', event)">
+                <span id="tx-category-filter-summary" class="excel-filter-summary">All Categories</span>
+                <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="excel-filter-popover hidden" id="tx-category-filter-popover" onclick="event.stopPropagation()">
+                <div class="excel-filter-popover-header">
+                  <label class="excel-filter-select-all-label">
+                    <input type="checkbox" id="tx-category-select-all" onchange="toggleSelectAllExcel('tx-category', this.checked)">
+                    <span>(Select All)</span>
+                  </label>
+                  <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('tx-category')">Select None</button>
+                </div>
+                <div class="excel-filter-popover-list" id="tx-category-filter-list"></div>
+                <div class="excel-filter-popover-footer">
+                  <span class="excel-filter-count-label" id="tx-category-selected-count">All selected</span>
+                  <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('tx-category')">Done</button>
+                </div>
+              </div>
             </div>
-            <div class="transaction-dropdown-wrap hidden" id="tx-filter-subcategory-field">
-              <select id="tx-filter-subcategory" class="field-input" onchange="setTxSubCategoryFilter(this.value)"></select>
+
+            <!-- Subcategory Excel Filter -->
+            <div class="excel-filter-dropdown-wrap hidden" id="tx-subcategory-filter-wrap">
+              <button type="button" id="tx-subcategory-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('tx-subcategory', event)">
+                <span id="tx-subcategory-filter-summary" class="excel-filter-summary">All Subcategories</span>
+                <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="excel-filter-popover hidden" id="tx-subcategory-filter-popover" onclick="event.stopPropagation()">
+                <div class="excel-filter-popover-header">
+                  <label class="excel-filter-select-all-label">
+                    <input type="checkbox" id="tx-subcategory-select-all" onchange="toggleSelectAllExcel('tx-subcategory', this.checked)">
+                    <span>(Select All)</span>
+                  </label>
+                  <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('tx-subcategory')">Select None</button>
+                </div>
+                <div class="excel-filter-popover-list" id="tx-subcategory-filter-list"></div>
+                <div class="excel-filter-popover-footer">
+                  <span class="excel-filter-count-label" id="tx-subcategory-selected-count">All selected</span>
+                  <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('tx-subcategory')">Done</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1738,20 +1776,54 @@
 <div id="tx-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal">
     <button class="modal-close" onclick="closeTxModal()">✕</button>
-    <h2 id="tx-modal-title">Add Transaction</h2>
+    <h2 id="tx-modal-title" style="margin:0 0 12px;">Add Transaction</h2>
     <form onsubmit="handleSaveTransaction(event)">
-      <div class="chip-row" style="width:100%; display:grid; grid-template-columns:repeat(3,1fr); margin-bottom:16px;" id="tx-type-chips"></div>
-      <label class="field-label">Date</label>
-      <input type="date" id="tx-date" class="field-input mb-3" required>
-      <label class="field-label" id="tx-category-label">Expense Category</label>
-      <select id="tx-category" class="field-input mb-3" onchange="onTxCategoryChange()"></select>
-      <div id="tx-subcategory-wrap" class="mb-3 hidden">
-        <label class="field-label">Subcategory <span style="color:var(--rose);">*</span> <span id="tx-subcategory-parent" class="breadcrumb-tag"></span></label>
-        <select id="tx-subcategory" class="field-input"></select>
+      <div class="chip-row" style="width:100%; display:grid; grid-template-columns:repeat(3,1fr); margin-bottom:12px;" id="tx-type-chips"></div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;">
+        <div>
+          <label class="field-label">Date</label>
+          <input type="date" id="tx-date" class="field-input" required>
+        </div>
+        <div>
+          <label class="field-label" id="tx-category-label">Expense Category</label>
+          <select id="tx-category" class="field-input" onchange="onTxCategoryChange()"></select>
+        </div>
       </div>
-      <label class="field-label">Note (optional)</label>
-      <input type="text" id="tx-description" placeholder="Optional note" class="field-input mb-3">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+
+      <div id="tx-subcategory-wrap" style="margin-bottom:10px;" class="hidden">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+          <label class="field-label" style="margin-bottom:0;">Subcategory <span style="color:var(--rose);">*</span> <span id="tx-subcategory-parent" class="breadcrumb-tag"></span></label>
+          <button type="button" onclick="promptAddSubcategory()" style="font-size:11.5px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0;">+ Add Subcategory</button>
+        </div>
+        <div class="excel-filter-dropdown-wrap" id="tx-modal-subcategory-filter-wrap">
+          <button type="button" id="tx-modal-subcategory-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('tx-modal-subcategory', event)">
+            <span id="tx-modal-subcategory-filter-summary" class="excel-filter-summary">Select Subcategory</span>
+            <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="excel-filter-popover hidden" id="tx-modal-subcategory-filter-popover" onclick="event.stopPropagation()">
+            <div class="excel-filter-popover-header">
+              <label class="excel-filter-select-all-label">
+                <input type="checkbox" id="tx-modal-subcategory-select-all" onchange="toggleSelectAllExcel('tx-modal-subcategory', this.checked)">
+                <span>(Select All)</span>
+              </label>
+              <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('tx-modal-subcategory')">Select None</button>
+            </div>
+            <div class="excel-filter-popover-list" id="tx-modal-subcategory-filter-list"></div>
+            <div class="excel-filter-popover-footer">
+              <span class="excel-filter-count-label" id="tx-modal-subcategory-selected-count">0 selected</span>
+              <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('tx-modal-subcategory')">Done</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label class="field-label">Note (optional)</label>
+        <input type="text" id="tx-description" placeholder="Optional note" class="field-input">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
         <div>
           <label class="field-label">Payment method <span style="color:var(--rose);">*</span></label>
           <select id="tx-payment" class="field-input"></select>
@@ -2061,9 +2133,40 @@ const PAYMENT_METHODS = DEFAULT_PAYMENT_METHODS;
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-/* ---------------- Excel-Style Multi-Month Filter Engine ---------------- */
+/* ---------------- Excel-Style Multi-Select Filter Engine ---------------- */
 let comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
 let dashboardSelectedMonths = [9];
+let txSelectedCategories = [];
+let txSelectedSubcategories = [];
+let selectedModalSubcategories = [];
+
+function getExcelWrapEl(type){
+  return document.getElementById(`${type}-filter-wrap`);
+}
+
+function getExcelTriggerEl(type){
+  return document.getElementById(`${type}-filter-trigger`) || document.getElementById(`${type}-month-trigger`);
+}
+
+function getExcelPopoverEl(type){
+  return document.getElementById(`${type}-filter-popover`) || document.getElementById(`${type}-month-popover`);
+}
+
+function getExcelListEl(type){
+  return document.getElementById(`${type}-filter-list`) || document.getElementById(`${type}-month-list`);
+}
+
+function getExcelSummaryEl(type){
+  return document.getElementById(`${type}-filter-summary`) || document.getElementById(`${type}-month-summary`);
+}
+
+function getExcelCountEl(type){
+  return document.getElementById(`${type}-selected-count`);
+}
+
+function getExcelSelectAllEl(type){
+  return document.getElementById(`${type}-select-all`);
+}
 
 function getExcelMonths(type){
   return type === 'comparison' ? comparisonSelectedMonths : dashboardSelectedMonths;
@@ -2077,28 +2180,99 @@ function setExcelMonths(type, months){
   }
 }
 
+function getExcelItems(type){
+  if(type === 'comparison') return comparisonSelectedMonths;
+  if(type === 'dashboard') return dashboardSelectedMonths;
+  if(type === 'tx-category') return txSelectedCategories;
+  if(type === 'tx-subcategory') return txSelectedSubcategories;
+  if(type === 'tx-modal-subcategory') return selectedModalSubcategories;
+  return [];
+}
+
+function setExcelItems(type, items){
+  if(type === 'comparison') comparisonSelectedMonths = items;
+  else if(type === 'dashboard') dashboardSelectedMonths = items;
+  else if(type === 'tx-category') txSelectedCategories = items;
+  else if(type === 'tx-subcategory') txSelectedSubcategories = items;
+  else if(type === 'tx-modal-subcategory') selectedModalSubcategories = items;
+}
+
+function getExcelOptions(type){
+  if(type === 'dashboard' || type === 'comparison'){
+    return MONTH_NAMES.map((name, idx) => ({ value: idx + 1, label: name }));
+  }
+  if(type === 'tx-category'){
+    const cats = transactionCategories(txFilter);
+    return cats.map(c => ({ value: c, label: c }));
+  }
+  if(type === 'tx-subcategory'){
+    const activeCats = (txSelectedCategories && txSelectedCategories.length > 0)
+      ? txSelectedCategories
+      : transactionCategories(txFilter);
+    
+    let subcats = [];
+    if(txFilter === 'expense' || txFilter === 'all'){
+      (DB.categories.expense || []).forEach(c => {
+        if(activeCats.includes(c.name) && Array.isArray(c.subcategories)){
+          subcats.push(...c.subcategories);
+        }
+      });
+    }
+    const recorded = DB.transactions
+      .filter(t => (txFilter === 'all' || t.type === txFilter) && activeCats.includes(t.category) && t.subCategory)
+      .flatMap(t => t.subCategory.split(',').map(s => s.trim()));
+    const allSubs = [...new Set([...subcats, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+    return allSubs.map(s => ({ value: s, label: s }));
+  }
+  if(type === 'tx-modal-subcategory'){
+    const catEl = document.getElementById('tx-category');
+    const catName = catEl ? catEl.value : '';
+    const catObj = findExpenseCategory(catName);
+    const subs = (catObj && Array.isArray(catObj.subcategories)) ? catObj.subcategories : [];
+    return subs.map(s => ({ value: s, label: s }));
+  }
+  return [];
+}
+
 function toggleExcelFilter(type, e){
   if(e) e.stopPropagation();
-  const popover = document.getElementById(`${type}-month-popover`);
-  const wrap = document.getElementById(`${type}-filter-wrap`);
+  const popover = getExcelPopoverEl(type);
+  const wrap = getExcelWrapEl(type);
   if(!popover) return;
   const isHidden = popover.classList.contains('hidden');
   closeAllExcelFilters();
   if(isHidden){
+    renderExcelFilterList(type);
     popover.classList.remove('hidden');
     if(wrap) wrap.classList.add('open');
   }
 }
 
 function closeExcelFilter(type){
-  const popover = document.getElementById(`${type}-month-popover`);
-  const wrap = document.getElementById(`${type}-filter-wrap`);
-  if(popover) popover.classList.add('hidden');
+  const popover = getExcelPopoverEl(type);
+  const wrap = getExcelWrapEl(type);
+  if(!popover) return;
+
+  // Fallback if closed with 0 selected:
+  if(type === 'dashboard' && (!dashboardSelectedMonths || dashboardSelectedMonths.length === 0)){
+    const fallbackMonth = dashboardSelMonth || 9;
+    dashboardSelectedMonths = [fallbackMonth];
+    updateExcelFilterUI('dashboard');
+    renderDashboard();
+    showToast(`At least one month required; reset to ${MONTH_NAMES[fallbackMonth - 1]}`, 'info');
+  } else if(type === 'comparison' && (!comparisonSelectedMonths || comparisonSelectedMonths.length === 0)){
+    comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
+    updateExcelFilterUI('comparison');
+    renderComparison();
+    showToast('At least one month required for comparison; reset to all months', 'info');
+  }
+
+  popover.classList.add('hidden');
   if(wrap) wrap.classList.remove('open');
 }
 
 function closeAllExcelFilters(){
-  ['comparison', 'dashboard'].forEach(type => {
+  ['comparison', 'dashboard', 'tx-category', 'tx-subcategory', 'tx-modal-subcategory'].forEach(type => {
     closeExcelFilter(type);
   });
 }
@@ -2114,20 +2288,27 @@ window.addEventListener('keydown', (e) => {
 });
 
 function renderExcelFilterList(type){
-  const container = document.getElementById(`${type}-month-list`);
+  const container = getExcelListEl(type);
   if(!container) return;
-  const selected = getExcelMonths(type);
+  const options = getExcelOptions(type);
+  const selected = getExcelItems(type);
 
-  container.innerHTML = MONTH_NAMES.map((name, idx) => {
-    const monthNum = idx + 1;
-    const isChecked = selected.includes(monthNum);
+  if(!options.length){
+    container.innerHTML = `<div style="padding:12px 14px; color:var(--muted); font-size:12px; text-align:center;">No items available</div>`;
+    updateExcelFilterUI(type);
+    return;
+  }
+
+  container.innerHTML = options.map(opt => {
+    const isChecked = selected.includes(opt.value);
+    const valEscaped = String(opt.value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, "\\'");
     return `
-      <div class="excel-filter-item ${isChecked ? 'selected' : ''}" onclick="onExcelMonthRowClick('${type}', ${monthNum}, event)">
+      <div class="excel-filter-item ${isChecked ? 'selected' : ''}" onclick="onExcelRowClick('${type}', '${valEscaped}', event)">
         <div class="excel-filter-item-left">
-          <input type="checkbox" value="${monthNum}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation()" onchange="onExcelMonthToggle('${type}', ${monthNum}, this.checked)">
-          <span>${name}</span>
+          <input type="checkbox" value="${valEscaped}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation()" onchange="onExcelToggle('${type}', '${valEscaped}', this.checked)">
+          <span>${escapeHtml(opt.label)}</span>
         </div>
-        <button type="button" class="excel-filter-only-btn" onclick="onExcelMonthSelectOnly('${type}', ${monthNum}, event)">Only</button>
+        <button type="button" class="excel-filter-only-btn" onclick="onExcelSelectOnly('${type}', '${valEscaped}', event)">Only</button>
       </div>
     `;
   }).join('');
@@ -2135,35 +2316,117 @@ function renderExcelFilterList(type){
   updateExcelFilterUI(type);
 }
 
-function onExcelMonthRowClick(type, monthNum, event){
+function onExcelRowClick(type, val, event){
   if(event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON') return;
-  const selected = getExcelMonths(type);
-  const isChecked = !selected.includes(monthNum);
-  onExcelMonthToggle(type, monthNum, isChecked);
+  const parsedVal = (type === 'dashboard' || type === 'comparison') ? parseInt(val, 10) : val;
+  const selected = getExcelItems(type);
+  const isChecked = !selected.includes(parsedVal);
+  onExcelToggle(type, parsedVal, isChecked);
 }
 
-function onExcelMonthSelectOnly(type, monthNum, event){
-  if(event) event.stopPropagation();
-  setExcelMonths(type, [monthNum]);
-  if(type === 'dashboard'){
-    dashboardSelMonth = monthNum;
+function onExcelToggle(type, val, isChecked){
+  const parsedVal = (type === 'dashboard' || type === 'comparison') ? parseInt(val, 10) : val;
+  let selected = getExcelItems(type).slice();
+  if(isChecked){
+    if(!selected.includes(parsedVal)) selected.push(parsedVal);
+  } else {
+    selected = selected.filter(x => x !== parsedVal);
+  }
+  if(type === 'dashboard' || type === 'comparison'){
+    selected.sort((a,b) => a - b);
+  }
+  setExcelItems(type, selected);
+  if(type === 'dashboard' && selected.length === 1){
+    dashboardSelMonth = selected[0];
   }
   updateExcelFilterUI(type);
+
   if(type === 'comparison'){
     renderComparison();
-  } else {
+  } else if(type === 'dashboard'){
     renderDashboard();
+  } else if(type === 'tx-category'){
+    renderTxSubCategoryFilter();
+    renderTransactions();
+  } else if(type === 'tx-subcategory'){
+    renderTransactions();
   }
 }
 
+function onExcelSelectOnly(type, val, event){
+  if(event) event.stopPropagation();
+  const parsedVal = (type === 'dashboard' || type === 'comparison') ? parseInt(val, 10) : val;
+  setExcelItems(type, [parsedVal]);
+  if(type === 'dashboard'){
+    dashboardSelMonth = parsedVal;
+  }
+  renderExcelFilterList(type);
+  updateExcelFilterUI(type);
+
+  if(type === 'comparison'){
+    renderComparison();
+  } else if(type === 'dashboard'){
+    renderDashboard();
+  } else if(type === 'tx-category'){
+    renderTxSubCategoryFilter();
+    renderTransactions();
+  } else if(type === 'tx-subcategory'){
+    renderTransactions();
+  }
+}
+
+function toggleSelectAllExcel(type, isChecked){
+  const options = getExcelOptions(type);
+  const newItems = isChecked ? options.map(o => o.value) : [];
+  setExcelItems(type, newItems);
+  renderExcelFilterList(type);
+  updateExcelFilterUI(type);
+
+  if(type === 'comparison'){
+    renderComparison();
+  } else if(type === 'dashboard'){
+    renderDashboard();
+  } else if(type === 'tx-category'){
+    renderTxSubCategoryFilter();
+    renderTransactions();
+  } else if(type === 'tx-subcategory'){
+    renderTransactions();
+  }
+}
+
+function clearAllExcel(type){
+  setExcelItems(type, []);
+  renderExcelFilterList(type);
+  updateExcelFilterUI(type);
+
+  if(type === 'comparison'){
+    renderComparison();
+  } else if(type === 'dashboard'){
+    renderDashboard();
+  } else if(type === 'tx-category'){
+    renderTxSubCategoryFilter();
+    renderTransactions();
+  } else if(type === 'tx-subcategory'){
+    renderTransactions();
+  }
+}
+
+function onExcelMonthRowClick(type, monthNum, event){ onExcelRowClick(type, monthNum, event); }
+function onExcelMonthToggle(type, monthNum, isChecked){ onExcelToggle(type, monthNum, isChecked); }
+function onExcelMonthSelectOnly(type, monthNum, event){ onExcelSelectOnly(type, monthNum, event); }
+function toggleSelectAllMonths(type, isChecked){ toggleSelectAllExcel(type, isChecked); }
+function clearAllMonths(type){ clearAllExcel(type); }
+
 function updateExcelFilterUI(type){
-  const selected = getExcelMonths(type);
-  const summaryEl = document.getElementById(`${type}-month-summary`);
-  const countEl = document.getElementById(`${type}-selected-count`);
-  const selectAllCb = document.getElementById(`${type}-select-all`);
+  const selected = getExcelItems(type);
+  const options = getExcelOptions(type);
+  const totalCount = options.length;
+  const summaryEl = getExcelSummaryEl(type);
+  const countEl = getExcelCountEl(type);
+  const selectAllCb = getExcelSelectAllEl(type);
 
   if(selectAllCb){
-    if(selected.length === 12){
+    if(totalCount > 0 && selected.length === totalCount){
       selectAllCb.checked = true;
       selectAllCb.indeterminate = false;
     } else if(selected.length > 0){
@@ -2180,74 +2443,61 @@ function updateExcelFilterUI(type){
   }
 
   if(summaryEl){
-    if(selected.length === 0){
-      summaryEl.textContent = 'No Months Selected';
-    } else if(selected.length === 12){
-      summaryEl.textContent = 'All Months (12)';
-    } else if(selected.length === 1){
-      summaryEl.textContent = MONTH_NAMES[selected[0] - 1];
-    } else if(selected.length <= 3){
-      const sorted = selected.slice().sort((a,b) => a - b);
-      summaryEl.textContent = sorted.map(m => SHORT_MONTH_NAMES[m - 1]).join(', ');
-    } else {
-      summaryEl.textContent = `${selected.length} Months Selected`;
+    if(type === 'dashboard' || type === 'comparison'){
+      if(selected.length === 0){
+        summaryEl.textContent = 'No Months Selected';
+      } else if(selected.length === 12){
+        summaryEl.textContent = 'All Months (12)';
+      } else if(selected.length === 1){
+        summaryEl.textContent = MONTH_NAMES[selected[0] - 1];
+      } else if(selected.length <= 3){
+        const sorted = selected.slice().sort((a,b) => a - b);
+        summaryEl.textContent = sorted.map(m => SHORT_MONTH_NAMES[m - 1]).join(', ');
+      } else {
+        summaryEl.textContent = `${selected.length} Months Selected`;
+      }
+    } else if(type === 'tx-category'){
+      if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
+        summaryEl.textContent = 'All Categories';
+      } else if(selected.length === 1){
+        summaryEl.textContent = selected[0];
+      } else if(selected.length <= 2){
+        summaryEl.textContent = selected.join(', ');
+      } else {
+        summaryEl.textContent = `${selected.length} Categories Selected`;
+      }
+    } else if(type === 'tx-subcategory'){
+      if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
+        summaryEl.textContent = 'All Subcategories';
+      } else if(selected.length === 1){
+        summaryEl.textContent = selected[0];
+      } else if(selected.length <= 2){
+        summaryEl.textContent = selected.join(', ');
+      } else {
+        summaryEl.textContent = `${selected.length} Subcategories Selected`;
+      }
+    } else if(type === 'tx-modal-subcategory'){
+      if(selected.length === 0){
+        summaryEl.textContent = 'Select Subcategory';
+      } else if(selected.length === 1){
+        summaryEl.textContent = selected[0];
+      } else if(selected.length <= 2){
+        summaryEl.textContent = selected.join(', ');
+      } else {
+        summaryEl.textContent = `${selected.length} Subcategories Selected`;
+      }
     }
   }
 
-  const items = document.querySelectorAll(`#${type}-month-list .excel-filter-item`);
-  items.forEach(item => {
-    const input = item.querySelector('input');
-    if(input){
-      item.classList.toggle('selected', input.checked);
-    }
-  });
-}
-
-function onExcelMonthToggle(type, monthNum, isChecked){
-  let selected = getExcelMonths(type).slice();
-  if(isChecked){
-    if(!selected.includes(monthNum)) selected.push(monthNum);
-  } else {
-    selected = selected.filter(m => m !== monthNum);
-  }
-  selected.sort((a,b) => a - b);
-  setExcelMonths(type, selected);
-  if(type === 'dashboard' && selected.length === 1){
-    dashboardSelMonth = selected[0];
-  }
-  updateExcelFilterUI(type);
-
-  if(type === 'comparison'){
-    renderComparison();
-  } else {
-    renderDashboard();
-  }
-}
-
-function toggleSelectAllMonths(type, isChecked){
-  const newMonths = isChecked ? [...Array(12)].map((_, i) => i + 1) : [];
-  setExcelMonths(type, newMonths);
-  const cbs = document.querySelectorAll(`#${type}-month-list input[type="checkbox"]`);
-  cbs.forEach(cb => cb.checked = isChecked);
-  updateExcelFilterUI(type);
-
-  if(type === 'comparison'){
-    renderComparison();
-  } else {
-    renderDashboard();
-  }
-}
-
-function clearAllMonths(type){
-  setExcelMonths(type, []);
-  const cbs = document.querySelectorAll(`#${type}-month-list input[type="checkbox"]`);
-  cbs.forEach(cb => cb.checked = false);
-  updateExcelFilterUI(type);
-
-  if(type === 'comparison'){
-    renderComparison();
-  } else {
-    renderDashboard();
+  const listEl = getExcelListEl(type);
+  if(listEl){
+    const items = listEl.querySelectorAll('.excel-filter-item');
+    items.forEach(item => {
+      const input = item.querySelector('input');
+      if(input){
+        item.classList.toggle('selected', input.checked);
+      }
+    });
   }
 }
 const CURRENCIES = [
@@ -3250,7 +3500,19 @@ function periodSelectOptions(selected){ return MONTH_NAMES.map((name,i)=>`<optio
 function yearSelectOptions(selected){ return reportYearOptions().map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}</option>`).join(''); }
 function initReportSelectors(){
   const now = new Date();
-  if(reportSelMonth===undefined){ reportSelMonth = now.getMonth()+1; reportSelYear = now.getFullYear(); }
+  let defaultYear = now.getFullYear();
+  let defaultMonth = now.getMonth() + 1;
+  if(DB.transactions && DB.transactions.length){
+    const years = DB.transactions.map(t => parseTxDate(t.date).year).filter(Boolean);
+    if(years.length){
+      defaultYear = Math.max(...years);
+      const txsInYear = DB.transactions.filter(t => parseTxDate(t.date).year === defaultYear);
+      const months = txsInYear.map(t => parseTxDate(t.date).month).filter(Boolean);
+      if(months.length) defaultMonth = Math.max(...months);
+    }
+  }
+  if(reportSelYear===undefined){ reportSelYear = defaultYear; }
+  if(reportSelMonth===undefined){ reportSelMonth = defaultMonth; }
   document.getElementById('report-month-select').innerHTML = periodSelectOptions(reportSelMonth);
   document.getElementById('report-year-select').innerHTML = yearSelectOptions(reportSelYear);
 }
@@ -4019,60 +4281,57 @@ function transactionCategories(type){
   return [...new Set([...stored,...recorded])].filter(Boolean).sort((a,b)=>a.localeCompare(b));
 }
 function renderTxCategoryFilter(){
-  const selector=document.getElementById('tx-filter-category');
-  const field=document.getElementById('tx-filter-category-field');
-  field.classList.toggle('hidden',txFilter==='all');
-  const categories=transactionCategories(txFilter);
-  if(!categories.includes(txCategoryFilter)) txCategoryFilter='all';
-  selector.innerHTML='<option value="all">All categories</option>'+categories.map(category=>`<option value="${category.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">${category}</option>`).join('');
-  selector.value=txCategoryFilter;
-  selector.disabled=categories.length===0;
+  const wrap = document.getElementById('tx-category-filter-wrap');
+  if(!wrap) return;
+  const categories = transactionCategories(txFilter);
+  wrap.classList.toggle('hidden', categories.length === 0);
+  
+  if(txSelectedCategories && txSelectedCategories.length > 0){
+    txSelectedCategories = txSelectedCategories.filter(c => categories.includes(c));
+  }
+  
+  renderExcelFilterList('tx-category');
+  updateExcelFilterUI('tx-category');
   renderTxSubCategoryFilter();
 }
 
 function renderTxSubCategoryFilter(){
-  const field = document.getElementById('tx-filter-subcategory-field');
-  const selector = document.getElementById('tx-filter-subcategory');
-  if(!field || !selector) return;
+  const wrap = document.getElementById('tx-subcategory-filter-wrap');
+  if(!wrap) return;
 
-  if(txFilter === 'income' || txFilter === 'savings' || txCategoryFilter === 'all'){
-    field.classList.add('hidden');
-    txSubCategoryFilter = 'all';
-    selector.innerHTML = '';
+  if(txFilter === 'income' || txFilter === 'savings'){
+    wrap.classList.add('hidden');
+    txSelectedSubcategories = [];
     return;
   }
 
-  let subcats = [];
-  if(txFilter === 'expense'){
-    const catObj = (DB.categories.expense || []).find(c => c.name === txCategoryFilter);
-    if(catObj && Array.isArray(catObj.subcategories)) subcats = catObj.subcategories;
-  }
-  const recorded = DB.transactions
-    .filter(t => t.category === txCategoryFilter && t.subCategory)
-    .flatMap(t => t.subCategory.split(',').map(s => s.trim()));
-  const allSubcats = [...new Set([...subcats, ...recorded])].filter(Boolean).sort((a,b)=>a.localeCompare(b));
-
-  if(allSubcats.length === 0){
-    field.classList.add('hidden');
-    txSubCategoryFilter = 'all';
-    selector.innerHTML = '';
+  const options = getExcelOptions('tx-subcategory');
+  if(!options.length){
+    wrap.classList.add('hidden');
+    txSelectedSubcategories = [];
     return;
   }
 
-  field.classList.remove('hidden');
-  if(!allSubcats.includes(txSubCategoryFilter)) txSubCategoryFilter = 'all';
+  wrap.classList.remove('hidden');
+  const validVals = options.map(o => o.value);
+  if(txSelectedSubcategories && txSelectedSubcategories.length > 0){
+    txSelectedSubcategories = txSelectedSubcategories.filter(s => validVals.includes(s));
+  }
 
-  selector.innerHTML = '<option value="all">All Subcategories</option>' + allSubcats.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-  selector.value = txSubCategoryFilter;
+  renderExcelFilterList('tx-subcategory');
+  updateExcelFilterUI('tx-subcategory');
 }
 
 function setTxSubCategoryFilter(subcat){
-  txSubCategoryFilter = subcat;
+  if(subcat === 'all') txSelectedSubcategories = [];
+  else txSelectedSubcategories = [subcat];
   renderTransactions();
 }
 
 function setTxFilter(f){
   txFilter = f;
+  txSelectedCategories = [];
+  txSelectedSubcategories = [];
   txCategoryFilter = 'all';
   txSubCategoryFilter = 'all';
   renderTxFilterChips();
@@ -4080,8 +4339,9 @@ function setTxFilter(f){
 }
 
 function setTxCategoryFilter(category){
-  txCategoryFilter = category;
-  txSubCategoryFilter = 'all';
+  if(category === 'all') txSelectedCategories = [];
+  else txSelectedCategories = [category];
+  txSelectedSubcategories = [];
   renderTxSubCategoryFilter();
   renderTransactions();
 }
@@ -4116,8 +4376,16 @@ function renderTransactions(){
 
   const rows = DB.transactions
     .filter(t => txFilter==='all' ? true : t.type===txFilter)
-    .filter(t => txCategoryFilter==='all' ? true : t.category===txCategoryFilter)
-    .filter(t => txSubCategoryFilter==='all' ? true : (t.subCategory && t.subCategory.split(',').map(s=>s.trim()).includes(txSubCategoryFilter)))
+    .filter(t => {
+      if(!txSelectedCategories || txSelectedCategories.length === 0) return true;
+      return txSelectedCategories.includes(t.category);
+    })
+    .filter(t => {
+      if(!txSelectedSubcategories || txSelectedSubcategories.length === 0) return true;
+      if(!t.subCategory) return false;
+      const tSubs = t.subCategory.split(',').map(s => s.trim());
+      return tSubs.some(s => txSelectedSubcategories.includes(s));
+    })
     .filter(t => txDateFilter ? t.date === txDateFilter : true)
     .filter(t => query ? `${t.category} ${t.description||''} ${t.subCategory||''} ${t.paymentMethod||''}`.toLowerCase().includes(query) : true)
     .sort((a,b)=> {
@@ -4341,37 +4609,69 @@ function confirmDelete(){
 /* tx modal */
 let editingTxId = null;
 
-function renderModalSubcategories(selectedValue = ''){
+function renderModalSubcategories(selectedValues = []){
   const wrap = document.getElementById('tx-subcategory-wrap');
-  const selector = document.getElementById('tx-subcategory');
-  if(!wrap || !selector) return;
+  if(!wrap) return;
 
   if(txType !== 'expense'){
     wrap.classList.add('hidden');
-    selector.innerHTML = '';
+    selectedModalSubcategories = [];
     return;
   }
 
   const cat = document.getElementById('tx-category').value;
   const catObj = findExpenseCategory(cat);
-  const subs = catObj ? catObj.subcategories : [];
-  if(!subs || !subs.length){
-    wrap.classList.add('hidden');
-    selector.innerHTML = '';
-    return;
-  }
+  const subs = catObj ? (catObj.subcategories || []) : [];
 
   wrap.classList.remove('hidden');
   const parentTag = document.getElementById('tx-subcategory-parent');
-  if(parentTag) parentTag.textContent = `of ${cat}`;
-  selector.innerHTML = '<option value="">Select Subcategory</option>' + subs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-  if(selectedValue && subs.includes(selectedValue)){
-    selector.value = selectedValue;
-  } else if(subs.length === 1){
-    selector.value = subs[0];
+  if(parentTag) parentTag.textContent = cat ? `of ${cat}` : '';
+
+  if(Array.isArray(selectedValues) && selectedValues.length > 0){
+    selectedModalSubcategories = selectedValues.filter(s => subs.includes(s));
+  } else if(typeof selectedValues === 'string' && selectedValues){
+    selectedModalSubcategories = selectedValues.split(',').map(s => s.trim()).filter(s => subs.includes(s));
+  } else if(selectedModalSubcategories && selectedModalSubcategories.length > 0){
+    selectedModalSubcategories = selectedModalSubcategories.filter(s => subs.includes(s));
   } else {
-    selector.value = '';
+    selectedModalSubcategories = [];
   }
+
+  renderExcelFilterList('tx-modal-subcategory');
+  updateExcelFilterUI('tx-modal-subcategory');
+}
+
+function promptAddSubcategory(){
+  const cat = document.getElementById('tx-category').value;
+  if(!cat){
+    showToast('Please select a category first', 'warning');
+    return;
+  }
+  const catObj = findExpenseCategory(cat);
+  if(!catObj){
+    showToast('Category not found', 'error');
+    return;
+  }
+  const newSub = prompt(`Enter new subcategory for "${cat}":`);
+  if(!newSub || !newSub.trim()) return;
+  const trimmed = newSub.trim();
+  if(!Array.isArray(catObj.subcategories)) catObj.subcategories = [];
+  const exists = catObj.subcategories.some(s => s.trim().toLowerCase() === trimmed.toLowerCase());
+  if(exists){
+    showToast(`Subcategory "${trimmed}" already exists in ${cat}`, 'warning');
+    if(!selectedModalSubcategories.includes(trimmed)){
+      selectedModalSubcategories.push(trimmed);
+      renderExcelFilterList('tx-modal-subcategory');
+      updateExcelFilterUI('tx-modal-subcategory');
+    }
+    return;
+  }
+  catObj.subcategories.push(trimmed);
+  saveDB();
+  selectedModalSubcategories.push(trimmed);
+  renderExcelFilterList('tx-modal-subcategory');
+  updateExcelFilterUI('tx-modal-subcategory');
+  showToast(`Added and selected "${trimmed}" for ${cat}`, 'success');
 }
 
 function renderModalPaymentMethods(selectedValue = 'Cash'){
@@ -4401,8 +4701,8 @@ function openTxModal(editId = null){
       setTxType(tx.type || 'expense');
       document.getElementById('tx-category').value = tx.category || '';
       
-      const subVal = tx.subCategory ? tx.subCategory.split(',')[0].trim() : '';
-      renderModalSubcategories(subVal);
+      const subVals = tx.subCategory ? tx.subCategory.split(',').map(s => s.trim()).filter(Boolean) : [];
+      renderModalSubcategories(subVals);
 
       const payVal = tx.paymentMethod ? tx.paymentMethod.split(',')[0].trim() : 'Cash';
       renderModalPaymentMethods(payVal);
@@ -4420,11 +4720,14 @@ function openTxModal(editId = null){
   document.getElementById('tx-description').value = '';
   document.getElementById('tx-amount').value = '';
   setTxType('expense');
+  renderModalSubcategories([]);
   renderModalPaymentMethods('Cash');
 }
 
 function closeTxModal(){
   editingTxId = null;
+  selectedModalSubcategories = [];
+  closeExcelFilter('tx-modal-subcategory');
   document.getElementById('tx-modal-backdrop').classList.add('hidden');
 }
 
@@ -4444,6 +4747,7 @@ function setTxType(t){
 }
 
 function onTxCategoryChange(){
+  selectedModalSubcategories = [];
   renderModalSubcategories();
 }
 
@@ -4457,21 +4761,18 @@ function handleSaveTransaction(e){
   const dateVal = document.getElementById('tx-date').value || ymd(new Date());
   const catVal = document.getElementById('tx-category').value;
 
-  // Strict validation: Subcategory is mandatory for expense when subcategories exist
+  // Strict validation: Subcategory is mandatory for expense
   let subVal = undefined;
   if(txType === 'expense'){
-    const catObj = findExpenseCategory(catVal);
-    const hasSubs = catObj && catObj.subcategories && catObj.subcategories.length > 0;
-    const subSelect = document.getElementById('tx-subcategory');
-    const selectedSub = subSelect ? subSelect.value.trim() : '';
-    if(hasSubs && !selectedSub){
-      showToast('Please select a subcategory for this expense.', 'error');
-      if(subSelect) subSelect.focus();
+    if(!selectedModalSubcategories || selectedModalSubcategories.length === 0){
+      showToast('Please select or add a subcategory for this expense.', 'error');
+      const popover = document.getElementById('tx-modal-subcategory-filter-popover');
+      if(popover && popover.classList.contains('hidden')){
+        toggleExcelFilter('tx-modal-subcategory');
+      }
       return;
     }
-    if(selectedSub){
-      subVal = selectedSub;
-    }
+    subVal = selectedModalSubcategories.join(', ');
   }
 
   const descVal = document.getElementById('tx-description').value.trim() || undefined;
@@ -4513,10 +4814,13 @@ function handleSaveTransaction(e){
       txFilter = 'all';
       renderTxFilterChips();
     }
-    if(txCategoryFilter !== 'all' && txCategoryFilter !== catVal){
-      txCategoryFilter = 'all';
-      const catFilterEl = document.getElementById('tx-filter-category');
-      if(catFilterEl) catFilterEl.value = 'all';
+    if(txSelectedCategories && txSelectedCategories.length > 0 && !txSelectedCategories.includes(catVal)){
+      txSelectedCategories = [];
+      updateExcelFilterUI('tx-category');
+    }
+    if(txSelectedSubcategories && txSelectedSubcategories.length > 0 && subVal && !selectedModalSubcategories.some(s => txSelectedSubcategories.includes(s))){
+      txSelectedSubcategories = [];
+      updateExcelFilterUI('tx-subcategory');
     }
     const searchEl = document.getElementById('tx-search');
     if(searchEl && searchEl.value) {
