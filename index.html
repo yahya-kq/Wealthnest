@@ -846,8 +846,13 @@
   .dashboard-action:hover{background:var(--surface-2); border-color:var(--muted-2);}
   .alert-row{display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--line-soft);}
   .alert-row:last-child{border-bottom:none;}
-  .transaction-filters{display:flex; align-items:end; gap:10px; flex:1; flex-wrap:wrap;}
-  .transaction-filter-field{min-width:150px;}
+  .transaction-toolbar{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;}
+  .transaction-filters-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .transaction-dropdowns-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .transaction-dropdown-wrap{min-width:160px;}
+  .transaction-dropdown-wrap select{height:36px; padding:6px 10px; font-size:13px;}
+  .transaction-actions-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-left:auto;}
+  .transaction-date-nav{display:inline-flex; align-items:center; gap:5px;}
   .report-kpi{padding:18px 20px;}
   .report-kpi .ov-amount{font-size:24px;}
   .report-table-wrap{overflow-x:auto;}
@@ -1008,10 +1013,18 @@
     .comparison-header h2{font-size:20px;}
     .month-select-row{max-width:calc(100vw - 150px);}
     .month-select-row select{min-width:0; max-width:100%;}
-    .transaction-filters{width:100%;}
-    .transaction-filter-field{min-width:0; flex:1;}
-    #tx-search{width:100%; min-width:0 !important; flex-basis:100%;}
-    #page-transactions > div:first-of-type .btn-primary{width:100%; margin-left:0 !important;}
+    .transaction-toolbar{display:flex; flex-direction:column; align-items:stretch; gap:12px; width:100%;}
+    .transaction-filters-group{display:flex; flex-direction:column; align-items:stretch; gap:10px; width:100%;}
+    .transaction-filters-group .chip-row{display:flex; width:100%; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:3px;}
+    .transaction-filters-group .chip-row .btn-chip{flex:1; min-width:0; padding:7px 6px; font-size:12px; text-align:center; justify-content:center; white-space:nowrap;}
+    .transaction-dropdowns-row{display:flex; gap:8px; width:100%; flex-wrap:wrap;}
+    .transaction-dropdown-wrap{flex:1; min-width:140px; width:auto;}
+    .transaction-dropdown-wrap select{width:100%;}
+    .transaction-actions-group{display:flex; flex-direction:column; align-items:stretch; gap:10px; width:100%; margin-left:0;}
+    .transaction-date-nav{display:flex; align-items:center; width:100%; gap:6px; justify-content:space-between;}
+    .transaction-date-nav input[type="date"]{flex:1; width:auto !important;}
+    #tx-search{width:100% !important; max-width:none !important; min-width:0 !important;}
+    .transaction-actions-group .btn-primary{width:100% !important; margin-left:0 !important;}
     .modal-backdrop{align-items:flex-start; padding:12px; overflow-y:auto;}
     .modal{max-height:calc(100vh - 24px); padding:20px;}
   }
@@ -1298,7 +1311,7 @@
             <label class="field-label" for="dashboard-month-trigger">Month</label>
             <div class="excel-filter-dropdown-wrap" id="dashboard-filter-wrap">
               <button type="button" id="dashboard-month-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('dashboard', event)">
-                <span id="dashboard-month-summary" class="excel-filter-summary">Select Month</span>
+                <span id="dashboard-month-summary" class="excel-filter-summary">September</span>
                 <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <div class="excel-filter-popover hidden" id="dashboard-month-popover" onclick="event.stopPropagation()">
@@ -1501,20 +1514,32 @@
     <!-- ---- TRANSACTIONS ---- -->
     <section id="page-transactions" class="page hidden">
       <div class="topbar"><div><h1>Transactions</h1><p id="tx-count-label"></p></div><div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div></div>
-      <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:18px;">
-        <div class="transaction-filters"><div class="transaction-filter-field"><label class="field-label" for="tx-filter-type">Transaction type</label><div class="chip-row" id="tx-filter-chips"></div></div><div class="transaction-filter-field hidden" id="tx-filter-category-field"><select id="tx-filter-category" class="field-input" onchange="setTxCategoryFilter(this.value)"></select></div><div class="transaction-filter-field hidden" id="tx-filter-subcategory-field"><div class="chip-row" id="tx-filter-subcat-chips"></div></div></div>
-        <div class="transaction-date-nav" style="display:inline-flex; align-items:center; gap:5px;">
-          <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(-1)" title="Previous day">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <input type="date" id="tx-date-filter" class="field-input" style="padding:6px 8px; font-size:12.5px; width:130px; height:36px;" onchange="setTxDateFilter(this.value)" title="Filter by date">
-          <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(1)" title="Next day">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <button type="button" class="excel-filter-text-btn hidden" id="tx-date-clear-btn" onclick="clearTxDateFilter()" style="font-size:12px; margin-left:2px;">All Dates</button>
+      <div class="transaction-toolbar">
+        <div class="transaction-filters-group">
+          <div class="chip-row" id="tx-filter-chips"></div>
+          <div class="transaction-dropdowns-row">
+            <div class="transaction-dropdown-wrap hidden" id="tx-filter-category-field">
+              <select id="tx-filter-category" class="field-input" onchange="setTxCategoryFilter(this.value)"></select>
+            </div>
+            <div class="transaction-dropdown-wrap hidden" id="tx-filter-subcategory-field">
+              <select id="tx-filter-subcategory" class="field-input" onchange="setTxSubCategoryFilter(this.value)"></select>
+            </div>
+          </div>
         </div>
-        <input type="text" id="tx-search" placeholder="Search category or note..." class="field-input" style="width:180px; max-width:200px;" oninput="renderTransactions()">
-        <button onclick="openTxModal()" class="btn-primary" style="margin-left:auto;">+ Add transaction</button>
+        <div class="transaction-actions-group">
+          <div class="transaction-date-nav">
+            <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(-1)" title="Previous day">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <input type="date" id="tx-date-filter" class="field-input" style="padding:6px 8px; font-size:12.5px; width:130px; height:36px;" onchange="setTxDateFilter(this.value)" title="Filter by date">
+            <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(1)" title="Next day">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button type="button" class="excel-filter-text-btn hidden" id="tx-date-clear-btn" onclick="clearTxDateFilter()" style="font-size:12px; margin-left:2px;">All Dates</button>
+          </div>
+          <input type="text" id="tx-search" placeholder="Search category or note..." class="field-input" style="width:180px; max-width:200px;" oninput="renderTransactions()">
+          <button onclick="openTxModal()" class="btn-primary">+ Add transaction</button>
+        </div>
       </div>
       <div class="card" style="overflow-x:auto;">
         <table>
@@ -1721,24 +1746,20 @@
       <label class="field-label" id="tx-category-label">Expense Category</label>
       <select id="tx-category" class="field-input mb-3" onchange="onTxCategoryChange()"></select>
       <div id="tx-subcategory-wrap" class="mb-3 hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <label class="field-label" style="margin-bottom:0;">Subcategory <span style="color:var(--rose);">*</span> <span id="tx-subcategory-parent" class="breadcrumb-tag"></span></label>
-          <span style="font-size:11.5px; color:var(--muted); font-weight:500;">Select one or more</span>
-        </div>
-        <div id="tx-subcategory-chips" style="display:flex; flex-wrap:wrap; gap:6px; max-height:130px; overflow-y:auto; border:1px solid var(--line); border-radius:var(--radius-sm); padding:8px; background:var(--surface-2);"></div>
+        <label class="field-label">Subcategory <span style="color:var(--rose);">*</span> <span id="tx-subcategory-parent" class="breadcrumb-tag"></span></label>
+        <select id="tx-subcategory" class="field-input"></select>
       </div>
       <label class="field-label">Note (optional)</label>
       <input type="text" id="tx-description" placeholder="Optional note" class="field-input mb-3">
-      <div class="mb-3">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <label class="field-label" style="margin-bottom:0;">Payment method(s) <span style="color:var(--rose);">*</span></label>
-          <span style="font-size:11.5px; color:var(--muted); font-weight:500;">Select 1 to 3</span>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+        <div>
+          <label class="field-label">Payment method <span style="color:var(--rose);">*</span></label>
+          <select id="tx-payment" class="field-input"></select>
         </div>
-        <div id="tx-payment-chips" style="display:flex; flex-wrap:wrap; gap:6px; padding:2px;"></div>
-      </div>
-      <div class="mb-4">
-        <label class="field-label">Amount</label>
-        <input type="number" step="0.01" min="0" id="tx-amount" placeholder="0.00" class="field-input figure" required>
+        <div>
+          <label class="field-label">Amount</label>
+          <input type="number" step="0.01" min="0" id="tx-amount" placeholder="0.00" class="field-input figure" required>
+        </div>
       </div>
       <button type="submit" id="tx-modal-submit" class="btn-primary" style="width:100%;">Save Transaction</button>
     </form>
@@ -2042,7 +2063,7 @@ const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"
 
 /* ---------------- Excel-Style Multi-Month Filter Engine ---------------- */
 let comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
-let dashboardSelectedMonths = [];
+let dashboardSelectedMonths = [9];
 
 function getExcelMonths(type){
   return type === 'comparison' ? comparisonSelectedMonths : dashboardSelectedMonths;
@@ -2160,7 +2181,7 @@ function updateExcelFilterUI(type){
 
   if(summaryEl){
     if(selected.length === 0){
-      summaryEl.textContent = 'Select Month(s)';
+      summaryEl.textContent = 'No Months Selected';
     } else if(selected.length === 12){
       summaryEl.textContent = 'All Months (12)';
     } else if(selected.length === 1){
@@ -3461,7 +3482,7 @@ function initDashboardSelectors(){
   }
   if(dashboardSelYear===undefined){ dashboardSelYear = defaultYear; }
   if(dashboardSelMonth===undefined){ dashboardSelMonth = defaultMonth; }
-  if(dashboardSelectedMonths === undefined || dashboardSelectedMonths === null){
+  if(!dashboardSelectedMonths || !dashboardSelectedMonths.length){
     dashboardSelectedMonths = [dashboardSelMonth];
   }
   renderExcelFilterList('dashboard');
@@ -4011,12 +4032,13 @@ function renderTxCategoryFilter(){
 
 function renderTxSubCategoryFilter(){
   const field = document.getElementById('tx-filter-subcategory-field');
-  const container = document.getElementById('tx-filter-subcat-chips');
-  if(!field || !container) return;
+  const selector = document.getElementById('tx-filter-subcategory');
+  if(!field || !selector) return;
 
   if(txFilter === 'income' || txFilter === 'savings' || txCategoryFilter === 'all'){
     field.classList.add('hidden');
     txSubCategoryFilter = 'all';
+    selector.innerHTML = '';
     return;
   }
 
@@ -4033,21 +4055,19 @@ function renderTxSubCategoryFilter(){
   if(allSubcats.length === 0){
     field.classList.add('hidden');
     txSubCategoryFilter = 'all';
+    selector.innerHTML = '';
     return;
   }
 
   field.classList.remove('hidden');
   if(!allSubcats.includes(txSubCategoryFilter)) txSubCategoryFilter = 'all';
 
-  const chips = [{key:'all', label:'All'}, ...allSubcats.map(s => ({key:s, label:s}))];
-  container.innerHTML = chips.map(c => `
-    <button class="tx-subcat-chip ${txSubCategoryFilter === c.key ? 'active' : ''}" onclick="setTxSubCategoryFilter('${escapeHtml(c.key)}')">${escapeHtml(c.label)}</button>
-  `).join('');
+  selector.innerHTML = '<option value="all">All Subcategories</option>' + allSubcats.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  selector.value = txSubCategoryFilter;
 }
 
 function setTxSubCategoryFilter(subcat){
   txSubCategoryFilter = subcat;
-  renderTxSubCategoryFilter();
   renderTransactions();
 }
 
@@ -4320,61 +4340,50 @@ function confirmDelete(){
 
 /* tx modal */
 let editingTxId = null;
-let selectedModalSubcategories = [];
-let selectedModalPaymentMethods = ['Cash'];
 
-function toggleModalSubcategory(subcat){
-  const idx = selectedModalSubcategories.indexOf(subcat);
-  if(idx > -1){
-    selectedModalSubcategories.splice(idx, 1);
-  } else {
-    selectedModalSubcategories.push(subcat);
+function renderModalSubcategories(selectedValue = ''){
+  const wrap = document.getElementById('tx-subcategory-wrap');
+  const selector = document.getElementById('tx-subcategory');
+  if(!wrap || !selector) return;
+
+  if(txType !== 'expense'){
+    wrap.classList.add('hidden');
+    selector.innerHTML = '';
+    return;
   }
-  renderModalSubcategories();
-}
 
-function renderModalSubcategories(){
-  const container = document.getElementById('tx-subcategory-chips');
-  if(!container) return;
   const cat = document.getElementById('tx-category').value;
   const catObj = findExpenseCategory(cat);
   const subs = catObj ? catObj.subcategories : [];
   if(!subs || !subs.length){
-    container.innerHTML = `<span style="font-size:12px; color:var(--muted-2);">No subcategories defined for ${escapeHtml(cat)}</span>`;
+    wrap.classList.add('hidden');
+    selector.innerHTML = '';
     return;
   }
-  container.innerHTML = subs.map(s => {
-    const isSelected = selectedModalSubcategories.includes(s);
-    return `<button type="button" class="tx-subcat-chip ${isSelected ? 'active' : ''}" onclick="toggleModalSubcategory('${escapeHtml(s)}')">${escapeHtml(s)}</button>`;
-  }).join('');
-}
 
-function toggleModalPaymentMethod(method){
-  const idx = selectedModalPaymentMethods.indexOf(method);
-  if(idx > -1){
-    if(selectedModalPaymentMethods.length === 1){
-      showToast('At least one payment method is required', 'warning');
-      return;
-    }
-    selectedModalPaymentMethods.splice(idx, 1);
+  wrap.classList.remove('hidden');
+  const parentTag = document.getElementById('tx-subcategory-parent');
+  if(parentTag) parentTag.textContent = `of ${cat}`;
+  selector.innerHTML = '<option value="">Select Subcategory</option>' + subs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  if(selectedValue && subs.includes(selectedValue)){
+    selector.value = selectedValue;
+  } else if(subs.length === 1){
+    selector.value = subs[0];
   } else {
-    if(selectedModalPaymentMethods.length >= 3){
-      showToast('You can select up to 3 payment methods', 'warning');
-      return;
-    }
-    selectedModalPaymentMethods.push(method);
+    selector.value = '';
   }
-  renderModalPaymentMethods();
 }
 
-function renderModalPaymentMethods(){
-  const container = document.getElementById('tx-payment-chips');
-  if(!container) return;
+function renderModalPaymentMethods(selectedValue = 'Cash'){
+  const selector = document.getElementById('tx-payment');
+  if(!selector) return;
   const methods = getPaymentMethods();
-  container.innerHTML = methods.map(p => {
-    const isSelected = selectedModalPaymentMethods.includes(p);
-    return `<button type="button" class="tx-subcat-chip ${isSelected ? 'active' : ''}" onclick="toggleModalPaymentMethod('${escapeHtml(p)}')">${escapeHtml(p)}</button>`;
-  }).join('');
+  selector.innerHTML = methods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  if(selectedValue && methods.includes(selectedValue)){
+    selector.value = selectedValue;
+  } else {
+    selector.value = methods[0] || 'Cash';
+  }
 }
 
 function openTxModal(editId = null){
@@ -4392,19 +4401,11 @@ function openTxModal(editId = null){
       setTxType(tx.type || 'expense');
       document.getElementById('tx-category').value = tx.category || '';
       
-      if(tx.subCategory){
-        selectedModalSubcategories = tx.subCategory.split(',').map(s => s.trim()).filter(Boolean);
-      } else {
-        selectedModalSubcategories = [];
-      }
-      onTxCategoryChange();
+      const subVal = tx.subCategory ? tx.subCategory.split(',')[0].trim() : '';
+      renderModalSubcategories(subVal);
 
-      if(tx.paymentMethod){
-        selectedModalPaymentMethods = tx.paymentMethod.split(',').map(m => m.trim()).filter(Boolean);
-      } else {
-        selectedModalPaymentMethods = ['Other'];
-      }
-      renderModalPaymentMethods();
+      const payVal = tx.paymentMethod ? tx.paymentMethod.split(',')[0].trim() : 'Cash';
+      renderModalPaymentMethods(payVal);
 
       document.getElementById('tx-description').value = tx.description || '';
       document.getElementById('tx-amount').value = tx.amount !== undefined ? tx.amount : '';
@@ -4418,16 +4419,12 @@ function openTxModal(editId = null){
   document.getElementById('tx-date').value = ymd(new Date());
   document.getElementById('tx-description').value = '';
   document.getElementById('tx-amount').value = '';
-  selectedModalSubcategories = [];
-  selectedModalPaymentMethods = ['Cash'];
   setTxType('expense');
-  renderModalPaymentMethods();
+  renderModalPaymentMethods('Cash');
 }
 
 function closeTxModal(){
   editingTxId = null;
-  selectedModalSubcategories = [];
-  selectedModalPaymentMethods = ['Cash'];
   document.getElementById('tx-modal-backdrop').classList.add('hidden');
 }
 
@@ -4441,31 +4438,13 @@ function setTxType(t){
   if(t==='income') cats = DB.categories.income;
   else if(t==='savings') cats = (DB.savingsGoals||[]).map(goal=>goal.name);
   else cats = DB.categories.expense.map(c=>c.name);
-  document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
   onTxCategoryChange();
   renderModalPaymentMethods();
 }
 
 function onTxCategoryChange(){
-  const cat = document.getElementById('tx-category').value;
-  const wrap = document.getElementById('tx-subcategory-wrap');
-  if(txType !== 'expense'){
-    wrap.classList.add('hidden');
-    selectedModalSubcategories = [];
-    return;
-  }
-  const catObj = findExpenseCategory(cat);
-  const subs = catObj ? catObj.subcategories : [];
-  if(subs && subs.length){
-    wrap.classList.remove('hidden');
-    document.getElementById('tx-subcategory-parent').textContent = `of ${cat}`;
-    // Retain only currently selected subcategories that are valid for this category
-    selectedModalSubcategories = selectedModalSubcategories.filter(s => subs.includes(s));
-    renderModalSubcategories();
-  } else {
-    wrap.classList.add('hidden');
-    selectedModalSubcategories = [];
-  }
+  renderModalSubcategories();
 }
 
 function handleSaveTransaction(e){
@@ -4478,23 +4457,26 @@ function handleSaveTransaction(e){
   const dateVal = document.getElementById('tx-date').value || ymd(new Date());
   const catVal = document.getElementById('tx-category').value;
 
-  // Strict validation: Subcategory is mandatory for expense
+  // Strict validation: Subcategory is mandatory for expense when subcategories exist
+  let subVal = undefined;
   if(txType === 'expense'){
     const catObj = findExpenseCategory(catVal);
     const hasSubs = catObj && catObj.subcategories && catObj.subcategories.length > 0;
-    if(hasSubs && (!selectedModalSubcategories || selectedModalSubcategories.length === 0)){
+    const subSelect = document.getElementById('tx-subcategory');
+    const selectedSub = subSelect ? subSelect.value.trim() : '';
+    if(hasSubs && !selectedSub){
       showToast('Please select a subcategory for this expense.', 'error');
+      if(subSelect) subSelect.focus();
       return;
+    }
+    if(selectedSub){
+      subVal = selectedSub;
     }
   }
 
-  const subVal = (txType === 'expense' && selectedModalSubcategories.length) 
-    ? selectedModalSubcategories.join(', ') 
-    : undefined;
   const descVal = document.getElementById('tx-description').value.trim() || undefined;
-  const payVal = (selectedModalPaymentMethods && selectedModalPaymentMethods.length)
-    ? selectedModalPaymentMethods.join(', ')
-    : 'Other';
+  const paySelect = document.getElementById('tx-payment');
+  const payVal = (paySelect && paySelect.value.trim()) ? paySelect.value.trim() : 'Cash';
 
   if(editingTxId){
     const index = DB.transactions.findIndex(t => t.id === editingTxId);
@@ -5085,7 +5067,7 @@ function handleDeletePaymentMethod(name){
   });
   DB.paymentMethods = methods.filter(m => m !== name);
   saveDB(true);
-  showToast(`Deleted "${name}"${reassignedCount > 0 ? ` (${reassignedCount} transaction(s) reassigned to Other)` : ''}`, 'info');
+  showToast(`Deleted "${name}"${reassignedCount > 0 ? ` (${reassignedCount === 1 ? '1 transaction' : `${reassignedCount} transactions`} reassigned to Other)` : ''}`, 'info');
   renderPaymentMethodsSettings();
   renderModalPaymentMethods();
   renderTransactions();
