@@ -1917,6 +1917,45 @@
   </div>
 </div>
 
+<div id="edit-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditBudgetModal()">
+  <div class="modal" style="max-width:390px;">
+    <button class="modal-close" onclick="closeEditBudgetModal()">✕</button>
+    <h2>Edit Budget</h2>
+    <p id="edit-budget-title" class="text-sm muted" style="margin:-6px 0 16px; font-weight:500;"></p>
+    <form onsubmit="handleSaveEditBudget(event)">
+      <input type="hidden" id="edit-budget-id">
+      <label class="field-label" id="edit-budget-amount-label">Monthly Limit</label>
+      <input type="text" inputmode="decimal" id="edit-budget-amount" class="field-input figure mb-4" placeholder="e.g. 5000" required>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditBudgetModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="edit-goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditGoalModal()">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeEditGoalModal()">✕</button>
+    <h2>Edit Savings Goal</h2>
+    <form onsubmit="handleSaveEditGoal(event)">
+      <input type="hidden" id="edit-goal-id">
+      <label class="field-label">Goal Name</label>
+      <input type="text" id="edit-goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
+      <label class="field-label">Start Date</label>
+      <input type="date" id="edit-goal-start" class="field-input mb-3" required>
+      <label class="field-label" id="edit-goal-target-label">Target Amount</label>
+      <input type="number" min="0" step="any" id="edit-goal-target" placeholder="1000" class="field-input figure mb-3" required>
+      <label class="field-label">Deadline (optional)</label>
+      <input type="date" id="edit-goal-deadline" class="field-input mb-5">
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditGoalModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="currency-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal" style="max-width:380px;">
     <h2>Choose Currency</h2>
@@ -3528,11 +3567,22 @@ function monthlyTrend(txs, monthsBack){
   return out;
 }
 function monthBudgetSummary(month, year){
-  const rows = budgetProgress(DB.transactions, DB.budgets, month, year).filter(b=>!b.subCategory);
-  if(rows.length===0) return null;
-  const budgeted = rows.reduce((s,r)=>s+r.budgetAmount,0);
-  const spent = rows.reduce((s,r)=>s+r.spent,0);
-  return { budgeted, spent, over: spent>budgeted, categoriesOver: rows.filter(r=>r.overspent).length };
+  const rows = budgetProgress(DB.transactions, DB.budgets, month, year);
+  const catNames = [...new Set(rows.map(r=>r.category))];
+  if(catNames.length===0) return null;
+  let budgeted = 0;
+  let spent = 0;
+  let categoriesOver = 0;
+  catNames.forEach(c => {
+    const main = rows.find(r => r.category === c && !r.subCategory);
+    const subs = rows.filter(r => r.category === c && r.subCategory);
+    const bAmt = main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
+    const sAmt = main ? main.spent : subs.reduce((s,r)=>s+r.spent, 0);
+    budgeted += bAmt;
+    spent += sAmt;
+    if(sAmt > bAmt) categoriesOver++;
+  });
+  return { budgeted, spent, over: spent>budgeted, categoriesOver };
 }
 /* ---------------- render: monthly reports ---------------- */
 let reportSelMonth, reportSelYear, reportOpenCategory = null;
@@ -3629,8 +3679,17 @@ function initComparison(){
   document.getElementById('comparison-metrics').innerHTML=REPORT_METRICS.map(metric=>`<label class="btn-chip active" style="border:1px solid var(--line);"><input type="checkbox" value="${metric.key}" checked onchange="renderComparison()" style="accent-color:var(--primary); margin-right:5px;">${metric.label}</label>`).join('');
   renderComparison();
 }
-function onComparisonChange(){ if(comparisonOpen) renderComparison(); }
-function comparisonBudget(month,year){ return DB.budgets.filter(b=>b.month===month&&b.year===year&&!b.subCategory).reduce((s,b)=>s+b.budgetAmount,0); }
+function comparisonBudget(month,year){
+  const rows = DB.budgets.filter(b=>b.month===month&&b.year===year);
+  const catNames = [...new Set(rows.map(r=>r.category))];
+  let budgeted = 0;
+  catNames.forEach(c => {
+    const main = rows.find(r => r.category === c && !r.subCategory);
+    const subs = rows.filter(r => r.category === c && r.subCategory);
+    budgeted += main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
+  });
+  return budgeted;
+}
 function comparisonValue(metric,month,year){ const totals=monthTotals(DB.transactions,month,year); return metric==='budget'?comparisonBudget(month,year):totals[metric]; }
 function renderComparison(){
   const year=parseInt(document.getElementById('comparison-year').value,10);
@@ -3683,7 +3742,14 @@ function renderReports(){
   initReportSelectors();
   const totals = monthTotals(DB.transactions, reportSelMonth, reportSelYear);
   const rows = reportCategoryRows(reportSelMonth, reportSelYear);
-  const categoryBudgets = DB.budgets.filter(b=>b.month===reportSelMonth && b.year===reportSelYear && !b.subCategory).reduce((sum,b)=>sum+b.budgetAmount, 0);
+  const reportRows = DB.budgets.filter(b=>b.month===reportSelMonth && b.year===reportSelYear);
+  const reportCatNames = [...new Set(reportRows.map(r=>r.category))];
+  let categoryBudgets = 0;
+  reportCatNames.forEach(c => {
+    const main = reportRows.find(r => r.category === c && !r.subCategory);
+    const subs = reportRows.filter(r => r.category === c && r.subCategory);
+    categoryBudgets += main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
+  });
   const actual = totals.expense;
   const remaining = categoryBudgets - actual;
   const monthLabel = `${MONTH_NAMES[reportSelMonth-1]} ${reportSelYear}`;
@@ -4054,9 +4120,14 @@ function periodTransactions(period){
   });
 }
 function dashboardBudgetRows(period){
-  return DB.budgets.filter(b=>period.months.includes(b.month)&&b.year===period.year&&!b.subCategory).map(b=>{
-    const spent=spentFor(DB.transactions,b.month,b.year,b.category,null);
-    return {...b,spent,budgetAmount:b.budgetAmount};
+  const pBudgets = DB.budgets.filter(b=>period.months.includes(b.month)&&b.year===period.year);
+  const catNames = [...new Set(pBudgets.map(r=>r.category))];
+  return catNames.map(cat => {
+    const main = pBudgets.find(b => b.category === cat && !b.subCategory);
+    const subs = pBudgets.filter(b => b.category === cat && b.subCategory);
+    const budgetAmount = main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
+    const spent = spentFor(DB.transactions, period.months[0], period.year, cat, null);
+    return { category: cat, spent, budgetAmount };
   });
 }
 function renderDashboardTopExpenses(periodTxs, totals){
@@ -5204,21 +5275,53 @@ function renderBudgets(){
   document.getElementById('budgets-year-label').textContent = DB.yearlyBudget.year;
 
   const rows = budgetProgress(DB.transactions, DB.budgets, budgetSelMonth, budgetSelYear);
-  const categoryRows = rows.filter(r=>!r.subCategory);
-  const totalBudget = categoryRows.reduce((s,r)=>s+r.budgetAmount,0);
-  const totalSpent = categoryRows.reduce((s,r)=>s+r.spent,0);
-  
+  const distinctCategories = [...new Set(rows.map(r => r.category))];
+
+  const catCards = distinctCategories.map(catName => {
+    const mainRow = rows.find(r => r.category === catName && !r.subCategory);
+    const subRows = rows.filter(r => r.category === catName && r.subCategory);
+    const hasMainBudget = !!mainRow;
+
+    let budgetAmount = 0;
+    let spent = 0;
+    if(hasMainBudget){
+      budgetAmount = mainRow.budgetAmount;
+      spent = mainRow.spent;
+    } else {
+      budgetAmount = subRows.reduce((s, r) => s + r.budgetAmount, 0);
+      spent = spentFor(DB.transactions, budgetSelMonth, budgetSelYear, catName, null);
+    }
+    const percent = budgetAmount > 0 ? Math.min(100, (spent / budgetAmount) * 100) : 0;
+    const overspent = spent > budgetAmount;
+    const remaining = budgetAmount - spent;
+
+    return {
+      category: catName,
+      hasMainBudget,
+      id: mainRow ? mainRow.id : null,
+      budgetAmount,
+      spent,
+      percent,
+      overspent,
+      remaining,
+      subRows
+    };
+  });
+
+  const totalBudget = catCards.reduce((s, c) => s + c.budgetAmount, 0);
+  const totalSpent = catCards.reduce((s, c) => s + c.spent, 0);
+
   const totalLabel = document.getElementById('budgets-total-label');
   if(totalLabel){
-    totalLabel.textContent = categoryRows.length ? `${fmt(totalSpent)} / ${fmt(totalBudget)}` : 'No active budgets';
+    totalLabel.textContent = catCards.length ? `${fmt(totalSpent)} / ${fmt(totalBudget)}` : 'No active budgets';
   }
 
   const remaining = totalBudget - totalSpent;
-  document.getElementById('budget-summary-grid').innerHTML = categoryRows.length ? `
+  document.getElementById('budget-summary-grid').innerHTML = catCards.length ? `
     <div class="budget-summary-item">
       <span class="label-eyebrow">Total Budget</span>
       <strong>${fmt(totalBudget)}</strong>
-      <span class="text-xs muted">${categoryRows.length} categor${categoryRows.length===1?'y':'ies'} configured</span>
+      <span class="text-xs muted">${catCards.length} categor${catCards.length===1?'y':'ies'} configured</span>
     </div>
     <div class="budget-summary-item">
       <span class="label-eyebrow">Spent (Budgeted)</span>
@@ -5248,12 +5351,11 @@ function renderBudgets(){
     </div>
   `;
 
-  document.getElementById('budgets-rows').innerHTML = categoryRows.length ? categoryRows.map(b => {
-    const subRows = rows.filter(r=>r.subCategory && r.category===b.category);
+  document.getElementById('budgets-rows').innerHTML = catCards.length ? catCards.map(b => {
     const isOpen = openBudgetCategory === b.category;
     const catObj = findExpenseCategory(b.category);
     const allSubs = catObj ? catObj.subcategories : [];
-    const usedSubs = new Set(subRows.map(s=>s.subCategory));
+    const usedSubs = new Set(b.subRows.map(s=>s.subCategory));
     const availableSubs = allSubs.filter(s=>!usedSubs.has(s));
     return `
     <div class="cat-block">
@@ -5264,23 +5366,29 @@ function renderBudgets(){
             <div style="display:flex; align-items:center; gap:8px;">
               <span class="figure muted">${fmt(b.spent)} / ${fmt(b.budgetAmount)}</span>
               ${b.overspent ? '<span class="badge badge-over">Over budget</span>' : '<span class="badge badge-ok">On track</span>'}
-              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
+              ${b.hasMainBudget ? `
+                <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
+              ` : ''}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .15s; color:var(--muted-2);"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
           <div class="progress-track"><div class="progress-fill ${b.overspent?'fill-rose':'fill-primary'}" style="width:${Math.min(100,b.percent)}%;"></div></div>
-          ${b.overspent?`<p class="text-xs" style="color:var(--rose); margin:5px 0 0; font-weight:500;">Over by ${fmt(b.spent-b.budgetAmount)}</p>`:`<p class="text-xs muted" style="margin:5px 0 0;">${fmt(b.remaining)} remaining${subRows.length?` · ${subRows.length} sub-category budget${subRows.length===1?'':'s'}`:''}</p>`}
+          ${b.overspent?`<p class="text-xs" style="color:var(--rose); margin:5px 0 0; font-weight:500;">Over by ${fmt(b.spent-b.budgetAmount)}</p>`:`<p class="text-xs muted" style="margin:5px 0 0;">${fmt(b.remaining)} remaining${b.subRows.length?` · ${b.subRows.length} sub-category budget${b.subRows.length===1?'':'s'}`:''}</p>`}
         </div>
       </div>
       <div class="cat-block-body ${isOpen?'open':''}">
-        ${subRows.map(s => `
+        ${b.subRows.map(s => `
           <div class="subcat-row">
             <div style="flex:1;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="breadcrumb-tag">${b.category} → </span>&nbsp;<span style="font-weight:500; flex:1;">${s.subCategory}</span>
+                <span style="font-weight:500; flex:1;">${s.subCategory}</span>
                 <span class="figure muted" style="margin-right:8px;">${fmt(s.spent)} / ${fmt(s.budgetAmount)}</span>
                 ${s.overspent ? '<span class="badge badge-over">Over</span>' : '<span class="badge badge-ok">OK</span>'}
-                <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" aria-label="Delete ${s.subCategory} budget">✕</button>
+                <div style="display:flex; align-items:center; gap:4px; margin-left:6px;">
+                  <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${s.id}')" title="Edit subcategory budget" aria-label="Edit ${s.subCategory} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                  <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" aria-label="Delete ${s.subCategory} budget">✕</button>
+                </div>
               </div>
               <div class="progress-track" style="height:5px; margin-top:6px;"><div class="progress-fill ${s.overspent?'fill-rose':'fill-primary'}" style="width:${Math.min(100,s.percent)}%;"></div></div>
             </div>
@@ -5298,12 +5406,17 @@ function renderBudgets(){
     </div>
   `;
 
-  const used = new Set(categoryRows.map(r=>r.category));
-  const available = (DB.categories.expense||[]).filter(category=>{
-    if(!used.has(category.name)) return true;
-    const budgetedSubs = new Set(rows.filter(row=>row.subCategory&&row.category===category.name).map(row=>row.subCategory));
-    return (category.subcategories||[]).some(subCategory=>!budgetedSubs.has(subCategory));
+  const fullyBudgetedCats = new Set();
+  (DB.categories.expense||[]).forEach(category => {
+    const hasMain = DB.budgets.some(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category.name && !b.subCategory);
+    const allSubs = category.subcategories || [];
+    const budgetedSubs = new Set(DB.budgets.filter(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category.name && b.subCategory).map(b => b.subCategory));
+    const hasUnbudgetedSub = allSubs.some(s => !budgetedSubs.has(s));
+    if(hasMain && !hasUnbudgetedSub){
+      fullyBudgetedCats.add(category.name);
+    }
   });
+  const available = (DB.categories.expense||[]).filter(category => !fullyBudgetedCats.has(category.name));
   const form = document.getElementById('budget-add-form');
   if(available.length===0){
     form.style.display='none';
@@ -5356,37 +5469,56 @@ function yearlyFieldHtml(key,label,value){
 function updateYearly(key, value){ DB.yearlyBudget[key] = parseFloat(value)||0; saveDB(); renderAllForCurrentPage(); }
 function handleAddBudget(e){
   e.preventDefault();
-  const amount = parseFloat(document.getElementById('budget-new-amount').value);
-  if(!amount || amount<=0) return;
-  const category=document.getElementById('budget-new-category').value;
-  const subCategory=document.getElementById('budget-new-subcategory').value||null;
-  const duplicate=DB.budgets.some(budget=>budget.month===budgetSelMonth&&budget.year===budgetSelYear&&budget.category===category&&(budget.subCategory||null)===subCategory);
-  const msgEl = document.getElementById('budget-add-message');
-  if(duplicate){
-    if(msgEl){
-      msgEl.innerHTML = `⚠️ Budget for "${escapeHtml(category)}${subCategory ? ` / ${escapeHtml(subCategory)}` : ''}" already exists this month!`;
-      msgEl.className = 'text-xs settings-add-message message-error';
-    }
+  const amtInput = document.getElementById('budget-new-amount');
+  const amount = evaluateTxAmountInput(amtInput);
+  if(!amount || amount<=0){
+    showToast('Please enter a valid budget amount greater than 0', 'error');
     return;
   }
+  const category=document.getElementById('budget-new-category').value;
+  const subCategoryVal=document.getElementById('budget-new-subcategory').value;
+  const subCategory=subCategoryVal ? subCategoryVal.trim() : null;
+
+  const existingMain = DB.budgets.some(b=>b.month===budgetSelMonth&&b.year===budgetSelYear&&b.category===category&&!b.subCategory);
+  if(!subCategory && existingMain){
+    showToast(`Whole-category budget for "${category}" already exists for this month. You can edit it above.`, 'warning');
+    return;
+  }
+
+  const duplicate=DB.budgets.some(budget=>budget.month===budgetSelMonth&&budget.year===budgetSelYear&&budget.category===category&&(budget.subCategory||null)===subCategory);
+  if(duplicate){
+    showToast(`Budget for "${category}${subCategory ? ` (${subCategory})` : ''}" already exists for this month. You can edit it above.`, 'warning');
+    return;
+  }
+
   DB.budgets.push({ id:uid(), month:budgetSelMonth, year:budgetSelYear, category, subCategory, budgetAmount:amount });
-  saveDB();
-  document.getElementById('budget-new-amount').value='';
+  openBudgetCategory = category;
+  saveDB(true);
+  amtInput.value='';
+  const msgEl = document.getElementById('budget-add-message');
   if(msgEl){ msgEl.textContent=''; msgEl.className='text-xs muted settings-add-message'; }
   renderAllForCurrentPage();
-  showToast(`Set budget for ${category}${subCategory ? ` (${subCategory})` : ''}`);
+  showToast(`Set budget for ${category}${subCategory ? ` (${subCategory})` : ''}: ${fmt(amount)}`);
 }
 function onBudgetCategoryChoice(){
-  const category=document.getElementById('budget-new-category').value;
+  const categorySelect=document.getElementById('budget-new-category');
+  if(!categorySelect) return;
+  const category=categorySelect.value;
   const categoryObj=findExpenseCategory(category);
   const existing=DB.budgets.filter(budget=>budget.month===budgetSelMonth&&budget.year===budgetSelYear&&budget.category===category);
   const hasCategoryBudget=existing.some(budget=>!budget.subCategory);
   const usedSubs=new Set(existing.filter(budget=>budget.subCategory).map(budget=>budget.subCategory));
   const subcategorySelect=document.getElementById('budget-new-subcategory');
+  if(!subcategorySelect) return;
   const availableSubs=(categoryObj?.subcategories||[]).filter(subCategory=>!usedSubs.has(subCategory));
-  subcategorySelect.innerHTML=(hasCategoryBudget?'<option value="">Choose a subcategory</option>':'<option value="">Whole category</option>')+availableSubs.map(subCategory=>`<option value="${subCategory}">${subCategory}</option>`).join('');
-  subcategorySelect.disabled=!availableSubs.length;
-  if(hasCategoryBudget&&!availableSubs.length) subcategorySelect.value='';
+
+  if(hasCategoryBudget){
+    subcategorySelect.innerHTML=(availableSubs.length?'<option value="" disabled selected>Select a subcategory...</option>':'<option value="" disabled selected>All subcategories budgeted</option>')+availableSubs.map(s=>`<option value="${s}">${s}</option>`).join('');
+    subcategorySelect.disabled=!availableSubs.length;
+  } else {
+    subcategorySelect.innerHTML='<option value="">Whole category</option>'+availableSubs.map(s=>`<option value="${s}">${s}</option>`).join('');
+    subcategorySelect.disabled=false;
+  }
 }
 function copyPreviousBudget(){
   const previous = new Date(budgetSelYear,budgetSelMonth-2,1);
@@ -5394,14 +5526,15 @@ function copyPreviousBudget(){
   if(!source.length) return;
   const existing = new Set(DB.budgets.filter(b=>b.month===budgetSelMonth&&b.year===budgetSelYear).map(b=>`${b.category}|${b.subCategory||''}`));
   source.forEach(b=>{ const key=`${b.category}|${b.subCategory||''}`; if(!existing.has(key)) DB.budgets.push({...b,id:uid(),month:budgetSelMonth,year:budgetSelYear}); });
-  saveDB(); renderAllForCurrentPage();
+  saveDB(true); renderAllForCurrentPage();
 }
 let budgetSubcatModalCategory = null;
 function openBudgetSubcatModal(category){
   budgetSubcatModalCategory = category;
-  document.getElementById('budget-subcat-modal-parent').textContent = `of ${category}`;
+  const parentEl = document.getElementById('budget-subcat-modal-parent');
+  if(parentEl) parentEl.textContent = category;
   const catObj = findExpenseCategory(category);
-  const usedSubs = new Set(budgetProgress(DB.transactions, DB.budgets, budgetSelMonth, budgetSelYear).filter(r=>r.subCategory && r.category===category).map(r=>r.subCategory));
+  const usedSubs = new Set(DB.budgets.filter(b=>b.month===budgetSelMonth&&b.year===budgetSelYear&&b.category===category&&b.subCategory).map(b=>b.subCategory));
   const available = (catObj ? catObj.subcategories : []).filter(s=>!usedSubs.has(s));
   document.getElementById('budget-subcat-select').innerHTML = available.map(s=>`<option value="${s}">${s}</option>`).join('');
   document.getElementById('budget-subcat-amount').value = '';
@@ -5410,20 +5543,68 @@ function openBudgetSubcatModal(category){
 function closeBudgetSubcatModal(){ document.getElementById('budget-subcat-modal-backdrop').classList.add('hidden'); }
 function handleAddSubcatBudget(){
   const sub = document.getElementById('budget-subcat-select').value;
-  const amount = parseFloat(document.getElementById('budget-subcat-amount').value);
-  if(!sub || !amount || amount<=0) return;
+  const amtInput = document.getElementById('budget-subcat-amount');
+  const amount = evaluateTxAmountInput(amtInput);
+  if(!sub || !amount || amount<=0){
+    showToast('Please enter a valid amount greater than 0', 'error');
+    return;
+  }
   const duplicate = DB.budgets.some(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === budgetSubcatModalCategory && b.subCategory === sub);
   if(duplicate){
-    showToast(`Budget for "${sub}" already exists for this month`, 'warning');
+    showToast(`Budget for "${sub}" already exists for this month. You can edit it above.`, 'warning');
     closeBudgetSubcatModal();
     return;
   }
   DB.budgets.push({ id:uid(), month:budgetSelMonth, year:budgetSelYear, category:budgetSubcatModalCategory, subCategory:sub, budgetAmount:amount });
-  saveDB();
-  closeBudgetSubcatModal();
   openBudgetCategory = budgetSubcatModalCategory;
+  saveDB(true);
+  closeBudgetSubcatModal();
   renderAllForCurrentPage();
   showToast(`Added ${sub} budget: ${fmt(amount)}`);
+}
+
+function openEditBudgetModal(id){
+  const b = DB.budgets.find(item => item.id === id);
+  if(!b) return;
+  document.getElementById('edit-budget-id').value = id;
+  const titleEl = document.getElementById('edit-budget-title');
+  if(titleEl){
+    titleEl.textContent = b.subCategory ? `${b.category} → ${b.subCategory}` : `${b.category} (Whole Category)`;
+  }
+  const labelEl = document.getElementById('edit-budget-amount-label');
+  if(labelEl){
+    labelEl.textContent = `Monthly Limit (${currencySymbol()})`;
+  }
+  const amtInput = document.getElementById('edit-budget-amount');
+  if(amtInput){
+    amtInput.value = b.budgetAmount;
+  }
+  document.getElementById('edit-budget-modal-backdrop').classList.remove('hidden');
+}
+function closeEditBudgetModal(){
+  const backdrop = document.getElementById('edit-budget-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+function handleSaveEditBudget(e){
+  e.preventDefault();
+  const id = document.getElementById('edit-budget-id').value;
+  const amtInput = document.getElementById('edit-budget-amount');
+  const amount = evaluateTxAmountInput(amtInput);
+  if(!amount || amount <= 0){
+    showToast('Please enter a valid budget amount greater than 0', 'error');
+    return;
+  }
+  const b = DB.budgets.find(item => item.id === id);
+  if(!b){
+    closeEditBudgetModal();
+    return;
+  }
+  b.budgetAmount = amount;
+  openBudgetCategory = b.category;
+  saveDB(true);
+  closeEditBudgetModal();
+  renderAllForCurrentPage();
+  showToast(`Updated budget for ${b.category}${b.subCategory ? ` (${b.subCategory})` : ''} to ${fmt(amount)}`);
 }
 
 /* ---------------- render: savings ---------------- */
@@ -5455,7 +5636,7 @@ function rolloverGoal(id){
   if(!goal) return;
   goal.startDate=shiftDateByMonth(goal.startDate||ymd(new Date()));
   if(goal.deadline) goal.deadline=shiftDateByMonth(goal.deadline);
-  saveDB(); renderSavings();
+  saveDB(true); renderSavings();
 }
 function renderSavings(){
   initSavingsFilters();
@@ -5489,7 +5670,11 @@ function renderSavings(){
     return `<div class="card" style="padding:22px;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
         <div><h3 class="section-title">${g.name}</h3>${g.deadline?`<p class="text-xs muted" style="margin:2px 0 0;">Target date: ${g.deadline}</p>`:''}</div>
-        <div style="display:flex; align-items:center; gap:8px;"><span class="figure" style="font-size:17px; font-weight:600; color:var(--amber);">${Math.round(percent)}%</span><button class="icon-btn" onclick="requestDelete('goal','${g.id}','${g.name.replace(/'/g,"\\'")}')" title="Delete savings goal" aria-label="Delete savings goal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2-2H7a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="figure" style="font-size:17px; font-weight:600; color:var(--amber);">${Math.round(percent)}%</span>
+          <button class="icon-btn" onclick="openEditGoalModal('${g.id}')" title="Edit savings goal" aria-label="Edit ${g.name.replace(/'/g,"\\'")}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="icon-btn" onclick="requestDelete('goal','${g.id}','${g.name.replace(/'/g,"\\'")}')" title="Delete savings goal" aria-label="Delete savings goal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2-2H7a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+        </div>
       </div>
       <div class="progress-track"><div class="progress-fill ${reached?'fill-teal':'fill-amber'}" style="width:${percent}%;"></div></div>
       <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:14px;">
@@ -5549,21 +5734,89 @@ function contribute(id){
     paymentMethod: paymentValue,
     amount: val
   });
-  saveDB(); renderAllForCurrentPage();
+  saveDB(true); renderAllForCurrentPage();
 }
 function openGoalModal(){ document.getElementById('goal-modal-backdrop').classList.remove('hidden'); }
 function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classList.add('hidden'); }
 function handleAddGoal(e){
   e.preventDefault();
-  const name = document.getElementById('goal-name').value;
+  const name = document.getElementById('goal-name').value.trim();
   const startDate = document.getElementById('goal-start').value;
   const target = parseFloat(document.getElementById('goal-target').value);
   const deadline = document.getElementById('goal-deadline').value || undefined;
-  if(!name || !startDate || !target || target<=0 || (deadline&&deadline<startDate)) return;
+  if(!name || !startDate || !target || target<=0 || (deadline&&deadline<startDate)){
+    showToast('Please enter valid savings goal details', 'error');
+    return;
+  }
+  if(DB.savingsGoals.some(g => g.name.toLowerCase() === name.toLowerCase())){
+    showToast(`A savings goal named "${name}" already exists`, 'warning');
+    return;
+  }
   DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline });
-  saveDB(); closeGoalModal();
+  saveDB(true); closeGoalModal();
   document.getElementById('goal-name').value=''; document.getElementById('goal-start').value=''; document.getElementById('goal-target').value=''; document.getElementById('goal-deadline').value='';
   renderAllForCurrentPage();
+  showToast(`Created savings goal "${name}"`);
+}
+
+function openEditGoalModal(id){
+  const g = DB.savingsGoals.find(item => item.id === id);
+  if(!g) return;
+  document.getElementById('edit-goal-id').value = id;
+  document.getElementById('edit-goal-name').value = g.name || '';
+  document.getElementById('edit-goal-start').value = g.startDate || '';
+  document.getElementById('edit-goal-target').value = g.targetAmount || '';
+  document.getElementById('edit-goal-deadline').value = g.deadline || '';
+  const labelEl = document.getElementById('edit-goal-target-label');
+  if(labelEl){
+    labelEl.textContent = `Target Amount (${currencySymbol()})`;
+  }
+  document.getElementById('edit-goal-modal-backdrop').classList.remove('hidden');
+}
+function closeEditGoalModal(){
+  const backdrop = document.getElementById('edit-goal-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+function handleSaveEditGoal(e){
+  e.preventDefault();
+  const id = document.getElementById('edit-goal-id').value;
+  const g = DB.savingsGoals.find(item => item.id === id);
+  if(!g){
+    closeEditGoalModal();
+    return;
+  }
+  const newName = document.getElementById('edit-goal-name').value.trim();
+  const startDate = document.getElementById('edit-goal-start').value;
+  const target = parseFloat(document.getElementById('edit-goal-target').value);
+  const deadline = document.getElementById('edit-goal-deadline').value || undefined;
+  if(!newName || !startDate || !target || target <= 0 || (deadline && deadline < startDate)){
+    showToast('Please check the goal fields and enter valid values', 'error');
+    return;
+  }
+
+  if(newName.toLowerCase() !== g.name.toLowerCase() && DB.savingsGoals.some(item => item.id !== id && item.name.toLowerCase() === newName.toLowerCase())){
+    showToast(`A savings goal named "${newName}" already exists`, 'warning');
+    return;
+  }
+
+  const oldName = g.name;
+  g.name = newName;
+  g.startDate = startDate;
+  g.targetAmount = target;
+  g.deadline = deadline;
+
+  if(oldName !== newName){
+    (DB.transactions || []).forEach(tx => {
+      if(tx.type === 'savings' && tx.category === oldName){
+        tx.category = newName;
+      }
+    });
+  }
+
+  saveDB(true);
+  closeEditGoalModal();
+  renderAllForCurrentPage();
+  showToast(`Updated savings goal "${newName}"`);
 }
 
 /* ---------------- render: settings ---------------- */
@@ -6049,10 +6302,14 @@ window.addEventListener('keydown', (e) => {
     if (txEl && !txEl.classList.contains('hidden')) closeTxModal();
     const bSubEl = document.getElementById('budget-subcat-modal-backdrop');
     if (bSubEl && !bSubEl.classList.contains('hidden')) closeBudgetSubcatModal();
+    const editBudgetEl = document.getElementById('edit-budget-modal-backdrop');
+    if (editBudgetEl && !editBudgetEl.classList.contains('hidden')) closeEditBudgetModal();
     const subEl = document.getElementById('subcat-modal-backdrop');
     if (subEl && !subEl.classList.contains('hidden')) closeSubcatModal();
     const goalEl = document.getElementById('goal-modal-backdrop');
     if (goalEl && !goalEl.classList.contains('hidden')) closeGoalModal();
+    const editGoalEl = document.getElementById('edit-goal-modal-backdrop');
+    if (editGoalEl && !editGoalEl.classList.contains('hidden')) closeEditGoalModal();
     const authEl = document.getElementById('auth-modal-backdrop');
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
     const deleteAccountEl = document.getElementById('delete-account-modal-backdrop');
