@@ -732,6 +732,7 @@
 
   /* ---------- Grid helpers ---------- */
   .grid{display:grid; gap:16px;}
+  .grid > *{min-width:0; max-width:100%;}
   .grid-4{grid-template-columns:repeat(1,1fr);}
   @media(min-width:640px){ .grid-4{grid-template-columns:repeat(2,1fr);} }
   @media(min-width:1024px){ .grid-4{grid-template-columns:repeat(4,1fr);} }
@@ -985,8 +986,9 @@
   }
 
   @media(max-width:768px){
-    #app-shell{display:flex; align-items:stretch;}
-    #sidebar{width:64px; height:100vh; min-height:100vh; position:sticky; top:0; padding:16px 6px;}
+    body{overflow-x:hidden;}
+    #app-shell{display:flex; align-items:stretch; width:100%; max-width:100vw; overflow-x:hidden;}
+    #sidebar{width:64px; height:100vh; min-height:100vh; position:sticky; top:0; padding:16px 6px; flex-shrink:0;}
     #sidebar .brand-title,
     #sidebar .nav-section-label,
     #sidebar .nav-link span,
@@ -1001,7 +1003,7 @@
     #sidebar .user-sidebar-profile{justify-content:center; padding:10px 0; border:none; background:none;}
     #sidebar .sidebar-auth-btn{padding:8px 0; justify-content:center;}
     #sidebar .sidebar-auth-btn svg{margin:0 !important;}
-    #main-content{width:calc(100% - 64px); padding:20px 16px 32px;}
+    #main-content{flex:1; width:calc(100% - 64px); max-width:calc(100% - 64px); min-width:0; padding:20px 14px 32px; box-sizing:border-box; overflow-x:hidden;}
     .topbar{align-items:flex-start;}
     .topbar h1{font-size:22px;}
     .topbar p{line-height:1.45;}
@@ -3716,19 +3718,19 @@ function renderReportCharts(month, year){
   }
   window._chartReportRetries = 0;
 
-  if(typeof Chart !== 'undefined' && Chart.Tooltip && Chart.Tooltip.positioners && !Chart.Tooltip.positioners.mobileSafe){
+  if(typeof Chart !== 'undefined' && Chart.Tooltip && Chart.Tooltip.positioners){
     Chart.Tooltip.positioners.mobileSafe = function(items, eventPosition){
       if(!items || !items.length) return false;
       const chart = this.chart;
       const el = items[0].element;
-      const isMobile = window.innerWidth < 640 || chart.width < 520;
-      if(isMobile){
-        const left = chart.chartArea ? chart.chartArea.left : 0;
-        const right = chart.chartArea ? chart.chartArea.right : chart.width;
-        const midX = left + (right - left) / 2;
+      const left = chart.chartArea ? chart.chartArea.left : 0;
+      const right = chart.chartArea ? chart.chartArea.right : chart.width;
+      const midX = left + (right - left) / 2;
+      if(chart.width < 680 || window.innerWidth < 768){
         return { x: midX, y: el.y };
       }
-      return { x: el.x, y: el.y };
+      const clampedX = Math.max(left + 120, Math.min(right - 120, el.x));
+      return { x: clampedX, y: el.y };
     };
   }
 
@@ -3814,9 +3816,11 @@ function renderReportCharts(month, year){
         plugins: {
           legend: { display: false },
           tooltip: {
+            displayColors: false,
             position: 'mobileSafe',
+            xAlign: 'center',
             caretPadding: 6,
-            caretSize: 4,
+            caretSize: 0,
             backgroundColor: '#111321',
             titleColor: '#FFFFFF',
             titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
@@ -3856,7 +3860,8 @@ function renderReportCharts(month, year){
           x: {
             display: false,
             grid: { display: false },
-            border: { display: false }
+            border: { display: false },
+            grace: '14%'
           },
           y: {
             grid: { display: false },
@@ -4354,7 +4359,7 @@ function renderDashboardTrendChart(period){
         x: {
           grid: { display: false },
           border: { display: false },
-          ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 } }
+          ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, autoSkip: false }
         },
         y: {
           grid: { display: false },
@@ -4416,9 +4421,11 @@ function barChartConfig(trend){
       plugins:{
         legend:{labels:{color:textColor,font:{family:'Manrope',size:11}, boxWidth:10}},
         tooltip:{
+          displayColors: false,
           position: 'mobileSafe',
+          xAlign: 'center',
           caretPadding: 6,
-          caretSize: 4,
+          caretSize: 0,
           backgroundColor:'#111321',
           titleFont:{family:'Plus Jakarta Sans',size:12,weight:'700'},
           bodyFont:{family:'JetBrains Mono',size:11},
@@ -4435,7 +4442,7 @@ function barChartConfig(trend){
         x:{
           grid:{display:false},
           border:{display:false},
-          ticks:{color:textColor,font:{family:'Manrope',size:11}}
+          ticks:{color:textColor,font:{family:'Manrope',size:11}, autoSkip:false}
         },
         y:{
           grid:{display:false},
