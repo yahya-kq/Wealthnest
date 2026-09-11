@@ -853,9 +853,13 @@
   .transaction-top-actions{display:flex; align-items:center; gap:10px; margin-left:auto;}
   .transaction-toolbar-row-bottom{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; min-height:36px;}
   .transaction-filters-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
-  .transaction-dropdowns-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
-  .transaction-dropdown-wrap{min-width:160px;}
-  .transaction-dropdown-wrap select{height:36px; padding:6px 10px; font-size:13px;}
+  .transaction-dropdowns-row{display:flex; align-items:center; gap:8px; flex-wrap:nowrap;}
+  .transaction-dropdowns-row .excel-filter-dropdown-wrap{width:auto; min-width:115px; max-width:160px;}
+  .transaction-dropdowns-row .excel-filter-trigger{height:30px; padding:0 10px; font-size:11px; font-weight:400; border-radius:7px; width:auto;}
+  .transaction-dropdowns-row .excel-filter-summary{font-size:11px; font-weight:400;}
+  .transaction-dropdowns-row .excel-filter-caret{width:12px; height:12px;}
+  .transaction-dropdown-wrap{min-width:140px;}
+  .transaction-dropdown-wrap select{height:30px; padding:4px 8px; font-size:11.5px; font-weight:400;}
   .transaction-actions-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-left:auto;}
   .transaction-date-nav{display:inline-flex; align-items:center; gap:5px;}
   .report-kpi{padding:18px 20px;}
@@ -898,10 +902,10 @@
 
   /* Excel-style Multi-Month Filter */
   .excel-filter-dropdown-wrap{position:relative; width:100%; min-width:170px;}
-  .excel-filter-trigger{width:100%; height:38px; padding:0 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13.5px; font-weight:500; color:var(--ink); cursor:pointer; transition:border-color .15s, box-shadow .15s; text-align:left; box-sizing:border-box;}
+  .excel-filter-trigger{width:100%; height:38px; padding:0 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13.5px; font-weight:400; color:var(--ink); cursor:pointer; transition:border-color .15s, box-shadow .15s; text-align:left; box-sizing:border-box;}
   .excel-filter-trigger:hover{border-color:var(--primary);}
   .excel-filter-trigger:focus-visible{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-light);}
-  .excel-filter-summary{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; text-transform:none !important;}
+  .excel-filter-summary{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:400; text-transform:none !important;}
   .excel-filter-caret{color:var(--muted); flex-shrink:0; transition:transform .2s ease;}
   .excel-filter-dropdown-wrap.open .excel-filter-caret{transform:rotate(180deg);}
   .excel-filter-popover{position:absolute; top:calc(100% + 4px); left:0; min-width:220px; width:100%; background:#FFFFFF; border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 30px -4px rgba(15,23,42,0.18), 0 4px 6px -2px rgba(15,23,42,0.06); z-index:200; padding:8px 0; display:flex; flex-direction:column; animation:filterFadeIn .15s ease-out;}
@@ -1026,9 +1030,10 @@
     .transaction-top-actions #tx-search{width:100% !important; max-width:none !important; min-width:0 !important;}
     .transaction-top-actions .btn-primary{width:100% !important; margin-left:0 !important;}
     .transaction-toolbar-row-bottom{display:flex; flex-direction:column; align-items:stretch; gap:10px; width:100%;}
-    .transaction-dropdowns-row{display:flex; flex-direction:column; gap:8px; width:100%;}
-    .transaction-dropdown-wrap, .transaction-dropdowns-row .excel-filter-dropdown-wrap{width:100% !important; min-width:0 !important;}
-    .transaction-dropdowns-row .excel-filter-trigger{width:100% !important;}
+    .transaction-dropdowns-row{display:grid !important; grid-template-columns:1fr 1fr !important; gap:8px !important; width:100% !important; flex-direction:row !important;}
+    .transaction-dropdown-wrap, .transaction-dropdowns-row .excel-filter-dropdown-wrap{width:100% !important; min-width:0 !important; max-width:none !important;}
+    .transaction-dropdowns-row .excel-filter-trigger{width:100% !important; height:32px !important; padding:0 8px !important; font-size:11px !important; font-weight:400 !important;}
+    .transaction-dropdowns-row .excel-filter-summary{font-size:11px !important; font-weight:400 !important;}
     .transaction-date-nav{display:flex; align-items:center; width:100%; gap:6px; justify-content:space-between;}
     .transaction-date-nav input[type="date"]{flex:1; width:auto !important;}
     .modal-backdrop{align-items:center; justify-content:center; padding:16px 12px; overflow-y:auto;}
@@ -1504,7 +1509,7 @@
         <div class="card" style="padding:20px;">
           <h2 class="section-title" style="margin-bottom:2px;">Spending By Category</h2>
           <p class="section-sub" style="margin-bottom:14px;">Highest spending categories ranked</p>
-          <div style="position:relative; height:240px; min-height:220px;">
+          <div style="position:relative; height:270px; min-height:250px;">
             <canvas id="chart-category-pie"></canvas>
           </div>
         </div>
@@ -1536,7 +1541,7 @@
             <!-- Category Excel Filter -->
             <div class="excel-filter-dropdown-wrap hidden" id="tx-category-filter-wrap">
               <button type="button" id="tx-category-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('tx-category', event)">
-                <span id="tx-category-filter-summary" class="excel-filter-summary">All Categories</span>
+                <span id="tx-category-filter-summary" class="excel-filter-summary">Categories</span>
                 <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <div class="excel-filter-popover hidden" id="tx-category-filter-popover" onclick="event.stopPropagation()">
@@ -1558,7 +1563,7 @@
             <!-- Subcategory Excel Filter -->
             <div class="excel-filter-dropdown-wrap hidden" id="tx-subcategory-filter-wrap">
               <button type="button" id="tx-subcategory-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('tx-subcategory', event)">
-                <span id="tx-subcategory-filter-summary" class="excel-filter-summary">All Subcategories</span>
+                <span id="tx-subcategory-filter-summary" class="excel-filter-summary">Subcategories</span>
                 <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <div class="excel-filter-popover hidden" id="tx-subcategory-filter-popover" onclick="event.stopPropagation()">
@@ -1803,7 +1808,7 @@
           <select id="tx-category" class="field-input" onchange="onTxCategoryChange()"></select>
         </div>
         <div id="tx-subcategory-wrap" class="hidden">
-          <label class="field-label" style="margin-bottom:4px;">Subcategory <span style="color:var(--rose);">*</span> <span id="tx-subcategory-parent" class="breadcrumb-tag"></span></label>
+          <label class="field-label" style="margin-bottom:4px;">Subcategory <span style="color:var(--rose);">*</span></label>
           <div class="excel-filter-dropdown-wrap" id="tx-modal-subcategory-filter-wrap" style="width:100%;">
             <button type="button" id="tx-modal-subcategory-filter-trigger" class="excel-filter-trigger" style="width:100%;" onclick="toggleExcelFilter('tx-modal-subcategory', event)">
               <span id="tx-modal-subcategory-filter-summary" class="excel-filter-summary">Select Subcategory</span>
@@ -2495,23 +2500,23 @@ function updateExcelFilterUI(type){
       }
     } else if(type === 'tx-category'){
       if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
-        summaryEl.textContent = 'All Categories';
+        summaryEl.textContent = 'Categories';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
       } else if(selected.length <= 2){
         summaryEl.textContent = selected.join(', ');
       } else {
-        summaryEl.textContent = `${selected.length} Categories Selected`;
+        summaryEl.textContent = `${selected.length} Selected`;
       }
     } else if(type === 'tx-subcategory'){
       if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
-        summaryEl.textContent = 'All Subcategories';
+        summaryEl.textContent = 'Subcategories';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
       } else if(selected.length <= 2){
         summaryEl.textContent = selected.join(', ');
       } else {
-        summaryEl.textContent = `${selected.length} Subcategories Selected`;
+        summaryEl.textContent = `${selected.length} Selected`;
       }
     } else if(type === 'tx-modal-subcategory'){
       if(selected.length === 0){
@@ -3711,6 +3716,22 @@ function renderReportCharts(month, year){
   }
   window._chartReportRetries = 0;
 
+  if(typeof Chart !== 'undefined' && Chart.Tooltip && Chart.Tooltip.positioners && !Chart.Tooltip.positioners.mobileSafe){
+    Chart.Tooltip.positioners.mobileSafe = function(items, eventPosition){
+      if(!items || !items.length) return false;
+      const chart = this.chart;
+      const el = items[0].element;
+      const isMobile = window.innerWidth < 640 || chart.width < 520;
+      if(isMobile){
+        const left = chart.chartArea ? chart.chartArea.left : 0;
+        const right = chart.chartArea ? chart.chartArea.right : chart.width;
+        const midX = left + (right - left) / 2;
+        return { x: midX, y: el.y };
+      }
+      return { x: el.x, y: el.y };
+    };
+  }
+
   // 6 months trend ending at selected month/year
   const trendData = [];
   for(let i = 5; i >= 0; i--){
@@ -3784,9 +3805,18 @@ function renderReportCharts(month, year){
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+        interaction: {
+          mode: 'nearest',
+          axis: 'y',
+          intersect: false
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
+            position: 'mobileSafe',
+            caretPadding: 6,
+            caretSize: 4,
             backgroundColor: '#111321',
             titleColor: '#FFFFFF',
             titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
@@ -4377,9 +4407,18 @@ function barChartConfig(trend){
     options:{
       responsive:true,
       maintainAspectRatio:false,
+      events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      },
       plugins:{
         legend:{labels:{color:textColor,font:{family:'Manrope',size:11}, boxWidth:10}},
         tooltip:{
+          position: 'mobileSafe',
+          caretPadding: 6,
+          caretSize: 4,
           backgroundColor:'#111321',
           titleFont:{family:'Plus Jakarta Sans',size:12,weight:'700'},
           bodyFont:{family:'JetBrains Mono',size:11},
@@ -4839,8 +4878,6 @@ function renderModalSubcategories(selectedValues = []){
   const subs = catObj ? (catObj.subcategories || []) : [];
 
   wrap.classList.remove('hidden');
-  const parentTag = document.getElementById('tx-subcategory-parent');
-  if(parentTag) parentTag.textContent = cat ? `of ${cat}` : '';
 
   if(Array.isArray(selectedValues) && selectedValues.length > 0){
     selectedModalSubcategories = selectedValues.filter(s => subs.includes(s));
