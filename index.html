@@ -5513,7 +5513,7 @@ function onBudgetCategoryChoice(){
   const availableSubs=(categoryObj?.subcategories||[]).filter(subCategory=>!usedSubs.has(subCategory));
 
   if(hasCategoryBudget){
-    subcategorySelect.innerHTML=(availableSubs.length?'<option value="" disabled selected>Select a subcategory...</option>':'<option value="" disabled selected>All subcategories budgeted</option>')+availableSubs.map(s=>`<option value="${s}">${s}</option>`).join('');
+    subcategorySelect.innerHTML=(availableSubs.length?'<option value="" disabled selected>Select</option>':'<option value="" disabled selected>All subcategories budgeted</option>')+availableSubs.map(s=>`<option value="${s}">${s}</option>`).join('');
     subcategorySelect.disabled=!availableSubs.length;
   } else {
     subcategorySelect.innerHTML='<option value="">Whole category</option>'+availableSubs.map(s=>`<option value="${s}">${s}</option>`).join('');
