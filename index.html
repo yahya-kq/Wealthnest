@@ -3328,14 +3328,16 @@ function renderHeroChart(){
       scales: {
         x: {
           grid: { display: false },
+          border: { display: false },
           ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, color: '#98A2B3' }
         },
         y: {
-          grid: { color: '#F0F1F6' },
+          grid: { display: false },
+          border: { display: false },
           ticks: {
             font: { family: 'JetBrains Mono', size: 10 },
             color: '#98A2B3',
-            callback: (v) => formatCurrencyToken(currencySymbol(), v)
+            callback: (v) => Math.round(v).toLocaleString()
           }
         }
       }
@@ -3728,11 +3730,27 @@ function renderReportCharts(month, year){
   chartTrend = new Chart(trendCanvas, barChartConfig(trendData));
 
   // Category breakdown for selected month/year - Horizontal Bar Chart
-  const monthTxs = DB.transactions.filter(t => inMonth(t, month, year));
+  const monthTxs = DB.transactions.filter(t => inMonth(t, month, year) && t.type === 'expense');
   const categories = expenseByCategory(monthTxs).slice(0, 8);
   if(chartCategoryPie) chartCategoryPie.destroy();
   const colors = ['#7C3AED','#0D9488','#E11D48','#D97706','#6366F1','#EC4899','#3B82F6','#10B981'];
   
+  // Build subcategory breakdown per category for rich hover tooltips
+  const categorySubBreakdown = {};
+  monthTxs.forEach(t => {
+    if(!categorySubBreakdown[t.category]) categorySubBreakdown[t.category] = {};
+    const subName = (t.subCategory && t.subCategory.trim()) ? t.subCategory.trim() : 'General';
+    const subs = subName.split(',').map(s => s.trim()).filter(Boolean);
+    if(subs.length > 1){
+      const perSub = t.amount / subs.length;
+      subs.forEach(s => {
+        categorySubBreakdown[t.category][s] = (categorySubBreakdown[t.category][s] || 0) + perSub;
+      });
+    } else {
+      categorySubBreakdown[t.category][subName] = (categorySubBreakdown[t.category][subName] || 0) + t.amount;
+    }
+  });
+
   const pieParent = categoryCanvas.parentElement;
   let emptyMsg = pieParent ? pieParent.querySelector('.chart-empty-msg') : null;
   if(categories.length === 0){
@@ -3751,14 +3769,15 @@ function renderReportCharts(month, year){
     chartCategoryPie = new Chart(categoryCanvas, {
       type: 'bar',
       data: {
-        labels: categories.map(c => c.category),
+        labels: categories.map(c => titleCase(c.category)),
         datasets: [{
           label: 'Spending',
           data: categories.map(c => c.amount),
           backgroundColor: colors.slice(0, categories.length),
           borderRadius: 6,
           borderSkipped: false,
-          maxBarThickness: 18
+          maxBarThickness: 22,
+          minBarLength: 36
         }]
       },
       options: {
@@ -3769,30 +3788,49 @@ function renderReportCharts(month, year){
           legend: { display: false },
           tooltip: {
             backgroundColor: '#111321',
+            titleColor: '#FFFFFF',
             titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
+            bodyColor: '#F1F5F9',
             bodyFont: { family: 'JetBrains Mono', size: 11 },
-            padding: 8,
-            cornerRadius: 6,
+            padding: 10,
+            cornerRadius: 8,
+            boxPadding: 4,
             callbacks: {
+              title: function(items) {
+                return items.length ? items[0].label : '';
+              },
               label: function(ctx) {
-                const pct = totalExp > 0 ? Math.round((ctx.parsed.x / totalExp) * 100) : 0;
-                return ` ${fmt(ctx.parsed.x)} (${pct}%)`;
+                const val = ctx.parsed.x;
+                const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
+                return ` Total: ${fmt(val)} (${pct}%)`;
+              },
+              afterBody: function(items) {
+                if(!items.length) return [];
+                const catLabel = items[0].label;
+                const matched = categories.find(c => titleCase(c.category) === catLabel || c.category === catLabel);
+                const catKey = matched ? matched.category : catLabel;
+                const subs = categorySubBreakdown[catKey];
+                if(!subs) return [];
+                const subEntries = Object.entries(subs).sort((a,b) => b[1] - a[1]);
+                if(!subEntries.length) return [];
+                const lines = ['───────────────────'];
+                subEntries.forEach(([sName, sAmt]) => {
+                  lines.push(` • ${titleCase(sName)}: ${fmt(sAmt)}`);
+                });
+                return lines;
               }
             }
           }
         },
         scales: {
           x: {
+            display: false,
             grid: { display: false },
-            grace: '28%',
-            ticks: {
-              color: themeValue('--muted') || '#64748B',
-              font: { family: 'JetBrains Mono', size: 10 },
-              callback: v => formatCurrencyToken(currencySymbol(), Math.round(v))
-            }
+            border: { display: false }
           },
           y: {
             grid: { display: false },
+            border: { display: false },
             ticks: {
               color: themeValue('--ink') || '#0F172A',
               font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
@@ -3811,13 +3849,20 @@ function renderReportCharts(month, year){
               const val = chart.data.datasets[0].data[index];
               if (val && val > 0) {
                 const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
-                const text = `${fmt(val)} (${pct}%)`;
+                const text = `${pct}%`;
                 ctx.save();
-                ctx.font = '700 10.5px JetBrains Mono, monospace';
-                ctx.fillStyle = themeValue('--ink') || '#0F172A';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, bar.x + 8, bar.y);
+                ctx.font = '700 11px Plus Jakarta Sans, Manrope, sans-serif';
+                ctx.fillStyle = '#FFFFFF';
+                const barWidth = Math.abs(bar.x - bar.base);
+                if (barWidth >= 32) {
+                  ctx.textAlign = 'right';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(text, bar.x - 8, bar.y);
+                } else {
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(text, (bar.base + bar.x) / 2, bar.y);
+                }
                 ctx.restore();
               }
             });
@@ -4278,14 +4323,16 @@ function renderDashboardTrendChart(period){
       scales: {
         x: {
           grid: { display: false },
+          border: { display: false },
           ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 } }
         },
         y: {
-          grid: { color: gridColor },
+          grid: { display: false },
+          border: { display: false },
           ticks: {
             color: textColor,
             font: { family: 'JetBrains Mono', size: 10 },
-            callback: v => formatCurrencyToken(currencySymbol(), Math.round(v))
+            callback: v => Math.round(v).toLocaleString()
           }
         }
       }
@@ -4346,11 +4393,20 @@ function barChartConfig(trend){
         }
       },
       scales:{
-        x:{grid:{display:false}, ticks:{color:textColor,font:{family:'Manrope',size:11}}},
+        x:{
+          grid:{display:false},
+          border:{display:false},
+          ticks:{color:textColor,font:{family:'Manrope',size:11}}
+        },
         y:{
           grid:{display:false},
-          grace:'18%',
-          ticks:{color:textColor,font:{family:'JetBrains Mono',size:10}, callback:v=>formatCurrencyToken(currencySymbol(), Math.round(v))}
+          border:{display:false},
+          grace:'22%',
+          ticks:{
+            color:textColor,
+            font:{family:'JetBrains Mono',size:10},
+            callback:v=>Math.round(v).toLocaleString()
+          }
         }
       }
     },
@@ -4364,13 +4420,13 @@ function barChartConfig(trend){
           meta.data.forEach((element, index) => {
             const val = dataset.data[index];
             if(val && val > 0){
-              const formatted = fmt(val);
+              const formatted = Math.round(val).toLocaleString();
               ctx.save();
-              ctx.font = '700 10.5px Plus Jakarta Sans, Manrope, sans-serif';
+              ctx.font = '700 11px Plus Jakarta Sans, Manrope, sans-serif';
               ctx.fillStyle = i === 0 ? '#0F9E93' : '#E1435C';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'bottom';
-              ctx.fillText(formatted, element.x, element.y - 4);
+              ctx.fillText(formatted, element.x, element.y - 5);
               ctx.restore();
             }
           });
