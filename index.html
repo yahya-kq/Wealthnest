@@ -1503,8 +1503,8 @@
         </div>
         <div class="card" style="padding:20px;">
           <h2 class="section-title" style="margin-bottom:2px;">Spending By Category</h2>
-          <p class="section-sub" style="margin-bottom:14px;">Expense distribution share</p>
-          <div style="position:relative; height:200px; min-height:180px;">
+          <p class="section-sub" style="margin-bottom:14px;">Highest spending categories ranked</p>
+          <div style="position:relative; height:240px; min-height:220px;">
             <canvas id="chart-category-pie"></canvas>
           </div>
         </div>
@@ -1790,73 +1790,77 @@
     <form onsubmit="handleSaveTransaction(event)">
       <div class="chip-row" style="width:100%; display:grid; grid-template-columns:repeat(3,1fr); margin-bottom:12px;" id="tx-type-chips"></div>
       
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;">
-        <div>
-          <label class="field-label">Date</label>
-          <input type="date" id="tx-date" class="field-input" required>
-        </div>
-        <div>
+      <!-- Row 1: Date -->
+      <div style="margin-bottom:10px;">
+        <label class="field-label">Date</label>
+        <input type="date" id="tx-date" class="field-input" required>
+      </div>
+
+      <!-- Row 2: Category & Subcategory in the same line -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;" id="tx-cat-subcat-row">
+        <div id="tx-category-field-wrap">
           <label class="field-label" id="tx-category-label">Expense Category</label>
           <select id="tx-category" class="field-input" onchange="onTxCategoryChange()"></select>
         </div>
-      </div>
-
-      <div id="tx-subcategory-wrap" style="margin-bottom:10px;" class="hidden">
-        <label class="field-label" style="margin-bottom:4px;">Subcategory <span style="color:var(--rose);">*</span> <span id="tx-subcategory-parent" class="breadcrumb-tag"></span></label>
-        <div class="excel-filter-dropdown-wrap" id="tx-modal-subcategory-filter-wrap" style="width:100%;">
-          <button type="button" id="tx-modal-subcategory-filter-trigger" class="excel-filter-trigger" style="width:100%;" onclick="toggleExcelFilter('tx-modal-subcategory', event)">
-            <span id="tx-modal-subcategory-filter-summary" class="excel-filter-summary">Select Subcategory</span>
-            <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="excel-filter-popover hidden" id="tx-modal-subcategory-filter-popover" onclick="event.stopPropagation()">
-            <div class="excel-filter-popover-header">
-              <label class="excel-filter-select-all-label">
-                <input type="checkbox" id="tx-modal-subcategory-select-all" onchange="toggleSelectAllExcel('tx-modal-subcategory', this.checked)">
-                <span>(Select All)</span>
-              </label>
-              <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('tx-modal-subcategory')">Select None</button>
-            </div>
-            <div class="excel-filter-popover-list" id="tx-modal-subcategory-filter-list"></div>
-            <div class="excel-filter-popover-footer">
-              <span class="excel-filter-count-label" id="tx-modal-subcategory-selected-count">0 selected</span>
-              <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('tx-modal-subcategory')">Done</button>
+        <div id="tx-subcategory-wrap" class="hidden">
+          <label class="field-label" style="margin-bottom:4px;">Subcategory <span style="color:var(--rose);">*</span> <span id="tx-subcategory-parent" class="breadcrumb-tag"></span></label>
+          <div class="excel-filter-dropdown-wrap" id="tx-modal-subcategory-filter-wrap" style="width:100%;">
+            <button type="button" id="tx-modal-subcategory-filter-trigger" class="excel-filter-trigger" style="width:100%;" onclick="toggleExcelFilter('tx-modal-subcategory', event)">
+              <span id="tx-modal-subcategory-filter-summary" class="excel-filter-summary">Select Subcategory</span>
+              <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="excel-filter-popover hidden" id="tx-modal-subcategory-filter-popover" onclick="event.stopPropagation()">
+              <div class="excel-filter-popover-header">
+                <label class="excel-filter-select-all-label">
+                  <input type="checkbox" id="tx-modal-subcategory-select-all" onchange="toggleSelectAllExcel('tx-modal-subcategory', this.checked)">
+                  <span>(Select All)</span>
+                </label>
+                <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('tx-modal-subcategory')">Select None</button>
+              </div>
+              <div class="excel-filter-popover-list" id="tx-modal-subcategory-filter-list"></div>
+              <div class="excel-filter-popover-footer">
+                <span class="excel-filter-count-label" id="tx-modal-subcategory-selected-count">0 selected</span>
+                <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('tx-modal-subcategory')">Done</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Row 3: Note (Optional) -->
       <div style="margin-bottom:10px;">
-        <label class="field-label">Payment Method <span style="color:var(--rose);">*</span></label>
-        <div class="excel-filter-dropdown-wrap" id="tx-modal-payment-filter-wrap" style="width:100%;">
-          <button type="button" id="tx-modal-payment-filter-trigger" class="excel-filter-trigger" style="width:100%;" onclick="toggleExcelFilter('tx-modal-payment', event)">
-            <span id="tx-modal-payment-filter-summary" class="excel-filter-summary">Select Payment Method</span>
-            <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="excel-filter-popover hidden" id="tx-modal-payment-filter-popover" onclick="event.stopPropagation()">
-            <div class="excel-filter-popover-header">
-              <label class="excel-filter-select-all-label">
-                <input type="checkbox" id="tx-modal-payment-select-all" onchange="toggleSelectAllExcel('tx-modal-payment', this.checked)">
-                <span>(Select All)</span>
-              </label>
-              <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('tx-modal-payment')">Select None</button>
-            </div>
-            <div class="excel-filter-popover-list" id="tx-modal-payment-filter-list"></div>
-            <div class="excel-filter-popover-footer">
-              <span class="excel-filter-count-label" id="tx-modal-payment-selected-count">1 selected</span>
-              <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('tx-modal-payment')">Done</button>
-            </div>
-          </div>
-        </div>
+        <label class="field-label">Note (optional)</label>
+        <input type="text" id="tx-description" placeholder="Optional note" class="field-input">
       </div>
 
+      <!-- Row 4: Payment Method & Amount in one line -->
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
         <div>
-          <label class="field-label">Note (optional)</label>
-          <input type="text" id="tx-description" placeholder="Optional note" class="field-input">
+          <label class="field-label">Payment Method <span style="color:var(--rose);">*</span></label>
+          <div class="excel-filter-dropdown-wrap" id="tx-modal-payment-filter-wrap" style="width:100%;">
+            <button type="button" id="tx-modal-payment-filter-trigger" class="excel-filter-trigger" style="width:100%;" onclick="toggleExcelFilter('tx-modal-payment', event)">
+              <span id="tx-modal-payment-filter-summary" class="excel-filter-summary">Select Payment Method</span>
+              <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="excel-filter-popover hidden" id="tx-modal-payment-filter-popover" onclick="event.stopPropagation()">
+              <div class="excel-filter-popover-header">
+                <label class="excel-filter-select-all-label">
+                  <input type="checkbox" id="tx-modal-payment-select-all" onchange="toggleSelectAllExcel('tx-modal-payment', this.checked)">
+                  <span>(Select All)</span>
+                </label>
+                <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('tx-modal-payment')">Select None</button>
+              </div>
+              <div class="excel-filter-popover-list" id="tx-modal-payment-filter-list"></div>
+              <div class="excel-filter-popover-footer">
+                <span class="excel-filter-count-label" id="tx-modal-payment-selected-count">1 selected</span>
+                <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('tx-modal-payment')">Done</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div>
           <label class="field-label">Amount <span style="color:var(--rose);">*</span></label>
-          <input type="number" step="0.01" min="0" id="tx-amount" placeholder="0.00" class="field-input figure" required>
+          <input type="text" inputmode="decimal" id="tx-amount" placeholder="0.00" class="field-input figure" required onblur="evaluateTxAmountInput(this)" onchange="evaluateTxAmountInput(this)">
         </div>
       </div>
       <button type="submit" id="tx-modal-submit" class="btn-primary" style="width:100%;">Save Transaction</button>
@@ -3723,11 +3727,11 @@ function renderReportCharts(month, year){
   if(chartTrend) chartTrend.destroy();
   chartTrend = new Chart(trendCanvas, barChartConfig(trendData));
 
-  // Category breakdown for selected month/year
+  // Category breakdown for selected month/year - Horizontal Bar Chart
   const monthTxs = DB.transactions.filter(t => inMonth(t, month, year));
   const categories = expenseByCategory(monthTxs).slice(0, 8);
   if(chartCategoryPie) chartCategoryPie.destroy();
-  const colors = ['#4338CA','#C4820A','#0F9E93','#E1435C','#8B7CF6','#EAB84E','#4FC3B4','#F0879A'];
+  const colors = ['#7C3AED','#0D9488','#E11D48','#D97706','#6366F1','#EC4899','#3B82F6','#10B981'];
   
   const pieParent = categoryCanvas.parentElement;
   let emptyMsg = pieParent ? pieParent.querySelector('.chart-empty-msg') : null;
@@ -3743,31 +3747,83 @@ function renderReportCharts(month, year){
   } else {
     categoryCanvas.style.display = 'block';
     if(emptyMsg) emptyMsg.remove();
+    const totalExp = categories.reduce((s, c) => s + c.amount, 0);
     chartCategoryPie = new Chart(categoryCanvas, {
-      type: 'doughnut',
+      type: 'bar',
       data: {
         labels: categories.map(c => c.category),
         datasets: [{
+          label: 'Spending',
           data: categories.map(c => c.amount),
-          backgroundColor: colors,
-          borderWidth: 0
+          backgroundColor: colors.slice(0, categories.length),
+          borderRadius: 6,
+          borderSkipped: false,
+          maxBarThickness: 18
         }]
       },
       options: {
+        indexAxis: 'y',
         responsive: true,
-        cutout: '62%',
+        maintainAspectRatio: false,
         plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: themeValue('--muted'),
-              font: { family: 'Manrope', size: 11 },
-              boxWidth: 10,
-              padding: 12
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#111321',
+            titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
+            padding: 8,
+            cornerRadius: 6,
+            callbacks: {
+              label: function(ctx) {
+                const pct = totalExp > 0 ? Math.round((ctx.parsed.x / totalExp) * 100) : 0;
+                return ` ${fmt(ctx.parsed.x)} (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            grace: '28%',
+            ticks: {
+              color: themeValue('--muted') || '#64748B',
+              font: { family: 'JetBrains Mono', size: 10 },
+              callback: v => formatCurrencyToken(currencySymbol(), Math.round(v))
+            }
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              color: themeValue('--ink') || '#0F172A',
+              font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
             }
           }
         }
-      }
+      },
+      plugins: [
+        {
+          id: 'categoryHorizontalBarLabels',
+          afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || meta.hidden) return;
+            meta.data.forEach((bar, index) => {
+              const val = chart.data.datasets[0].data[index];
+              if (val && val > 0) {
+                const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
+                const text = `${fmt(val)} (${pct}%)`;
+                ctx.save();
+                ctx.font = '700 10.5px JetBrains Mono, monospace';
+                ctx.fillStyle = themeValue('--ink') || '#0F172A';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, bar.x + 8, bar.y);
+                ctx.restore();
+              }
+            });
+          }
+        }
+      ]
     });
   }
 }
@@ -4261,15 +4317,67 @@ function miniIcon(name){
   return map[name]||'';
 }
 function barChartConfig(trend){
-  const textColor=themeValue('--muted');
-  const gridColor=themeValue('--line');
-  return { type:'bar', data:{ labels: trend.map(t=>t.label), datasets:[
-    {label:'Income', data:trend.map(t=>t.income), backgroundColor:'#0F9E93', borderRadius:4, maxBarThickness:22},
-    {label:'Expense', data:trend.map(t=>t.expense), backgroundColor:'#E1435C', borderRadius:4, maxBarThickness:22},
-  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:textColor,font:{family:'Manrope',size:11}, boxWidth:10}}}, scales:{
-    x:{grid:{display:false}, ticks:{color:textColor,font:{family:'Manrope',size:11}}},
-    y:{grid:{color:gridColor}, ticks:{color:textColor,font:{family:'JetBrains Mono',size:10}, callback:v=>formatCurrencyToken(currencySymbol(), Math.round(v))}}
-  }}};
+  const textColor=themeValue('--muted') || '#64748B';
+  return {
+    type:'bar',
+    data:{
+      labels: trend.map(t=>t.label),
+      datasets:[
+        {label:'Income', data:trend.map(t=>t.income), backgroundColor:'#0F9E93', borderRadius:6, maxBarThickness:22, borderSkipped:false},
+        {label:'Expense', data:trend.map(t=>t.expense), backgroundColor:'#E1435C', borderRadius:6, maxBarThickness:22, borderSkipped:false},
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:textColor,font:{family:'Manrope',size:11}, boxWidth:10}},
+        tooltip:{
+          backgroundColor:'#111321',
+          titleFont:{family:'Plus Jakarta Sans',size:12,weight:'700'},
+          bodyFont:{family:'JetBrains Mono',size:11},
+          padding:8,
+          cornerRadius:6,
+          callbacks:{
+            label: function(ctx){
+              return ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{color:textColor,font:{family:'Manrope',size:11}}},
+        y:{
+          grid:{display:false},
+          grace:'18%',
+          ticks:{color:textColor,font:{family:'JetBrains Mono',size:10}, callback:v=>formatCurrencyToken(currencySymbol(), Math.round(v))}
+        }
+      }
+    },
+    plugins:[{
+      id:'trendBarExactAmounts',
+      afterDatasetsDraw(chart){
+        const {ctx} = chart;
+        chart.data.datasets.forEach((dataset, i) => {
+          const meta = chart.getDatasetMeta(i);
+          if(!meta || meta.hidden) return;
+          meta.data.forEach((element, index) => {
+            const val = dataset.data[index];
+            if(val && val > 0){
+              const formatted = fmt(val);
+              ctx.save();
+              ctx.font = '700 10.5px Plus Jakarta Sans, Manrope, sans-serif';
+              ctx.fillStyle = i === 0 ? '#0F9E93' : '#E1435C';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(formatted, element.x, element.y - 4);
+              ctx.restore();
+            }
+          });
+        });
+      }
+    }]
+  };
 }
 
 /* ---------------- render: transactions ---------------- */
@@ -4789,6 +4897,23 @@ function closeTxModal(){
 }
 
 let txType = 'expense';
+function evaluateTxAmountInput(input){
+  if(!input) return 0;
+  let raw = String(input.value || '').trim().replace(/,/g, '');
+  if(/^[0-9\.\s\+\-\*\/]+$/.test(raw) && /[\+\-\*\/]/.test(raw)){
+    try {
+      const calc = Function(`'use strict'; return (${raw});`)();
+      if(typeof calc === 'number' && !isNaN(calc) && isFinite(calc)){
+        const rounded = Math.round(calc * 100) / 100;
+        input.value = rounded;
+        return rounded;
+      }
+    } catch(e){}
+  }
+  const val = parseFloat(raw);
+  return isNaN(val) ? 0 : val;
+}
+
 function setTxType(t){
   txType = t;
   const labels={income:'Income',expense:'Expense',savings:'Savings goal'};
@@ -4799,8 +4924,22 @@ function setTxType(t){
   else if(t==='savings') cats = (DB.savingsGoals||[]).map(goal=>goal.name);
   else cats = DB.categories.expense.map(c=>c.name);
   document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+  const subWrap = document.getElementById('tx-subcategory-wrap');
+  const catRow = document.getElementById('tx-cat-subcat-row');
+  const catFieldWrap = document.getElementById('tx-category-field-wrap');
+  if(t === 'expense'){
+    if(subWrap) subWrap.classList.remove('hidden');
+    if(catRow) catRow.style.gridTemplateColumns = '1fr 1fr';
+    if(catFieldWrap) catFieldWrap.style.gridColumn = 'auto';
+  } else {
+    if(subWrap) subWrap.classList.add('hidden');
+    if(catRow) catRow.style.gridTemplateColumns = '1fr';
+    if(catFieldWrap) catFieldWrap.style.gridColumn = '1 / -1';
+  }
+
   onTxCategoryChange();
-  renderModalPaymentMethods();
+  renderModalPaymentMethods(selectedModalPaymentMethods);
 }
 
 function onTxCategoryChange(){
@@ -4810,7 +4949,7 @@ function onTxCategoryChange(){
 
 function handleSaveTransaction(e){
   e.preventDefault();
-  const amount = parseFloat(document.getElementById('tx-amount').value);
+  const amount = evaluateTxAmountInput(document.getElementById('tx-amount'));
   if(!amount || amount<=0){
     showToast('Please enter a valid amount greater than 0', 'error');
     return;
