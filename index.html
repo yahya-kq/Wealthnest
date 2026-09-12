@@ -2015,6 +2015,24 @@
   </div>
 </div>
 
+<div id="edit-payment-method-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditPaymentMethodModal()">
+  <div class="modal" style="max-width:390px;">
+    <button class="modal-close" onclick="closeEditPaymentMethodModal()" aria-label="Close">✕</button>
+    <h2>Edit Payment Method</h2>
+    <p class="text-sm muted" style="margin:-6px 0 16px; font-weight:500;">Update method name across all transactions.</p>
+    <form onsubmit="handleSaveEditPaymentMethod(event)">
+      <input type="hidden" id="edit-payment-method-old-name">
+      <label class="field-label" for="edit-payment-method-name">Method Name</label>
+      <input type="text" id="edit-payment-method-name" class="field-input mb-2" placeholder="e.g. EasyPaisa, SadaPay" required autocomplete="off" oninput="const m=document.getElementById('edit-payment-method-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <span id="edit-payment-method-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditPaymentMethodModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="currency-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal" style="max-width:380px;">
     <h2>Choose Currency</h2>
@@ -6046,9 +6064,12 @@ function renderPaymentMethodsSettings(){
           </div>
           <div style="font-weight:600; font-size:14px; color:var(--ink);">${escapeHtml(name)}</div>
         </div>
-        <div>
+        <div style="display:inline-flex; align-items:center; gap:4px;">
+          <button onclick="openEditPaymentMethodModal('${name.replace(/'/g, "\\'")}')" class="icon-btn icon-btn-edit" title="Edit payment method" aria-label="Edit ${escapeHtml(name)}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
           ${methods.length > 1 ? `
-            <button onclick="handleDeletePaymentMethod('${escapeHtml(name)}')" class="icon-btn icon-btn-delete" title="Delete payment method">
+            <button onclick="handleDeletePaymentMethod('${name.replace(/'/g, "\\'")}')" class="icon-btn icon-btn-delete" title="Delete payment method" aria-label="Delete ${escapeHtml(name)}">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
             </button>
           ` : ''}
@@ -6056,6 +6077,94 @@ function renderPaymentMethodsSettings(){
       </div>
     `;
   }).join('');
+}
+
+function openEditPaymentMethodModal(oldName){
+  document.getElementById('edit-payment-method-old-name').value = oldName;
+  const input = document.getElementById('edit-payment-method-name');
+  input.value = oldName;
+  input.style.borderColor = '';
+  const msgEl = document.getElementById('edit-payment-method-message');
+  if(msgEl){ msgEl.textContent = ''; msgEl.className = 'text-xs muted settings-add-message'; }
+  document.getElementById('edit-payment-method-modal-backdrop').classList.remove('hidden');
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeEditPaymentMethodModal(){
+  const backdrop = document.getElementById('edit-payment-method-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function handleSaveEditPaymentMethod(e){
+  e.preventDefault();
+  const oldName = document.getElementById('edit-payment-method-old-name').value;
+  const input = document.getElementById('edit-payment-method-name');
+  const newName = input.value.trim();
+  const msgEl = document.getElementById('edit-payment-method-message');
+
+  if(!newName){
+    if(msgEl){
+      msgEl.textContent = 'Payment method name cannot be empty.';
+      msgEl.className = 'text-xs tone-neg settings-add-message';
+    }
+    input.style.borderColor = 'var(--rose)';
+    return;
+  }
+
+  const methods = getPaymentMethods();
+  if(newName.toLowerCase() !== oldName.toLowerCase()){
+    if(methods.some(m => m.toLowerCase() === newName.toLowerCase())){
+      if(msgEl){
+        msgEl.innerHTML = `⚠️ Payment method "<strong>${escapeHtml(newName)}</strong>" already exists!`;
+        msgEl.className = 'text-xs tone-neg settings-add-message';
+      }
+      input.style.borderColor = 'var(--rose)';
+      input.classList.add('shake-anim');
+      setTimeout(() => input.classList.remove('shake-anim'), 400);
+      return;
+    }
+  }
+
+  // 1. Update in DB.paymentMethods
+  const idx = methods.indexOf(oldName);
+  if(idx !== -1){
+    methods[idx] = newName;
+  } else {
+    const ciIdx = methods.findIndex(m => m.toLowerCase() === oldName.toLowerCase());
+    if(ciIdx !== -1) methods[ciIdx] = newName;
+    else methods.push(newName);
+  }
+  DB.paymentMethods = [...methods];
+
+  // 2. Cascade rename across DB.transactions
+  let updatedCount = 0;
+  (DB.transactions || []).forEach(tx => {
+    if(tx.paymentMethod){
+      if(tx.paymentMethod === oldName || tx.paymentMethod.toLowerCase() === oldName.toLowerCase()){
+        tx.paymentMethod = newName;
+        updatedCount++;
+      } else if(tx.paymentMethod.includes(oldName)){
+        const pms = tx.paymentMethod.split(',').map(m => m.trim());
+        let modified = false;
+        const newPms = pms.map(m => {
+          if(m === oldName || m.toLowerCase() === oldName.toLowerCase()){
+            modified = true;
+            return newName;
+          }
+          return m;
+        });
+        if(modified){
+          tx.paymentMethod = newPms.join(', ');
+          updatedCount++;
+        }
+      }
+    }
+  });
+
+  saveDB(true);
+  closeEditPaymentMethodModal();
+  renderAllForCurrentPage();
+  showToast(`Updated payment method to "${newName}"`);
 }
 
 function handleAddPaymentMethod(e){
@@ -6726,6 +6835,8 @@ window.addEventListener('keydown', (e) => {
     if (editSubcatEl && !editSubcatEl.classList.contains('hidden')) closeEditSubcategoryModal();
     const editCatEl = document.getElementById('edit-category-modal-backdrop');
     if (editCatEl && !editCatEl.classList.contains('hidden')) closeEditCategoryModal();
+    const editPmEl = document.getElementById('edit-payment-method-modal-backdrop');
+    if (editPmEl && !editPmEl.classList.contains('hidden')) closeEditPaymentMethodModal();
     const subEl = document.getElementById('subcat-modal-backdrop');
     if (subEl && !subEl.classList.contains('hidden')) closeSubcatModal();
     const goalEl = document.getElementById('goal-modal-backdrop');
