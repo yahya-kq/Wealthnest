@@ -776,6 +776,12 @@
   .icon-btn:active{transform:scale(0.94);}
   .icon-btn-edit:hover{color:var(--primary); background:var(--primary-light);}
   .icon-btn-delete:hover{color:var(--rose); background:var(--rose-light);}
+  .rect-sign-red{display:inline-block; width:7px; height:7px; border-radius:2px; background:var(--rose); flex-shrink:0;}
+  .badge-subcat-none{display:inline-flex; align-items:center; gap:5px; padding:2px 7px; border-radius:4px; background:#FFF1F2; color:var(--rose); font-size:11px; font-weight:600; border:1px solid rgba(225,29,72,0.28); letter-spacing:0.02em;}
+  .tx-unassigned-badge-btn{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; height:34px; border-radius:8px; background:#FFF1F2; border:1px solid rgba(225,29,72,0.28); color:var(--rose); font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; white-space:nowrap;}
+  .tx-unassigned-badge-btn:hover{background:#FFE4E6; border-color:var(--rose); box-shadow:0 2px 8px rgba(225,29,72,0.15);}
+  .tx-unassigned-badge-btn.active{background:var(--rose); color:#FFFFFF; border-color:var(--rose); box-shadow:0 4px 12px rgba(225,29,72,0.25);}
+  .tx-unassigned-badge-btn.active .rect-sign-red{background:#FFFFFF;}
   @keyframes rowPulse { 0% { background: rgba(124,58,237,0.22); } 50% { background: rgba(124,58,237,0.10); } 100% { background: transparent; } }
   .tx-row-highlight { animation: rowPulse 2.2s ease-out; }
   .btn-small{padding:6px 12px; border-radius:8px; font-size:12.5px; font-weight:600; border:1px solid var(--line); background:var(--surface); color:var(--ink);}
@@ -1037,6 +1043,8 @@
     .transaction-dropdown-wrap, .transaction-dropdowns-row .excel-filter-dropdown-wrap{width:100% !important; min-width:0 !important; max-width:none !important;}
     .transaction-dropdowns-row .excel-filter-trigger{width:100% !important; height:32px !important; padding:0 8px !important; font-size:11px !important; font-weight:400 !important;}
     .transaction-dropdowns-row .excel-filter-summary{font-size:11px !important; font-weight:400 !important;}
+    .transaction-toolbar-right{display:flex; flex-direction:column; align-items:stretch; width:100%; gap:8px;}
+    .tx-unassigned-badge-btn{width:100%; justify-content:center; height:34px;}
     .transaction-date-nav{display:flex; align-items:center; width:100%; gap:6px; justify-content:space-between;}
     .transaction-date-nav input[type="date"]{flex:1; width:auto !important;}
     .modal-backdrop{align-items:center; justify-content:center; padding:16px 12px; overflow-y:auto;}
@@ -1558,15 +1566,24 @@
               </div>
             </div>
           </div>
-          <div class="transaction-date-nav">
-            <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(-1)" title="Previous day">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <input type="date" id="tx-date-filter" class="field-input" style="padding:6px 8px; font-size:12.5px; width:130px; height:36px;" onchange="setTxDateFilter(this.value)" title="Filter by date">
-            <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(1)" title="Next day">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button type="button" class="excel-filter-text-btn hidden" id="tx-date-clear-btn" onclick="clearTxDateFilter()" style="font-size:12px; margin-left:2px;">All Dates</button>
+          <div class="transaction-toolbar-right" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <!-- Unassigned Subcategories Alert Badge -->
+            <div id="tx-unassigned-subcat-wrap" class="hidden">
+              <button type="button" id="tx-unassigned-subcat-btn" class="tx-unassigned-badge-btn" onclick="toggleUnassignedSubcatFilter()" title="Click to view transactions needing a subcategory">
+                <span class="rect-sign-red"></span>
+                <span id="tx-unassigned-subcat-text">0 Needs Subcategory</span>
+              </button>
+            </div>
+            <div class="transaction-date-nav">
+              <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(-1)" title="Previous day">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <input type="date" id="tx-date-filter" class="field-input" style="padding:6px 8px; font-size:12.5px; width:130px; height:36px;" onchange="setTxDateFilter(this.value)" title="Filter by date">
+              <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(1)" title="Next day">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button type="button" class="excel-filter-text-btn hidden" id="tx-date-clear-btn" onclick="clearTxDateFilter()" style="font-size:12px; margin-left:2px;">All Dates</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1688,7 +1705,7 @@
             <p class="text-xs muted">Assign a subcategory to a parent category.</p>
             <form onsubmit="handleAddLinkedSubcategory(event)" class="settings-add-form">
               <select id="new-subcategory-parent" class="field-input" required></select>
-              <input type="text" id="new-subcategory-name" placeholder="Subcategory Name" class="field-input" autocomplete="off" required oninput="const m=document.getElementById('subcategory-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+              <input type="text" id="new-subcategory-name" placeholder="Subcategory Name" class="field-input" autocomplete="off" required oninput="subcatDrafts['__top_subcat__']=this.value; const m=document.getElementById('subcategory-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
               <span id="subcategory-add-message" class="text-xs muted settings-add-message"></span>
               <button type="submit" class="btn-dark" style="white-space:nowrap;">Add Subcategory</button>
             </form>
@@ -1917,6 +1934,25 @@
       <input type="date" id="edit-goal-deadline" class="field-input mb-5">
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditGoalModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="edit-subcategory-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditSubcategoryModal()">
+  <div class="modal" style="max-width:390px;">
+    <button class="modal-close" onclick="closeEditSubcategoryModal()" aria-label="Close">✕</button>
+    <h2>Edit Subcategory</h2>
+    <p id="edit-subcategory-parent-label" class="text-sm muted" style="margin:-6px 0 16px; font-weight:500;"></p>
+    <form onsubmit="handleSaveEditSubcategory(event)">
+      <input type="hidden" id="edit-subcategory-parent">
+      <input type="hidden" id="edit-subcategory-old-name">
+      <label class="field-label" for="edit-subcategory-name">Subcategory Name</label>
+      <input type="text" id="edit-subcategory-name" class="field-input mb-2" placeholder="e.g. Charger" required autocomplete="off" oninput="const m=document.getElementById('edit-subcategory-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <span id="edit-subcategory-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditSubcategoryModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary">Save Changes</button>
       </div>
     </form>
@@ -4622,6 +4658,12 @@ function setTxCategoryFilter(category){
 }
 let highlightedTxId = null;
 let txDateSortOrder = (typeof localStorage !== 'undefined' && localStorage.getItem('wealthnest_tx_sort_order')) || 'desc';
+let txFilterUnassignedOnly = false;
+
+function toggleUnassignedSubcatFilter(){
+  txFilterUnassignedOnly = !txFilterUnassignedOnly;
+  renderTransactions();
+}
 
 function toggleTxDateSort(){
   txDateSortOrder = (txDateSortOrder === 'desc') ? 'asc' : 'desc';
@@ -4649,8 +4691,51 @@ function renderTransactions(){
       : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:2px;"><polyline points="18 15 12 9 6 15"/></svg>';
   }
 
+  const activeExpenseMap = new Map((DB.categories.expense || []).map(c => [c.name, c.subcategories || []]));
+  const activeIncomeSet = new Set(DB.categories.income || []);
+  const activeSavingsSet = new Set((DB.savingsGoals || []).map(g => g.name));
+
+  // Count unassigned/missing/deleted subcategories among expense transactions
+  const unassignedTxs = (DB.transactions || []).filter(t => {
+    if(t.type !== 'expense') return false;
+    if(!t.subCategory || !t.subCategory.trim()) return true;
+    if(activeExpenseMap.has(t.category)){
+      const allowedSubs = activeExpenseMap.get(t.category) || [];
+      const tSubs = t.subCategory.split(',').map(s => s.trim());
+      return tSubs.some(s => !allowedSubs.includes(s));
+    }
+    return false;
+  });
+  const unassignedCount = unassignedTxs.length;
+
+  const unassignedWrap = document.getElementById('tx-unassigned-subcat-wrap');
+  const unassignedBtn = document.getElementById('tx-unassigned-subcat-btn');
+  const unassignedText = document.getElementById('tx-unassigned-subcat-text');
+  if(unassignedWrap && unassignedText && unassignedBtn){
+    if(unassignedCount > 0){
+      unassignedWrap.classList.remove('hidden');
+      unassignedText.textContent = `${unassignedCount} Needs Subcategory`;
+      unassignedBtn.classList.toggle('active', txFilterUnassignedOnly);
+    } else {
+      unassignedWrap.classList.add('hidden');
+      txFilterUnassignedOnly = false;
+      unassignedBtn.classList.remove('active');
+    }
+  }
+
   const rows = DB.transactions
     .filter(t => txFilter==='all' ? true : t.type===txFilter)
+    .filter(t => {
+      if(!txFilterUnassignedOnly) return true;
+      if(t.type !== 'expense') return false;
+      if(!t.subCategory || !t.subCategory.trim()) return true;
+      if(activeExpenseMap.has(t.category)){
+        const allowedSubs = activeExpenseMap.get(t.category) || [];
+        const tSubs = t.subCategory.split(',').map(s => s.trim());
+        return tSubs.some(s => !allowedSubs.includes(s));
+      }
+      return false;
+    })
     .filter(t => {
       if(!txSelectedCategories || txSelectedCategories.length === 0) return true;
       return txSelectedCategories.includes(t.category);
@@ -4671,10 +4756,6 @@ function renderTransactions(){
       }
       return txDateSortOrder === 'desc' ? (a.id < b.id ? 1 : -1) : (a.id > b.id ? 1 : -1);
     });
-
-  const activeExpenseMap = new Map((DB.categories.expense || []).map(c => [c.name, c.subcategories || []]));
-  const activeIncomeSet = new Set(DB.categories.income || []);
-  const activeSavingsSet = new Set((DB.savingsGoals || []).map(g => g.name));
 
   document.getElementById('tx-table-body').innerHTML = rows.length ? rows.map(t => {
     const isHighlight = t.id === highlightedTxId;
@@ -4698,12 +4779,24 @@ function renderTransactions(){
     }
 
     const catDeletedBadge = isCategoryDeleted ? `<span class="badge badge-off" style="font-size:10px; margin-left:5px; padding:1px 5px;">Deleted</span>` : '';
-    const subcatDeletedBadge = isSubCategoryDeleted ? `<span class="badge badge-off" style="font-size:10px; margin-left:5px; padding:1px 5px;">Deleted</span>` : '';
+
+    let subcatContent = '<span style="color:var(--muted-2);">-</span>';
+    if(showSubcat){
+      if(t.type === 'expense'){
+        if(!t.subCategory || !t.subCategory.trim()){
+          subcatContent = `<span class="badge-subcat-none" title="No subcategory assigned"><span class="rect-sign-red"></span>None</span>`;
+        } else if(isSubCategoryDeleted){
+          subcatContent = `<span class="badge-subcat-none" title="Subcategory '${escapeHtml(t.subCategory)}' was deleted"><span class="rect-sign-red"></span>${escapeHtml(t.subCategory)} <span style="font-size:9.5px; opacity:0.85;">(Deleted)</span></span>`;
+        } else {
+          subcatContent = escapeHtml(t.subCategory);
+        }
+      } else {
+        subcatContent = t.subCategory ? escapeHtml(t.subCategory) : '<span style="color:var(--muted-2);">-</span>';
+      }
+    }
 
     const formattedDate = formatTxDateDisplay(t.date);
-    const subcatCell = showSubcat
-      ? `<td class="muted">${t.subCategory ? `${escapeHtml(t.subCategory)}${subcatDeletedBadge}` : '<span style="color:var(--muted-2);">-</span>'}</td>`
-      : '';
+    const subcatCell = showSubcat ? `<td class="muted">${subcatContent}</td>` : '';
 
     const methods = (t.paymentMethod || 'Other').split(',').map(m => m.trim()).filter(Boolean);
     const methodBadges = methods.map(m => `<span class="badge badge-off" style="font-size:12px; font-weight:500; margin-right:4px; display:inline-block;">${escapeHtml(m)}</span>`).join('');
@@ -4748,7 +4841,7 @@ function requestDelete(type, value, label){
   const messages = {
     transaction: `Move transaction "${label}" to the Recycle Bin? It will stay there for 30 days and can be restored anytime.`,
     category: `Delete category "${label}"? Its subcategories, budgets, and transactions will also be moved to the Recycle Bin and can be restored within 30 days.`,
-    subcategory: `Delete subcategory "${label}"? Its associated budgets and transactions will also be moved to the Recycle Bin and can be restored within 30 days.`,
+    subcategory: `Delete subcategory "${label}"? Existing transactions will NOT be deleted — their subcategory will be set to "None" so you can reassign them. Subcategory budgets will be moved to the Recycle Bin.`,
     budget: `Delete "${label}"? It will be moved to the Recycle Bin and can be restored within 30 days.`,
     goal: `Delete savings goal "${label}"? Its goal details and contributions will be moved to the Recycle Bin and can be restored within 30 days.`,
     'recycle-permanent': `Permanently delete "${label}"? This action cannot be undone and cannot be recovered from the Recycle Bin.`,
@@ -4773,6 +4866,8 @@ function requestDelete(type, value, label){
     'recycle-empty': 'Permanent Deletion Warning'
   };
   const actionTexts = {
+    subcategory: 'Delete Subcategory',
+    category: 'Delete Category',
     'recycle-permanent': 'Delete Permanently',
     'recycle-empty': 'Empty All Items'
   };
@@ -4845,7 +4940,7 @@ function confirmDelete(){
     restorePayload = {categoryType, category: categoryType === 'expense' ? DB.categories.expense.find(category => category.name === categoryName) : categoryName, budgets: DB.budgets.filter(budget => budget.category === categoryName).map(budget => ({...budget})), transactions: DB.transactions.filter(transaction => transaction.category === categoryName).map(transaction => ({...transaction}))};
   } else if(type === 'subcategory'){
     activityLabel = `${value[0]} / ${value[1]}`;
-    restorePayload = {categoryName: value[0], subCategory: value[1], budgets: DB.budgets.filter(budget => budget.category === value[0] && budget.subCategory === value[1]).map(budget => ({...budget})), transactions: DB.transactions.filter(transaction => transaction.category === value[0] && transaction.subCategory === value[1]).map(transaction => ({...transaction}))};
+    restorePayload = {categoryName: value[0], subCategory: value[1], budgets: DB.budgets.filter(budget => budget.category === value[0] && budget.subCategory === value[1]).map(budget => ({...budget})), affectedTxIds: DB.transactions.filter(transaction => transaction.category === value[0] && transaction.subCategory && transaction.subCategory.split(',').map(s=>s.trim()).includes(value[1])).map(t => t.id)};
   }
 
   recordDeletion(type, activityLabel, restorePayload);
@@ -4870,15 +4965,24 @@ function confirmDelete(){
   if(type === 'subcategory'){
     const [categoryName, subCategory] = value;
     const category = findExpenseCategory(categoryName);
-    if(category) category.subcategories = category.subcategories.filter(item => item !== subCategory);
-    DB.budgets = DB.budgets.filter(budget => !(budget.category === categoryName && budget.subCategory === subCategory));
-    DB.transactions = DB.transactions.filter(transaction => !(transaction.category === categoryName && transaction.subCategory === subCategory));
+    if(category) category.subcategories = (category.subcategories || []).filter(item => item !== subCategory);
+    DB.budgets = (DB.budgets || []).filter(budget => !(budget.category === categoryName && budget.subCategory === subCategory));
+    // Subcategory deletion preserves transactions: clear subcategory from matching transactions
+    (DB.transactions || []).forEach(transaction => {
+      if(transaction.category === categoryName && transaction.subCategory){
+        const subs = transaction.subCategory.split(',').map(s => s.trim());
+        if(subs.includes(subCategory) || subs.some(s => s.toLowerCase() === subCategory.toLowerCase())){
+          const remaining = subs.filter(s => s !== subCategory && s.toLowerCase() !== subCategory.toLowerCase());
+          transaction.subCategory = remaining.join(', ');
+        }
+      }
+    });
   }
 
   saveDB();
   closeConfirmModal();
   renderAllForCurrentPage();
-  showToast(`Moved "${activityLabel}" to Recycle Bin`);
+  showToast(type === 'subcategory' ? `Subcategory "${activityLabel}" deleted. Transactions preserved as None.` : `Moved "${activityLabel}" to Recycle Bin`);
 }
 
 /* tx modal */
@@ -5936,6 +6040,18 @@ function restoreRecycleItem(id){
     (payload.budgets || []).forEach(b => {
       if(!DB.budgets.some(existing => existing.id === b.id)) DB.budgets.push(b);
     });
+    if(Array.isArray(payload.affectedTxIds)){
+      payload.affectedTxIds.forEach(txId => {
+        const tx = DB.transactions.find(t => t.id === txId);
+        if(tx){
+          if(!tx.subCategory) tx.subCategory = payload.subCategory;
+          else {
+            const subs = tx.subCategory.split(',').map(s => s.trim());
+            if(!subs.includes(payload.subCategory)) tx.subCategory = [...subs, payload.subCategory].join(', ');
+          }
+        }
+      });
+    }
     (payload.transactions || []).forEach(t => {
       if(!DB.transactions.some(existing => existing.id === t.id)) DB.transactions.push(t);
     });
@@ -6021,35 +6137,167 @@ function renderLinkedSubcategorySelector(){
   selector.disabled = !categories.length;
 }
 
+const subcatDrafts = {};
+
+function captureSubcatDraftsFromDOM(){
+  try {
+    const listEl = document.getElementById('cat-list');
+    if(listEl){
+      const forms = listEl.querySelectorAll('form[data-category]');
+      forms.forEach(form => {
+        const catName = form.getAttribute('data-category');
+        const input = form.querySelector('input[type="text"]');
+        if(catName && input){
+          subcatDrafts[catName] = input.value;
+        }
+      });
+    }
+    const topInput = document.getElementById('new-subcategory-name');
+    if(topInput && topInput.value !== undefined){
+      subcatDrafts['__top_subcat__'] = topInput.value;
+    }
+  } catch(e){}
+}
+
+function openEditSubcategoryModal(parentCategory, subCategoryName){
+  document.getElementById('edit-subcategory-parent').value = parentCategory;
+  document.getElementById('edit-subcategory-old-name').value = subCategoryName;
+  const nameInput = document.getElementById('edit-subcategory-name');
+  nameInput.value = subCategoryName;
+  nameInput.style.borderColor = '';
+  const labelEl = document.getElementById('edit-subcategory-parent-label');
+  if(labelEl) labelEl.textContent = `Under category: ${parentCategory}`;
+  const msgEl = document.getElementById('edit-subcategory-message');
+  if(msgEl){ msgEl.textContent = ''; msgEl.className = 'text-xs muted settings-add-message'; }
+  document.getElementById('edit-subcategory-modal-backdrop').classList.remove('hidden');
+  setTimeout(() => nameInput.focus(), 50);
+}
+
+function closeEditSubcategoryModal(){
+  document.getElementById('edit-subcategory-modal-backdrop').classList.add('hidden');
+}
+
+function handleSaveEditSubcategory(e){
+  e.preventDefault();
+  const parentCategory = document.getElementById('edit-subcategory-parent').value;
+  const oldName = document.getElementById('edit-subcategory-old-name').value;
+  const input = document.getElementById('edit-subcategory-name');
+  const newName = input.value.trim();
+  const msgEl = document.getElementById('edit-subcategory-message');
+
+  if(!newName){
+    if(msgEl){
+      msgEl.textContent = 'Subcategory name cannot be empty.';
+      msgEl.className = 'text-xs settings-add-message message-error';
+    }
+    input.style.borderColor = 'var(--rose)';
+    return;
+  }
+
+  const category = findExpenseCategory(parentCategory);
+  if(!category){
+    showToast('Category not found', 'error');
+    closeEditSubcategoryModal();
+    return;
+  }
+
+  // Check if subcategory already exists under this parent (if renamed)
+  if(newName.toLowerCase() !== oldName.toLowerCase()){
+    const exists = (category.subcategories || []).some(s => s.toLowerCase() === newName.toLowerCase());
+    if(exists){
+      if(msgEl){
+        msgEl.innerHTML = `⚠️ Subcategory "<strong>${escapeHtml(newName)}</strong>" already exists in ${escapeHtml(parentCategory)}!`;
+        msgEl.className = 'text-xs settings-add-message message-error';
+      }
+      input.style.borderColor = 'var(--rose)';
+      input.classList.add('shake-anim');
+      setTimeout(() => input.classList.remove('shake-anim'), 400);
+      return;
+    }
+  }
+
+  // 1. Update in category.subcategories
+  if(Array.isArray(category.subcategories)){
+    const idx = category.subcategories.indexOf(oldName);
+    if(idx !== -1){
+      category.subcategories[idx] = newName;
+    } else {
+      const ciIdx = category.subcategories.findIndex(s => s.toLowerCase() === oldName.toLowerCase());
+      if(ciIdx !== -1) category.subcategories[ciIdx] = newName;
+      else category.subcategories.push(newName);
+    }
+  }
+
+  // 2. Cascade update in DB.transactions
+  let updatedTxCount = 0;
+  (DB.transactions || []).forEach(tx => {
+    if(tx.category === parentCategory && tx.subCategory){
+      const subs = tx.subCategory.split(',').map(s => s.trim());
+      let modified = false;
+      const newSubs = subs.map(s => {
+        if(s === oldName || s.toLowerCase() === oldName.toLowerCase()){
+          modified = true;
+          return newName;
+        }
+        return s;
+      });
+      if(modified){
+        tx.subCategory = newSubs.join(', ');
+        updatedTxCount++;
+      }
+    }
+  });
+
+  // 3. Cascade update in DB.budgets
+  (DB.budgets || []).forEach(b => {
+    if(b.category === parentCategory && (b.subCategory === oldName || (b.subCategory && b.subCategory.toLowerCase() === oldName.toLowerCase()))){
+      b.subCategory = newName;
+    }
+  });
+
+  saveDB();
+  closeEditSubcategoryModal();
+  openSettingsCategory = parentCategory;
+  renderAllForCurrentPage();
+  showToast(`Renamed subcategory to "${newName}"`);
+}
+
 function renderCategoryList(){
+  captureSubcatDraftsFromDOM();
   const query = (document.getElementById('category-search')?.value || '').trim().toLowerCase();
   if(catTypeTab === 'expense'){
     const list = (DB.categories.expense || []).filter(c => !query || c.name.toLowerCase().includes(query) || (c.subcategories || []).some(s => s.toLowerCase().includes(query)));
     document.getElementById('cat-list').innerHTML = list.length ? list.map(c => {
       const isOpen = openSettingsCategory === c.name;
       const subList = c.subcategories || [];
+      const draftVal = subcatDrafts[c.name] || '';
       return `
       <div class="cat-block">
         <div class="cat-block-head" onclick="toggleSettingsCategory('${c.name.replace(/'/g,"\\'")}')">
           <div style="display:flex; align-items:center; gap:8px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .15s; color:var(--muted-2);"><polyline points="9 18 15 12 9 6"/></svg>
-            <span style="font-weight:500;">${c.name}</span>
+            <span style="font-weight:500;">${escapeHtml(c.name)}</span>
             <span class="text-xs muted">${subList.length ? `${subList.length} sub-categor${subList.length===1?'y':'ies'}` : 'No sub-categories'}</span>
           </div>
-          <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('category',['expense','${c.name.replace(/'/g,"\\'")}'],'${c.name.replace(/'/g,"\\'")}')" title="Remove category" aria-label="Delete ${c.name}">
+          <button class="icon-btn icon-btn-delete" onclick="event.stopPropagation(); requestDelete('category',['expense','${c.name.replace(/'/g,"\\'")}'],'${c.name.replace(/'/g,"\\'")}')" title="Remove category" aria-label="Delete ${escapeHtml(c.name)}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
         </div>
         <div class="cat-block-body ${isOpen?'open':''}">
           ${subList.filter(s => !query || c.name.toLowerCase().includes(query) || s.toLowerCase().includes(query)).map(s => `
             <div class="subcat-row">
-              <span>${s}</span>
-              <button class="icon-btn" onclick="requestDelete('subcategory',['${c.name.replace(/'/g,"\\'")}','${s.replace(/'/g,"\\'")}'],'${s.replace(/'/g,"\\'")}')" title="Remove" aria-label="Delete ${s}">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              </button>
+              <span>${escapeHtml(s)}</span>
+              <div style="display:inline-flex; align-items:center; gap:4px;">
+                <button class="icon-btn icon-btn-edit" onclick="openEditSubcategoryModal('${c.name.replace(/'/g,"\\'")}','${s.replace(/'/g,"\\'")}')" title="Edit subcategory" aria-label="Edit ${escapeHtml(s)}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="icon-btn icon-btn-delete" onclick="requestDelete('subcategory',['${c.name.replace(/'/g,"\\'")}','${s.replace(/'/g,"\\'")}'],'${s.replace(/'/g,"\\'")}')" title="Remove subcategory" aria-label="Delete ${escapeHtml(s)}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
             </div>`).join('')}
-          <form onsubmit="handleAddSubcategoryInline(event, '${c.name.replace(/'/g,"\\'")}')" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center;">
-            <input type="text" placeholder="Add sub-category under ${c.name}..." class="field-input" style="font-size:13px; flex:1; min-width:160px;" required oninput="const m=this.form.querySelector('.subcategory-add-message'); if(m) m.textContent=''; this.style.borderColor='';">
+          <form data-category="${escapeHtml(c.name)}" onsubmit="handleAddSubcategoryInline(event, '${c.name.replace(/'/g,"\\'")}')" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center;">
+            <input type="text" placeholder="Add sub-category under ${escapeHtml(c.name)}..." value="${escapeHtml(draftVal)}" class="field-input" style="font-size:13px; flex:1; min-width:160px;" required oninput="subcatDrafts['${c.name.replace(/'/g,"\\'")}'] = this.value; const m=this.form.querySelector('.subcategory-add-message'); if(m) m.textContent=''; this.style.borderColor='';">
             <button type="submit" class="btn-small" style="white-space:nowrap;">Add</button>
             <span class="subcategory-add-message text-xs muted" style="width:100%; min-height:16px;"></span>
           </form>
@@ -6060,8 +6308,8 @@ function renderCategoryList(){
     const list = (DB.categories[catTypeTab] || []).filter(c => !query || c.toLowerCase().includes(query));
     document.getElementById('cat-list').innerHTML = list.length ? list.map(c => `
       <div class="cat-block-head" style="border:1px solid var(--line); border-radius:11px; margin-bottom:8px; background:var(--surface);">
-        <span>${c}</span>
-        <button class="icon-btn" onclick="requestDelete('category',['${catTypeTab}','${c.replace(/'/g,"\\'")}'],'${c.replace(/'/g,"\\'")}')" title="Remove" aria-label="Delete ${c}">
+        <span>${escapeHtml(c)}</span>
+        <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['${catTypeTab}','${c.replace(/'/g,"\\'")}'],'${c.replace(/'/g,"\\'")}')" title="Remove" aria-label="Delete ${escapeHtml(c)}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
       </div>`).join('') : '<p class="empty-note">No categories yet.</p>';
@@ -6135,6 +6383,7 @@ function handleAddLinkedSubcategory(e){
   if(message){ message.textContent = ''; message.className = 'text-xs muted settings-add-message'; }
   input.style.borderColor = '';
   input.value = '';
+  delete subcatDrafts['__top_subcat__'];
   saveDB();
   openSettingsCategory = parent;
   renderCategoryList();
@@ -6177,6 +6426,7 @@ function handleAddSubcategoryInline(e, categoryName){
   if(message){ message.textContent = ''; message.className = 'subcategory-add-message text-xs muted'; }
   input.style.borderColor = '';
   input.value = '';
+  delete subcatDrafts[categoryName];
   saveDB();
   openSettingsCategory = categoryName;
   renderCategoryList();
@@ -6195,6 +6445,8 @@ function renderSettings(){
   renderCatTypeChips();
   renderLinkedSubcategorySelector();
   renderCategoryList();
+  const topSubInput = document.getElementById('new-subcategory-name');
+  if(topSubInput && subcatDrafts['__top_subcat__'] !== undefined) topSubInput.value = subcatDrafts['__top_subcat__'];
   renderPaymentMethodsSettings();
   populateCurrencySelect('settings-currency-select', DB.currency.code);
   renderSettingsAccount();
@@ -6230,6 +6482,8 @@ window.addEventListener('keydown', (e) => {
     if (bSubEl && !bSubEl.classList.contains('hidden')) closeBudgetSubcatModal();
     const editBudgetEl = document.getElementById('edit-budget-modal-backdrop');
     if (editBudgetEl && !editBudgetEl.classList.contains('hidden')) closeEditBudgetModal();
+    const editSubcatEl = document.getElementById('edit-subcategory-modal-backdrop');
+    if (editSubcatEl && !editSubcatEl.classList.contains('hidden')) closeEditSubcategoryModal();
     const subEl = document.getElementById('subcat-modal-backdrop');
     if (subEl && !subEl.classList.contains('hidden')) closeSubcatModal();
     const goalEl = document.getElementById('goal-modal-backdrop');
