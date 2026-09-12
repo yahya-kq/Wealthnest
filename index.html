@@ -1996,6 +1996,71 @@
   </div>
 </div>
 
+<div id="rollover-goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeRolloverGoalModal()">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeRolloverGoalModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Move Goal to Next Month</h2>
+        <p id="rollover-goal-subtitle" class="text-xs muted" style="margin:2px 0 0;"></p>
+      </div>
+    </div>
+
+    <!-- Goal Progress Card inside modal -->
+    <div id="rollover-goal-summary-card" style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin:14px 0 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+        <span class="text-xs muted">Accumulated Savings</span>
+        <span id="rollover-goal-saved-figure" class="figure" style="font-weight:700; font-size:16px; color:var(--amber);"></span>
+      </div>
+      <div class="progress-track" style="height:8px; margin-bottom:6px;"><div id="rollover-goal-progress-bar" class="progress-fill fill-amber" style="width:0%;"></div></div>
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted);">
+        <span id="rollover-goal-target-figure"></span>
+        <span id="rollover-goal-remaining-figure"></span>
+      </div>
+    </div>
+
+    <form onsubmit="handleSaveRolloverGoal(event)">
+      <input type="hidden" id="rollover-goal-id">
+
+      <label class="field-label" for="rollover-goal-deadline" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>New Target Deadline <span style="color:var(--rose);">*</span></span>
+        <span id="rollover-goal-current-deadline-note" class="text-xs muted" style="font-weight:normal;"></span>
+      </label>
+      <input type="date" id="rollover-goal-deadline" class="field-input figure mb-2" required>
+
+      <!-- Quick Date Shortcut Chips -->
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;">
+        <button type="button" class="btn-chip" style="font-size:11px; padding:4px 10px;" onclick="setRolloverDeadlineQuick(1)">+1 Month</button>
+        <button type="button" class="btn-chip" style="font-size:11px; padding:4px 10px;" onclick="setRolloverDeadlineQuick(2)">+2 Months</button>
+        <button type="button" class="btn-chip" style="font-size:11px; padding:4px 10px;" onclick="setRolloverDeadlineQuick(3)">+3 Months</button>
+        <button type="button" class="btn-chip" style="font-size:11px; padding:4px 10px;" onclick="setRolloverDeadlineEndOfNextMonth()">End of Next Month</button>
+      </div>
+
+      <label class="field-label" id="rollover-goal-target-label" for="rollover-goal-target">Target Amount</label>
+      <input type="number" min="0" step="any" id="rollover-goal-target" class="field-input figure mb-3" required>
+
+      <!-- Preservation Callout -->
+      <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:16px; display:flex; gap:10px; align-items:flex-start;">
+        <span style="color:#16A34A; font-size:15px; line-height:1.2;">✓</span>
+        <p class="text-xs" style="color:#166534; margin:0; line-height:1.45;">
+          All previous contributions and transaction history remain completely preserved and linked to this goal.
+        </p>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeRolloverGoalModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Move to Next Month
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="edit-subcategory-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditSubcategoryModal()">
   <div class="modal" style="max-width:390px;">
     <button class="modal-close" onclick="closeEditSubcategoryModal()" aria-label="Close">✕</button>
@@ -4875,8 +4940,11 @@ function renderTransactions(){
     const formattedDate = formatTxDateDisplay(t.date);
     const subcatCell = showSubcat ? `<td class="muted">${subcatContent}</td>` : '';
 
-    const methods = (t.paymentMethod || 'Other').split(',').map(m => m.trim()).filter(Boolean);
-    const methodBadges = methods.map(m => `<span class="badge badge-off" style="font-size:12px; font-weight:500; margin-right:4px; display:inline-block;">${escapeHtml(m)}</span>`).join('');
+    const activePaymentMethods = new Set(getPaymentMethods().map(m => m.toLowerCase()));
+    const rawMethods = (t.paymentMethod || 'Other').split(',').map(m => m.trim()).filter(Boolean);
+    const safeMethods = rawMethods.map(m => (activePaymentMethods.has(m.toLowerCase()) || m.toLowerCase() === 'other') ? m : 'Other');
+    const displayMethods = [...new Set(safeMethods.length ? safeMethods : ['Other'])];
+    const methodBadges = displayMethods.map(m => `<span class="badge badge-off" style="font-size:12px; font-weight:500; margin-right:4px; display:inline-block;">${escapeHtml(m)}</span>`).join('');
 
     return `
     <tr class="${isHighlight ? 'tx-row-highlight' : ''}">
@@ -5130,15 +5198,22 @@ function promptAddSubcategory(){
 
 function renderModalPaymentMethods(selectedValues = ['Cash']){
   const methods = getPaymentMethods();
+  let vals = [];
   if(Array.isArray(selectedValues)){
-    selectedModalPaymentMethods = selectedValues.filter(s => methods.includes(s));
+    vals = selectedValues;
   } else if(typeof selectedValues === 'string' && selectedValues){
-    selectedModalPaymentMethods = selectedValues.split(',').map(s => s.trim()).filter(s => methods.includes(s));
+    vals = selectedValues.split(',').map(s => s.trim()).filter(Boolean);
   } else {
-    selectedModalPaymentMethods = ['Cash'];
+    vals = ['Cash'];
   }
+  selectedModalPaymentMethods = vals.map(v => {
+    const found = methods.find(m => m.toLowerCase() === v.toLowerCase());
+    if(found) return found;
+    return methods.includes('Other') ? 'Other' : methods[0];
+  }).filter(Boolean);
+  selectedModalPaymentMethods = [...new Set(selectedModalPaymentMethods)];
   if(!selectedModalPaymentMethods.length && methods.length){
-    selectedModalPaymentMethods = [methods[0]];
+    selectedModalPaymentMethods = [methods.includes('Cash') ? 'Cash' : methods[0]];
   }
   renderExcelFilterList('tx-modal-payment');
   updateExcelFilterUI('tx-modal-payment');
@@ -5822,13 +5897,102 @@ function shiftDateByMonth(dateValue){
   const date=new Date(`${dateValue}T00:00:00`);
   return ymd(new Date(date.getFullYear(),date.getMonth()+1,Math.min(date.getDate(),28)));
 }
-function rolloverGoal(id){
-  const goal=DB.savingsGoals.find(item=>item.id===id);
-  if(!goal) return;
-  goal.startDate=shiftDateByMonth(goal.startDate||ymd(new Date()));
-  if(goal.deadline) goal.deadline=shiftDateByMonth(goal.deadline);
-  saveDB(true); renderSavings();
+
+function openRolloverGoalModal(id){
+  const g = DB.savingsGoals.find(item => item.id === id);
+  if(!g) return;
+  document.getElementById('rollover-goal-id').value = id;
+  const subtitleEl = document.getElementById('rollover-goal-subtitle');
+  if(subtitleEl) subtitleEl.innerHTML = `Extend timeline for <strong>${escapeHtml(g.name)}</strong>`;
+
+  const pct = g.targetAmount > 0 ? Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100)) : 0;
+  const savedFig = document.getElementById('rollover-goal-saved-figure');
+  if(savedFig) savedFig.textContent = `${fmt(g.currentAmount)} (${pct}%)`;
+
+  const progBar = document.getElementById('rollover-goal-progress-bar');
+  if(progBar) progBar.style.width = `${pct}%`;
+
+  const targetFig = document.getElementById('rollover-goal-target-figure');
+  if(targetFig) targetFig.textContent = `Target: ${fmt(g.targetAmount)}`;
+
+  const remFig = document.getElementById('rollover-goal-remaining-figure');
+  if(remFig) remFig.textContent = `Remaining: ${fmt(Math.max(0, g.targetAmount - g.currentAmount))}`;
+
+  const currentDeadlineNote = document.getElementById('rollover-goal-current-deadline-note');
+  if(currentDeadlineNote){
+    currentDeadlineNote.textContent = g.deadline ? `Previous: ${g.deadline}` : 'No deadline set previously';
+  }
+
+  // Base date for rollover
+  const baseDate = g.deadline ? new Date(`${g.deadline}T00:00:00`) : new Date();
+  const nextMonthDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, Math.min(baseDate.getDate(), 28));
+  document.getElementById('rollover-goal-deadline').value = ymd(nextMonthDate);
+
+  const targetInput = document.getElementById('rollover-goal-target');
+  if(targetInput) targetInput.value = g.targetAmount;
+  const targetLabel = document.getElementById('rollover-goal-target-label');
+  if(targetLabel) targetLabel.textContent = `Target Amount (${currencySymbol()})`;
+
+  document.getElementById('rollover-goal-modal-backdrop').classList.remove('hidden');
 }
+
+function closeRolloverGoalModal(){
+  const backdrop = document.getElementById('rollover-goal-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function setRolloverDeadlineQuick(monthsToAdd){
+  const id = document.getElementById('rollover-goal-id').value;
+  const g = DB.savingsGoals.find(item => item.id === id);
+  const baseDate = (g && g.deadline) ? new Date(`${g.deadline}T00:00:00`) : new Date();
+  const newDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + monthsToAdd, Math.min(baseDate.getDate(), 28));
+  document.getElementById('rollover-goal-deadline').value = ymd(newDate);
+}
+
+function setRolloverDeadlineEndOfNextMonth(){
+  const now = new Date();
+  const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+  document.getElementById('rollover-goal-deadline').value = ymd(endOfNextMonth);
+}
+
+function handleSaveRolloverGoal(e){
+  e.preventDefault();
+  const id = document.getElementById('rollover-goal-id').value;
+  const g = DB.savingsGoals.find(item => item.id === id);
+  if(!g){
+    closeRolloverGoalModal();
+    return;
+  }
+  const newDeadline = document.getElementById('rollover-goal-deadline').value;
+  const newTarget = parseFloat(document.getElementById('rollover-goal-target').value);
+  if(!newDeadline){
+    showToast('Please select a valid deadline date', 'error');
+    return;
+  }
+  if(!newTarget || newTarget <= 0){
+    showToast('Please enter a valid target amount greater than 0', 'error');
+    return;
+  }
+
+  g.deadline = newDeadline;
+  g.targetAmount = newTarget;
+
+  const deadlineDate = new Date(`${newDeadline}T00:00:00`);
+  if(!isNaN(deadlineDate.getTime())){
+    savingsFilterMonth = deadlineDate.getMonth() + 1;
+    savingsFilterYear = deadlineDate.getFullYear();
+  }
+
+  saveDB(true);
+  closeRolloverGoalModal();
+  renderAllForCurrentPage();
+  showToast(`Moved "${g.name}" to next period (Deadline: ${newDeadline})`, 'success');
+}
+
+function rolloverGoal(id){
+  openRolloverGoalModal(id);
+}
+
 function renderSavings(){
   initSavingsFilters();
   document.getElementById('savings-count-label').textContent = `${DB.savingsGoals.length} active goal${DB.savingsGoals.length===1?'':'s'}`;
@@ -5854,28 +6018,74 @@ function renderSavings(){
     </div>
   `;
 
-  const visibleGoals=DB.savingsGoals.filter(goal=>goalActiveInPeriod(goal,savingsFilterMonth,savingsFilterYear));
+  const visibleGoals = DB.savingsGoals.filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
+  const todayStr = ymd(new Date());
+
   document.getElementById('savings-grid').innerHTML = visibleGoals.map(g => {
-    const percent = g.targetAmount>0 ? Math.min(100,(g.currentAmount/g.targetAmount)*100) : 0;
+    const percent = g.targetAmount > 0 ? Math.min(100, (g.currentAmount / g.targetAmount) * 100) : 0;
     const reached = g.currentAmount >= g.targetAmount;
-    return `<div class="card" style="padding:22px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-        <div><h3 class="section-title">${g.name}</h3>${g.deadline?`<p class="text-xs muted" style="margin:2px 0 0;">Target date: ${g.deadline}</p>`:''}</div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="figure" style="font-size:17px; font-weight:600; color:var(--amber);">${Math.round(percent)}%</span>
-          <button class="icon-btn" onclick="openEditGoalModal('${g.id}')" title="Edit savings goal" aria-label="Edit ${g.name.replace(/'/g,"\\'")}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="icon-btn" onclick="requestDelete('goal','${g.id}','${g.name.replace(/'/g,"\\'")}')" title="Delete savings goal" aria-label="Delete savings goal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2-2H7a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+    const isExpired = Boolean(g.deadline && g.deadline < todayStr && !reached);
+    const remaining = Math.max(0, g.targetAmount - g.currentAmount);
+
+    let statusBadge = '';
+    if(reached){
+      statusBadge = `<span class="badge badge-ok" style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-weight:700; font-size:11px; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px;"><span>🎉</span> Goal Achieved!</span>`;
+    } else if(isExpired){
+      statusBadge = `<span class="badge" style="background:#FEF2F2; color:#B91C1C; border:1px solid #FECACA; font-weight:600; font-size:11px; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Deadline Passed</span>`;
+    }
+
+    return `<div class="card" style="padding:22px; ${reached ? 'border-color:#86EFAC;' : isExpired ? 'border-color:#FECACA;' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h3 class="section-title" style="margin:0;">${escapeHtml(g.name)}</h3>
+            ${statusBadge}
+          </div>
+          ${g.deadline ? `<p class="text-xs muted" style="margin:4px 0 0;">Target date: <strong>${escapeHtml(g.deadline)}</strong>${isExpired ? ' <span style="color:var(--rose); font-weight:600;">(Passed)</span>' : ''}</p>` : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+          <span class="figure" style="font-size:17px; font-weight:700; color:${reached ? 'var(--teal)' : 'var(--amber)'};">${Math.round(percent)}%</span>
+          <button class="icon-btn" onclick="openRolloverGoalModal('${g.id}')" title="Move / Extend goal to next month" aria-label="Move ${escapeHtml(g.name)} to next month">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          </button>
+          <button class="icon-btn" onclick="openEditGoalModal('${g.id}')" title="Edit savings goal" aria-label="Edit ${escapeHtml(g.name)}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" title="Delete savings goal" aria-label="Delete savings goal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
         </div>
       </div>
-      <div class="progress-track"><div class="progress-fill ${reached?'fill-teal':'fill-amber'}" style="width:${percent}%;"></div></div>
-      <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:14px;">
-        <span class="figure">${fmt(g.currentAmount)} <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
-        ${reached?'<span class="badge badge-ok">Goal reached</span>':''}
+      <div class="progress-track" style="height:10px; border-radius:999px; overflow:hidden;"><div class="progress-fill ${reached ? 'fill-teal' : 'fill-amber'}" style="width:${percent}%; transition:width 0.4s ease;"></div></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13.5px;">
+        <span class="figure"><strong>${fmt(g.currentAmount)}</strong> <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
+        ${reached ? '<span class="badge badge-ok" style="font-weight:600;">✓ Complete</span>' : `<span class="text-xs muted">${fmt(remaining)} remaining</span>`}
       </div>
-      ${g.deadline&&!reached&&g.deadline<ymd(new Date())?`<button onclick="rolloverGoal('${g.id}')" class="btn-small" style="margin-top:12px;">Move to next month</button>`:''}
-      <div id="contribute-row-${g.id}" style="margin-top:14px;">
-        <button onclick="showContributeRow('${g.id}')" class="link-sm" style="background:none;border:none;padding:0;">+ Contribute</button>
-      </div>
+      
+      ${isExpired ? `
+        <button onclick="openRolloverGoalModal('${g.id}')" class="btn-primary" style="margin-top:14px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:9px 14px; font-size:13px; font-weight:600;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Move Goal to Next Month
+        </button>
+      ` : !reached ? `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+          <button onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; color:var(--primary); font-size:12px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            Move / Extend Goal
+          </button>
+        </div>
+      ` : ''}
+
+      ${!reached ? `
+        <div id="contribute-row-${g.id}" style="margin-top:12px;">
+          <button onclick="showContributeRow('${g.id}')" class="link-sm" style="background:none;border:none;padding:0; font-weight:600;">+ Contribute</button>
+        </div>
+      ` : `
+        <div style="margin-top:14px; padding:10px 14px; background:#F0FDF4; border-radius:var(--radius-sm); border:1px solid #BBF7D0; display:flex; align-items:center; gap:8px;">
+          <span style="font-size:18px;">🏆</span>
+          <span class="text-xs" style="color:#15803D; font-weight:600;">Congratulations! You achieved your target savings goal.</span>
+        </div>
+      `}
     </div>`;
   }).join('') || '<p class="empty-note">No savings goals yet.</p>';
 }
@@ -6206,19 +6416,29 @@ function handleDeletePaymentMethod(name){
   }
   let reassignedCount = 0;
   (DB.transactions || []).forEach(t => {
-    if(t.paymentMethod && t.paymentMethod.includes(name)){
-      let methods = t.paymentMethod.split(',').map(m => m.trim());
-      if(methods.includes(name)){
-        methods = methods.map(m => m === name ? 'Other' : m);
-        t.paymentMethod = [...new Set(methods)].join(', ');
+    if(t.paymentMethod){
+      let pms = t.paymentMethod.split(',').map(m => m.trim()).filter(Boolean);
+      let changed = false;
+      let newPms = pms.map(m => {
+        if(m.toLowerCase() === name.toLowerCase()){
+          changed = true;
+          return 'Other';
+        }
+        return m;
+      });
+      if(changed){
+        t.paymentMethod = [...new Set(newPms)].join(', ');
         reassignedCount++;
       }
-    } else if((t.paymentMethod || 'Other') === name){
+    } else {
       t.paymentMethod = 'Other';
       reassignedCount++;
     }
   });
-  DB.paymentMethods = methods.filter(m => m !== name);
+  DB.paymentMethods = methods.filter(m => m.toLowerCase() !== name.toLowerCase());
+  if(!DB.paymentMethods.some(m => m.toLowerCase() === 'other')){
+    DB.paymentMethods.push('Other');
+  }
   saveDB(true);
   showToast(`Deleted "${name}"${reassignedCount > 0 ? ` (${reassignedCount === 1 ? '1 transaction' : `${reassignedCount} transactions`} reassigned to Other)` : ''}`, 'info');
   renderPaymentMethodsSettings();
@@ -6843,6 +7063,8 @@ window.addEventListener('keydown', (e) => {
     if (goalEl && !goalEl.classList.contains('hidden')) closeGoalModal();
     const editGoalEl = document.getElementById('edit-goal-modal-backdrop');
     if (editGoalEl && !editGoalEl.classList.contains('hidden')) closeEditGoalModal();
+    const rolloverGoalEl = document.getElementById('rollover-goal-modal-backdrop');
+    if (rolloverGoalEl && !rolloverGoalEl.classList.contains('hidden')) closeRolloverGoalModal();
     const authEl = document.getElementById('auth-modal-backdrop');
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
     const deleteAccountEl = document.getElementById('delete-account-modal-backdrop');
