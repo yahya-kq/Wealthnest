@@ -1903,15 +1903,39 @@
 
 <div id="edit-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditBudgetModal()">
   <div class="modal" style="max-width:390px;">
-    <button class="modal-close" onclick="closeEditBudgetModal()">✕</button>
+    <button class="modal-close" onclick="closeEditBudgetModal()" aria-label="Close">✕</button>
     <h2>Edit Budget</h2>
     <p id="edit-budget-title" class="text-sm muted" style="margin:-6px 0 16px; font-weight:500;"></p>
     <form onsubmit="handleSaveEditBudget(event)">
       <input type="hidden" id="edit-budget-id">
-      <label class="field-label" id="edit-budget-amount-label">Monthly Limit</label>
-      <input type="text" inputmode="decimal" id="edit-budget-amount" class="field-input figure mb-4" placeholder="e.g. 5000" required>
+      <label class="field-label" for="edit-budget-category">Category</label>
+      <select id="edit-budget-category" class="field-input mb-3" onchange="onEditBudgetCategoryChange()" required></select>
+      <label class="field-label" for="edit-budget-subcategory">Subcategory</label>
+      <select id="edit-budget-subcategory" class="field-input mb-3"></select>
+      <label class="field-label" id="edit-budget-amount-label" for="edit-budget-amount">Monthly Limit</label>
+      <input type="text" inputmode="decimal" id="edit-budget-amount" class="field-input figure mb-2" placeholder="e.g. 5000" required oninput="const m=document.getElementById('edit-budget-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <span id="edit-budget-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditBudgetModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="edit-category-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditCategoryModal()">
+  <div class="modal" style="max-width:390px;">
+    <button class="modal-close" onclick="closeEditCategoryModal()" aria-label="Close">✕</button>
+    <h2>Edit Category</h2>
+    <p id="edit-category-type-label" class="text-sm muted" style="margin:-6px 0 16px; font-weight:500;"></p>
+    <form onsubmit="handleSaveEditCategory(event)">
+      <input type="hidden" id="edit-category-type">
+      <input type="hidden" id="edit-category-old-name">
+      <label class="field-label" for="edit-category-name">Category Name</label>
+      <input type="text" id="edit-category-name" class="field-input mb-2" placeholder="e.g. Housing" required autocomplete="off" oninput="const m=document.getElementById('edit-category-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <span id="edit-category-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditCategoryModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary">Save Changes</button>
       </div>
     </form>
@@ -2288,9 +2312,10 @@ function getExcelOptions(type){
     return cats.map(c => ({ value: c, label: c }));
   }
   if(type === 'tx-subcategory'){
-    const activeCats = (txSelectedCategories && txSelectedCategories.length > 0)
-      ? txSelectedCategories
-      : transactionCategories(txFilter);
+    if(!txSelectedCategories || txSelectedCategories.length === 0){
+      return [];
+    }
+    const activeCats = txSelectedCategories;
     
     let subcats = [];
     if(txFilter === 'expense' || txFilter === 'all'){
@@ -2380,7 +2405,10 @@ function renderExcelFilterList(type){
   const selected = getExcelItems(type);
 
   if(!options.length){
-    container.innerHTML = `<div style="padding:12px 14px; color:var(--muted); font-size:12px; text-align:center;">No items available</div>`;
+    const emptyMsg = (type === 'tx-subcategory' && (!txSelectedCategories || txSelectedCategories.length === 0))
+      ? 'Select a category to view subcategories'
+      : 'No items available';
+    container.innerHTML = `<div style="padding:12px 14px; color:var(--muted); font-size:12px; text-align:center;">${emptyMsg}</div>`;
     updateExcelFilterUI(type);
     return;
   }
@@ -2543,7 +2571,9 @@ function updateExcelFilterUI(type){
         summaryEl.textContent = `${selected.length} Months Selected`;
       }
     } else if(type === 'tx-category'){
-      if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
+      if(selected.length === 0){
+        summaryEl.textContent = 'No Categories';
+      } else if(totalCount > 0 && selected.length === totalCount){
         summaryEl.textContent = 'Categories';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
@@ -4597,7 +4627,9 @@ function renderTxCategoryFilter(){
   const categories = transactionCategories(txFilter);
   wrap.classList.toggle('hidden', categories.length === 0);
   
-  if(txSelectedCategories && txSelectedCategories.length > 0){
+  if(txSelectedCategories === null || txSelectedCategories === undefined){
+    txSelectedCategories = [...categories];
+  } else if(txSelectedCategories.length > 0){
     txSelectedCategories = txSelectedCategories.filter(c => categories.includes(c));
   }
   
@@ -4616,14 +4648,9 @@ function renderTxSubCategoryFilter(){
     return;
   }
 
-  const options = getExcelOptions('tx-subcategory');
-  if(!options.length){
-    wrap.classList.add('hidden');
-    txSelectedSubcategories = [];
-    return;
-  }
-
   wrap.classList.remove('hidden');
+
+  const options = getExcelOptions('tx-subcategory');
   const validVals = options.map(o => o.value);
   if(txSelectedSubcategories && txSelectedSubcategories.length > 0){
     txSelectedSubcategories = txSelectedSubcategories.filter(s => validVals.includes(s));
@@ -4641,7 +4668,7 @@ function setTxSubCategoryFilter(subcat){
 
 function setTxFilter(f){
   txFilter = f;
-  txSelectedCategories = [];
+  txSelectedCategories = transactionCategories(f);
   txSelectedSubcategories = [];
   txCategoryFilter = 'all';
   txSubCategoryFilter = 'all';
@@ -4650,10 +4677,10 @@ function setTxFilter(f){
 }
 
 function setTxCategoryFilter(category){
-  if(category === 'all') txSelectedCategories = [];
+  if(category === 'all') txSelectedCategories = transactionCategories(txFilter);
   else txSelectedCategories = [category];
   txSelectedSubcategories = [];
-  renderTxSubCategoryFilter();
+  renderTxCategoryFilter();
   renderTransactions();
 }
 let highlightedTxId = null;
@@ -4737,14 +4764,17 @@ function renderTransactions(){
       return false;
     })
     .filter(t => {
-      if(!txSelectedCategories || txSelectedCategories.length === 0) return true;
+      if(txSelectedCategories && txSelectedCategories.length === 0) return false;
+      if(!txSelectedCategories) return true;
       return txSelectedCategories.includes(t.category);
     })
     .filter(t => {
-      if(!txSelectedSubcategories || txSelectedSubcategories.length === 0) return true;
-      if(!t.subCategory) return false;
-      const tSubs = t.subCategory.split(',').map(s => s.trim());
-      return tSubs.some(s => txSelectedSubcategories.includes(s));
+      if(txSelectedSubcategories && txSelectedSubcategories.length > 0){
+        if(!t.subCategory) return false;
+        const tSubs = t.subCategory.split(',').map(s => s.trim());
+        return tSubs.some(s => txSelectedSubcategories.includes(s));
+      }
+      return true;
     })
     .filter(t => txDateFilter ? t.date === txDateFilter : true)
     .filter(t => query ? `${t.category} ${t.description||''} ${t.subCategory||''} ${t.paymentMethod||''}`.toLowerCase().includes(query) : true)
@@ -5593,13 +5623,49 @@ function handleAddSubcatBudget(){
   showToast(`Added ${sub} budget: ${fmt(amount)}`);
 }
 
+function populateEditBudgetSubcategories(category, selectedSub, currentBudgetId, month, year){
+  const subSelect = document.getElementById('edit-budget-subcategory');
+  if(!subSelect) return;
+  const catObj = findExpenseCategory(category);
+  const allSubs = (catObj && Array.isArray(catObj.subcategories)) ? catObj.subcategories : [];
+  
+  const otherBudgets = (DB.budgets || []).filter(item => item.id !== currentBudgetId && item.month === month && item.year === year && item.category === category);
+  const usedSubs = new Set(otherBudgets.filter(item => item.subCategory).map(item => item.subCategory));
+  const hasWholeCatBudget = otherBudgets.some(item => !item.subCategory);
+
+  let optionsHtml = '';
+  if(!hasWholeCatBudget){
+    optionsHtml += `<option value="" ${!selectedSub ? 'selected' : ''}>Whole Category</option>`;
+  }
+  allSubs.forEach(sub => {
+    if(!usedSubs.has(sub) || sub === selectedSub){
+      optionsHtml += `<option value="${escapeHtml(sub)}" ${sub === selectedSub ? 'selected' : ''}>${escapeHtml(sub)}</option>`;
+    }
+  });
+
+  if(!optionsHtml){
+    optionsHtml = '<option value="" disabled selected>No subcategories available</option>';
+  }
+
+  subSelect.innerHTML = optionsHtml;
+}
+
+function onEditBudgetCategoryChange(){
+  const id = document.getElementById('edit-budget-id').value;
+  const b = DB.budgets.find(item => item.id === id);
+  const cat = document.getElementById('edit-budget-category').value;
+  const month = b ? b.month : budgetSelMonth;
+  const year = b ? b.year : budgetSelYear;
+  populateEditBudgetSubcategories(cat, null, id, month, year);
+}
+
 function openEditBudgetModal(id){
   const b = DB.budgets.find(item => item.id === id);
   if(!b) return;
   document.getElementById('edit-budget-id').value = id;
   const titleEl = document.getElementById('edit-budget-title');
   if(titleEl){
-    titleEl.textContent = b.subCategory ? `${b.category} → ${b.subCategory}` : `${b.category} (Whole Category)`;
+    titleEl.textContent = `Month: ${MONTH_NAMES[(b.month||budgetSelMonth) - 1]} ${b.year||budgetSelYear}`;
   }
   const labelEl = document.getElementById('edit-budget-amount-label');
   if(labelEl){
@@ -5608,33 +5674,81 @@ function openEditBudgetModal(id){
   const amtInput = document.getElementById('edit-budget-amount');
   if(amtInput){
     amtInput.value = b.budgetAmount;
+    amtInput.style.borderColor = '';
   }
+  const msgEl = document.getElementById('edit-budget-message');
+  if(msgEl){ msgEl.textContent = ''; msgEl.className = 'text-xs muted settings-add-message'; }
+
+  const catSelect = document.getElementById('edit-budget-category');
+  if(catSelect){
+    const expenseCats = (DB.categories.expense || []).map(c => c.name);
+    catSelect.innerHTML = expenseCats.map(c => `<option value="${escapeHtml(c)}" ${c === b.category ? 'selected' : ''}>${titleCase(c)}</option>`).join('');
+  }
+
+  populateEditBudgetSubcategories(b.category, b.subCategory, b.id, b.month, b.year);
+
   document.getElementById('edit-budget-modal-backdrop').classList.remove('hidden');
+  setTimeout(() => amtInput && amtInput.focus(), 50);
 }
+
 function closeEditBudgetModal(){
   const backdrop = document.getElementById('edit-budget-modal-backdrop');
   if(backdrop) backdrop.classList.add('hidden');
 }
+
 function handleSaveEditBudget(e){
   e.preventDefault();
   const id = document.getElementById('edit-budget-id').value;
   const amtInput = document.getElementById('edit-budget-amount');
+  const catSelect = document.getElementById('edit-budget-category');
+  const subSelect = document.getElementById('edit-budget-subcategory');
+  const msgEl = document.getElementById('edit-budget-message');
+
   const amount = evaluateTxAmountInput(amtInput);
   if(!amount || amount <= 0){
-    showToast('Please enter a valid budget amount greater than 0', 'error');
+    if(msgEl){
+      msgEl.textContent = 'Please enter a valid amount greater than 0.';
+      msgEl.className = 'text-xs settings-add-message message-error';
+    }
+    amtInput.style.borderColor = 'var(--rose)';
     return;
   }
+
+  const newCategory = catSelect ? catSelect.value : '';
+  const newSubCategory = (subSelect && subSelect.value) ? subSelect.value.trim() : null;
+
   const b = DB.budgets.find(item => item.id === id);
   if(!b){
     closeEditBudgetModal();
     return;
   }
+
+  const duplicate = (DB.budgets || []).some(item => 
+    item.id !== id &&
+    item.month === b.month &&
+    item.year === b.year &&
+    item.category === newCategory &&
+    (item.subCategory || null) === (newSubCategory || null)
+  );
+
+  if(duplicate){
+    if(msgEl){
+      msgEl.innerHTML = `⚠️ Budget for "<strong>${escapeHtml(newCategory)}${newSubCategory ? ` (${escapeHtml(newSubCategory)})` : ''}</strong>" already exists for this month!`;
+      msgEl.className = 'text-xs settings-add-message message-error';
+    }
+    amtInput.style.borderColor = 'var(--rose)';
+    return;
+  }
+
+  b.category = newCategory;
+  b.subCategory = newSubCategory;
   b.budgetAmount = amount;
-  openBudgetCategory = b.category;
+  openBudgetCategory = newCategory;
+
   saveDB(true);
   closeEditBudgetModal();
   renderAllForCurrentPage();
-  showToast(`Updated budget for ${b.category}${b.subCategory ? ` (${b.subCategory})` : ''} to ${fmt(amount)}`);
+  showToast(`Updated budget for ${newCategory}${newSubCategory ? ` (${newSubCategory})` : ''} to ${fmt(amount)}`);
 }
 
 /* ---------------- render: savings ---------------- */
@@ -6159,6 +6273,93 @@ function captureSubcatDraftsFromDOM(){
   } catch(e){}
 }
 
+function openEditCategoryModal(type, oldName){
+  document.getElementById('edit-category-type').value = type;
+  document.getElementById('edit-category-old-name').value = oldName;
+  const nameInput = document.getElementById('edit-category-name');
+  nameInput.value = oldName;
+  nameInput.style.borderColor = '';
+  const labelEl = document.getElementById('edit-category-type-label');
+  if(labelEl) labelEl.textContent = `${titleCase(type)} Category`;
+  const msgEl = document.getElementById('edit-category-message');
+  if(msgEl){ msgEl.textContent = ''; msgEl.className = 'text-xs muted settings-add-message'; }
+  document.getElementById('edit-category-modal-backdrop').classList.remove('hidden');
+  setTimeout(() => nameInput.focus(), 50);
+}
+
+function closeEditCategoryModal(){
+  document.getElementById('edit-category-modal-backdrop').classList.add('hidden');
+}
+
+function handleSaveEditCategory(e){
+  e.preventDefault();
+  const type = document.getElementById('edit-category-type').value;
+  const oldName = document.getElementById('edit-category-old-name').value;
+  const input = document.getElementById('edit-category-name');
+  const newName = input.value.trim();
+  const msgEl = document.getElementById('edit-category-message');
+
+  if(!newName){
+    if(msgEl){
+      msgEl.textContent = 'Category name cannot be empty.';
+      msgEl.className = 'text-xs settings-add-message message-error';
+    }
+    input.style.borderColor = 'var(--rose)';
+    return;
+  }
+
+  let exists = false;
+  if(type === 'expense'){
+    exists = (DB.categories.expense || []).some(c => (c.name || c).trim().toLowerCase() === newName.toLowerCase() && (c.name || c).trim().toLowerCase() !== oldName.toLowerCase());
+  } else {
+    exists = (DB.categories[type] || []).some(c => (c || '').trim().toLowerCase() === newName.toLowerCase() && (c || '').trim().toLowerCase() !== oldName.toLowerCase());
+  }
+
+  if(exists){
+    if(msgEl){
+      msgEl.innerHTML = `⚠️ Category "<strong>${escapeHtml(newName)}</strong>" already exists!`;
+      msgEl.className = 'text-xs settings-add-message message-error';
+    }
+    input.style.borderColor = 'var(--rose)';
+    input.classList.add('shake-anim');
+    setTimeout(() => input.classList.remove('shake-anim'), 400);
+    return;
+  }
+
+  if(type === 'expense'){
+    const catObj = (DB.categories.expense || []).find(c => c.name === oldName || (c.name && c.name.toLowerCase() === oldName.toLowerCase()));
+    if(catObj){
+      catObj.name = newName;
+    }
+  } else {
+    if(Array.isArray(DB.categories[type])){
+      const idx = DB.categories[type].indexOf(oldName);
+      if(idx !== -1) DB.categories[type][idx] = newName;
+    }
+  }
+
+  (DB.transactions || []).forEach(tx => {
+    if(tx.category === oldName && (type === 'all' || tx.type === type)){
+      tx.category = newName;
+    }
+  });
+
+  (DB.budgets || []).forEach(b => {
+    if(b.category === oldName){
+      b.category = newName;
+    }
+  });
+
+  if(openSettingsCategory === oldName){
+    openSettingsCategory = newName;
+  }
+
+  saveDB();
+  closeEditCategoryModal();
+  renderAllForCurrentPage();
+  showToast(`Renamed category to "${newName}"`);
+}
+
 function openEditSubcategoryModal(parentCategory, subCategoryName){
   document.getElementById('edit-subcategory-parent').value = parentCategory;
   document.getElementById('edit-subcategory-old-name').value = subCategoryName;
@@ -6279,9 +6480,14 @@ function renderCategoryList(){
             <span style="font-weight:500;">${escapeHtml(c.name)}</span>
             <span class="text-xs muted">${subList.length ? `${subList.length} sub-categor${subList.length===1?'y':'ies'}` : 'No sub-categories'}</span>
           </div>
-          <button class="icon-btn icon-btn-delete" onclick="event.stopPropagation(); requestDelete('category',['expense','${c.name.replace(/'/g,"\\'")}'],'${c.name.replace(/'/g,"\\'")}')" title="Remove category" aria-label="Delete ${escapeHtml(c.name)}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
+          <div style="display:inline-flex; align-items:center; gap:4px;" onclick="event.stopPropagation()">
+            <button class="icon-btn icon-btn-edit" onclick="openEditCategoryModal('expense','${c.name.replace(/'/g,"\\'")}');" title="Edit category" aria-label="Edit ${escapeHtml(c.name)}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['expense','${c.name.replace(/'/g,"\\'")}'],'${c.name.replace(/'/g,"\\'")}')" title="Remove category" aria-label="Delete ${escapeHtml(c.name)}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
         </div>
         <div class="cat-block-body ${isOpen?'open':''}">
           ${subList.filter(s => !query || c.name.toLowerCase().includes(query) || s.toLowerCase().includes(query)).map(s => `
@@ -6307,11 +6513,16 @@ function renderCategoryList(){
   } else {
     const list = (DB.categories[catTypeTab] || []).filter(c => !query || c.toLowerCase().includes(query));
     document.getElementById('cat-list').innerHTML = list.length ? list.map(c => `
-      <div class="cat-block-head" style="border:1px solid var(--line); border-radius:11px; margin-bottom:8px; background:var(--surface);">
+      <div class="cat-block-head" style="border:1px solid var(--line); border-radius:11px; margin-bottom:8px; background:var(--surface); display:flex; justify-content:space-between; align-items:center;">
         <span>${escapeHtml(c)}</span>
-        <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['${catTypeTab}','${c.replace(/'/g,"\\'")}'],'${c.replace(/'/g,"\\'")}')" title="Remove" aria-label="Delete ${escapeHtml(c)}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        </button>
+        <div style="display:inline-flex; align-items:center; gap:4px;">
+          <button class="icon-btn icon-btn-edit" onclick="openEditCategoryModal('${catTypeTab}','${c.replace(/'/g,"\\'")}');" title="Edit category" aria-label="Edit ${escapeHtml(c)}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['${catTypeTab}','${c.replace(/'/g,"\\'")}'],'${c.replace(/'/g,"\\'")}')" title="Remove" aria-label="Delete ${escapeHtml(c)}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
       </div>`).join('') : '<p class="empty-note">No categories yet.</p>';
   }
 }
@@ -6484,6 +6695,8 @@ window.addEventListener('keydown', (e) => {
     if (editBudgetEl && !editBudgetEl.classList.contains('hidden')) closeEditBudgetModal();
     const editSubcatEl = document.getElementById('edit-subcategory-modal-backdrop');
     if (editSubcatEl && !editSubcatEl.classList.contains('hidden')) closeEditSubcategoryModal();
+    const editCatEl = document.getElementById('edit-category-modal-backdrop');
+    if (editCatEl && !editCatEl.classList.contains('hidden')) closeEditCategoryModal();
     const subEl = document.getElementById('subcat-modal-backdrop');
     if (subEl && !subEl.classList.contains('hidden')) closeSubcatModal();
     const goalEl = document.getElementById('goal-modal-backdrop');
