@@ -2354,7 +2354,7 @@ const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"
 /* ---------------- Excel-Style Multi-Select Filter Engine ---------------- */
 let comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
 let dashboardSelectedMonths = [];
-let txSelectedCategories = [];
+let txSelectedCategories = null;
 let txSelectedSubcategories = [];
 let selectedModalSubcategories = [];
 let selectedModalPaymentMethods = ['Cash'];
@@ -2402,7 +2402,7 @@ function setExcelMonths(type, months){
 function getExcelItems(type){
   if(type === 'comparison') return comparisonSelectedMonths;
   if(type === 'dashboard') return dashboardSelectedMonths;
-  if(type === 'tx-category') return txSelectedCategories;
+  if(type === 'tx-category') return txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter);
   if(type === 'tx-subcategory') return txSelectedSubcategories;
   if(type === 'tx-modal-subcategory') return selectedModalSubcategories;
   if(type === 'tx-modal-payment') return selectedModalPaymentMethods;
@@ -2427,10 +2427,10 @@ function getExcelOptions(type){
     return cats.map(c => ({ value: c, label: c }));
   }
   if(type === 'tx-subcategory'){
-    if(!txSelectedCategories || txSelectedCategories.length === 0){
+    const activeCats = txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter);
+    if(!activeCats || activeCats.length === 0){
       return [];
     }
-    const activeCats = txSelectedCategories;
     
     let subcats = [];
     if(txFilter === 'expense' || txFilter === 'all'){
@@ -2520,7 +2520,8 @@ function renderExcelFilterList(type){
   const selected = getExcelItems(type);
 
   if(!options.length){
-    const emptyMsg = (type === 'tx-subcategory' && (!txSelectedCategories || txSelectedCategories.length === 0))
+    const activeCats = txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter);
+    const emptyMsg = (type === 'tx-subcategory' && (!activeCats || activeCats.length === 0))
       ? 'Select a category to view subcategories'
       : 'No items available';
     container.innerHTML = `<div style="padding:12px 14px; color:var(--muted); font-size:12px; text-align:center;">${emptyMsg}</div>`;
@@ -4738,10 +4739,11 @@ function renderTxCategoryFilter(){
   const categories = transactionCategories(txFilter);
   wrap.classList.toggle('hidden', categories.length === 0);
   
-  if(txSelectedCategories === null || txSelectedCategories === undefined){
+  if(!txSelectedCategories || !Array.isArray(txSelectedCategories) || txSelectedCategories.length === 0){
     txSelectedCategories = [...categories];
-  } else if(txSelectedCategories.length > 0){
-    txSelectedCategories = txSelectedCategories.filter(c => categories.includes(c));
+  } else {
+    const valid = txSelectedCategories.filter(c => categories.includes(c));
+    txSelectedCategories = valid.length > 0 ? valid : [...categories];
   }
   
   renderExcelFilterList('tx-category');
@@ -4876,8 +4878,10 @@ function renderTransactions(){
       return false;
     })
     .filter(t => {
-      if(txSelectedCategories && txSelectedCategories.length === 0) return false;
       if(!txSelectedCategories) return true;
+      const allCats = transactionCategories(txFilter);
+      if(txSelectedCategories.length === allCats.length) return true;
+      if(txSelectedCategories.length === 0) return false;
       return txSelectedCategories.includes(t.category);
     })
     .filter(t => {
@@ -5390,12 +5394,12 @@ function handleSaveTransaction(e){
       renderTxFilterChips();
     }
     if(txSelectedCategories && txSelectedCategories.length > 0 && !txSelectedCategories.includes(catVal)){
-      txSelectedCategories = [];
-      updateExcelFilterUI('tx-category');
+      txSelectedCategories = transactionCategories(txFilter);
+      renderTxCategoryFilter();
     }
     if(txSelectedSubcategories && txSelectedSubcategories.length > 0 && subVal && !selectedModalSubcategories.some(s => txSelectedSubcategories.includes(s))){
       txSelectedSubcategories = [];
-      updateExcelFilterUI('tx-subcategory');
+      renderTxSubCategoryFilter();
     }
     const searchEl = document.getElementById('tx-search');
     if(searchEl && searchEl.value) {
@@ -7033,7 +7037,13 @@ function renderActivityLog(){
 function renderPage(page){
   if(page==='dashboard') renderDashboard();
   else if(page==='reports') renderReports();
-  else if(page==='transactions'){ renderTxFilterChips(); renderTransactions(); }
+  else if(page==='transactions'){
+    if(!txSelectedCategories || txSelectedCategories.length === 0){
+      txSelectedCategories = transactionCategories(txFilter);
+    }
+    renderTxFilterChips();
+    renderTransactions();
+  }
   else if(page==='budgets') renderBudgets();
   else if(page==='savings') renderSavings();
   else if(page==='settings') renderSettings();
