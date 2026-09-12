@@ -1291,7 +1291,7 @@
 <div id="app-shell" class="hidden">
   <aside id="sidebar">
     <div class="brand-header">
-      <a href="#" onclick="goToApp('dashboard'); return false;" class="brand" title="WealthNest">
+      <a href="#" onclick="showLanding(); return false;" class="brand" title="WealthNest">
         <div class="brand-mark" data-variant="dark"></div>
         <span class="brand-title">WealthNest</span>
       </a>
@@ -3540,6 +3540,14 @@ function showLanding(){
   document.title = 'WealthNest – Personal Finance Tracker';
   document.getElementById('landing-page').classList.remove('hidden');
   document.getElementById('app-shell').classList.add('hidden');
+  localStorage.setItem('wealthnest_view_mode', 'landing');
+  if(window.location.hash){
+    if(window.history.replaceState){
+      window.history.replaceState(null, '', window.location.pathname);
+    } else {
+      window.location.hash = '';
+    }
+  }
   const heroNet = document.getElementById('hero-net-figure');
   const heroIncome = document.getElementById('hero-income-figure');
   const heroExpense = document.getElementById('hero-expense-figure');
