@@ -1711,6 +1711,38 @@
             </form>
           </div>
         </div>
+
+        <!-- Status & Warning Indicators Guide Card -->
+        <div class="card" style="padding:20px; margin-bottom:18px; background:var(--surface); border:1px solid var(--line);">
+          <h3 class="section-title" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Status &amp; Warning Indicators Guide
+          </h3>
+          <p class="text-xs muted" style="margin-bottom:14px;">Understand what warning badges in the Transactions list and toolbar represent:</p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
+            <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span class="badge-subcat-none" style="display:inline-flex; align-items:center; gap:4px; font-weight:600;"><span class="rect-sign-red"></span> None / (Deleted)</span>
+                <strong style="font-size:13px; color:var(--ink);">Missing Subcategory</strong>
+              </div>
+              <p class="text-xs muted" style="line-height:1.45; margin:0;">When a subcategory is deleted or unassigned, transactions remain completely intact with all financial records preserved. You can click Edit (pencil) on the transaction to assign a new subcategory.</p>
+            </div>
+            <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span class="badge-subcat-none" style="display:inline-flex; align-items:center; gap:4px; font-weight:600;"><span class="rect-sign-red"></span> Category (Deleted)</span>
+                <strong style="font-size:13px; color:var(--ink);">Deleted Category</strong>
+              </div>
+              <p class="text-xs muted" style="line-height:1.45; margin:0;">When a category is deleted, it is moved to the Recycle Bin. You can restore the category from Settings &gt; Recycle Bin or edit affected transactions to reassign their category.</p>
+            </div>
+            <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span class="tx-unassigned-badge-btn" style="pointer-events:none; padding:3px 8px; font-size:11px; display:inline-flex; align-items:center; gap:5px;"><span class="rect-sign-red"></span> X Warnings</span>
+                <strong style="font-size:13px; color:var(--ink);">Toolbar Warning Counter</strong>
+              </div>
+              <p class="text-xs muted" style="line-height:1.45; margin:0;">Beside the date picker in Transactions, this badge alerts you whenever transactions need subcategory review. Click it to instantly filter and review those transactions.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="settings-payment-methods" class="hidden">
@@ -2577,20 +2609,16 @@ function updateExcelFilterUI(type){
         summaryEl.textContent = 'Categories';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
-      } else if(selected.length <= 2){
-        summaryEl.textContent = selected.join(', ');
       } else {
-        summaryEl.textContent = `${selected.length} Selected`;
+        summaryEl.textContent = `${selected.length} Categories Selected`;
       }
     } else if(type === 'tx-subcategory'){
       if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
         summaryEl.textContent = 'Subcategories';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
-      } else if(selected.length <= 2){
-        summaryEl.textContent = selected.join(', ');
       } else {
-        summaryEl.textContent = `${selected.length} Selected`;
+        summaryEl.textContent = `${selected.length} Subcategories Selected`;
       }
     } else if(type === 'tx-modal-subcategory'){
       if(selected.length === 0){
@@ -4741,7 +4769,8 @@ function renderTransactions(){
   if(unassignedWrap && unassignedText && unassignedBtn){
     if(unassignedCount > 0){
       unassignedWrap.classList.remove('hidden');
-      unassignedText.textContent = `${unassignedCount} Needs Subcategory`;
+      unassignedText.textContent = `${unassignedCount} Warning${unassignedCount===1?'':'s'}`;
+      unassignedBtn.title = `${unassignedCount} transaction${unassignedCount===1?' needs':'s need'} subcategory review. Click to filter.`;
       unassignedBtn.classList.toggle('active', txFilterUnassignedOnly);
     } else {
       unassignedWrap.classList.add('hidden');
