@@ -985,6 +985,7 @@
     .topbar h1{font-size:24px;}
     .dashboard-filter{align-items:stretch;}
     .dashboard-filter-field{flex:1 1 145px; min-width:0;}
+    #dashboard-date-field{flex:1 1 210px;}
     .dashboard-filter-note{flex:1 1 100%; margin:0;}
     .report-filter{flex:1; min-width:280px;}
     .report-filter-field{flex:1; min-width:0; width:auto;}
@@ -1020,6 +1021,9 @@
     .dashboard-filter-field{min-width:0;}
     .dashboard-filter-field:first-child{grid-column:1 / -1;}
     .dashboard-filter-note{display:none !important;}
+    #dashboard-date-field{grid-column:1 / -1;}
+    #dashboard-date-field .transaction-date-nav{display:flex; width:100%; justify-content:space-between; align-items:center; gap:6px;}
+    #dashboard-date-field .transaction-date-nav input[type="date"]{flex:1; width:auto !important;}
     .report-filter{width:100%; min-width:0; display:grid; grid-template-columns:1fr 1fr; gap:10px;}
     .report-filter-field{width:auto;}
     .report-filter .badge{grid-column:1 / -1; width:max-content; margin-bottom:0 !important;}
@@ -1328,7 +1332,7 @@
 
       <div class="card" style="padding:14px 20px; margin-bottom:16px;">
         <div class="dashboard-filter">
-          <div class="dashboard-filter-field"><label class="field-label" for="dashboard-period-select">Period</label><select id="dashboard-period-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="month">Monthly</option><option value="quarter">This quarter</option><option value="year">Whole year</option></select></div>
+          <div class="dashboard-filter-field"><label class="field-label" for="dashboard-period-select">Period</label><select id="dashboard-period-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="month">Monthly</option><option value="day">Daily</option><option value="quarter">This quarter</option><option value="year">Whole year</option></select></div>
           <div class="dashboard-filter-field" id="dashboard-month-field">
             <label class="field-label" for="dashboard-month-trigger">Months</label>
             <div class="excel-filter-dropdown-wrap" id="dashboard-filter-wrap">
@@ -1354,6 +1358,19 @@
           </div>
           <div class="dashboard-filter-field hidden" id="dashboard-quarter-field"><label class="field-label" for="dashboard-quarter-select">Quarter</label><select id="dashboard-quarter-select" class="field-input" onchange="onDashboardPeriodChange()"><option value="1">Q1 · Jan–Mar</option><option value="2">Q2 · Apr–Jun</option><option value="3">Q3 · Jul–Sep</option><option value="4">Q4 · Oct–Dec</option></select></div>
           <div class="dashboard-filter-field"><label class="field-label" for="dashboard-year-select">Year</label><select id="dashboard-year-select" class="field-input" onchange="onDashboardPeriodChange()"></select></div>
+          <div class="dashboard-filter-field" id="dashboard-date-field">
+            <label class="field-label" for="dashboard-date-filter">Date</label>
+            <div class="transaction-date-nav" style="display:inline-flex; align-items:center; gap:5px;">
+              <button type="button" class="icon-circle-btn" onclick="stepDashboardDateFilter(-1)" title="Previous day">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <input type="date" id="dashboard-date-filter" class="field-input" style="padding:6px 8px; font-size:12.5px; width:130px; height:36px;" onchange="setDashboardDateFilter(this.value)" title="Filter by date">
+              <button type="button" class="icon-circle-btn" onclick="stepDashboardDateFilter(1)" title="Next day">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button type="button" class="excel-filter-text-btn hidden" id="dashboard-date-clear-btn" onclick="clearDashboardDateFilter()" style="font-size:12px; margin-left:4px;">All Dates</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2411,7 +2428,17 @@ function getExcelItems(type){
 
 function setExcelItems(type, items){
   if(type === 'comparison') comparisonSelectedMonths = items;
-  else if(type === 'dashboard') dashboardSelectedMonths = items;
+  else if(type === 'dashboard'){
+    dashboardSelectedMonths = items;
+    if(dashboardSelPeriod === 'day'){
+      dashboardSelPeriod = 'month';
+      dashboardDateFilter = '';
+      const dInput = document.getElementById('dashboard-date-filter');
+      if(dInput) dInput.value = '';
+      const cBtn = document.getElementById('dashboard-date-clear-btn');
+      if(cBtn) cBtn.classList.add('hidden');
+    }
+  }
   else if(type === 'tx-category') txSelectedCategories = items;
   else if(type === 'tx-subcategory') txSelectedSubcategories = items;
   else if(type === 'tx-modal-subcategory') selectedModalSubcategories = items;
@@ -4130,6 +4157,78 @@ function renderReportCharts(month, year){
 /* ---------------- render: dashboard ---------------- */
 let chartTrend, chartCategoryPie;
 let dashboardSelPeriod = 'month', dashboardSelMonth, dashboardSelYear;
+let dashboardDateFilter = '';
+
+function formatDashboardDayLabel(dateStr){
+  const pd = parseTxDate(dateStr);
+  if(!pd.year) return dateStr;
+  const dt = new Date(pd.year, pd.month - 1, pd.day);
+  const dayName = dt.toLocaleDateString(undefined, { weekday: 'long' });
+  const monName = MONTH_NAMES[pd.month - 1] || '';
+  return `${dayName}, ${pd.day} ${monName} ${pd.year}`;
+}
+
+function setDashboardDateFilter(val){
+  dashboardDateFilter = val || '';
+  const clearBtn = document.getElementById('dashboard-date-clear-btn');
+  if(clearBtn) clearBtn.classList.toggle('hidden', !dashboardDateFilter);
+  const input = document.getElementById('dashboard-date-filter');
+  if(input && input.value !== dashboardDateFilter) input.value = dashboardDateFilter;
+
+  if(dashboardDateFilter){
+    const pd = parseTxDate(dashboardDateFilter);
+    if(pd.year){
+      dashboardSelYear = pd.year;
+      dashboardSelMonth = pd.month;
+      dashboardSelectedMonths = [pd.month];
+      dashboardSelPeriod = 'day';
+      const pSel = document.getElementById('dashboard-period-select');
+      if(pSel) pSel.value = 'day';
+      const ySel = document.getElementById('dashboard-year-select');
+      if(ySel) ySel.value = String(dashboardSelYear);
+      const mField = document.getElementById('dashboard-month-field');
+      if(mField) mField.classList.add('hidden');
+      const qField = document.getElementById('dashboard-quarter-field');
+      if(qField) qField.classList.add('hidden');
+    }
+  }
+  renderDashboard();
+}
+
+function stepDashboardDateFilter(delta){
+  let baseDate;
+  if(dashboardDateFilter){
+    const pd = parseTxDate(dashboardDateFilter);
+    baseDate = new Date(pd.year, pd.month - 1, pd.day);
+  } else {
+    if(DB.transactions && DB.transactions.length){
+      const sorted = DB.transactions.slice().sort((a,b)=> a.date < b.date ? 1 : -1);
+      const pd = parseTxDate(sorted[0].date);
+      baseDate = new Date(pd.year, pd.month - 1, pd.day);
+    } else {
+      baseDate = new Date();
+    }
+  }
+  baseDate.setDate(baseDate.getDate() + delta);
+  const nextY = baseDate.getFullYear();
+  const nextM = String(baseDate.getMonth() + 1).padStart(2, '0');
+  const nextD = String(baseDate.getDate()).padStart(2, '0');
+  setDashboardDateFilter(`${nextY}-${nextM}-${nextD}`);
+}
+
+function clearDashboardDateFilter(){
+  dashboardDateFilter = '';
+  const clearBtn = document.getElementById('dashboard-date-clear-btn');
+  if(clearBtn) clearBtn.classList.add('hidden');
+  const input = document.getElementById('dashboard-date-filter');
+  if(input) input.value = '';
+  if(dashboardSelPeriod === 'day'){
+    dashboardSelPeriod = 'month';
+    const pSel = document.getElementById('dashboard-period-select');
+    if(pSel) pSel.value = 'month';
+  }
+  renderDashboard();
+}
 
 function initDashboardSelectors(){
   const now = new Date();
@@ -4155,28 +4254,81 @@ function initDashboardSelectors(){
   document.getElementById('dashboard-month-field').classList.toggle('hidden', dashboardSelPeriod !== 'month');
   document.getElementById('dashboard-quarter-field').classList.toggle('hidden', dashboardSelPeriod !== 'quarter');
   document.getElementById('dashboard-quarter-select').value = String(Math.ceil(dashboardSelMonth/3));
+
+  const dateInput = document.getElementById('dashboard-date-filter');
+  if(dateInput && dateInput.value !== dashboardDateFilter) dateInput.value = dashboardDateFilter;
+  const clearBtn = document.getElementById('dashboard-date-clear-btn');
+  if(clearBtn) clearBtn.classList.toggle('hidden', !dashboardDateFilter);
 }
+
 function onDashboardPeriodChange(){
   dashboardSelPeriod = document.getElementById('dashboard-period-select').value;
   dashboardSelYear = parseInt(document.getElementById('dashboard-year-select').value,10);
-  if(dashboardSelPeriod==='quarter'){
-    const qVal = parseInt(document.getElementById('dashboard-quarter-select').value,10);
-    const start = (qVal-1)*3+1;
-    dashboardSelMonth = start;
-    dashboardSelectedMonths = [start, start+1, start+2];
-    renderExcelFilterList('dashboard');
-  } else if(dashboardSelPeriod==='year'){
-    dashboardSelectedMonths = [...Array(12)].map((_,i)=>i+1);
-    renderExcelFilterList('dashboard');
-  } else {
-    if(!dashboardSelectedMonths || !dashboardSelectedMonths.length){
-      dashboardSelectedMonths = [dashboardSelMonth || (new Date().getMonth()+1)];
+  if(dashboardSelPeriod==='day'){
+    if(!dashboardDateFilter){
+      if(DB.transactions && DB.transactions.length){
+        const sorted = DB.transactions.slice().sort((a,b)=> a.date < b.date ? 1 : -1);
+        dashboardDateFilter = sorted[0].date;
+      } else {
+        const now = new Date();
+        dashboardDateFilter = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      }
     }
-    renderExcelFilterList('dashboard');
+    const pd = parseTxDate(dashboardDateFilter);
+    dashboardSelYear = pd.year;
+    dashboardSelMonth = pd.month;
+    dashboardSelectedMonths = [pd.month];
+    const dateInput = document.getElementById('dashboard-date-filter');
+    if(dateInput) dateInput.value = dashboardDateFilter;
+    const clearBtn = document.getElementById('dashboard-date-clear-btn');
+    if(clearBtn) clearBtn.classList.remove('hidden');
+  } else {
+    dashboardDateFilter = '';
+    const dateInput = document.getElementById('dashboard-date-filter');
+    if(dateInput) dateInput.value = '';
+    const clearBtn = document.getElementById('dashboard-date-clear-btn');
+    if(clearBtn) clearBtn.classList.add('hidden');
+
+    if(dashboardSelPeriod==='quarter'){
+      const qVal = parseInt(document.getElementById('dashboard-quarter-select').value,10);
+      const start = (qVal-1)*3+1;
+      dashboardSelMonth = start;
+      dashboardSelectedMonths = [start, start+1, start+2];
+      renderExcelFilterList('dashboard');
+    } else if(dashboardSelPeriod==='year'){
+      dashboardSelectedMonths = [...Array(12)].map((_,i)=>i+1);
+      renderExcelFilterList('dashboard');
+    } else {
+      if(!dashboardSelectedMonths || !dashboardSelectedMonths.length){
+        dashboardSelectedMonths = [dashboardSelMonth || (new Date().getMonth()+1)];
+      }
+      renderExcelFilterList('dashboard');
+    }
   }
   renderDashboard();
 }
+
 function selectedDashboardPeriod(){
+  if(dashboardDateFilter || dashboardSelPeriod === 'day'){
+    let targetDate = dashboardDateFilter;
+    if(!targetDate){
+      if(DB.transactions && DB.transactions.length){
+        targetDate = DB.transactions.slice().sort((a,b)=> a.date < b.date ? 1 : -1)[0].date;
+      } else {
+        const now = new Date();
+        targetDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      }
+    }
+    const pd = parseTxDate(targetDate);
+    return {
+      label: formatDashboardDayLabel(targetDate),
+      date: targetDate,
+      day: pd.day,
+      months: [pd.month],
+      year: pd.year,
+      isDay: true
+    };
+  }
   if(dashboardSelPeriod==='year') return {label:`Whole year ${dashboardSelYear}`, months:[...Array(12)].map((_,i)=>i+1), year:dashboardSelYear};
   if(dashboardSelPeriod==='quarter'){
     const start = Math.floor((dashboardSelMonth-1)/3)*3+1;
@@ -4199,7 +4351,34 @@ function selectedDashboardPeriod(){
   }
   return {label, months, year:dashboardSelYear};
 }
+
 function getPriorDashboardPeriod(){
+  if(dashboardDateFilter || dashboardSelPeriod === 'day'){
+    let targetDate = dashboardDateFilter;
+    if(!targetDate){
+      if(DB.transactions && DB.transactions.length){
+        targetDate = DB.transactions.slice().sort((a,b)=> a.date < b.date ? 1 : -1)[0].date;
+      } else {
+        const now = new Date();
+        targetDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      }
+    }
+    const pd = parseTxDate(targetDate);
+    const dt = new Date(pd.year, pd.month - 1, pd.day);
+    dt.setDate(dt.getDate() - 1);
+    const priorY = dt.getFullYear();
+    const priorM = dt.getMonth() + 1;
+    const priorD = dt.getDate();
+    const priorDateStr = `${priorY}-${String(priorM).padStart(2,'0')}-${String(priorD).padStart(2,'0')}`;
+    return {
+      label: formatDashboardDayLabel(priorDateStr),
+      date: priorDateStr,
+      day: priorD,
+      months: [priorM],
+      year: priorY,
+      isDay: true
+    };
+  }
   if(dashboardSelPeriod==='year'){
     return { months:[...Array(12)].map((_,i)=>i+1), year:dashboardSelYear - 1 };
   }
@@ -4221,8 +4400,11 @@ function getPriorDashboardPeriod(){
   }
   return { months, year: dashboardSelYear - 1 };
 }
+
 function calcPctChange(current, prior, isExpense = false){
-  const periodLabel = dashboardSelPeriod === 'year' ? 'vs prior year' : (dashboardSelPeriod === 'quarter' ? 'vs prior quarter' : 'vs prior month');
+  const periodLabel = (dashboardDateFilter || dashboardSelPeriod === 'day')
+    ? 'vs prior day'
+    : (dashboardSelPeriod === 'year' ? 'vs prior year' : (dashboardSelPeriod === 'quarter' ? 'vs prior quarter' : 'vs prior month'));
   if(prior === 0){
     if(current === 0) return { text: `0.0% ${periodLabel}`, tone: 'neu' };
     return { text: `↑ New this period (${periodLabel})`, tone: isExpense ? 'neg' : 'pos' };
@@ -4244,8 +4426,11 @@ function calcPctChange(current, prior, isExpense = false){
     tone: tone
   };
 }
+
 function calcNetBalanceTrend(currentNet, priorNet){
-  const periodLabel = dashboardSelPeriod === 'year' ? 'vs prior year' : (dashboardSelPeriod === 'quarter' ? 'vs prior quarter' : 'vs prior month');
+  const periodLabel = (dashboardDateFilter || dashboardSelPeriod === 'day')
+    ? 'vs prior day'
+    : (dashboardSelPeriod === 'year' ? 'vs prior year' : (dashboardSelPeriod === 'quarter' ? 'vs prior quarter' : 'vs prior month'));
   if(priorNet === 0){
     if(currentNet === 0) return { text: `0.0% ${periodLabel}`, tone: 'neu' };
     return { text: currentNet > 0 ? `↑ Surplus (${periodLabel})` : `↓ Deficit (${periodLabel})`, tone: currentNet > 0 ? 'pos' : 'neg' };
@@ -4265,8 +4450,16 @@ function calcNetBalanceTrend(currentNet, priorNet){
     tone: reduced ? 'pos' : 'neg'
   };
 }
+
 function periodTransactions(period){
-  if(!period || !period.months || !period.months.length) return [];
+  if(!period) return [];
+  if(period.isDay){
+    return DB.transactions.filter(t => {
+      const pd = parseTxDate(t.date);
+      return pd.year === period.year && pd.month === period.months[0] && pd.day === period.day;
+    });
+  }
+  if(!period.months || !period.months.length) return [];
   return DB.transactions.filter(t => {
     const pd = parseTxDate(t.date);
     return period.months.includes(pd.month) && pd.year === period.year;
@@ -4466,7 +4659,25 @@ function renderDashboardTrendChart(period){
   window._chartDashRetries = 0;
 
   let trendMonths = [];
-  if(period.months.length > 1){
+  if(period.isDay && period.date){
+    const pd = parseTxDate(period.date);
+    for(let i = 6; i >= 0; i--){
+      const dt = new Date(pd.year, pd.month - 1, pd.day - i);
+      const dy = dt.getFullYear();
+      const dm = dt.getMonth() + 1;
+      const dd = dt.getDate();
+      const dayTxs = DB.transactions.filter(t => {
+        const p = parseTxDate(t.date);
+        return p.year === dy && p.month === dm && p.day === dd;
+      });
+      trendMonths.push({
+        label: dt.toLocaleDateString(undefined, { weekday:'short', day:'numeric' }),
+        income: sumByType(dayTxs, 'income'),
+        expense: sumByType(dayTxs, 'expense'),
+        savings: sumByType(dayTxs, 'savings')
+      });
+    }
+  } else if(period.months.length > 1){
     trendMonths = period.months.map(m => {
       const t = monthTotals(DB.transactions, m, period.year);
       return {
