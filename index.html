@@ -849,6 +849,18 @@
   .dashboard-filter{display:flex; align-items:end; gap:10px; flex-wrap:wrap;}
   .dashboard-filter-field{min-width:148px;}
   .dashboard-filter-note{font-size:12px; color:var(--muted); margin:0 0 9px;}
+  .dashboard-filter-nav-wrap{margin-left:auto; display:flex; flex-direction:column; gap:7px; align-items:flex-start;}
+  .dashboard-filter-nav-header{display:flex; align-items:center; gap:8px;}
+  .dashboard-dropdowns-row{display:flex; align-items:center; gap:8px; flex-wrap:nowrap; min-height:32px;}
+  .dashboard-dropdowns-row:empty{min-height:0;}
+  .dashboard-dropdowns-row .excel-filter-dropdown-wrap{width:auto; min-width:120px; max-width:175px;}
+  .dashboard-dropdowns-row .excel-filter-trigger{height:32px; padding:0 10px; font-size:11.5px; font-weight:500; border-radius:8px; width:auto;}
+  .dashboard-dropdowns-row .excel-filter-summary{font-size:11.5px; font-weight:500;}
+  .dashboard-dropdowns-row .excel-filter-caret{width:12px; height:12px;}
+  .dashboard-dropdowns-row .excel-filter-popover{min-width:220px;}
+  @media(min-width:1024px){
+    .dashboard-dropdowns-row .excel-filter-dropdown-wrap:last-child .excel-filter-popover{left:auto; right:0;}
+  }
   .chart-fallback{display:flex; align-items:center; justify-content:center; min-height:120px; color:var(--muted); font-size:12px; border:1px dashed var(--line); border-radius:8px;}
   .dashboard-actions{display:flex; gap:8px; flex-wrap:wrap;}
   .dashboard-action{display:inline-flex; align-items:center; gap:7px; padding:8px 11px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font-size:12px; font-weight:600;}
@@ -987,6 +999,10 @@
     .dashboard-filter-field{flex:1 1 145px; min-width:0;}
     #dashboard-date-field{flex:1 1 210px;}
     .dashboard-filter-note{flex:1 1 100%; margin:0;}
+    .dashboard-filter-nav-wrap{margin-left:0; width:100%; padding-top:10px; border-top:1px solid var(--line-soft); align-items:stretch;}
+    .dashboard-dropdowns-row{flex-wrap:wrap;}
+    .dashboard-dropdowns-row .excel-filter-dropdown-wrap{flex:1 1 140px; max-width:none;}
+    .dashboard-dropdowns-row .excel-filter-trigger{width:100%;}
     .report-filter{flex:1; min-width:280px;}
     .report-filter-field{flex:1; min-width:0; width:auto;}
     .report-budget-row{grid-template-columns:minmax(140px,1.3fr) repeat(3,minmax(76px,.7fr)) auto;}
@@ -1024,6 +1040,9 @@
     #dashboard-date-field{grid-column:1 / -1;}
     #dashboard-date-field .transaction-date-nav{display:flex; width:100%; justify-content:space-between; align-items:center; gap:6px;}
     #dashboard-date-field .transaction-date-nav input[type="date"]{flex:1; width:auto !important;}
+    .dashboard-filter-nav-wrap{grid-column:1 / -1; margin-left:0; width:100%;}
+    .dashboard-filter-nav-header .chip-row{width:100%; display:flex;}
+    .dashboard-filter-nav-header .chip-row .btn-chip{flex:1; text-align:center; padding:6px 4px; font-size:11px;}
     .report-filter{width:100%; min-width:0; display:grid; grid-template-columns:1fr 1fr; gap:10px;}
     .report-filter-field{width:auto;}
     .report-filter .badge{grid-column:1 / -1; width:max-content; margin-bottom:0 !important;}
@@ -1369,6 +1388,87 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
               <button type="button" class="excel-filter-text-btn hidden" id="dashboard-date-clear-btn" onclick="clearDashboardDateFilter()" style="font-size:12px; margin-left:4px;">All Dates</button>
+            </div>
+          </div>
+
+          <!-- Dashboard Navigation Filters (Utilizing Empty Space) -->
+          <div class="dashboard-filter-nav-wrap" id="dashboard-filter-nav-wrap">
+            <div class="dashboard-filter-nav-header">
+              <div class="chip-row" id="dashboard-type-chips">
+                <button type="button" class="btn-chip" id="dash-chip-income" onclick="setDashboardTypeFilter('income')">Income</button>
+                <button type="button" class="btn-chip" id="dash-chip-expense" onclick="setDashboardTypeFilter('expense')">Expenses</button>
+                <button type="button" class="btn-chip" id="dash-chip-savings" onclick="setDashboardTypeFilter('savings')">Savings Goals</button>
+              </div>
+              <button type="button" class="icon-circle-btn hidden" id="dashboard-nav-reset-btn" onclick="resetDashboardTypeFilter()" title="Reset filter (Show all)" style="width:30px; height:30px; border-radius:50%; flex-shrink:0;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>
+            </div>
+            <div class="dashboard-dropdowns-row" id="dashboard-dropdowns-row">
+              <!-- Categories Excel Filter (for Income & Expense) -->
+              <div class="excel-filter-dropdown-wrap hidden" id="dash-category-filter-wrap">
+                <button type="button" id="dash-category-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('dash-category', event)">
+                  <span id="dash-category-filter-summary" class="excel-filter-summary">Categories</span>
+                  <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="excel-filter-popover hidden" id="dash-category-filter-popover" onclick="event.stopPropagation()">
+                  <div class="excel-filter-popover-header">
+                    <label class="excel-filter-select-all-label">
+                      <input type="checkbox" id="dash-category-select-all" onchange="toggleSelectAllExcel('dash-category', this.checked)">
+                      <span>(Select All)</span>
+                    </label>
+                    <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('dash-category')">Select None</button>
+                  </div>
+                  <div class="excel-filter-popover-list" id="dash-category-filter-list"></div>
+                  <div class="excel-filter-popover-footer">
+                    <span class="excel-filter-count-label" id="dash-category-selected-count">All selected</span>
+                    <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('dash-category')">Done</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Subcategories Excel Filter (for Expense only) -->
+              <div class="excel-filter-dropdown-wrap hidden" id="dash-subcategory-filter-wrap">
+                <button type="button" id="dash-subcategory-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('dash-subcategory', event)">
+                  <span id="dash-subcategory-filter-summary" class="excel-filter-summary">Subcategories</span>
+                  <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="excel-filter-popover hidden" id="dash-subcategory-filter-popover" onclick="event.stopPropagation()">
+                  <div class="excel-filter-popover-header">
+                    <label class="excel-filter-select-all-label">
+                      <input type="checkbox" id="dash-subcategory-select-all" onchange="toggleSelectAllExcel('dash-subcategory', this.checked)">
+                      <span>(Select All)</span>
+                    </label>
+                    <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('dash-subcategory')">Select None</button>
+                  </div>
+                  <div class="excel-filter-popover-list" id="dash-subcategory-filter-list"></div>
+                  <div class="excel-filter-popover-footer">
+                    <span class="excel-filter-count-label" id="dash-subcategory-selected-count">All selected</span>
+                    <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('dash-subcategory')">Done</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Goals Excel Filter (for Savings Goals only) -->
+              <div class="excel-filter-dropdown-wrap hidden" id="dash-goal-filter-wrap">
+                <button type="button" id="dash-goal-filter-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('dash-goal', event)">
+                  <span id="dash-goal-filter-summary" class="excel-filter-summary">Goals</span>
+                  <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="excel-filter-popover hidden" id="dash-goal-filter-popover" onclick="event.stopPropagation()">
+                  <div class="excel-filter-popover-header">
+                    <label class="excel-filter-select-all-label">
+                      <input type="checkbox" id="dash-goal-select-all" onchange="toggleSelectAllExcel('dash-goal', this.checked)">
+                      <span>(Select All)</span>
+                    </label>
+                    <button type="button" class="excel-filter-text-btn" onclick="clearAllExcel('dash-goal')">Select None</button>
+                  </div>
+                  <div class="excel-filter-popover-list" id="dash-goal-filter-list"></div>
+                  <div class="excel-filter-popover-footer">
+                    <span class="excel-filter-count-label" id="dash-goal-selected-count">All selected</span>
+                    <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('dash-goal')">Done</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2371,6 +2471,10 @@ const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"
 /* ---------------- Excel-Style Multi-Select Filter Engine ---------------- */
 let comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
 let dashboardSelectedMonths = [];
+let dashTypeFilter = null;
+let dashSelectedCategories = null;
+let dashSelectedSubcategories = [];
+let dashSelectedGoals = null;
 let txSelectedCategories = null;
 let txSelectedSubcategories = [];
 let selectedModalSubcategories = [];
@@ -2419,6 +2523,14 @@ function setExcelMonths(type, months){
 function getExcelItems(type){
   if(type === 'comparison') return comparisonSelectedMonths;
   if(type === 'dashboard') return dashboardSelectedMonths;
+  if(type === 'dash-category') return dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories(dashTypeFilter || 'expense');
+  if(type === 'dash-subcategory') return dashSelectedSubcategories;
+  if(type === 'dash-goal'){
+    if(dashSelectedGoals !== null) return dashSelectedGoals;
+    const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
+    const stored = (DB.savingsGoals || []).map(g => g.name);
+    return [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+  }
   if(type === 'tx-category') return txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter);
   if(type === 'tx-subcategory') return txSelectedSubcategories;
   if(type === 'tx-modal-subcategory') return selectedModalSubcategories;
@@ -2439,6 +2551,9 @@ function setExcelItems(type, items){
       if(cBtn) cBtn.classList.add('hidden');
     }
   }
+  else if(type === 'dash-category') dashSelectedCategories = items;
+  else if(type === 'dash-subcategory') dashSelectedSubcategories = items;
+  else if(type === 'dash-goal') dashSelectedGoals = items;
   else if(type === 'tx-category') txSelectedCategories = items;
   else if(type === 'tx-subcategory') txSelectedSubcategories = items;
   else if(type === 'tx-modal-subcategory') selectedModalSubcategories = items;
@@ -2448,6 +2563,33 @@ function setExcelItems(type, items){
 function getExcelOptions(type){
   if(type === 'dashboard' || type === 'comparison'){
     return MONTH_NAMES.map((name, idx) => ({ value: idx + 1, label: name }));
+  }
+  if(type === 'dash-category'){
+    const cats = transactionCategories(dashTypeFilter || 'expense');
+    return cats.map(c => ({ value: c, label: c }));
+  }
+  if(type === 'dash-subcategory'){
+    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories(dashTypeFilter || 'expense');
+    if(!activeCats || activeCats.length === 0){
+      return [];
+    }
+    let subcats = [];
+    (DB.categories.expense || []).forEach(c => {
+      if(activeCats.includes(c.name) && Array.isArray(c.subcategories)){
+        subcats.push(...c.subcategories);
+      }
+    });
+    const recorded = DB.transactions
+      .filter(t => t.type === 'expense' && activeCats.includes(t.category) && t.subCategory)
+      .flatMap(t => t.subCategory.split(',').map(s => s.trim()));
+    const allSubs = [...new Set([...subcats, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+    return allSubs.map(s => ({ value: s, label: s }));
+  }
+  if(type === 'dash-goal'){
+    const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
+    const stored = (DB.savingsGoals || []).map(g => g.name);
+    const goals = [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+    return goals.map(g => ({ value: g, label: g }));
   }
   if(type === 'tx-category'){
     const cats = transactionCategories(txFilter);
@@ -2525,7 +2667,7 @@ function closeExcelFilter(type){
 }
 
 function closeAllExcelFilters(){
-  ['comparison', 'dashboard', 'tx-category', 'tx-subcategory', 'tx-modal-subcategory', 'tx-modal-payment'].forEach(type => {
+  ['comparison', 'dashboard', 'tx-category', 'tx-subcategory', 'tx-modal-subcategory', 'tx-modal-payment', 'dash-category', 'dash-subcategory', 'dash-goal'].forEach(type => {
     closeExcelFilter(type);
   });
 }
@@ -2547,8 +2689,10 @@ function renderExcelFilterList(type){
   const selected = getExcelItems(type);
 
   if(!options.length){
-    const activeCats = txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter);
-    const emptyMsg = (type === 'tx-subcategory' && (!activeCats || activeCats.length === 0))
+    const activeCats = (type === 'dash-subcategory')
+      ? (dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories(dashTypeFilter || 'expense'))
+      : (txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter));
+    const emptyMsg = (type === 'tx-subcategory' || type === 'dash-subcategory') && (!activeCats || activeCats.length === 0)
       ? 'Select a category to view subcategories'
       : 'No items available';
     container.innerHTML = `<div style="padding:12px 14px; color:var(--muted); font-size:12px; text-align:center;">${emptyMsg}</div>`;
@@ -2602,6 +2746,13 @@ function onExcelToggle(type, val, isChecked){
     renderComparison();
   } else if(type === 'dashboard'){
     renderDashboard();
+  } else if(type === 'dash-category'){
+    if(dashTypeFilter === 'expense') renderDashSubCategoryFilter();
+    renderDashboard();
+  } else if(type === 'dash-subcategory'){
+    renderDashboard();
+  } else if(type === 'dash-goal'){
+    renderDashboard();
   } else if(type === 'tx-category'){
     renderTxSubCategoryFilter();
     renderTransactions();
@@ -2624,6 +2775,13 @@ function onExcelSelectOnly(type, val, event){
     renderComparison();
   } else if(type === 'dashboard'){
     renderDashboard();
+  } else if(type === 'dash-category'){
+    if(dashTypeFilter === 'expense') renderDashSubCategoryFilter();
+    renderDashboard();
+  } else if(type === 'dash-subcategory'){
+    renderDashboard();
+  } else if(type === 'dash-goal'){
+    renderDashboard();
   } else if(type === 'tx-category'){
     renderTxSubCategoryFilter();
     renderTransactions();
@@ -2643,6 +2801,13 @@ function toggleSelectAllExcel(type, isChecked){
     renderComparison();
   } else if(type === 'dashboard'){
     renderDashboard();
+  } else if(type === 'dash-category'){
+    if(dashTypeFilter === 'expense') renderDashSubCategoryFilter();
+    renderDashboard();
+  } else if(type === 'dash-subcategory'){
+    renderDashboard();
+  } else if(type === 'dash-goal'){
+    renderDashboard();
   } else if(type === 'tx-category'){
     renderTxSubCategoryFilter();
     renderTransactions();
@@ -2659,6 +2824,13 @@ function clearAllExcel(type){
   if(type === 'comparison'){
     renderComparison();
   } else if(type === 'dashboard'){
+    renderDashboard();
+  } else if(type === 'dash-category'){
+    if(dashTypeFilter === 'expense') renderDashSubCategoryFilter();
+    renderDashboard();
+  } else if(type === 'dash-subcategory'){
+    renderDashboard();
+  } else if(type === 'dash-goal'){
     renderDashboard();
   } else if(type === 'tx-category'){
     renderTxSubCategoryFilter();
@@ -2712,6 +2884,34 @@ function updateExcelFilterUI(type){
         summaryEl.textContent = sorted.map(m => SHORT_MONTH_NAMES[m - 1]).join(', ');
       } else {
         summaryEl.textContent = `${selected.length} Months Selected`;
+      }
+    } else if(type === 'dash-category'){
+      if(selected.length === 0){
+        summaryEl.textContent = 'No Categories';
+      } else if(totalCount > 0 && selected.length === totalCount){
+        summaryEl.textContent = 'Categories';
+      } else if(selected.length === 1){
+        summaryEl.textContent = selected[0];
+      } else {
+        summaryEl.textContent = `${selected.length} Categories Selected`;
+      }
+    } else if(type === 'dash-subcategory'){
+      if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
+        summaryEl.textContent = 'Subcategories';
+      } else if(selected.length === 1){
+        summaryEl.textContent = selected[0];
+      } else {
+        summaryEl.textContent = `${selected.length} Subcategories Selected`;
+      }
+    } else if(type === 'dash-goal'){
+      if(selected.length === 0){
+        summaryEl.textContent = 'No Goals';
+      } else if(totalCount > 0 && selected.length === totalCount){
+        summaryEl.textContent = 'Goals';
+      } else if(selected.length === 1){
+        summaryEl.textContent = selected[0];
+      } else {
+        summaryEl.textContent = `${selected.length} Goals Selected`;
       }
     } else if(type === 'tx-category'){
       if(selected.length === 0){
@@ -4465,20 +4665,175 @@ function periodTransactions(period){
     return period.months.includes(pd.month) && pd.year === period.year;
   });
 }
+function setDashboardTypeFilter(type){
+  if(dashTypeFilter === type){
+    resetDashboardTypeFilter();
+    return;
+  }
+  dashTypeFilter = type;
+  if(type === 'income'){
+    dashSelectedCategories = transactionCategories('income');
+    dashSelectedSubcategories = [];
+    dashSelectedGoals = null;
+  } else if(type === 'expense'){
+    dashSelectedCategories = transactionCategories('expense');
+    dashSelectedSubcategories = [];
+    dashSelectedGoals = null;
+  } else if(type === 'savings'){
+    dashSelectedCategories = null;
+    dashSelectedSubcategories = [];
+    const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
+    const stored = (DB.savingsGoals || []).map(g => g.name);
+    dashSelectedGoals = [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+  }
+  updateDashFilterNavUI();
+  renderDashboard();
+}
+
+function resetDashboardTypeFilter(){
+  dashTypeFilter = null;
+  dashSelectedCategories = null;
+  dashSelectedSubcategories = [];
+  dashSelectedGoals = null;
+  closeAllExcelFilters();
+  updateDashFilterNavUI();
+  renderDashboard();
+}
+
+function updateDashFilterNavUI(){
+  const incBtn = document.getElementById('dash-chip-income');
+  const expBtn = document.getElementById('dash-chip-expense');
+  const savBtn = document.getElementById('dash-chip-savings');
+  if(incBtn) incBtn.classList.toggle('active', dashTypeFilter === 'income');
+  if(expBtn) expBtn.classList.toggle('active', dashTypeFilter === 'expense');
+  if(savBtn) savBtn.classList.toggle('active', dashTypeFilter === 'savings');
+
+  const resetBtn = document.getElementById('dashboard-nav-reset-btn');
+  if(resetBtn) resetBtn.classList.toggle('hidden', !dashTypeFilter);
+
+  const catWrap = document.getElementById('dash-category-filter-wrap');
+  const subcatWrap = document.getElementById('dash-subcategory-filter-wrap');
+  const goalWrap = document.getElementById('dash-goal-filter-wrap');
+
+  if(dashTypeFilter === 'income'){
+    if(catWrap) catWrap.classList.remove('hidden');
+    if(subcatWrap) subcatWrap.classList.add('hidden');
+    if(goalWrap) goalWrap.classList.add('hidden');
+    renderDashCategoryFilter();
+  } else if(dashTypeFilter === 'expense'){
+    if(catWrap) catWrap.classList.remove('hidden');
+    if(subcatWrap) subcatWrap.classList.remove('hidden');
+    if(goalWrap) goalWrap.classList.add('hidden');
+    renderDashCategoryFilter();
+    renderDashSubCategoryFilter();
+  } else if(dashTypeFilter === 'savings'){
+    if(catWrap) catWrap.classList.add('hidden');
+    if(subcatWrap) subcatWrap.classList.add('hidden');
+    if(goalWrap) goalWrap.classList.remove('hidden');
+    renderExcelFilterList('dash-goal');
+    updateExcelFilterUI('dash-goal');
+  } else {
+    if(catWrap) catWrap.classList.add('hidden');
+    if(subcatWrap) subcatWrap.classList.add('hidden');
+    if(goalWrap) goalWrap.classList.add('hidden');
+  }
+}
+
+function renderDashCategoryFilter(){
+  const wrap = document.getElementById('dash-category-filter-wrap');
+  if(!wrap || !dashTypeFilter || (dashTypeFilter !== 'income' && dashTypeFilter !== 'expense')) return;
+  const categories = transactionCategories(dashTypeFilter);
+  if(!dashSelectedCategories || !Array.isArray(dashSelectedCategories) || dashSelectedCategories.length === 0){
+    dashSelectedCategories = [...categories];
+  } else {
+    const valid = dashSelectedCategories.filter(c => categories.includes(c));
+    dashSelectedCategories = valid.length > 0 ? valid : [...categories];
+  }
+  renderExcelFilterList('dash-category');
+  updateExcelFilterUI('dash-category');
+}
+
+function renderDashSubCategoryFilter(){
+  const wrap = document.getElementById('dash-subcategory-filter-wrap');
+  if(!wrap) return;
+  if(dashTypeFilter !== 'expense'){
+    wrap.classList.add('hidden');
+    dashSelectedSubcategories = [];
+    return;
+  }
+  wrap.classList.remove('hidden');
+  const options = getExcelOptions('dash-subcategory');
+  const validVals = options.map(o => o.value);
+  if(dashSelectedSubcategories && dashSelectedSubcategories.length > 0){
+    dashSelectedSubcategories = dashSelectedSubcategories.filter(s => validVals.includes(s));
+  }
+  renderExcelFilterList('dash-subcategory');
+  updateExcelFilterUI('dash-subcategory');
+}
+
+function filterTransactionsByDashboardNav(txList){
+  if(!dashTypeFilter || !Array.isArray(txList)) return txList;
+  if(dashTypeFilter === 'income'){
+    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories('income');
+    return txList.filter(t => t.type === 'income' && activeCats.includes(t.category));
+  }
+  if(dashTypeFilter === 'expense'){
+    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories('expense');
+    return txList.filter(t => {
+      if(t.type !== 'expense') return false;
+      if(!activeCats.includes(t.category)) return false;
+      if(dashSelectedSubcategories && dashSelectedSubcategories.length > 0){
+        const tSubs = t.subCategory ? t.subCategory.split(',').map(s => s.trim()) : [];
+        if(!tSubs.some(s => dashSelectedSubcategories.includes(s))) return false;
+      }
+      return true;
+    });
+  }
+  if(dashTypeFilter === 'savings'){
+    let activeGoals = dashSelectedGoals;
+    if(!activeGoals){
+      const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
+      const stored = (DB.savingsGoals || []).map(g => g.name);
+      activeGoals = [...new Set([...stored, ...recorded])];
+    }
+    return txList.filter(t => t.type === 'savings' && activeGoals.includes(t.category));
+  }
+  return txList;
+}
+
 function dashboardBudgetRows(period){
-  const pBudgets = DB.budgets.filter(b=>period.months.includes(b.month)&&b.year===period.year);
+  let pBudgets = DB.budgets.filter(b=>period.months.includes(b.month)&&b.year===period.year);
+  if(dashTypeFilter === 'expense'){
+    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories('expense');
+    pBudgets = pBudgets.filter(b => activeCats.includes(b.category));
+    if(dashSelectedSubcategories && dashSelectedSubcategories.length > 0){
+      pBudgets = pBudgets.filter(b => !b.subCategory || dashSelectedSubcategories.includes(b.subCategory));
+    }
+  } else if(dashTypeFilter === 'income' || dashTypeFilter === 'savings'){
+    return [];
+  }
   const catNames = [...new Set(pBudgets.map(r=>r.category))];
+  const chartTxs = filterTransactionsByDashboardNav(DB.transactions);
   return catNames.map(cat => {
     const main = pBudgets.find(b => b.category === cat && !b.subCategory);
     const subs = pBudgets.filter(b => b.category === cat && b.subCategory);
     const budgetAmount = main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
-    const spent = spentFor(DB.transactions, period.months[0], period.year, cat, null);
+    const spent = spentFor(chartTxs, period.months[0], period.year, cat, null);
     return { category: cat, spent, budgetAmount };
   });
 }
+
 function renderDashboardTopExpenses(periodTxs, totals){
   const container = document.getElementById('dashboard-top-expenses');
   if(!container) return;
+  if(dashTypeFilter === 'income'){
+    container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Income filter active.</p>';
+    return;
+  }
+  if(dashTypeFilter === 'savings'){
+    container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Savings Goals filter active.</p>';
+    return;
+  }
   const categories = expenseByCategory(periodTxs).slice(0, 4);
   if(!categories.length || totals.expense === 0){
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">No expenses logged for this period.</p>';
@@ -4503,6 +4858,7 @@ function renderDashboardTopExpenses(periodTxs, totals){
     </div>
   `;
 }
+
 function renderDashboardBudgetSummary(period){
   const categoryRows = dashboardBudgetRows(period);
   const budgeted = categoryRows.reduce((s,r)=>s+r.budgetAmount,0);
@@ -4515,13 +4871,14 @@ function renderDashboardBudgetSummary(period){
   if(subEl){
     subEl.textContent = budgeted > 0
       ? `${fmt(spent)} spent of ${fmt(budgeted)} budgeted`
-      : 'No category budgets configured';
+      : (dashTypeFilter === 'income' ? 'Income filter active' : (dashTypeFilter === 'savings' ? 'Savings filter active' : 'No category budgets configured'));
   }
 
   const container = document.getElementById('dashboard-budget-summary');
   if(!container) return;
 
   if(categoryRows.length === 0 || budgeted === 0){
+    const noneMsg = dashTypeFilter === 'income' ? 'Budget limits apply to expenses.' : (dashTypeFilter === 'savings' ? 'Budget limits apply to expenses.' : 'No budget categories set yet.');
     container.innerHTML = `
       <div style="padding:8px 0;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--surface-2); border-radius:10px; border:1px dashed var(--line); margin-bottom:10px;">
@@ -4529,9 +4886,9 @@ function renderDashboardBudgetSummary(period){
             <span class="text-xs muted">Budget Category</span>
             <div style="font-size:13.5px; font-weight:700; color:var(--muted); margin-top:2px;">None</div>
           </div>
-          <span class="badge badge-off">None configured</span>
+          <span class="badge badge-off">${dashTypeFilter ? 'Filtered' : 'None configured'}</span>
         </div>
-        <p class="empty-note" style="margin:0; padding:4px 0;">No budget categories set yet. <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Add your own budget →</a></p>
+        <p class="empty-note" style="margin:0; padding:4px 0;">${noneMsg} <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Manage budgets →</a></p>
       </div>
     `;
     return;
@@ -4559,14 +4916,17 @@ function renderDashboardBudgetSummary(period){
     </div>
   `;
 }
+
 function renderDashboardSavings(period, totals){
-  const totalTarget = DB.savingsGoals.reduce((s,g)=>s+g.targetAmount,0);
-  const totalCurrent = DB.savingsGoals.reduce((s,g)=>s+g.currentAmount,0);
+  const activeGoals = (dashTypeFilter === 'savings' && dashSelectedGoals !== null) ? dashSelectedGoals : null;
+  const filteredGoals = activeGoals ? DB.savingsGoals.filter(g => activeGoals.includes(g.name)) : DB.savingsGoals;
+  const totalTarget = filteredGoals.reduce((s,g)=>s+g.targetAmount,0);
+  const totalCurrent = filteredGoals.reduce((s,g)=>s+g.currentAmount,0);
   const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
   const container = document.getElementById('dash-savings-body');
   if(!container) return;
 
-  if(DB.savingsGoals.length === 0){
+  if(filteredGoals.length === 0){
     container.innerHTML = `
       <div style="padding:8px 0;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--surface-2); border-radius:10px; border:1px dashed var(--line); margin-bottom:10px;">
@@ -4574,9 +4934,9 @@ function renderDashboardSavings(period, totals){
             <span class="text-xs muted">Savings Goals</span>
             <div style="font-size:13.5px; font-weight:700; color:var(--muted); margin-top:2px;">None</div>
           </div>
-          <span class="badge badge-off">None set</span>
+          <span class="badge badge-off">${dashTypeFilter==='savings'?'None matched':'None set'}</span>
         </div>
-        <p class="empty-note" style="margin:0; padding:4px 0;">No savings goals yet. <a href="#" onclick="goToApp('savings'); return false;" class="link-sm">Create a goal →</a></p>
+        <p class="empty-note" style="margin:0; padding:4px 0;">${dashTypeFilter==='savings'?'No savings goals matched the filter.':'No savings goals yet.'} <a href="#" onclick="goToApp('savings'); return false;" class="link-sm">Create a goal →</a></p>
       </div>
     `;
     return;
@@ -4584,7 +4944,7 @@ function renderDashboardSavings(period, totals){
 
   container.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-      <span class="text-sm muted">Overall progress</span>
+      <span class="text-sm muted">${dashTypeFilter==='savings'?'Filtered progress':'Overall progress'}</span>
       <span class="figure text-sm" style="font-weight:600;">${fmt(totalCurrent)} <span class="muted">/ ${fmt(totalTarget)}</span></span>
     </div>
     <div class="progress-track" style="margin-bottom:16px;"><div class="progress-fill fill-amber" style="width:${overallPct}%;"></div></div>
@@ -4593,7 +4953,7 @@ function renderDashboardSavings(period, totals){
       <span class="figure text-sm" style="font-weight:600; color:var(--teal);">${fmt(totals.savings)}</span>
     </div>
     <div style="display:flex; flex-direction:column; gap:10px;">
-      ${DB.savingsGoals.slice(0,3).map(g => {
+      ${filteredGoals.slice(0,3).map(g => {
         const p = g.targetAmount>0 ? Math.min(100,(g.currentAmount/g.targetAmount)*100) : 0;
         return `<div>
           <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px;"><span>${g.name}</span><span class="figure ${p<50?'tone-neg':'tone-pos'}" style="font-weight:600;">${Math.round(p)}%</span></div>
@@ -4603,15 +4963,23 @@ function renderDashboardSavings(period, totals){
     </div>
   `;
 }
+
 function renderDashboard(){
   initDashboardSelectors();
+  updateDashFilterNavUI();
   const period = selectedDashboardPeriod();
-  const periodTxs = periodTransactions(period);
+  let periodTxs = periodTransactions(period);
+  let priorPeriod = getPriorDashboardPeriod();
+  let priorTxs = periodTransactions(priorPeriod);
+
+  if(dashTypeFilter){
+    periodTxs = filterTransactionsByDashboardNav(periodTxs);
+    priorTxs = filterTransactionsByDashboardNav(priorTxs);
+  }
+
   const totals = {income:sumByType(periodTxs,'income'),expense:sumByType(periodTxs,'expense'),savings:sumByType(periodTxs,'savings')};
   totals.net = totals.income - totals.expense;
 
-  const priorPeriod = getPriorDashboardPeriod();
-  const priorTxs = periodTransactions(priorPeriod);
   const priorTotals = {income:sumByType(priorTxs,'income'),expense:sumByType(priorTxs,'expense'),savings:sumByType(priorTxs,'savings')};
   priorTotals.net = priorTotals.income - priorTotals.expense;
 
@@ -4621,7 +4989,10 @@ function renderDashboard(){
   const netTrend = calcNetBalanceTrend(totals.net, priorTotals.net);
 
   const dashDate = document.getElementById('dash-date');
-  if(dashDate) dashDate.textContent = period.label;
+  if(dashDate){
+    const filterTag = dashTypeFilter ? ` · Filtered: ${dashTypeFilter === 'expense' ? 'Expenses' : (dashTypeFilter === 'savings' ? 'Savings Goals' : 'Income')}` : '';
+    dashDate.textContent = period.label + filterTag;
+  }
 
   const cards = [
     {label:"Total Income", amount:fmt(totals.income), change:incomeTrend.text, tone:incomeTrend.tone, accent:'teal', icon:'wallet'},
@@ -4659,6 +5030,7 @@ function renderDashboardTrendChart(period){
   window._chartDashRetries = 0;
 
   let trendMonths = [];
+  const chartTxs = filterTransactionsByDashboardNav(DB.transactions);
   if(period.isDay && period.date){
     const pd = parseTxDate(period.date);
     for(let i = 6; i >= 0; i--){
@@ -4666,7 +5038,7 @@ function renderDashboardTrendChart(period){
       const dy = dt.getFullYear();
       const dm = dt.getMonth() + 1;
       const dd = dt.getDate();
-      const dayTxs = DB.transactions.filter(t => {
+      const dayTxs = chartTxs.filter(t => {
         const p = parseTxDate(t.date);
         return p.year === dy && p.month === dm && p.day === dd;
       });
@@ -4679,7 +5051,7 @@ function renderDashboardTrendChart(period){
     }
   } else if(period.months.length > 1){
     trendMonths = period.months.map(m => {
-      const t = monthTotals(DB.transactions, m, period.year);
+      const t = monthTotals(chartTxs, m, period.year);
       return {
         label: SHORT_MONTH_NAMES[m - 1],
         income: t.income,
@@ -4694,7 +5066,7 @@ function renderDashboardTrendChart(period){
       const dt = new Date(endYear, endMonth - 1 - i, 1);
       const m = dt.getMonth() + 1;
       const y = dt.getFullYear();
-      const t = monthTotals(DB.transactions, m, y);
+      const t = monthTotals(chartTxs, m, y);
       trendMonths.push({
         label: dt.toLocaleDateString(undefined, { month:'short' }),
         income: t.income,
