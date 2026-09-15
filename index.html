@@ -2472,9 +2472,9 @@ const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"
 let comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
 let dashboardSelectedMonths = [];
 let dashTypeFilter = null;
-let dashSelectedCategories = null;
+let dashSelectedCategories = [];
 let dashSelectedSubcategories = [];
-let dashSelectedGoals = null;
+let dashSelectedGoals = [];
 let txSelectedCategories = null;
 let txSelectedSubcategories = [];
 let selectedModalSubcategories = [];
@@ -2523,14 +2523,9 @@ function setExcelMonths(type, months){
 function getExcelItems(type){
   if(type === 'comparison') return comparisonSelectedMonths;
   if(type === 'dashboard') return dashboardSelectedMonths;
-  if(type === 'dash-category') return dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories(dashTypeFilter || 'expense');
-  if(type === 'dash-subcategory') return dashSelectedSubcategories;
-  if(type === 'dash-goal'){
-    if(dashSelectedGoals !== null) return dashSelectedGoals;
-    const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
-    const stored = (DB.savingsGoals || []).map(g => g.name);
-    return [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
-  }
+  if(type === 'dash-category') return Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
+  if(type === 'dash-subcategory') return Array.isArray(dashSelectedSubcategories) ? dashSelectedSubcategories : [];
+  if(type === 'dash-goal') return Array.isArray(dashSelectedGoals) ? dashSelectedGoals : [];
   if(type === 'tx-category') return txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter);
   if(type === 'tx-subcategory') return txSelectedSubcategories;
   if(type === 'tx-modal-subcategory') return selectedModalSubcategories;
@@ -2569,7 +2564,7 @@ function getExcelOptions(type){
     return cats.map(c => ({ value: c, label: c }));
   }
   if(type === 'dash-subcategory'){
-    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories(dashTypeFilter || 'expense');
+    const activeCats = Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
     if(!activeCats || activeCats.length === 0){
       return [];
     }
@@ -2690,7 +2685,7 @@ function renderExcelFilterList(type){
 
   if(!options.length){
     const activeCats = (type === 'dash-subcategory')
-      ? (dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories(dashTypeFilter || 'expense'))
+      ? (Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [])
       : (txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter));
     const emptyMsg = (type === 'tx-subcategory' || type === 'dash-subcategory') && (!activeCats || activeCats.length === 0)
       ? 'Select a category to view subcategories'
@@ -2887,31 +2882,33 @@ function updateExcelFilterUI(type){
       }
     } else if(type === 'dash-category'){
       if(selected.length === 0){
-        summaryEl.textContent = 'No Categories';
-      } else if(totalCount > 0 && selected.length === totalCount){
         summaryEl.textContent = 'Categories';
+      } else if(totalCount > 0 && selected.length === totalCount){
+        summaryEl.textContent = 'All Categories';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
       } else {
-        summaryEl.textContent = `${selected.length} Categories Selected`;
+        summaryEl.textContent = `${selected.length} Categories`;
       }
     } else if(type === 'dash-subcategory'){
-      if(selected.length === 0 || (totalCount > 0 && selected.length === totalCount)){
+      if(selected.length === 0){
         summaryEl.textContent = 'Subcategories';
+      } else if(totalCount > 0 && selected.length === totalCount){
+        summaryEl.textContent = 'All Subcategories';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
       } else {
-        summaryEl.textContent = `${selected.length} Subcategories Selected`;
+        summaryEl.textContent = `${selected.length} Subcategories`;
       }
     } else if(type === 'dash-goal'){
       if(selected.length === 0){
-        summaryEl.textContent = 'No Goals';
-      } else if(totalCount > 0 && selected.length === totalCount){
         summaryEl.textContent = 'Goals';
+      } else if(totalCount > 0 && selected.length === totalCount){
+        summaryEl.textContent = 'All Goals';
       } else if(selected.length === 1){
         summaryEl.textContent = selected[0];
       } else {
-        summaryEl.textContent = `${selected.length} Goals Selected`;
+        summaryEl.textContent = `${selected.length} Goals`;
       }
     } else if(type === 'tx-category'){
       if(selected.length === 0){
@@ -4671,30 +4668,19 @@ function setDashboardTypeFilter(type){
     return;
   }
   dashTypeFilter = type;
-  if(type === 'income'){
-    dashSelectedCategories = transactionCategories('income');
-    dashSelectedSubcategories = [];
-    dashSelectedGoals = null;
-  } else if(type === 'expense'){
-    dashSelectedCategories = transactionCategories('expense');
-    dashSelectedSubcategories = [];
-    dashSelectedGoals = null;
-  } else if(type === 'savings'){
-    dashSelectedCategories = null;
-    dashSelectedSubcategories = [];
-    const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
-    const stored = (DB.savingsGoals || []).map(g => g.name);
-    dashSelectedGoals = [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
-  }
+  dashSelectedCategories = [];
+  dashSelectedSubcategories = [];
+  dashSelectedGoals = [];
+  closeAllExcelFilters();
   updateDashFilterNavUI();
   renderDashboard();
 }
 
 function resetDashboardTypeFilter(){
   dashTypeFilter = null;
-  dashSelectedCategories = null;
+  dashSelectedCategories = [];
   dashSelectedSubcategories = [];
-  dashSelectedGoals = null;
+  dashSelectedGoals = [];
   closeAllExcelFilters();
   updateDashFilterNavUI();
   renderDashboard();
@@ -4730,6 +4716,9 @@ function updateDashFilterNavUI(){
     if(catWrap) catWrap.classList.add('hidden');
     if(subcatWrap) subcatWrap.classList.add('hidden');
     if(goalWrap) goalWrap.classList.remove('hidden');
+    if(!Array.isArray(dashSelectedGoals)){
+      dashSelectedGoals = [];
+    }
     renderExcelFilterList('dash-goal');
     updateExcelFilterUI('dash-goal');
   } else {
@@ -4743,11 +4732,10 @@ function renderDashCategoryFilter(){
   const wrap = document.getElementById('dash-category-filter-wrap');
   if(!wrap || !dashTypeFilter || (dashTypeFilter !== 'income' && dashTypeFilter !== 'expense')) return;
   const categories = transactionCategories(dashTypeFilter);
-  if(!dashSelectedCategories || !Array.isArray(dashSelectedCategories) || dashSelectedCategories.length === 0){
-    dashSelectedCategories = [...categories];
+  if(!Array.isArray(dashSelectedCategories)){
+    dashSelectedCategories = [];
   } else {
-    const valid = dashSelectedCategories.filter(c => categories.includes(c));
-    dashSelectedCategories = valid.length > 0 ? valid : [...categories];
+    dashSelectedCategories = dashSelectedCategories.filter(c => categories.includes(c));
   }
   renderExcelFilterList('dash-category');
   updateExcelFilterUI('dash-category');
@@ -4764,7 +4752,9 @@ function renderDashSubCategoryFilter(){
   wrap.classList.remove('hidden');
   const options = getExcelOptions('dash-subcategory');
   const validVals = options.map(o => o.value);
-  if(dashSelectedSubcategories && dashSelectedSubcategories.length > 0){
+  if(!Array.isArray(dashSelectedSubcategories)){
+    dashSelectedSubcategories = [];
+  } else {
     dashSelectedSubcategories = dashSelectedSubcategories.filter(s => validVals.includes(s));
   }
   renderExcelFilterList('dash-subcategory');
@@ -4774,11 +4764,11 @@ function renderDashSubCategoryFilter(){
 function filterTransactionsByDashboardNav(txList){
   if(!dashTypeFilter || !Array.isArray(txList)) return txList;
   if(dashTypeFilter === 'income'){
-    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories('income');
+    const activeCats = Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
     return txList.filter(t => t.type === 'income' && activeCats.includes(t.category));
   }
   if(dashTypeFilter === 'expense'){
-    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories('expense');
+    const activeCats = Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
     return txList.filter(t => {
       if(t.type !== 'expense') return false;
       if(!activeCats.includes(t.category)) return false;
@@ -4790,12 +4780,7 @@ function filterTransactionsByDashboardNav(txList){
     });
   }
   if(dashTypeFilter === 'savings'){
-    let activeGoals = dashSelectedGoals;
-    if(!activeGoals){
-      const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
-      const stored = (DB.savingsGoals || []).map(g => g.name);
-      activeGoals = [...new Set([...stored, ...recorded])];
-    }
+    const activeGoals = Array.isArray(dashSelectedGoals) ? dashSelectedGoals : [];
     return txList.filter(t => t.type === 'savings' && activeGoals.includes(t.category));
   }
   return txList;
@@ -4804,7 +4789,7 @@ function filterTransactionsByDashboardNav(txList){
 function dashboardBudgetRows(period){
   let pBudgets = DB.budgets.filter(b=>period.months.includes(b.month)&&b.year===period.year);
   if(dashTypeFilter === 'expense'){
-    const activeCats = dashSelectedCategories !== null ? dashSelectedCategories : transactionCategories('expense');
+    const activeCats = Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
     pBudgets = pBudgets.filter(b => activeCats.includes(b.category));
     if(dashSelectedSubcategories && dashSelectedSubcategories.length > 0){
       pBudgets = pBudgets.filter(b => !b.subCategory || dashSelectedSubcategories.includes(b.subCategory));
@@ -4918,8 +4903,10 @@ function renderDashboardBudgetSummary(period){
 }
 
 function renderDashboardSavings(period, totals){
-  const activeGoals = (dashTypeFilter === 'savings' && dashSelectedGoals !== null) ? dashSelectedGoals : null;
-  const filteredGoals = activeGoals ? DB.savingsGoals.filter(g => activeGoals.includes(g.name)) : DB.savingsGoals;
+  const isSavingsMode = dashTypeFilter === 'savings';
+  const filteredGoals = isSavingsMode
+    ? DB.savingsGoals.filter(g => (dashSelectedGoals || []).includes(g.name))
+    : DB.savingsGoals;
   const totalTarget = filteredGoals.reduce((s,g)=>s+g.targetAmount,0);
   const totalCurrent = filteredGoals.reduce((s,g)=>s+g.currentAmount,0);
   const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
