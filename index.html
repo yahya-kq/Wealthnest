@@ -1481,7 +1481,11 @@
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
           <div>
             <h2 class="section-title">Cash Flow Trend</h2>
-            <p class="section-sub">Monthly income, expenses, and savings</p>
+            <p class="section-sub" id="trend-chart-sub">Monthly income, expenses, and savings</p>
+          </div>
+          <div class="chip-row" id="trend-mode-toggle" style="background:var(--surface-2); padding:3px; border-radius:8px; border:1px solid var(--line); gap:3px;">
+            <button type="button" class="btn-chip active" id="trend-mode-monthly" onclick="setDashboardTrendMode('monthly')" style="padding:4px 11px; font-size:11.5px; border-radius:6px;">Monthly</button>
+            <button type="button" class="btn-chip" id="trend-mode-yearly" onclick="setDashboardTrendMode('yearly')" style="padding:4px 11px; font-size:11.5px; border-radius:6px;">Yearly</button>
           </div>
         </div>
         <div style="position:relative; height:200px; width:100%;">
@@ -4571,11 +4575,15 @@ function onDashboardPeriodChange(){
     } else if(dashboardSelPeriod==='year'){
       dashboardSelectedMonths = [...Array(12)].map((_,i)=>i+1);
       renderExcelFilterList('dashboard');
+      dashTrendMode = 'yearly';
+      updateTrendModeToggleUI();
     } else {
       if(!dashboardSelectedMonths || !dashboardSelectedMonths.length){
         dashboardSelectedMonths = [dashboardSelMonth || (new Date().getMonth()+1)];
       }
       renderExcelFilterList('dashboard');
+      dashTrendMode = 'monthly';
+      updateTrendModeToggleUI();
     }
   }
   renderDashboard();
@@ -5122,6 +5130,22 @@ function renderDashboard(){
 }
 
 let chartDashboardTrend = null;
+let dashTrendMode = 'monthly';
+
+function setDashboardTrendMode(mode){
+  dashTrendMode = mode;
+  updateTrendModeToggleUI();
+  const period = selectedDashboardPeriod();
+  renderDashboardTrendChart(period);
+}
+
+function updateTrendModeToggleUI(){
+  const mBtn = document.getElementById('trend-mode-monthly');
+  const yBtn = document.getElementById('trend-mode-yearly');
+  if(mBtn) mBtn.classList.toggle('active', dashTrendMode === 'monthly');
+  if(yBtn) yBtn.classList.toggle('active', dashTrendMode === 'yearly');
+}
+
 function renderDashboardTrendChart(period){
   const canvas = document.getElementById('dashboard-chart-trend');
   if(!canvas) return;
@@ -5133,11 +5157,14 @@ function renderDashboardTrendChart(period){
     return;
   }
   window._chartDashRetries = 0;
+  updateTrendModeToggleUI();
 
   let trendPoints = [];
   const chartTxs = filterTransactionsByDashboardNav(DB.transactions);
+  const subEl = document.getElementById('trend-chart-sub');
 
   if(period.isDay && period.date){
+    if(subEl) subEl.textContent = `Daily cash flow (7-day trend)`;
     const pd = parseTxDate(period.date);
     for(let i = 6; i >= 0; i--){
       const dt = new Date(pd.year, pd.month - 1, pd.day - i);
@@ -5150,20 +5177,44 @@ function renderDashboardTrendChart(period){
       });
       trendPoints.push({
         label: dt.toLocaleDateString(undefined, { weekday:'short', day:'numeric' }),
+        fullLabel: dt.toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'short', day:'numeric' }),
         income: sumByType(dayTxs, 'income'),
         expense: sumByType(dayTxs, 'expense'),
         savings: sumByType(dayTxs, 'savings')
       });
     }
-  } else {
+  } else if(dashTrendMode === 'yearly' || (period.months && period.months.length === 12)){
     const yr = period.year || dashboardSelYear || new Date().getFullYear();
+    if(subEl) subEl.textContent = `Annual cash flow (${yr})`;
     for(let m = 1; m <= 12; m++){
       const t = monthTotals(chartTxs, m, yr);
       trendPoints.push({
         label: SHORT_MONTH_NAMES[m - 1],
+        fullLabel: `${MONTH_NAMES[m - 1]} ${yr}`,
         income: t.income,
         expense: t.expense,
         savings: t.savings
+      });
+    }
+  } else {
+    // Monthly view for the selected month
+    const targetMonth = (period.months && period.months.length) ? period.months[0] : (dashboardSelMonth || (new Date().getMonth() + 1));
+    const targetYear = period.year || dashboardSelYear || new Date().getFullYear();
+    const monthName = MONTH_NAMES[targetMonth - 1];
+    if(subEl) subEl.textContent = `${monthName} ${targetYear} cash flow trajectory`;
+
+    const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
+    for(let d = 1; d <= daysInMonth; d++){
+      const dayTxs = chartTxs.filter(t => {
+        const p = parseTxDate(t.date);
+        return p.year === targetYear && p.month === targetMonth && p.day === d;
+      });
+      trendPoints.push({
+        label: `${d}`,
+        fullLabel: `${monthName} ${d}, ${targetYear}`,
+        income: sumByType(dayTxs, 'income'),
+        expense: sumByType(dayTxs, 'expense'),
+        savings: sumByType(dayTxs, 'savings')
       });
     }
   }
@@ -5180,11 +5231,11 @@ function renderDashboardTrendChart(period){
       label: 'Income',
       data: trendPoints.map(t => t.income),
       borderColor: '#0F9E93',
-      backgroundColor: 'rgba(15, 158, 147, 0.08)',
-      fill: true,
-      tension: 0.35,
+      backgroundColor: 'transparent',
+      fill: false,
+      tension: 0.15,
       borderWidth: 2.5,
-      pointRadius: 3.5,
+      pointRadius: dashTrendMode === 'monthly' ? 2.5 : 4,
       pointHoverRadius: 6,
       pointBackgroundColor: '#0F9E93',
       pointBorderColor: '#ffffff',
@@ -5197,11 +5248,11 @@ function renderDashboardTrendChart(period){
       label: 'Expenses',
       data: trendPoints.map(t => t.expense),
       borderColor: '#E1435C',
-      backgroundColor: 'rgba(225, 67, 92, 0.08)',
-      fill: true,
-      tension: 0.35,
+      backgroundColor: 'transparent',
+      fill: false,
+      tension: 0.15,
       borderWidth: 2.5,
-      pointRadius: 3.5,
+      pointRadius: dashTrendMode === 'monthly' ? 2.5 : 4,
       pointHoverRadius: 6,
       pointBackgroundColor: '#E1435C',
       pointBorderColor: '#ffffff',
@@ -5214,11 +5265,11 @@ function renderDashboardTrendChart(period){
       label: 'Savings',
       data: trendPoints.map(t => t.savings),
       borderColor: '#C4820A',
-      backgroundColor: 'rgba(196, 130, 10, 0.08)',
-      fill: true,
-      tension: 0.35,
+      backgroundColor: 'transparent',
+      fill: false,
+      tension: 0.15,
       borderWidth: 2.5,
-      pointRadius: 3.5,
+      pointRadius: dashTrendMode === 'monthly' ? 2.5 : 4,
       pointHoverRadius: 6,
       pointBackgroundColor: '#C4820A',
       pointBorderColor: '#ffffff',
@@ -5259,6 +5310,11 @@ function renderDashboardTrendChart(period){
           padding: 9,
           cornerRadius: 6,
           callbacks: {
+            title: function(items){
+              if(!items || !items.length) return '';
+              const idx = items[0].dataIndex;
+              return (trendPoints[idx] && trendPoints[idx].fullLabel) ? trendPoints[idx].fullLabel : items[0].label;
+            },
             label: function(ctx) {
               return ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
             }
