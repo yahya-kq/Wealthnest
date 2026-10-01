@@ -1483,7 +1483,6 @@
             <h2 class="section-title">Cash Flow Trend</h2>
             <p class="section-sub">Monthly income, expenses, and savings</p>
           </div>
-          <span class="badge badge-ok" style="font-size:11px;">Interactive Chart</span>
         </div>
         <div style="position:relative; height:200px; width:100%;">
           <canvas id="dashboard-chart-trend"></canvas>
@@ -2523,9 +2522,18 @@ function setExcelMonths(type, months){
 function getExcelItems(type){
   if(type === 'comparison') return comparisonSelectedMonths;
   if(type === 'dashboard') return dashboardSelectedMonths;
-  if(type === 'dash-category') return Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
-  if(type === 'dash-subcategory') return Array.isArray(dashSelectedSubcategories) ? dashSelectedSubcategories : [];
-  if(type === 'dash-goal') return Array.isArray(dashSelectedGoals) ? dashSelectedGoals : [];
+  if(type === 'dash-category') {
+    if(dashSelectedCategories !== null && Array.isArray(dashSelectedCategories)) return dashSelectedCategories;
+    return transactionCategories(dashTypeFilter || 'expense');
+  }
+  if(type === 'dash-subcategory') {
+    if(dashSelectedSubcategories !== null && Array.isArray(dashSelectedSubcategories)) return dashSelectedSubcategories;
+    return getExcelOptions('dash-subcategory').map(o => o.value);
+  }
+  if(type === 'dash-goal') {
+    if(dashSelectedGoals !== null && Array.isArray(dashSelectedGoals)) return dashSelectedGoals;
+    return getExcelOptions('dash-goal').map(o => o.value);
+  }
   if(type === 'tx-category') return txSelectedCategories !== null ? txSelectedCategories : transactionCategories(txFilter);
   if(type === 'tx-subcategory') return txSelectedSubcategories;
   if(type === 'tx-modal-subcategory') return selectedModalSubcategories;
@@ -4172,7 +4180,7 @@ function renderReports(){
                style="width:${plannedPercent}%;"></div>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-          <span class="muted">${isPlannedOver ? 'Over Planned Budget by' : 'Planned Budget Headroom'}</span>
+          <span class="muted">${isPlannedOver ? 'Over Planned Budget by' : 'Remaining Budget'}</span>
           <strong class="figure ${isPlannedOver ? 'tone-neg' : 'tone-pos'}">${fmt(Math.abs(plannedRemaining))}</strong>
         </div>
 
@@ -4194,21 +4202,13 @@ function renderReports(){
           </div>
         `}
 
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span class="badge ${isPlannedOver ? 'badge-over' : 'badge-ok'}">
-              ${isPlannedOver ? 'Planned Budget Exceeded' : 'Within Planned Targets'}
-            </span>
-            ${hasUnbudgeted && totalActual > categoryBudgets ? `
-              <span class="badge badge-over" style="background:var(--rose-light); color:var(--rose); font-weight:600;">
-                Overall Variance: -${fmt(Math.abs(totalVariance))}
-              </span>
-            ` : ''}
-          </div>
-          <div style="font-size:11.5px; color:var(--muted); line-height:1.4; margin-top:4px;">
-            ${overReportCats.length ? `<span class="tone-neg">⚠️ ${overReportCats.length} planned categor${overReportCats.length===1?'y':'ies'} exceeded limit.</span> ` : '✓ All planned categories within limit. '}
-            ${hasUnbudgeted && totalActual > categoryBudgets ? `Total spending exceeded planned targets due to unbudgeted expenses (${fmt(unbudgetedSpent)}).` : ''}
-          </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; font-size:12px;">
+          <span class="badge ${isPlannedOver ? 'badge-over' : 'badge-ok'}">
+            ${isPlannedOver ? 'Over budget' : 'On track'}
+          </span>
+          <span class="${overReportCats.length ? 'tone-neg' : 'tone-pos'}" style="font-weight:500;">
+            ${overReportCats.length ? `⚠️ ${overReportCats.length} category exceeded limit` : '✓ Categories on track'}
+          </span>
         </div>
       `;
     } else {
@@ -4744,9 +4744,19 @@ function setDashboardTypeFilter(type){
     return;
   }
   dashTypeFilter = type;
-  dashSelectedCategories = [];
-  dashSelectedSubcategories = [];
-  dashSelectedGoals = [];
+  if(type === 'income'){
+    dashSelectedCategories = transactionCategories('income');
+    dashSelectedSubcategories = null;
+    dashSelectedGoals = null;
+  } else if(type === 'expense'){
+    dashSelectedCategories = transactionCategories('expense');
+    dashSelectedSubcategories = null;
+    dashSelectedGoals = null;
+  } else if(type === 'savings'){
+    dashSelectedCategories = null;
+    dashSelectedSubcategories = null;
+    dashSelectedGoals = getExcelOptions('dash-goal').map(o => o.value);
+  }
   closeAllExcelFilters();
   updateDashFilterNavUI();
   renderDashboard();
@@ -4754,9 +4764,9 @@ function setDashboardTypeFilter(type){
 
 function resetDashboardTypeFilter(){
   dashTypeFilter = null;
-  dashSelectedCategories = [];
-  dashSelectedSubcategories = [];
-  dashSelectedGoals = [];
+  dashSelectedCategories = null;
+  dashSelectedSubcategories = null;
+  dashSelectedGoals = null;
   closeAllExcelFilters();
   updateDashFilterNavUI();
   renderDashboard();
@@ -4793,7 +4803,7 @@ function updateDashFilterNavUI(){
     if(subcatWrap) subcatWrap.classList.add('hidden');
     if(goalWrap) goalWrap.classList.remove('hidden');
     if(!Array.isArray(dashSelectedGoals)){
-      dashSelectedGoals = [];
+      dashSelectedGoals = getExcelOptions('dash-goal').map(o => o.value);
     }
     renderExcelFilterList('dash-goal');
     updateExcelFilterUI('dash-goal');
@@ -4808,10 +4818,11 @@ function renderDashCategoryFilter(){
   const wrap = document.getElementById('dash-category-filter-wrap');
   if(!wrap || !dashTypeFilter || (dashTypeFilter !== 'income' && dashTypeFilter !== 'expense')) return;
   const categories = transactionCategories(dashTypeFilter);
-  if(!Array.isArray(dashSelectedCategories)){
-    dashSelectedCategories = [];
+  if(!Array.isArray(dashSelectedCategories) || dashSelectedCategories.length === 0){
+    dashSelectedCategories = categories.slice();
   } else {
     dashSelectedCategories = dashSelectedCategories.filter(c => categories.includes(c));
+    if(dashSelectedCategories.length === 0) dashSelectedCategories = categories.slice();
   }
   renderExcelFilterList('dash-category');
   updateExcelFilterUI('dash-category');
@@ -4822,14 +4833,14 @@ function renderDashSubCategoryFilter(){
   if(!wrap) return;
   if(dashTypeFilter !== 'expense'){
     wrap.classList.add('hidden');
-    dashSelectedSubcategories = [];
+    dashSelectedSubcategories = null;
     return;
   }
   wrap.classList.remove('hidden');
   const options = getExcelOptions('dash-subcategory');
   const validVals = options.map(o => o.value);
   if(!Array.isArray(dashSelectedSubcategories)){
-    dashSelectedSubcategories = [];
+    dashSelectedSubcategories = validVals.slice();
   } else {
     dashSelectedSubcategories = dashSelectedSubcategories.filter(s => validVals.includes(s));
   }
@@ -4840,23 +4851,35 @@ function renderDashSubCategoryFilter(){
 function filterTransactionsByDashboardNav(txList){
   if(!dashTypeFilter || !Array.isArray(txList)) return txList;
   if(dashTypeFilter === 'income'){
-    const activeCats = Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
+    const allCats = transactionCategories('income');
+    const activeCats = (dashSelectedCategories !== null && Array.isArray(dashSelectedCategories))
+      ? dashSelectedCategories
+      : allCats;
     return txList.filter(t => t.type === 'income' && activeCats.includes(t.category));
   }
   if(dashTypeFilter === 'expense'){
-    const activeCats = Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
+    const allCats = transactionCategories('expense');
+    const activeCats = (dashSelectedCategories !== null && Array.isArray(dashSelectedCategories))
+      ? dashSelectedCategories
+      : allCats;
     return txList.filter(t => {
       if(t.type !== 'expense') return false;
       if(!activeCats.includes(t.category)) return false;
-      if(dashSelectedSubcategories && dashSelectedSubcategories.length > 0){
-        const tSubs = t.subCategory ? t.subCategory.split(',').map(s => s.trim()) : [];
-        if(!tSubs.some(s => dashSelectedSubcategories.includes(s))) return false;
+      if(dashSelectedSubcategories !== null && Array.isArray(dashSelectedSubcategories)){
+        const allSubs = getExcelOptions('dash-subcategory').map(o => o.value);
+        if(dashSelectedSubcategories.length < allSubs.length){
+          const tSubs = t.subCategory ? t.subCategory.split(',').map(s => s.trim()) : [];
+          if(!tSubs.some(s => dashSelectedSubcategories.includes(s))) return false;
+        }
       }
       return true;
     });
   }
   if(dashTypeFilter === 'savings'){
-    const activeGoals = Array.isArray(dashSelectedGoals) ? dashSelectedGoals : [];
+    const allGoals = getExcelOptions('dash-goal').map(o => o.value);
+    const activeGoals = (dashSelectedGoals !== null && Array.isArray(dashSelectedGoals))
+      ? dashSelectedGoals
+      : allGoals;
     return txList.filter(t => t.type === 'savings' && activeGoals.includes(t.category));
   }
   return txList;
@@ -4865,7 +4888,10 @@ function filterTransactionsByDashboardNav(txList){
 function dashboardBudgetRows(period){
   let pBudgets = DB.budgets.filter(b=>period.months.includes(b.month)&&b.year===period.year);
   if(dashTypeFilter === 'expense'){
-    const activeCats = Array.isArray(dashSelectedCategories) ? dashSelectedCategories : [];
+    const allCats = transactionCategories('expense');
+    const activeCats = (dashSelectedCategories !== null && Array.isArray(dashSelectedCategories))
+      ? dashSelectedCategories
+      : allCats;
     pBudgets = pBudgets.filter(b => activeCats.includes(b.category));
     if(dashSelectedSubcategories && dashSelectedSubcategories.length > 0){
       pBudgets = pBudgets.filter(b => !b.subCategory || dashSelectedSubcategories.includes(b.subCategory));
@@ -4879,7 +4905,7 @@ function dashboardBudgetRows(period){
     const main = pBudgets.find(b => b.category === cat && !b.subCategory);
     const subs = pBudgets.filter(b => b.category === cat && b.subCategory);
     const budgetAmount = main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
-    const spent = spentFor(chartTxs, period.months[0], period.year, cat, null);
+    const spent = period.months.reduce((sum, m) => sum + spentFor(chartTxs, m, period.year, cat, null), 0);
     return { category: cat, spent, budgetAmount };
   });
 }
@@ -4924,25 +4950,15 @@ function renderDashboardBudgetSummary(period, totals){
   const categoryRows = dashboardBudgetRows(period);
   const budgeted = categoryRows.reduce((s,r)=>s+r.budgetAmount,0);
   const spent = categoryRows.reduce((s,r)=>s+r.spent,0);
-  const percent = budgeted>0 ? Math.min(100,(spent/budgeted)*100) : 0;
+  const percent = budgeted>0 ? Math.min(100, Math.round((spent/budgeted)*100)) : 0;
   const remaining = budgeted - spent;
+  const isOver = spent > budgeted;
   const overCats = categoryRows.filter(r=>r.spent > r.budgetAmount);
 
-  if(!totals){
-    let pTxs = periodTransactions(period);
-    if(dashTypeFilter) pTxs = filterTransactionsByDashboardNav(pTxs);
-    totals = {
-      income: sumByType(pTxs, 'income'),
-      expense: sumByType(pTxs, 'expense'),
-      savings: sumByType(pTxs, 'savings')
-    };
-    totals.net = totals.income - totals.expense;
-  }
-
-  const totalExpense = (totals && typeof totals.expense === 'number') ? totals.expense : spent;
+  let pTxs = periodTransactions(period);
+  if(dashTypeFilter) pTxs = filterTransactionsByDashboardNav(pTxs);
+  const totalExpense = sumByType(pTxs, 'expense');
   const unbudgetedSpent = Math.max(0, totalExpense - spent);
-  const netBalance = (totals && typeof totals.net === 'number') ? totals.net : (budgeted - spent);
-  const isDeficit = netBalance < 0;
 
   const subEl = document.getElementById('budget-perf-sub');
   if(subEl){
@@ -4971,52 +4987,35 @@ function renderDashboardBudgetSummary(period, totals){
     return;
   }
 
-  let statusBadgeHtml = '';
-  if(remaining < 0){
-    statusBadgeHtml = '<span class="badge badge-over">Over budget</span>';
-  } else if(isDeficit){
-    statusBadgeHtml = '<span class="badge badge-over" style="background:var(--rose-light); color:var(--rose); font-weight:700;">Cash Deficit</span>';
-  } else {
-    statusBadgeHtml = '<span class="badge badge-ok">On track</span>';
-  }
-
-  let deficitAlertHtml = '';
-  if(isDeficit){
-    deficitAlertHtml = `
-      <div style="margin-bottom:10px; padding:9px 12px; background:var(--rose-light); border-left:3px solid var(--rose); border-radius:6px; font-size:11.5px; line-height:1.4; color:var(--ink);">
-        <div style="font-weight:700; color:var(--rose); margin-bottom:2px;">⚠️ Account in Deficit (-${fmt(Math.abs(netBalance))})</div>
-        <div>${unbudgetedSpent > 0 ? `Unbudgeted spending (${fmt(unbudgetedSpent)}) pushed total expenses past income, despite planned categories having ${fmt(remaining)} limit left.` : `Total expenses exceed income for this period.`}</div>
-      </div>
-    `;
-  } else if(unbudgetedSpent > 0){
-    deficitAlertHtml = `
-      <div style="margin-bottom:10px; padding:6px 10px; background:var(--surface-muted); border-radius:6px; font-size:11.5px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;">
-        <span>Unbudgeted category spending:</span>
-        <strong class="figure">${fmt(unbudgetedSpent)}</strong>
-      </div>
-    `;
-  }
+  const statusBadgeHtml = isOver
+    ? '<span class="badge badge-over">Over budget</span>'
+    : '<span class="badge badge-ok">On track</span>';
 
   container.innerHTML = `
     <div style="margin-bottom:14px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <span class="text-xs muted">Overall budget usage</span>
-        <span class="figure text-xs" style="font-weight:600; color:${spent>budgeted?'var(--rose)':'var(--primary)'};">${Math.round((spent/budgeted)*100)}%</span>
+        <span class="figure text-xs" style="font-weight:600; color:${isOver ? 'var(--rose)' : 'var(--primary)'};">${percent}%</span>
       </div>
       <div class="progress-track" style="height:8px;">
-        <div class="progress-fill ${spent>budgeted?'fill-rose':percent>=85?'fill-amber':'fill-primary'}" style="width:${Math.min(100,percent)}%;"></div>
+        <div class="progress-fill ${isOver ? 'fill-rose' : (percent >= 85 ? 'fill-amber' : 'fill-primary')}" style="width:${percent}%;"></div>
       </div>
     </div>
     <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:10px;">
       <div>
-        <span class="text-xs muted">${remaining < 0 ? 'Over budget by' : 'Remaining budget'}</span>
-        <div class="figure" style="font-size:15px; font-weight:700; color:${remaining<0?'var(--rose)':'var(--teal)'};">${fmt(Math.abs(remaining))}</div>
+        <span class="text-xs muted">${isOver ? 'Over budget by' : 'Remaining budget'}</span>
+        <div class="figure" style="font-size:15px; font-weight:700; color:${isOver ? 'var(--rose)' : 'var(--teal)'};">${fmt(Math.abs(remaining))}</div>
       </div>
       ${statusBadgeHtml}
     </div>
-    ${deficitAlertHtml}
+    ${unbudgetedSpent > 0 ? `
+      <div style="margin-bottom:10px; padding:6px 10px; background:var(--surface-muted); border-radius:6px; font-size:11.5px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;">
+        <span>Unbudgeted category spending:</span>
+        <strong class="figure">${fmt(unbudgetedSpent)}</strong>
+      </div>
+    ` : ''}
     <div style="font-size:12px; color:var(--muted);">
-      ${overCats.length ? `<span class="tone-neg" style="font-weight:600;">⚠️ ${overCats.length} planned categor${overCats.length===1?'y':'ies'} exceeded limit</span>` : '✓ All planned categories within set limits'}
+      ${overCats.length ? `<span class="tone-neg" style="font-weight:600;">⚠️ ${overCats.length} planned categor${overCats.length===1?'y':'ies'} exceeded limit</span>` : '<span class="tone-pos">✓ All planned categories within set limits</span>'}
     </div>
   `;
 }
@@ -5135,8 +5134,9 @@ function renderDashboardTrendChart(period){
   }
   window._chartDashRetries = 0;
 
-  let trendMonths = [];
+  let trendPoints = [];
   const chartTxs = filterTransactionsByDashboardNav(DB.transactions);
+
   if(period.isDay && period.date){
     const pd = parseTxDate(period.date);
     for(let i = 6; i >= 0; i--){
@@ -5148,33 +5148,19 @@ function renderDashboardTrendChart(period){
         const p = parseTxDate(t.date);
         return p.year === dy && p.month === dm && p.day === dd;
       });
-      trendMonths.push({
+      trendPoints.push({
         label: dt.toLocaleDateString(undefined, { weekday:'short', day:'numeric' }),
         income: sumByType(dayTxs, 'income'),
         expense: sumByType(dayTxs, 'expense'),
         savings: sumByType(dayTxs, 'savings')
       });
     }
-  } else if(period.months.length > 1){
-    trendMonths = period.months.map(m => {
-      const t = monthTotals(chartTxs, m, period.year);
-      return {
-        label: SHORT_MONTH_NAMES[m - 1],
-        income: t.income,
-        expense: t.expense,
-        savings: t.savings
-      };
-    });
   } else {
-    const endMonth = period.months[0] || (new Date().getMonth() + 1);
-    const endYear = period.year;
-    for(let i = 5; i >= 0; i--){
-      const dt = new Date(endYear, endMonth - 1 - i, 1);
-      const m = dt.getMonth() + 1;
-      const y = dt.getFullYear();
-      const t = monthTotals(chartTxs, m, y);
-      trendMonths.push({
-        label: dt.toLocaleDateString(undefined, { month:'short' }),
+    const yr = period.year || dashboardSelYear || new Date().getFullYear();
+    for(let m = 1; m <= 12; m++){
+      const t = monthTotals(chartTxs, m, yr);
+      trendPoints.push({
+        label: SHORT_MONTH_NAMES[m - 1],
         income: t.income,
         expense: t.expense,
         savings: t.savings
@@ -5187,37 +5173,72 @@ function renderDashboardTrendChart(period){
   const textColor = themeValue('--muted') || '#667085';
   const gridColor = themeValue('--line-soft') || '#F0F1F6';
 
+  const datasets = [];
+
+  if(!dashTypeFilter || dashTypeFilter === 'income'){
+    datasets.push({
+      label: 'Income',
+      data: trendPoints.map(t => t.income),
+      borderColor: '#0F9E93',
+      backgroundColor: 'rgba(15, 158, 147, 0.08)',
+      fill: true,
+      tension: 0.35,
+      borderWidth: 2.5,
+      pointRadius: 3.5,
+      pointHoverRadius: 6,
+      pointBackgroundColor: '#0F9E93',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 1.5
+    });
+  }
+
+  if(!dashTypeFilter || dashTypeFilter === 'expense'){
+    datasets.push({
+      label: 'Expenses',
+      data: trendPoints.map(t => t.expense),
+      borderColor: '#E1435C',
+      backgroundColor: 'rgba(225, 67, 92, 0.08)',
+      fill: true,
+      tension: 0.35,
+      borderWidth: 2.5,
+      pointRadius: 3.5,
+      pointHoverRadius: 6,
+      pointBackgroundColor: '#E1435C',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 1.5
+    });
+  }
+
+  if(!dashTypeFilter || dashTypeFilter === 'savings'){
+    datasets.push({
+      label: 'Savings',
+      data: trendPoints.map(t => t.savings),
+      borderColor: '#C4820A',
+      backgroundColor: 'rgba(196, 130, 10, 0.08)',
+      fill: true,
+      tension: 0.35,
+      borderWidth: 2.5,
+      pointRadius: 3.5,
+      pointHoverRadius: 6,
+      pointBackgroundColor: '#C4820A',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 1.5
+    });
+  }
+
   chartDashboardTrend = new Chart(canvas, {
-    type: 'bar',
+    type: 'line',
     data: {
-      labels: trendMonths.map(t => t.label),
-      datasets: [
-        {
-          label: 'Income',
-          data: trendMonths.map(t => t.income),
-          backgroundColor: '#0F9E93',
-          borderRadius: 6,
-          maxBarThickness: 24
-        },
-        {
-          label: 'Expenses',
-          data: trendMonths.map(t => t.expense),
-          backgroundColor: '#E1435C',
-          borderRadius: 6,
-          maxBarThickness: 24
-        },
-        {
-          label: 'Savings',
-          data: trendMonths.map(t => t.savings),
-          backgroundColor: '#C4820A',
-          borderRadius: 6,
-          maxBarThickness: 24
-        }
-      ]
+      labels: trendPoints.map(t => t.label),
+      datasets: datasets
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
       plugins: {
         legend: {
           position: 'top',
@@ -5235,11 +5256,11 @@ function renderDashboardTrendChart(period){
           backgroundColor: '#111321',
           titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
           bodyFont: { family: 'JetBrains Mono', size: 11 },
-          padding: 8,
+          padding: 9,
           cornerRadius: 6,
           callbacks: {
             label: function(ctx) {
-              return `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
+              return ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
             }
           }
         }
@@ -5248,15 +5269,31 @@ function renderDashboardTrendChart(period){
         x: {
           grid: { display: false },
           border: { display: false },
-          ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, autoSkip: false }
+          ticks: {
+            color: textColor,
+            font: { family: 'Plus Jakarta Sans', size: 11 },
+            autoSkip: true,
+            maxRotation: 0
+          }
         },
         y: {
-          grid: { display: false },
+          grid: { color: gridColor, drawBorder: false },
           border: { display: false },
           ticks: {
             color: textColor,
             font: { family: 'JetBrains Mono', size: 10 },
-            callback: v => Math.round(v).toLocaleString()
+            callback: function(v){
+              if(v === 0) return '0';
+              const abs = Math.abs(v);
+              const sign = v < 0 ? '-' : '';
+              if(abs >= 1000000){
+                return sign + (abs / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+              }
+              if(abs >= 1000){
+                return sign + Math.round(abs / 1000) + 'k';
+              }
+              return sign + abs;
+            }
           }
         }
       }
