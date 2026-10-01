@@ -4191,7 +4191,7 @@ function renderReports(){
         ${hasUnbudgeted ? `
           <div style="padding:10px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:12px; font-size:12.5px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-              <span class="muted">Unbudgeted / Other Spend</span>
+              <span class="muted">Other Spending</span>
               <strong class="figure">${fmt(unbudgetedSpent)}</strong>
             </div>
             <div style="display:flex; justify-content:space-between; border-top:1px solid var(--line-soft); padding-top:5px; margin-top:5px;">
@@ -5018,7 +5018,7 @@ function renderDashboardBudgetSummary(period, totals){
     </div>
     ${unbudgetedSpent > 0 ? `
       <div style="margin-bottom:10px; padding:6px 10px; background:var(--surface-muted); border-radius:6px; font-size:11.5px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;">
-        <span>Unbudgeted category spending:</span>
+        <span>Other spending:</span>
         <strong class="figure">${fmt(unbudgetedSpent)}</strong>
       </div>
     ` : ''}
@@ -5286,6 +5286,11 @@ function renderDashboardTrendChart(period){
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      elements: {
+        line: {
+          fill: false
+        }
+      },
       interaction: {
         mode: 'index',
         intersect: false
@@ -5333,7 +5338,7 @@ function renderDashboardTrendChart(period){
           }
         },
         y: {
-          grid: { color: gridColor, drawBorder: false },
+          grid: { display: false },
           border: { display: false },
           ticks: {
             color: textColor,
