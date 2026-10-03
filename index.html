@@ -1023,6 +1023,10 @@
     #investment-kpi-grid .ov-amount{font-size:19px !important;}
   }
   .table-responsive{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  #dashboard-trend-scroll-container::-webkit-scrollbar { height: 6px; }
+  #dashboard-trend-scroll-container::-webkit-scrollbar-track { background: transparent; }
+  #dashboard-trend-scroll-container::-webkit-scrollbar-thumb { background: var(--line, rgba(148,163,184,0.3)); border-radius: 4px; }
+  #dashboard-trend-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--muted, rgba(148,163,184,0.6)); }
 
   h1,h2,h3,.section-title,.section-sub,.field-label,.btn-primary,.btn-dark,.btn-ghost,.btn-small,.btn-chip,.nav-link,.nav-section-label,.badge,.link-sm,.topbar p,.modal h2{ text-transform:capitalize; }
   .label-eyebrow{ text-transform:uppercase; }
@@ -1552,12 +1556,24 @@
 
       <!-- Cash Flow Trend Chart -->
       <div class="card mb-4" style="padding:20px 22px;">
-        <div style="margin-bottom:14px;">
-          <h2 class="section-title">Cash Flow Trend</h2>
-          <p class="section-sub" id="trend-chart-sub">Monthly income, expenses, and savings</p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h2 class="section-title">Cash Flow Trend</h2>
+            <p class="section-sub" id="trend-chart-sub">Monthly income, expenses, and savings</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn-ghost" id="trend-nav-prev" onclick="scrollDashboardTrend(-1)" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--line); cursor:pointer; background:var(--surface);" title="View earlier months" aria-label="Previous months">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="btn-ghost" id="trend-nav-next" onclick="scrollDashboardTrend(1)" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--line); cursor:pointer; background:var(--surface);" title="View later months" aria-label="Next months">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
         </div>
-        <div style="position:relative; height:220px; width:100%;">
-          <canvas id="dashboard-chart-trend"></canvas>
+        <div id="dashboard-trend-scroll-container" style="position:relative; width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; -webkit-overflow-scrolling:touch; padding-bottom:6px;">
+          <div id="dashboard-trend-canvas-wrap" style="position:relative; height:230px; min-width:100%;">
+            <canvas id="dashboard-chart-trend"></canvas>
+          </div>
         </div>
       </div>
 
@@ -4367,13 +4383,45 @@ function renderSettingsAccount(){
 
 function exportFinancesJSON(){
   try {
-    const dataStr = JSON.stringify(DB, null, 2);
+    // Sort all transactions chronologically from A to Z
+    const sortedTxs = Array.isArray(DB.transactions) 
+      ? [...DB.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || '')) 
+      : [];
+
+    // Complete A-to-Z full database snapshot
+    const exportData = {
+      ...DB,
+      transactions: sortedTxs,
+      budgets: Array.isArray(DB.budgets) ? DB.budgets : [],
+      savingsGoals: Array.isArray(DB.savingsGoals) ? DB.savingsGoals : [],
+      investments: Array.isArray(DB.investments) ? DB.investments : [],
+      soldInvestments: Array.isArray(DB.soldInvestments) ? DB.soldInvestments : [],
+      categories: DB.categories || {},
+      paymentMethods: Array.isArray(DB.paymentMethods) ? DB.paymentMethods : [],
+      recurring: Array.isArray(DB.recurring) ? DB.recurring : [],
+      debts: Array.isArray(DB.debts) ? DB.debts : [],
+      currency: DB.currency || { code: 'USD', symbol: '$' },
+      preferences: DB.preferences || {},
+      activityLog: Array.isArray(DB.activityLog) ? DB.activityLog : [],
+      recycleBin: Array.isArray(DB.recycleBin) ? DB.recycleBin : [],
+      _metadata: {
+        appName: "WealthNest",
+        version: "2.0",
+        exportedAt: new Date().toISOString(),
+        totalTransactions: sortedTxs.length,
+        totalBudgets: (DB.budgets || []).length,
+        totalSavingsGoals: (DB.savingsGoals || []).length,
+        totalInvestments: (DB.investments || []).length
+      }
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     const dateStr = ymd(new Date());
     a.href = url;
-    a.download = `wealthnest_backup_${dateStr}.json`;
+    a.download = `wealthnest_full_backup_${dateStr}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -4381,7 +4429,7 @@ function exportFinancesJSON(){
       localStorage.setItem('wealthnest_last_manual_backup', new Date().toISOString());
       if (typeof renderBackupSettings === 'function') renderBackupSettings();
     } catch(e){}
-    showToast("Backup exported successfully!");
+    showToast(`Full A-to-Z backup downloaded (${sortedTxs.length} transactions)!`);
   } catch(e) {
     showToast("Export failed: " + e.message, "error");
   }
@@ -4389,14 +4437,16 @@ function exportFinancesJSON(){
 
 function exportTransactionsCSV(){
   try {
-    const txs = DB.transactions || [];
+    const txs = Array.isArray(DB.transactions) ? [...DB.transactions] : [];
     if (!txs.length) {
       showToast("No transactions to export", "info");
       return;
     }
-    const headers = ["ID", "Date", "Type", "Amount", "Currency", "Category", "Subcategory", "PaymentMethod", "Account", "Note"];
+    txs.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+
+    const headers = ["ID", "Date", "Type", "Amount", "Currency", "Category", "Subcategory", "PaymentMethod", "Account", "Note", "RecurringId", "CreatedAt"];
     const rows = txs.map(t => [
-      t.id,
+      t.id || '',
       t.date || '',
       t.type || '',
       t.amount || 0,
@@ -4405,7 +4455,9 @@ function exportTransactionsCSV(){
       `"${(t.subcategory || '').replace(/"/g, '""')}"`,
       `"${(t.paymentMethod || '').replace(/"/g, '""')}"`,
       `"${(t.account || '').replace(/"/g, '""')}"`,
-      `"${(t.note || '').replace(/"/g, '""')}"`
+      `"${(t.note || '').replace(/"/g, '""')}"`,
+      t.recurringId || '',
+      t.createdAt || t.date || ''
     ]);
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -4413,15 +4465,16 @@ function exportTransactionsCSV(){
     const a = document.createElement("a");
     const dateStr = ymd(new Date());
     a.href = url;
-    a.download = `wealthnest_transactions_${dateStr}.csv`;
+    a.download = `wealthnest_transactions_all_${dateStr}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    showToast(`Exported ${txs.length} transactions as CSV!`);
+    showToast(`Exported all ${txs.length} transactions (A to Z) as CSV!`);
   } catch(e) {
     showToast("CSV export failed: " + e.message, "error");
   }
 }
+
 
 function triggerImportFinancesJSON(){
   let fileInput = document.getElementById('wn-import-file-input');
@@ -6047,6 +6100,14 @@ function renderDashboardInvestments(){
 
 let chartDashboardTrend = null;
 
+function scrollDashboardTrend(dir){
+  const scroller = document.getElementById('dashboard-trend-scroll-container');
+  if(!scroller) return;
+  const isMob = (typeof window !== 'undefined' && window.innerWidth < 640);
+  const step = isMob ? 176 : 216;
+  scroller.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+
 function renderDashboardTrendChart(period){
   const canvas = document.getElementById('dashboard-chart-trend');
   if(!canvas) return;
@@ -6062,6 +6123,11 @@ function renderDashboardTrendChart(period){
   let trendPoints = [];
   const chartTxs = filterTransactionsByDashboardNav(DB.transactions);
   const subEl = document.getElementById('trend-chart-sub');
+  const scrollContainer = document.getElementById('dashboard-trend-scroll-container');
+  const canvasWrap = document.getElementById('dashboard-trend-canvas-wrap');
+
+  let activeM = 1;
+  let activeY = new Date().getFullYear();
 
   if(period.isDay && period.date){
     if(subEl) subEl.textContent = `Daily cash flow (7-day trend)`;
@@ -6083,38 +6149,35 @@ function renderDashboardTrendChart(period){
         savings: sumByType(dayTxs, 'savings')
       });
     }
-  } else if(period.months && period.months.length === 12 && dashboardSelPeriod === 'year'){
-    const yr = period.year || dashboardSelYear || new Date().getFullYear();
-    if(subEl) subEl.textContent = `Monthly cash flow (${yr})`;
-    for(let m = 1; m <= 12; m++){
-      const t = monthTotals(chartTxs, m, yr);
-      trendPoints.push({
-        label: SHORT_MONTH_NAMES[m - 1],
-        fullLabel: `${MONTH_NAMES[m - 1]} ${yr}`,
-        income: t.income,
-        expense: t.expense,
-        savings: t.savings
-      });
-    }
   } else {
-    // 6-month rolling trend ending at active month (identical to Reports Income vs Expense!)
-    const activeM = (period.months && period.months.length === 1) ? period.months[0] : (dashboardSelMonth || (new Date().getMonth() + 1));
-    const activeY = period.year || dashboardSelYear || new Date().getFullYear();
-    if(subEl) subEl.textContent = `6-month cash flow trend`;
-    for(let i = 5; i >= 0; i--){
-      const dt = new Date(activeY, activeM - 1 - i, 1);
-      const m = dt.getMonth() + 1;
-      const y = dt.getFullYear();
-      const t = monthTotals(chartTxs, m, y);
+    // 12-month full timeline for the year (Jan through Dec including Aug, Sep, Oct, Nov, Dec)
+    activeM = (period.months && period.months.length === 1) ? period.months[0] : (dashboardSelMonth || (new Date().getMonth() + 1));
+    activeY = period.year || dashboardSelYear || new Date().getFullYear();
+    if(subEl) subEl.textContent = `Monthly cash flow (${activeY}) · Use arrows to scroll`;
+    for(let m = 1; m <= 12; m++){
+      const t = monthTotals(chartTxs, m, activeY);
       trendPoints.push({
-        label: dt.toLocaleDateString(undefined, { month:'short' }),
-        fullLabel: `${MONTH_NAMES[m - 1]} ${y}`,
+        mIdx: m,
+        label: SHORT_MONTH_NAMES[m - 1],
+        fullLabel: `${MONTH_NAMES[m - 1]} ${activeY}`,
         income: t.income,
         expense: t.expense,
         savings: t.savings
       });
     }
   }
+
+  // Adjust canvas wrapper width to ensure every month column has generous, uncluttered breathing room
+  const isMobile = (typeof window !== 'undefined' && window.innerWidth < 640);
+  const colWidth = isMobile ? 86 : 108;
+  const containerW = scrollContainer ? scrollContainer.clientWidth : 700;
+  const targetTotalWidth = Math.max(containerW, trendPoints.length * colWidth);
+
+  if (canvasWrap) {
+    canvasWrap.style.width = targetTotalWidth + 'px';
+    canvasWrap.style.height = '230px';
+  }
+
 
   if(chartDashboardTrend) chartDashboardTrend.destroy();
 
@@ -6139,7 +6202,6 @@ function renderDashboardTrendChart(period){
   savingsGrad.addColorStop(0, '#FBBF24');
   savingsGrad.addColorStop(1, '#D97706');
 
-  const isMobile = (typeof window !== 'undefined' && window.innerWidth < 640);
   const maxBarThickness = isMobile ? 20 : 26;
 
   const datasets = [];
@@ -6400,7 +6462,7 @@ function renderDashboardTrendChart(period){
       datasets: datasets
     },
     plugins: [barHoverGlowPlugin, dashTrendBarLabelsPlugin],
-    options: {
+        options: {
       responsive: true,
       maintainAspectRatio: false,
       categoryPercentage: 0.72,
@@ -6464,7 +6526,21 @@ function renderDashboardTrendChart(period){
       }
     }
   });
+
+  // Auto-scroll to active month so it's centered in the viewport
+  if (scrollContainer && trendPoints.length > 5) {
+    const actualColW = targetTotalWidth / trendPoints.length;
+    const targetIdx = (activeM >= 1 && activeM <= 12) ? (activeM - 1) : 8;
+    const centerPos = (targetIdx + 0.5) * actualColW;
+    const targetScroll = Math.max(0, centerPos - (scrollContainer.clientWidth / 2));
+    setTimeout(() => {
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      }
+    }, 60);
+  }
 }
+
 
 function rowHtml(b){
   return `<div>
@@ -10234,22 +10310,15 @@ function renderBackupSettings(){
   const invCount = Array.isArray(DB.investments) ? DB.investments.length : 0;
 
   const rawLastBackup = localStorage.getItem('wealthnest_last_manual_backup');
-  let lastBackupStr = 'No offline backup downloaded yet';
-  let lastBackupBadge = `<span class="badge" style="background:var(--amber-light); color:var(--amber); border:1px solid rgba(217,119,6,0.3); font-size:11.5px; font-weight:700;">Needs Backup</span>`;
+  let lastBackupStr = 'No backup downloaded yet';
   if(rawLastBackup){
     try {
       const dt = new Date(rawLastBackup);
       const daysAgo = Math.floor((Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24));
       if(daysAgo === 0){
         lastBackupStr = `Downloaded Today (${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
-        lastBackupBadge = `<span class="badge" style="background:var(--teal-light); color:var(--teal); border:1px solid rgba(13,148,136,0.3); font-size:11.5px; font-weight:700;">Up to Date</span>`;
       } else {
-        lastBackupStr = `${dt.toLocaleDateString([], {month:'short', day:'numeric'})} (${daysAgo} day${daysAgo > 1 ? 's' : ''} ago)`;
-        if(daysAgo <= 15){
-          lastBackupBadge = `<span class="badge" style="background:var(--teal-light); color:var(--teal); border:1px solid rgba(13,148,136,0.3); font-size:11.5px; font-weight:700;">Fresh (${daysAgo}d)</span>`;
-        } else {
-          lastBackupBadge = `<span class="badge" style="background:var(--amber-light); color:var(--amber); border:1px solid rgba(217,119,6,0.3); font-size:11.5px; font-weight:700;">${daysAgo}d Ago - Backup Recommended</span>`;
-        }
+        lastBackupStr = `${dt.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'})} (${daysAgo} day${daysAgo > 1 ? 's' : ''} ago)`;
       }
     } catch(e){}
   }
@@ -10262,11 +10331,8 @@ function renderBackupSettings(){
     <div class="card" style="padding:22px; margin-bottom:18px;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
         <div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <h2 class="section-title" style="margin:0;">Data Safeguard &amp; Backup Center</h2>
-            ${lastBackupBadge}
-          </div>
-          <p class="text-xs muted" style="margin:4px 0 0;">Download portable snapshots, restore records, or sync data to another email address.</p>
+          <h2 class="section-title" style="margin:0;">Backup &amp; Data Management</h2>
+          <p class="text-xs muted" style="margin:4px 0 0;">Download complete A-to-Z offline backups, export spreadsheets, or restore data.</p>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="badge ${isCloud ? 'badge-ok' : 'badge-off'}" style="font-size:12px;">
@@ -10281,11 +10347,11 @@ function renderBackupSettings(){
           <div style="font-weight:700; font-size:13.5px; color:var(--ink); margin-top:2px; word-break:break-all;">${escapeHtml(userEmail)}</div>
         </div>
         <div>
-          <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Last Manual Backup</span>
+          <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Last Downloaded Backup</span>
           <div style="font-weight:700; font-size:13.5px; color:var(--ink); margin-top:2px;">${lastBackupStr}</div>
         </div>
         <div>
-          <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Total Records In DB</span>
+          <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Total Records In Database</span>
           <div style="font-weight:700; font-size:13.5px; color:var(--teal); margin-top:2px;">
             ${txCount} Txs · ${bCount} Budgets · ${gCount} Goals · ${invCount} Assets
           </div>
@@ -10304,11 +10370,11 @@ function renderBackupSettings(){
             </div>
             <div>
               <h3 style="margin:0; font-size:15px; font-weight:700;">Download Backup</h3>
-              <span class="text-xs muted">Save an offline snapshot to your device</span>
+              <span class="text-xs muted">Save complete A-to-Z snapshot to your device</span>
             </div>
           </div>
           <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;">
-            Exports all transactions, category settings, budgets, savings goals, and investment assets into a portable, standard JSON file.
+            Exports all transactions from A to Z, categories, budgets, savings goals, investments, and settings into a complete, standard JSON file.
           </p>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -10318,7 +10384,7 @@ function renderBackupSettings(){
           </button>
           <button type="button" onclick="exportTransactionsCSV()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px;" title="Spreadsheet-compatible format">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Export CSV (Excel)
+            Export All CSV (Excel)
           </button>
         </div>
       </div>
@@ -10336,7 +10402,7 @@ function renderBackupSettings(){
             </div>
           </div>
           <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;">
-            Migrating from another device or rolling back to a previous backup? Select your previously saved <code style="background:var(--surface-2); padding:1px 5px; border-radius:4px;">.json</code> file to restore instantly.
+            Migrating from another device or restoring records? Select your previously saved <code style="background:var(--surface-2); padding:1px 5px; border-radius:4px;">.json</code> file to restore instantly.
           </p>
         </div>
         <div>
@@ -10344,28 +10410,6 @@ function renderBackupSettings(){
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Select Backup File to Restore
           </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Execution Plan & Routine Guide -->
-    <div class="card" style="padding:22px; margin-bottom:18px;">
-      <h3 style="margin:0 0 12px; font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Recommended 10–15 Day Backup Routine (Execution Plan)
-      </h3>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
-        <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 16px;">
-          <strong style="display:block; font-size:13px; color:var(--ink); margin-bottom:4px;">1. Real-time Cloud Sync</strong>
-          <p style="margin:0; font-size:12px; color:var(--muted); line-height:1.45;">Every transaction, budget, and goal is automatically synced directly to Supabase cloud storage the moment you make changes.</p>
-        </div>
-        <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 16px;">
-          <strong style="display:block; font-size:13px; color:var(--ink); margin-bottom:4px;">2. Rolling Local Guard</strong>
-          <p style="margin:0; font-size:12px; color:var(--muted); line-height:1.45;">Your browser maintains an emergency safety snapshot in local storage so your data remains intact even if connection drops.</p>
-        </div>
-        <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 16px;">
-          <strong style="display:block; font-size:13px; color:var(--ink); margin-bottom:4px;">3. Routine 15-Day Offline Copy</strong>
-          <p style="margin:0; font-size:12px; color:var(--muted); line-height:1.45;">Download a JSON copy every 10–15 days and place it in Google Drive or iCloud for 100% independent data sovereignty.</p>
         </div>
       </div>
     </div>
@@ -10396,6 +10440,7 @@ function renderBackupSettings(){
     </div>
   `;
 }
+
 
 function renderSettings(){
   cleanupRecycleBin();
