@@ -1570,12 +1570,21 @@
             </button>
           </div>
         </div>
-        <div id="dashboard-trend-scroll-container" style="position:relative; width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; -webkit-overflow-scrolling:touch; padding-bottom:6px;">
-          <div id="dashboard-trend-canvas-wrap" style="position:relative; height:230px; min-width:100%;">
-            <canvas id="dashboard-chart-trend"></canvas>
+        <!-- Trend Chart Stage with Fixed Pinned Y-Axis -->
+        <div style="position:relative; width:100%; height:230px;">
+          <!-- Pinned Fixed Y-Axis -->
+          <div id="dashboard-trend-yaxis-fixed" style="position:absolute; left:0; top:0; bottom:0; width:52px; z-index:5; pointer-events:none; background:linear-gradient(to right, var(--surface) 72%, transparent);">
+            <canvas id="dashboard-trend-yaxis-canvas" style="width:100%; height:100%; display:block;"></canvas>
+          </div>
+          <!-- Horizontally Scrollable Bar Canvas -->
+          <div id="dashboard-trend-scroll-container" style="position:relative; width:100%; height:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; -webkit-overflow-scrolling:touch; padding-left:46px; padding-bottom:6px;">
+            <div id="dashboard-trend-canvas-wrap" style="position:relative; height:100%;">
+              <canvas id="dashboard-chart-trend"></canvas>
+            </div>
           </div>
         </div>
       </div>
+
 
       <!-- High-level Overview Grid -->
       <!-- High-level Overview Grid -->
@@ -1608,15 +1617,17 @@
           <div id="dashboard-budget-summary"></div>
         </div>
 
-        <div class="card" style="padding:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-            <div>
-              <h2 class="section-title">Savings Goals</h2>
-              <p class="section-sub">Goal progress</p>
+        <div class="card" style="padding:20px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+              <div>
+                <h2 class="section-title">Savings Goals</h2>
+                <p class="section-sub">Goal progress</p>
+              </div>
+              <button type="button" onclick="goToApp('savings')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">All Goals</button>
             </div>
-            <button type="button" onclick="goToApp('savings')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">All Goals</button>
+            <div id="dash-savings-body" style="height:100%;"></div>
           </div>
-          <div id="dash-savings-body"></div>
         </div>
 
         <div class="card" style="padding:20px;">
@@ -5959,50 +5970,87 @@ function renderDashboardSavings(period, totals){
   const isSavingsMode = dashTypeFilter === 'savings';
   const filteredGoals = isSavingsMode
     ? DB.savingsGoals.filter(g => (dashSelectedGoals || []).includes(g.name))
-    : DB.savingsGoals;
-  const totalTarget = filteredGoals.reduce((s,g)=>s+g.targetAmount,0);
-  const totalCurrent = filteredGoals.reduce((s,g)=>s+g.currentAmount,0);
+    : (DB.savingsGoals || []);
+  const totalTarget = filteredGoals.reduce((s,g)=>s+(Number(g.targetAmount)||0),0);
+  const totalCurrent = filteredGoals.reduce((s,g)=>s+(Number(g.currentAmount)||0),0);
   const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
   const container = document.getElementById('dash-savings-body');
   if(!container) return;
 
   if(filteredGoals.length === 0){
     container.innerHTML = `
-      <div style="padding:8px 0;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--surface-2); border-radius:10px; border:1px dashed var(--line); margin-bottom:10px;">
-          <div>
-            <span class="text-xs muted">Savings Goals</span>
-            <div style="font-size:13.5px; font-weight:700; color:var(--muted); margin-top:2px;">None</div>
-          </div>
-          <span class="badge badge-off">${dashTypeFilter==='savings'?'None matched':'None set'}</span>
+      <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:28px 12px; height:100%;">
+        <div style="width:44px; height:44px; border-radius:12px; background:var(--amber-light); color:var(--amber); display:flex; align-items:center; justify-content:center; margin-bottom:10px;">
+          ${miniIcon('piggy')}
         </div>
-        <p class="empty-note" style="margin:0; padding:4px 0;">${dashTypeFilter==='savings'?'No savings goals matched the filter.':'No savings goals yet.'} <a href="#" onclick="goToApp('savings'); return false;" class="link-sm">Create a goal →</a></p>
+        <div style="font-weight:700; font-size:14px; color:var(--ink); margin-bottom:4px;">No Savings Goals Yet</div>
+        <p class="text-xs muted" style="margin:0 0 14px; max-width:200px; line-height:1.4;">Set targets for an emergency fund, travel, or big purchases.</p>
+        <button type="button" onclick="goToApp('savings')" class="btn-primary btn-small" style="font-size:12px; padding:6px 14px;">+ Create Goal</button>
       </div>
     `;
     return;
   }
 
+  // Top overall progress summary block with generous padding & clean aesthetic
+  const overallBlock = `
+    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span class="text-xs muted" style="font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Total Accumulated</span>
+        <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:11px; padding:2px 7px; font-weight:700;">${overallPct.toFixed(0)}%</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+        <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(totalCurrent)}</span>
+        <span class="text-xs muted" style="font-weight:600;">Target: ${fmt(totalTarget)}</span>
+      </div>
+      <div class="progress-track" style="height:7px; border-radius:4px; margin-bottom:6px;">
+        <div class="progress-fill fill-amber" style="width:${overallPct}%; border-radius:4px;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted); margin-top:4px;">
+        <span>Added this period:</span>
+        <span class="figure tone-pos" style="font-weight:700; font-size:11.5px;">+${fmt(totals.savings)}</span>
+      </div>
+    </div>
+  `;
+
+  // Top 3 individual goals, spaced neatly with both current/target and percent
+  const goalsList = filteredGoals.slice(0, 3).map(g => {
+    const cur = Number(g.currentAmount) || 0;
+    const tgt = Number(g.targetAmount) || 0;
+    const p = tgt > 0 ? Math.min(100, (cur / tgt) * 100) : 0;
+    const isDone = p >= 100;
+    return `
+      <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-weight:600; font-size:12.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${escapeHtml(g.name)}</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="figure text-xs" style="font-weight:700; color:var(--ink);">${fmt(cur)}</span>
+            <span class="badge ${isDone ? 'badge-ok' : ''}" style="font-size:10px; font-weight:700; padding:1px 5px; min-width:32px; text-align:center;">${Math.round(p)}%</span>
+          </div>
+        </div>
+        <div class="progress-track" style="height:5px; border-radius:3px;">
+          <div class="progress-fill ${isDone ? 'fill-teal' : 'fill-primary'}" style="width:${p}%; border-radius:3px;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const footer = filteredGoals.length > 3 ? `
+    <div style="margin-top:10px; text-align:right;">
+      <a href="#" onclick="goToApp('savings'); return false;" class="link-sm" style="font-size:11.5px; font-weight:600;">+${filteredGoals.length - 3} more goal${filteredGoals.length - 3 === 1 ? '' : 's'} →</a>
+    </div>
+  ` : '';
+
   container.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-      <span class="text-sm muted">${dashTypeFilter==='savings'?'Filtered progress':'Overall progress'}</span>
-      <span class="figure text-sm" style="font-weight:600;">${fmt(totalCurrent)} <span class="muted">/ ${fmt(totalTarget)}</span></span>
-    </div>
-    <div class="progress-track" style="margin-bottom:16px;"><div class="progress-fill fill-amber" style="width:${overallPct}%;"></div></div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <span class="text-sm muted">Contributed in this period</span>
-      <span class="figure text-sm" style="font-weight:600; color:var(--teal);">${fmt(totals.savings)}</span>
-    </div>
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      ${filteredGoals.slice(0,3).map(g => {
-        const p = g.targetAmount>0 ? Math.min(100,(g.currentAmount/g.targetAmount)*100) : 0;
-        return `<div>
-          <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px;"><span>${g.name}</span><span class="figure ${p<50?'tone-neg':'tone-pos'}" style="font-weight:600;">${Math.round(p)}%</span></div>
-          <div class="progress-track" style="height:6px;"><div class="progress-fill fill-primary" style="width:${p}%;"></div></div>
-        </div>`;
-      }).join('') || '<p class="empty-note">No savings goals yet.</p>'}
+    <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+      ${overallBlock}
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        ${goalsList}
+      </div>
+      ${footer}
     </div>
   `;
 }
+
 
 function renderDashboard(){
   initDashboardSelectors();
@@ -6455,14 +6503,68 @@ function renderDashboardTrendChart(period){
     }
   };
 
+  const fixedYAxisPlugin = {
+    id: 'fixedYAxisRenderer',
+    afterDatasetsDraw(chart) {
+      const yCanvas = document.getElementById('dashboard-trend-yaxis-canvas');
+      if (!yCanvas) return;
+      const yScale = chart.scales.y;
+      if (!yScale || !Array.isArray(yScale.ticks)) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const rect = yCanvas.getBoundingClientRect();
+      const w = Math.round(rect.width || 52);
+      const h = Math.round(rect.height || 230);
+      if (yCanvas.width !== w * dpr || yCanvas.height !== h * dpr) {
+        yCanvas.width = w * dpr;
+        yCanvas.height = h * dpr;
+      }
+
+      const yCtx = yCanvas.getContext('2d');
+      yCtx.save();
+      yCtx.scale(dpr, dpr);
+      yCtx.clearRect(0, 0, w, h);
+
+      yCtx.font = `600 ${isMobile ? 10.5 : 11.5}px JetBrains Mono, monospace`;
+      yCtx.textAlign = 'right';
+      yCtx.textBaseline = 'middle';
+
+      yScale.ticks.forEach(tick => {
+        const yPos = yScale.getPixelForValue(tick.value);
+        if (yPos >= chart.chartArea.top - 6 && yPos <= chart.chartArea.bottom + 6) {
+          const v = tick.value;
+          let label = '';
+          if (v === 0) {
+            label = '0';
+          } else {
+            const abs = Math.abs(v);
+            const sign = v < 0 ? '-' : '';
+            if (abs >= 1000000) label = sign + (abs / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            else if (abs >= 1000) label = sign + Math.round(abs / 1000) + 'k';
+            else label = sign + abs;
+          }
+
+          yCtx.save();
+          yCtx.lineWidth = 3;
+          yCtx.strokeStyle = surfaceColor;
+          yCtx.strokeText(label, 42, yPos);
+          yCtx.fillStyle = axisColor;
+          yCtx.fillText(label, 42, yPos);
+          yCtx.restore();
+        }
+      });
+      yCtx.restore();
+    }
+  };
+
   chartDashboardTrend = new Chart(canvas, {
     type: 'bar',
     data: {
       labels: trendPoints.map(t => t.label),
       datasets: datasets
     },
-    plugins: [barHoverGlowPlugin, dashTrendBarLabelsPlugin],
-        options: {
+    plugins: [fixedYAxisPlugin, barHoverGlowPlugin, dashTrendBarLabelsPlugin],
+    options: {
       responsive: true,
       maintainAspectRatio: false,
       categoryPercentage: 0.72,
@@ -6507,20 +6609,7 @@ function renderDashboardTrendChart(period){
           border: { display: false },
           grace: '38%',
           ticks: {
-            color: axisColor,
-            font: { family: 'JetBrains Mono', size: isMobile ? 11 : 12, weight: '600' },
-            callback: function(v){
-              if(v === 0) return '0';
-              const abs = Math.abs(v);
-              const sign = v < 0 ? '-' : '';
-              if(abs >= 1000000){
-                return sign + (abs / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-              }
-              if(abs >= 1000){
-                return sign + Math.round(abs / 1000) + 'k';
-              }
-              return sign + abs;
-            }
+            display: false
           }
         }
       }
