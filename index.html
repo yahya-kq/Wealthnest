@@ -1935,7 +1935,7 @@
         <input type="date" id="tx-date" class="field-input" required>
       </div>
 
-      <!-- Row 2: Category & Subcategory in the same line -->
+      <!-- Row 2: Category & Subcategory / Saving In -->
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;" id="tx-cat-subcat-row">
         <div id="tx-category-field-wrap">
           <label class="field-label" id="tx-category-label">Expense Category</label>
@@ -1963,6 +1963,15 @@
               </div>
             </div>
           </div>
+        </div>
+        <div id="tx-saving-in-wrap" class="hidden">
+          <label class="field-label" for="tx-saving-in" style="margin-bottom:4px;">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
+          <select id="tx-saving-in" class="field-input">
+            <option value="Bank Account">🏦 Bank Account</option>
+            <option value="Personal Safe / Cash">💵 Personal Safe / Cash</option>
+            <option value="Digital Wallet">📱 Digital Wallet</option>
+            <option value="Other">🔐 Other</option>
+          </select>
         </div>
       </div>
 
@@ -2018,6 +2027,13 @@
       <input type="date" id="goal-start" class="field-input mb-3" required>
       <label class="field-label">Target Amount</label>
       <input type="number" min="0" id="goal-target" placeholder="1000" class="field-input figure mb-3" required>
+      <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
+      <select id="goal-saving-in" class="field-input mb-3">
+        <option value="Bank Account">🏦 Bank Account</option>
+        <option value="Personal Safe / Cash">💵 Personal Safe / Cash</option>
+        <option value="Digital Wallet">📱 Digital Wallet</option>
+        <option value="Other">🔐 Other</option>
+      </select>
       <label class="field-label">Deadline (optional)</label>
       <input type="date" id="goal-deadline" class="field-input mb-5">
       <button type="submit" class="btn-primary" style="width:100%;">Create Goal</button>
@@ -2102,6 +2118,13 @@
       <input type="date" id="edit-goal-start" class="field-input mb-3" required>
       <label class="field-label" id="edit-goal-target-label">Target Amount</label>
       <input type="number" min="0" step="any" id="edit-goal-target" placeholder="1000" class="field-input figure mb-3" required>
+      <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
+      <select id="edit-goal-saving-in" class="field-input mb-3">
+        <option value="Bank Account">🏦 Bank Account</option>
+        <option value="Personal Safe / Cash">💵 Personal Safe / Cash</option>
+        <option value="Digital Wallet">📱 Digital Wallet</option>
+        <option value="Other">🔐 Other</option>
+      </select>
       <label class="field-label">Deadline (optional)</label>
       <input type="date" id="edit-goal-deadline" class="field-input mb-5">
       <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -5780,6 +5803,10 @@ function renderTransactions(){
         } else {
           subcatContent = escapeHtml(t.subCategory);
         }
+      } else if(t.type === 'savings'){
+        const savingInText = t.savingIn || 'Bank Account';
+        const savingInIcon = (savingInText.includes('Cash') || savingInText.includes('Safe')) ? '💵' : savingInText.includes('Wallet') ? '📱' : '🏦';
+        subcatContent = `<span style="font-size:12px; color:var(--ink); font-weight:600; display:inline-flex; align-items:center; gap:4px;"><span style="font-size:11px;">${savingInIcon}</span> ${escapeHtml(savingInText)}</span>`;
       } else {
         subcatContent = t.subCategory ? escapeHtml(t.subCategory) : '<span style="color:var(--muted-2);">-</span>';
       }
@@ -5793,6 +5820,11 @@ function renderTransactions(){
     const safeMethods = rawMethods.map(m => (activePaymentMethods.has(m.toLowerCase()) || m.toLowerCase() === 'other') ? m : 'Other');
     const displayMethods = [...new Set(safeMethods.length ? safeMethods : ['Other'])];
     const methodBadges = displayMethods.map(m => `<span class="badge badge-off" style="font-size:12px; font-weight:500; margin-right:4px; display:inline-block;">${escapeHtml(m)}</span>`).join('');
+    const savingInBadge = (t.type === 'savings' && t.savingIn && !showSubcat) ? `
+      <span class="badge" style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; font-size:11px; font-weight:600; margin-left:4px;" title="Saved in ${escapeHtml(t.savingIn)}">
+        🏦 In: ${escapeHtml(t.savingIn)}
+      </span>
+    ` : '';
 
     return `
     <tr class="${isHighlight ? 'tx-row-highlight' : ''}">
@@ -5800,7 +5832,7 @@ function renderTransactions(){
       <td><span class="dot dot-${escapeHtml(t.type)}"></span><strong>${escapeHtml(t.category)}</strong>${catDeletedBadge}</td>
       ${subcatCell}
       <td class="muted">${t.description ? escapeHtml(t.description) : '<span style="color:var(--muted-2);">-</span>'}</td>
-      <td class="muted">${methodBadges}</td>
+      <td class="muted">${methodBadges}${savingInBadge}</td>
       <td class="figure" style="text-align:right; font-weight:600; color:${t.type==='income'?'var(--teal)':t.type==='savings'?'var(--amber)':'var(--rose)'};">${t.type==='expense'?'-':'+'}${fmt(t.amount)}</td>
       <td style="text-align:right; white-space:nowrap;">
         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:flex-end;">
@@ -6088,6 +6120,9 @@ function openTxModal(editId = null){
       const payVals = tx.paymentMethod ? tx.paymentMethod.split(',').map(s => s.trim()).filter(Boolean) : ['Cash'];
       renderModalPaymentMethods(payVals);
 
+      const savingInEl = document.getElementById('tx-saving-in');
+      if(savingInEl) savingInEl.value = tx.savingIn || 'Bank Account';
+
       document.getElementById('tx-description').value = tx.description || '';
       document.getElementById('tx-amount').value = tx.amount !== undefined ? tx.amount : '';
       return;
@@ -6103,6 +6138,8 @@ function openTxModal(editId = null){
   setTxType('expense');
   renderModalSubcategories([]);
   renderModalPaymentMethods(['Cash']);
+  const savingInEl = document.getElementById('tx-saving-in');
+  if(savingInEl) savingInEl.value = 'Bank Account';
 }
 
 function closeTxModal(){
@@ -6144,14 +6181,22 @@ function setTxType(t){
   document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
 
   const subWrap = document.getElementById('tx-subcategory-wrap');
+  const savingInWrap = document.getElementById('tx-saving-in-wrap');
   const catRow = document.getElementById('tx-cat-subcat-row');
   const catFieldWrap = document.getElementById('tx-category-field-wrap');
   if(t === 'expense'){
     if(subWrap) subWrap.classList.remove('hidden');
+    if(savingInWrap) savingInWrap.classList.add('hidden');
+    if(catRow) catRow.style.gridTemplateColumns = '1fr 1fr';
+    if(catFieldWrap) catFieldWrap.style.gridColumn = 'auto';
+  } else if(t === 'savings'){
+    if(subWrap) subWrap.classList.add('hidden');
+    if(savingInWrap) savingInWrap.classList.remove('hidden');
     if(catRow) catRow.style.gridTemplateColumns = '1fr 1fr';
     if(catFieldWrap) catFieldWrap.style.gridColumn = 'auto';
   } else {
     if(subWrap) subWrap.classList.add('hidden');
+    if(savingInWrap) savingInWrap.classList.add('hidden');
     if(catRow) catRow.style.gridTemplateColumns = '1fr';
     if(catFieldWrap) catFieldWrap.style.gridColumn = '1 / -1';
   }
@@ -6161,8 +6206,17 @@ function setTxType(t){
 }
 
 function onTxCategoryChange(){
-  selectedModalSubcategories = [];
-  renderModalSubcategories();
+  if(txType === 'savings'){
+    const goalName = document.getElementById('tx-category')?.value;
+    const goal = (DB.savingsGoals || []).find(g => g.name === goalName);
+    if(goal && goal.savingIn){
+      const savingInEl = document.getElementById('tx-saving-in');
+      if(savingInEl) savingInEl.value = goal.savingIn;
+    }
+  } else {
+    selectedModalSubcategories = [];
+    renderModalSubcategories();
+  }
 }
 
 function handleSaveTransaction(e){
@@ -6199,6 +6253,7 @@ function handleSaveTransaction(e){
     return;
   }
   const payVal = selectedModalPaymentMethods.join(', ');
+  const savingInVal = (txType === 'savings') ? (document.getElementById('tx-saving-in')?.value || 'Bank Account') : undefined;
 
   const descVal = document.getElementById('tx-description').value.trim() || undefined;
 
@@ -6213,6 +6268,7 @@ function handleSaveTransaction(e){
         subCategory: subVal,
         description: descVal,
         paymentMethod: payVal,
+        savingIn: savingInVal,
         amount: amount
       };
       highlightedTxId = editingTxId;
@@ -6228,6 +6284,7 @@ function handleSaveTransaction(e){
       subCategory: subVal,
       description: descVal,
       paymentMethod: payVal,
+      savingIn: savingInVal,
       amount: amount
     });
     highlightedTxId = newId;
@@ -7011,6 +7068,9 @@ function renderSavings(){
       statusBadge = `<span class="badge" style="background:#FEF2F2; color:#B91C1C; border:1px solid #FECACA; font-weight:600; font-size:11px; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Deadline Passed</span>`;
     }
 
+    const savingInIcon = (g.savingIn === 'Personal Safe / Cash') ? '💵' : (g.savingIn === 'Digital Wallet') ? '📱' : (g.savingIn === 'Other') ? '💼' : '🏦';
+    const savingInLabel = g.savingIn || 'Bank Account';
+
     return `<div class="card" style="padding:22px; ${reached ? 'border-color:#86EFAC;' : isExpired ? 'border-color:#FECACA;' : ''}">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
         <div>
@@ -7019,6 +7079,10 @@ function renderSavings(){
             ${statusBadge}
           </div>
           ${g.deadline ? `<p class="text-xs muted" style="margin:4px 0 0;">Target date: <strong>${escapeHtml(g.deadline)}</strong>${isExpired ? ' <span style="color:var(--rose); font-weight:600;">(Passed)</span>' : ''}</p>` : ''}
+          <div style="margin-top:6px; display:inline-flex; align-items:center; gap:5px; background:var(--surface-2, #F8FAFC); border:1px solid var(--border-subtle, #E2E8F0); padding:2px 8px; border-radius:6px; font-size:11.5px; color:var(--ink-light, #475569);">
+            <span>${savingInIcon}</span>
+            <span>Saving in: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
+          </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
           <span class="figure" style="font-size:17px; font-weight:700; color:${reached ? 'var(--teal)' : 'var(--amber)'};">${Math.round(percent)}%</span>
@@ -7070,6 +7134,7 @@ function showContributeRow(id){
   const goal=DB.savingsGoals.find(item=>item.id===id);
   const today=ymd(new Date());
   const defaultDate=goal&&goal.startDate&&goal.startDate>today?goal.startDate:today;
+  const savingInDefault = goal?.savingIn || 'Bank Account';
   document.getElementById('contribute-row-'+id).innerHTML = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
       <div>
@@ -7077,9 +7142,18 @@ function showContributeRow(id){
         <input type="date" id="contribute-date-${id}" value="${defaultDate}" min="${goal?.startDate||''}" max="${goal?.deadline||''}" class="field-input figure" style="min-width:0;">
       </div>
       <div>
-        <label class="field-label" style="font-size:11px; margin-bottom:5px;">Payment</label>
+        <label class="field-label" style="font-size:11px; margin-bottom:5px;">Payment Method</label>
         <select id="contribute-payment-${id}" class="field-input">
           ${getPaymentMethods().map(p => `<option value="${p}">${p}</option>`).join('')}
+        </select>
+      </div>
+      <div style="grid-column:1 / -1;">
+        <label class="field-label" style="font-size:11px; margin-bottom:5px;">Saving In (Holding Location / Vault)</label>
+        <select id="contribute-saving-in-${id}" class="field-input">
+          <option value="Bank Account" ${savingInDefault === 'Bank Account' ? 'selected' : ''}>🏦 Bank Account</option>
+          <option value="Personal Safe / Cash" ${savingInDefault === 'Personal Safe / Cash' ? 'selected' : ''}>💵 Personal Safe / Cash</option>
+          <option value="Digital Wallet" ${savingInDefault === 'Digital Wallet' ? 'selected' : ''}>📱 Digital Wallet</option>
+          <option value="Other" ${savingInDefault === 'Other' ? 'selected' : ''}>💼 Other</option>
         </select>
       </div>
       <div style="grid-column:1 / -1; display:flex; align-items:center; gap:8px;">
@@ -7094,9 +7168,10 @@ function contribute(id){
   const val = parseFloat(document.getElementById('contribute-amount-'+id).value);
   const dateValue = document.getElementById('contribute-date-'+id)?.value || ymd(new Date());
   const paymentValue = document.getElementById('contribute-payment-'+id)?.value || 'Bank Transfer';
-  if(!val || val<=0) return;
   const goal = DB.savingsGoals.find(g=>g.id===id);
   if(!goal) return;
+  const savingInValue = document.getElementById('contribute-saving-in-'+id)?.value || goal.savingIn || 'Bank Account';
+  if(!val || val<=0) return;
   const message=document.getElementById('contribute-message-'+id);
   if((goal.startDate&&dateValue<goal.startDate)||(goal.deadline&&dateValue>goal.deadline)){
     if(message) message.textContent=`Choose a date between ${goal.startDate||'the start'} and ${goal.deadline||'the deadline'}.`;
@@ -7110,6 +7185,7 @@ function contribute(id){
     category: goal.name,
     description: `Contribution to ${goal.name}`,
     paymentMethod: paymentValue,
+    savingIn: savingInValue,
     amount: val
   });
   saveDB(true); renderAllForCurrentPage();
@@ -7122,6 +7198,7 @@ function handleAddGoal(e){
   const startDate = document.getElementById('goal-start').value;
   const target = parseFloat(document.getElementById('goal-target').value);
   const deadline = document.getElementById('goal-deadline').value || undefined;
+  const savingIn = document.getElementById('goal-saving-in')?.value || 'Bank Account';
   if(!name || !startDate || !target || target<=0 || (deadline&&deadline<startDate)){
     showToast('Please enter valid savings goal details', 'error');
     return;
@@ -7130,9 +7207,10 @@ function handleAddGoal(e){
     showToast(`A savings goal named "${name}" already exists`, 'warning');
     return;
   }
-  DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline });
+  DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline, savingIn });
   saveDB(true); closeGoalModal();
   document.getElementById('goal-name').value=''; document.getElementById('goal-start').value=''; document.getElementById('goal-target').value=''; document.getElementById('goal-deadline').value='';
+  if(document.getElementById('goal-saving-in')) document.getElementById('goal-saving-in').value = 'Bank Account';
   renderAllForCurrentPage();
   showToast(`Created savings goal "${name}"`);
 }
@@ -7145,6 +7223,10 @@ function openEditGoalModal(id){
   document.getElementById('edit-goal-start').value = g.startDate || '';
   document.getElementById('edit-goal-target').value = g.targetAmount || '';
   document.getElementById('edit-goal-deadline').value = g.deadline || '';
+  const savingInSelect = document.getElementById('edit-goal-saving-in');
+  if(savingInSelect){
+    savingInSelect.value = g.savingIn || 'Bank Account';
+  }
   const labelEl = document.getElementById('edit-goal-target-label');
   if(labelEl){
     labelEl.textContent = `Target Amount (${currencySymbol()})`;
@@ -7167,6 +7249,9 @@ function handleSaveEditGoal(e){
   const startDate = document.getElementById('edit-goal-start').value;
   const target = parseFloat(document.getElementById('edit-goal-target').value);
   const deadline = document.getElementById('edit-goal-deadline').value || undefined;
+  const savingInSelect = document.getElementById('edit-goal-saving-in');
+  const savingIn = savingInSelect ? savingInSelect.value : (g.savingIn || 'Bank Account');
+
   if(!newName || !startDate || !target || target <= 0 || (deadline && deadline < startDate)){
     showToast('Please check the goal fields and enter valid values', 'error');
     return;
@@ -7182,6 +7267,7 @@ function handleSaveEditGoal(e){
   g.startDate = startDate;
   g.targetAmount = target;
   g.deadline = deadline;
+  g.savingIn = savingIn;
 
   if(oldName !== newName){
     (DB.transactions || []).forEach(tx => {
