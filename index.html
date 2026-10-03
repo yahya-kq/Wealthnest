@@ -1023,10 +1023,15 @@
     #investment-kpi-grid .ov-amount{font-size:19px !important;}
   }
   .table-responsive{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
-  #dashboard-trend-scroll-container::-webkit-scrollbar { height: 6px; }
-  #dashboard-trend-scroll-container::-webkit-scrollbar-track { background: transparent; }
-  #dashboard-trend-scroll-container::-webkit-scrollbar-thumb { background: var(--line, rgba(148,163,184,0.3)); border-radius: 4px; }
-  #dashboard-trend-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--muted, rgba(148,163,184,0.6)); }
+  #dashboard-trend-scroll-container {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  #dashboard-trend-scroll-container::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
 
   h1,h2,h3,.section-title,.section-sub,.field-label,.btn-primary,.btn-dark,.btn-ghost,.btn-small,.btn-chip,.nav-link,.nav-section-label,.badge,.link-sm,.topbar p,.modal h2{ text-transform:capitalize; }
   .label-eyebrow{ text-transform:uppercase; }
@@ -1556,35 +1561,52 @@
 
       <!-- Cash Flow Trend Chart -->
       <div class="card mb-4" style="padding:20px 22px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
           <div>
             <h2 class="section-title">Cash Flow Trend</h2>
             <p class="section-sub" id="trend-chart-sub">Monthly income, expenses, and savings</p>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" class="btn-ghost" id="trend-nav-prev" onclick="scrollDashboardTrend(-1)" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--line); cursor:pointer; background:var(--surface);" title="View earlier months" aria-label="Previous months">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button type="button" class="btn-ghost" id="trend-nav-next" onclick="scrollDashboardTrend(1)" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--line); cursor:pointer; background:var(--surface);" title="View later months" aria-label="Next months">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
+          <!-- Fixed Legend + Navigation Controls (Frozen at Top) -->
+          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div id="trend-fixed-legend" style="display:flex; align-items:center; gap:12px; font-size:12px; font-weight:700;">
+              <div style="display:flex; align-items:center; gap:5px; color:var(--ink);">
+                <span style="width:10px; height:10px; border-radius:3px; background:#0D9488; display:inline-block;"></span>
+                <span>Income</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:5px; color:var(--ink);">
+                <span style="width:10px; height:10px; border-radius:3px; background:#E11D48; display:inline-block;"></span>
+                <span>Expenses</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:5px; color:var(--ink);">
+                <span style="width:10px; height:10px; border-radius:3px; background:#D97706; display:inline-block;"></span>
+                <span>Savings</span>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button type="button" class="btn-ghost" id="trend-nav-prev" onclick="scrollDashboardTrend(-1)" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--line); cursor:pointer; background:var(--surface);" title="View earlier months" aria-label="Previous months">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" class="btn-ghost" id="trend-nav-next" onclick="scrollDashboardTrend(1)" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--line); cursor:pointer; background:var(--surface);" title="View later months" aria-label="Next months">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
           </div>
         </div>
+
         <!-- Trend Chart Stage with Fixed Pinned Y-Axis -->
-        <div style="position:relative; width:100%; height:230px;">
-          <!-- Pinned Fixed Y-Axis -->
+        <div style="position:relative; width:100%; height:240px;">
+          <!-- Pinned Fixed Y-Axis (Always Frozen on the Left) -->
           <div id="dashboard-trend-yaxis-fixed" style="position:absolute; left:0; top:0; bottom:0; width:52px; z-index:5; pointer-events:none; background:linear-gradient(to right, var(--surface) 72%, transparent);">
             <canvas id="dashboard-trend-yaxis-canvas" style="width:100%; height:100%; display:block;"></canvas>
           </div>
-          <!-- Horizontally Scrollable Bar Canvas -->
-          <div id="dashboard-trend-scroll-container" style="position:relative; width:100%; height:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; -webkit-overflow-scrolling:touch; padding-left:46px; padding-bottom:6px;">
+          <!-- Horizontally Scrollable Bar Canvas (No Scrollbar, Free Floating) -->
+          <div id="dashboard-trend-scroll-container" style="position:relative; width:100%; height:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch; padding-left:46px;">
             <div id="dashboard-trend-canvas-wrap" style="position:relative; height:100%;">
               <canvas id="dashboard-chart-trend"></canvas>
             </div>
           </div>
         </div>
       </div>
-
 
       <!-- High-level Overview Grid -->
       <!-- High-level Overview Grid -->
@@ -6201,7 +6223,7 @@ function renderDashboardTrendChart(period){
     // 12-month full timeline for the year (Jan through Dec including Aug, Sep, Oct, Nov, Dec)
     activeM = (period.months && period.months.length === 1) ? period.months[0] : (dashboardSelMonth || (new Date().getMonth() + 1));
     activeY = period.year || dashboardSelYear || new Date().getFullYear();
-    if(subEl) subEl.textContent = `Monthly cash flow (${activeY}) · Use arrows to scroll`;
+    if(subEl) subEl.textContent = `Monthly cash flow (${activeY})`;
     for(let m = 1; m <= 12; m++){
       const t = monthTotals(chartTxs, m, activeY);
       trendPoints.push({
@@ -6223,7 +6245,23 @@ function renderDashboardTrendChart(period){
 
   if (canvasWrap) {
     canvasWrap.style.width = targetTotalWidth + 'px';
-    canvasWrap.style.height = '230px';
+    canvasWrap.style.height = '240px';
+  }
+
+  // Update fixed frozen legend in card header
+  const legendContainer = document.getElementById('trend-fixed-legend');
+  if(legendContainer){
+    let items = [];
+    if(!dashTypeFilter || dashTypeFilter === 'income'){
+      items.push('<div style="display:flex; align-items:center; gap:5px; color:var(--ink);"><span style="width:10px; height:10px; border-radius:3px; background:#0D9488; display:inline-block;"></span><span>Income</span></div>');
+    }
+    if(!dashTypeFilter || dashTypeFilter === 'expense'){
+      items.push('<div style="display:flex; align-items:center; gap:5px; color:var(--ink);"><span style="width:10px; height:10px; border-radius:3px; background:#E11D48; display:inline-block;"></span><span>Expenses</span></div>');
+    }
+    if(!dashTypeFilter || dashTypeFilter === 'savings'){
+      items.push('<div style="display:flex; align-items:center; gap:5px; color:var(--ink);"><span style="width:10px; height:10px; border-radius:3px; background:#D97706; display:inline-block;"></span><span>Savings</span></div>');
+    }
+    legendContainer.innerHTML = items.join('');
   }
 
 
@@ -6567,6 +6605,12 @@ function renderDashboardTrendChart(period){
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 8,
+          bottom: 10
+        }
+      },
       categoryPercentage: 0.72,
       barPercentage: 0.84,
       events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
@@ -6601,7 +6645,8 @@ function renderDashboardTrendChart(period){
             color: axisColor,
             font: { family: 'Plus Jakarta Sans', size: isMobile ? 11 : 12.5, weight: '700' },
             autoSkip: false,
-            maxRotation: 0
+            maxRotation: 0,
+            padding: 8
           }
         },
         y: {
