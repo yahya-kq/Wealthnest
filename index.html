@@ -4056,14 +4056,20 @@ async function initAuth(){
 
   // Listen for auth state changes
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+    if (event === 'SIGNED_IN') {
       if (session && session.user) {
-        await onUserAuthenticated(session.user);
-        if (event === 'SIGNED_IN') {
+        // Only load if this is a newly authenticated user session
+        if (!currentUser || currentUser.id !== session.user.id) {
+          await onUserAuthenticated(session.user);
           closeAuthModal();
           const savedPage = localStorage.getItem('wealthnest_current_page') || 'dashboard';
           goToApp(savedPage);
         }
+      }
+    } else if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      if (session && session.user) {
+        currentUser = session.user;
+        // Keep session alive without re-fetching finances or re-animating charts on tab switch
       }
     } else if (event === 'SIGNED_OUT') {
       onUserSignedOut();
@@ -5722,7 +5728,7 @@ function renderDashboardTopExpenses(periodTxs, totals){
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Savings Goals filter active.</p>';
     return;
   }
-  const categories = expenseByCategory(periodTxs).slice(0, 4);
+  const categories = expenseByCategory(periodTxs).slice(0, 3);
   if(!categories.length || totals.expense === 0){
     if(wrapEl) wrapEl.style.display = 'none';
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">No expenses logged for this period.</p>';
@@ -5732,7 +5738,7 @@ function renderDashboardTopExpenses(periodTxs, totals){
   if(wrapEl && canvas && typeof Chart !== 'undefined'){
     wrapEl.style.display = 'block';
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.classList.contains('dark'));
-    const sliceColors = ['#F43F5E', '#F59E0B', '#8B5CF6', '#06B6D4', '#10B981'];
+    const sliceColors = ['#F43F5E', '#F59E0B', '#8B5CF6'];
 
     chartDashboardTopExpenses = new Chart(canvas, {
       type: 'doughnut',
@@ -5766,21 +5772,21 @@ function renderDashboardTopExpenses(periodTxs, totals){
     });
   }
 
-  const palette = ['#F43F5E', '#F59E0B', '#8B5CF6', '#06B6D4'];
+  const palette = ['#F43F5E', '#F59E0B', '#8B5CF6'];
   container.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:8px;">
+    <div style="display:flex; flex-direction:column; gap:4px;">
       ${categories.map((cat, idx) => {
         const pct = totals.expense > 0 ? Math.round((cat.amount / totals.expense) * 100) : 0;
         const color = palette[idx % palette.length];
         return `
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; padding:3px 0; border-bottom:1px solid var(--line-soft);">
-            <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--line-soft); gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
               <span style="width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
-              <span style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${titleCase(cat.category)}</span>
+              <span style="font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${titleCase(cat.category)}">${titleCase(cat.category)}</span>
             </div>
-            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-              <span class="figure" style="font-weight:600;">${fmt(cat.amount)}</span>
-              <span class="badge" style="font-size:10.5px; padding:1px 5px; background:var(--surface-2);">${pct}%</span>
+            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; text-align:right;">
+              <span class="figure" style="font-weight:700; color:var(--ink); font-size:12px; font-variant-numeric:tabular-nums;">${fmt(cat.amount)}</span>
+              <span class="badge" style="font-size:10px; font-weight:700; min-width:34px; text-align:center; padding:2px 5px; background:var(--surface-2); border:1px solid var(--line); border-radius:6px; color:var(--muted);">${pct}%</span>
             </div>
           </div>
         `;
