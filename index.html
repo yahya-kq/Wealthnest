@@ -3637,36 +3637,87 @@ function migrateCategories(cats){
   return mergeDefaultCategories(cats);
 }
 
+function hasMeaningfulFinances(state){
+  if (!state || typeof state !== 'object') return false;
+  const txCount = Array.isArray(state.transactions) ? state.transactions.length : 0;
+  const budgetCount = Array.isArray(state.budgets) ? state.budgets.length : 0;
+  const goalCount = Array.isArray(state.savingsGoals) ? state.savingsGoals.length : 0;
+  const invCount = Array.isArray(state.investments) ? state.investments.length : 0;
+  const soldCount = Array.isArray(state.soldInvestments) ? state.soldInvestments.length : 0;
+  return (txCount + budgetCount + goalCount + invCount + soldCount) > 0;
+}
+
+function createLocalDataBackup(reason = 'auto'){
+  try {
+    if (typeof DB === 'object' && DB && hasMeaningfulFinances(DB)) {
+      const ts = Date.now();
+      localStorage.setItem('wealthnest_backup_' + ts, JSON.stringify({
+        timestamp: ts,
+        reason,
+        data: DB
+      }));
+      // Keep up to 20 rolling backups
+      const keys = Object.keys(localStorage).filter(k => k.startsWith('wealthnest_backup_')).sort();
+      while (keys.length > 20) {
+        localStorage.removeItem(keys.shift());
+      }
+    }
+  } catch(e) {}
+}
+
+function sanitizeLoadedDB(parsed){
+  if (!parsed || typeof parsed !== 'object') return;
+  parsed.categories = migrateCategories(parsed.categories || {});
+  parsed.transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
+  parsed.budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
+  parsed.savingsGoals = Array.isArray(parsed.savingsGoals) ? parsed.savingsGoals : [];
+  parsed.investments = Array.isArray(parsed.investments) ? parsed.investments : [];
+  parsed.soldInvestments = Array.isArray(parsed.soldInvestments) ? parsed.soldInvestments : [];
+  parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
+  if(!parsed.currency) parsed.currency = DEFAULT_CURRENCY;
+  if(!parsed.currencyMigrationDone){
+    if(parsed.currency.code === 'USD') parsed.currency = DEFAULT_CURRENCY;
+    parsed.currencyMigrationDone = true;
+  }
+  parsed.activityLog = Array.isArray(parsed.activityLog) ? parsed.activityLog : [];
+  parsed.recycleBin = Array.isArray(parsed.recycleBin) ? parsed.recycleBin : [];
+  parsed.recycleBin.forEach(item => {
+    if(item.deletedAt && !item.retention30Done){
+      item.expiresAt = new Date(new Date(item.deletedAt).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      item.retention30Done = true;
+    }
+  });
+  parsed.recycleBin = parsed.recycleBin.filter(item => new Date(item.expiresAt || item.deletedAt).getTime() > Date.now());
+  if(!parsed.budgets) parsed.budgets = [];
+  parsed.budgets.forEach(b => { if(b.subCategory === undefined) b.subCategory = null; });
+}
+
 function loadDB(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){
       const parsed = JSON.parse(raw);
-      parsed.categories = migrateCategories(parsed.categories || {});
-      parsed.transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
-      parsed.budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
-      parsed.savingsGoals = Array.isArray(parsed.savingsGoals) ? parsed.savingsGoals : [];
-      parsed.investments = Array.isArray(parsed.investments) ? parsed.investments : [];
-      parsed.soldInvestments = Array.isArray(parsed.soldInvestments) ? parsed.soldInvestments : [];
-      parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
-      if(!parsed.currency) parsed.currency = DEFAULT_CURRENCY;
-      if(!parsed.currencyMigrationDone){
-        if(parsed.currency.code === 'USD') parsed.currency = DEFAULT_CURRENCY;
-        parsed.currencyMigrationDone = true;
+      if(parsed && typeof parsed === 'object'){
+        sanitizeLoadedDB(parsed);
+        return parsed;
       }
-      parsed.activityLog = Array.isArray(parsed.activityLog) ? parsed.activityLog : [];
-      parsed.recycleBin = Array.isArray(parsed.recycleBin) ? parsed.recycleBin : [];
-      // Upgrade any existing recycle bin items to 30 days retention
-      parsed.recycleBin.forEach(item => {
-        if(item.deletedAt && !item.retention30Done){
-          item.expiresAt = new Date(new Date(item.deletedAt).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-          item.retention30Done = true;
-        }
-      });
-      parsed.recycleBin = parsed.recycleBin.filter(item => new Date(item.expiresAt || item.deletedAt).getTime() > Date.now());
-      if(!parsed.budgets) parsed.budgets = [];
-      parsed.budgets.forEach(b => { if(b.subCategory === undefined) b.subCategory = null; });
-      return parsed;
+    }
+    // Cross-domain fallback: check for any existing cached user data in localStorage
+    for(let i=0; i<localStorage.length; i++){
+      const key = localStorage.key(i);
+      if(key && (key.startsWith('wealthnest_user_') || key.startsWith('wealthnest_backup_'))){
+        try{
+          const candRaw = localStorage.getItem(key);
+          if(candRaw){
+            const candParsed = JSON.parse(candRaw);
+            const candData = candParsed.data || candParsed;
+            if(hasMeaningfulFinances(candData)){
+              sanitizeLoadedDB(candData);
+              return candData;
+            }
+          }
+        }catch(e){}
+      }
     }
   }catch(e){}
   const seed = buildSeed();
@@ -3678,6 +3729,29 @@ async function flushCloudSyncNow(){
   if (!supabaseClient || !currentUser) return;
   clearTimeout(syncTimer);
   try {
+    // CRITICAL DATA PROTECTION GUARD:
+    // If local state has no meaningful transactions/budgets/goals,
+    // NEVER overwrite cloud data without verifying whether cloud already has data!
+    if (!hasMeaningfulFinances(DB)) {
+      const { data } = await supabaseClient
+        .from('user_finances')
+        .select('data, updated_at')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      if (data && data.data && hasMeaningfulFinances(data.data)) {
+        console.warn("SAFETY GUARD: Refused to overwrite populated cloud database with empty local template! Restoring cloud data.");
+        DB = data.data;
+        sanitizeLoadedDB(DB);
+        lastSyncedAt = data.updated_at ? new Date(data.updated_at) : new Date();
+        localStorage.setItem("wealthnest_user_" + currentUser.id, JSON.stringify(DB));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+        renderAllForCurrentPage();
+        return;
+      }
+    }
+
+    createLocalDataBackup('pre_cloud_sync');
     const nowIso = new Date().toISOString();
     const { error } = await supabaseClient.from('user_finances').upsert({
       user_id: currentUser.id,
@@ -3697,6 +3771,7 @@ function saveDB(immediateSync = false){
   DB._lastModified = Date.now();
   if (currentUser && currentUser.id) {
     localStorage.setItem("wealthnest_user_" + currentUser.id, JSON.stringify(DB));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
     if (immediateSync) {
       flushCloudSyncNow();
     } else {
@@ -4026,48 +4101,57 @@ async function loadUserFinancesFromSupabase(userId){
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (data && data.data && typeof data.data === 'object' && Object.keys(data.data).length > 0) {
+    const localUserKey = 'wealthnest_user_' + userId;
+    let cachedLocal = null;
+    const cachedRaw = localStorage.getItem(localUserKey) || localStorage.getItem(STORAGE_KEY);
+    if (cachedRaw) {
+      try {
+        const parsed = JSON.parse(cachedRaw);
+        cachedLocal = parsed.data || parsed;
+      } catch(e){}
+    }
+
+    const cloudData = data && data.data && typeof data.data === 'object' ? data.data : null;
+    const cloudHasData = hasMeaningfulFinances(cloudData);
+    const localHasData = hasMeaningfulFinances(DB) || hasMeaningfulFinances(cachedLocal);
+
+    if (cloudHasData && !localHasData) {
+      // Cloud has real data and local is empty/seed: ALWAYS adopt cloud data
+      createLocalDataBackup('pre_cloud_sync');
+      DB = cloudData;
+      sanitizeLoadedDB(DB);
+      lastSyncedAt = data.updated_at ? new Date(data.updated_at) : new Date();
+      localStorage.setItem(localUserKey, JSON.stringify(DB));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+    } else if (!cloudHasData && localHasData) {
+      // Local has real data and cloud is empty: push local to cloud
+      const bestLocal = hasMeaningfulFinances(DB) ? DB : cachedLocal;
+      DB = bestLocal;
+      sanitizeLoadedDB(DB);
+      createLocalDataBackup('pre_cloud_push');
+      await flushCloudSyncNow();
+      localStorage.setItem(localUserKey, JSON.stringify(DB));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+    } else if (cloudHasData && localHasData) {
+      // Both have data: evaluate timestamps safely
+      createLocalDataBackup('pre_sync_eval');
       const cloudTime = data.updated_at ? new Date(data.updated_at).getTime() : 0;
       const localTime = (DB && DB._lastModified) ? DB._lastModified : 0;
-      if (localTime > cloudTime + 1000) {
-        // Local state has newer changes! Push to cloud so we never overwrite user's work
+      if (localTime > cloudTime + 2000) {
         flushCloudSyncNow();
       } else {
-        DB = data.data;
-        if (!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length) {
-          DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
-        }
-        if (!Array.isArray(DB.investments)) {
-          DB.investments = [];
-        }
-        if (!Array.isArray(DB.soldInvestments)) {
-          DB.soldInvestments = [];
-        }
+        DB = cloudData;
+        sanitizeLoadedDB(DB);
         lastSyncedAt = data.updated_at ? new Date(data.updated_at) : new Date();
-        localStorage.setItem('wealthnest_user_' + userId, JSON.stringify(DB));
+        localStorage.setItem(localUserKey, JSON.stringify(DB));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
       }
     } else {
-      const localUserKey = 'wealthnest_user_' + userId;
-      const cached = localStorage.getItem(localUserKey);
-      if (cached) {
-        try { DB = JSON.parse(cached); } catch(e){}
+      // Neither has data yet (fresh account)
+      if (cachedLocal) {
+        DB = cachedLocal;
       }
-      if (!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length) {
-        DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
-      }
-      if (!Array.isArray(DB.investments)) {
-        DB.investments = [];
-      }
-      if (!Array.isArray(DB.soldInvestments)) {
-        DB.soldInvestments = [];
-      }
-      const nowIso = new Date().toISOString();
-      await supabaseClient.from('user_finances').upsert({
-        user_id: userId,
-        data: DB,
-        updated_at: nowIso
-      });
-      lastSyncedAt = new Date();
+      sanitizeLoadedDB(DB);
       localStorage.setItem(localUserKey, JSON.stringify(DB));
     }
     renderAllForCurrentPage();
@@ -4201,6 +4285,21 @@ function renderSettingsAccount(){
         <button onclick="scheduleCloudSync()" class="btn-small" style="padding:8px 14px;">Sync Now</button>
       </div>
 
+      <div style="margin-top:20px; padding:16px 18px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
+        <h4 style="margin:0 0 4px; font-size:13.5px; font-weight:700;">Data Backup &amp; Recovery</h4>
+        <p style="margin:0 0 12px; font-size:12px; color:var(--muted); line-height:1.45;">Safely export a snapshot of your transactions, budgets, goals, and investments, or restore from a previous JSON backup.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Backup (.json)
+          </button>
+          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Restore / Import (.json)
+          </button>
+        </div>
+      </div>
+
       <div style="margin-top:24px; padding:16px 18px; border:1px solid rgba(225,29,72,0.25); background:rgba(225,29,72,0.03); border-radius:12px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
           <div>
@@ -4228,6 +4327,21 @@ function renderSettingsAccount(){
         <button onclick="openAuthModal()" class="btn-dark" style="padding:9px 18px; font-size:13px;">Sign In with Google →</button>
       </div>
 
+      <div style="margin-top:20px; padding:16px 18px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
+        <h4 style="margin:0 0 4px; font-size:13.5px; font-weight:700;">Data Backup &amp; Recovery</h4>
+        <p style="margin:0 0 12px; font-size:12px; color:var(--muted); line-height:1.45;">Safely export your local transactions and budgets to your device, or restore an existing backup file.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Backup (.json)
+          </button>
+          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Restore / Import (.json)
+          </button>
+        </div>
+      </div>
+
       <div style="margin-top:20px; padding:14px 16px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
           <div>
@@ -4239,6 +4353,68 @@ function renderSettingsAccount(){
       </div>
     `;
   }
+}
+
+function exportFinancesJSON(){
+  try {
+    const dataStr = JSON.stringify(DB, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = ymd(new Date());
+    a.href = url;
+    a.download = `wealthnest_backup_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast("Backup exported successfully!");
+  } catch(e) {
+    showToast("Export failed: " + e.message, "error");
+  }
+}
+
+function triggerImportFinancesJSON(){
+  let fileInput = document.getElementById('wn-import-file-input');
+  if(!fileInput){
+    fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.id = 'wn-import-file-input';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    fileInput.onchange = handleImportFinancesFile;
+    document.body.appendChild(fileInput);
+  }
+  fileInput.click();
+}
+
+function handleImportFinancesFile(e){
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(evt) {
+    try {
+      const parsed = JSON.parse(evt.target.result);
+      const data = parsed.data || parsed;
+      if (!hasMeaningfulFinances(data) && !Array.isArray(data.categories?.income)) {
+        showToast("Invalid WealthNest backup file", "error");
+        return;
+      }
+      const txLen = Array.isArray(data.transactions) ? data.transactions.length : 0;
+      const bLen = Array.isArray(data.budgets) ? data.budgets.length : 0;
+      if (confirm(`Restore data from backup? This will load ${txLen} transactions and ${bLen} budgets.`)) {
+        createLocalDataBackup('pre_import');
+        DB = data;
+        sanitizeLoadedDB(DB);
+        saveDB(true);
+        renderAllForCurrentPage();
+        showToast(`Restored ${txLen} transactions & ${bLen} budgets!`);
+      }
+    } catch(err) {
+      showToast("Error reading JSON file: " + err.message, "error");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
 }
 
 /* ---------------- navigation ---------------- */
