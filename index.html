@@ -1551,7 +1551,7 @@
           <h2 class="section-title">Cash Flow Trend</h2>
           <p class="section-sub" id="trend-chart-sub">Monthly income, expenses, and savings</p>
         </div>
-        <div style="position:relative; height:200px; width:100%;">
+        <div style="position:relative; height:220px; width:100%;">
           <canvas id="dashboard-chart-trend"></canvas>
         </div>
       </div>
@@ -5785,8 +5785,56 @@ function renderDashboardTrendChart(period){
     }
   };
 
+  // Register bottomAxis tooltip positioner
+  if(typeof Chart !== 'undefined' && Chart.Tooltip && Chart.Tooltip.positioners){
+    Chart.Tooltip.positioners.bottomAxis = function(items, eventPosition) {
+      if(!items || !items.length) return false;
+      const chart = this.chart;
+      const scaleX = chart && chart.scales && chart.scales.x;
+      const idx = items[0].dataIndex !== undefined ? items[0].dataIndex : items[0].index;
+      const x = (scaleX && typeof scaleX.getPixelForTick === 'function')
+        ? scaleX.getPixelForTick(idx)
+        : ((items[0].element.x + items[items.length - 1].element.x) / 2);
+      const y = chart && chart.chartArea ? (chart.chartArea.bottom - 6) : eventPosition.y;
+      return { x, y };
+    };
+  }
+
+  let isMouseOverXAxis = false;
+  const updatePointerZone = (clientY) => {
+    if(!chartDashboardTrend || !chartDashboardTrend.chartArea) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseY = clientY - rect.top;
+    isMouseOverXAxis = (mouseY >= (chartDashboardTrend.chartArea.bottom - 12));
+  };
+
+  canvas.onmousemove = function(e){
+    updatePointerZone(e.clientY);
+  };
+  canvas.onmouseleave = function(){
+    isMouseOverXAxis = false;
+    if(chartDashboardTrend && chartDashboardTrend.tooltip){
+      chartDashboardTrend.tooltip.setActiveElements([], {x:0, y:0});
+      chartDashboardTrend.update();
+    }
+  };
+  canvas.ontouchstart = function(e){
+    if(e.touches && e.touches[0]) updatePointerZone(e.touches[0].clientY);
+  };
+  canvas.ontouchmove = function(e){
+    if(e.touches && e.touches[0]) updatePointerZone(e.touches[0].clientY);
+  };
+
   const dashTrendBarLabelsPlugin = {
     id: 'dashTrendBarLabels',
+    beforeEvent(chart, args) {
+      const e = args.event;
+      if (e.type === 'mouseout' || e.type === 'mouseleave') {
+        isMouseOverXAxis = false;
+      } else if (chart.chartArea && typeof e.y === 'number') {
+        isMouseOverXAxis = (e.y >= (chart.chartArea.bottom - 12));
+      }
+    },
     afterDatasetsDraw(chart) {
       const { ctx } = chart;
       const dsCount = chart.data.datasets.length;
@@ -5800,8 +5848,17 @@ function renderDashboardTrendChart(period){
         return Math.round(abs).toString();
       };
 
+      const labelColors = isDark 
+        ? ['#2DD4BF', '#FB7185', '#FBBF24']
+        : ['#0F766E', '#BE123C', '#B45309'];
+
       const labelsCount = chart.data.labels ? chart.data.labels.length : 0;
       ctx.save();
+      ctx.font = isMobile 
+        ? '700 9.5px Plus Jakarta Sans, Manrope, sans-serif' 
+        : '700 11.5px Plus Jakarta Sans, Manrope, sans-serif';
+
+      const minSeparation = isMobile ? 15 : 18;
 
       for (let mIdx = 0; mIdx < labelsCount; mIdx++) {
         const activeBars = [];
@@ -5816,54 +5873,80 @@ function renderDashboardTrendChart(period){
               label: chart.data.datasets[dIdx].label,
               val,
               formatted: formatVal(val),
-              el
+              el,
+              color: labelColors[dIdx] || (isDark ? '#F1F5F9' : '#0F172A'),
+              labelX: el.x,
+              labelY: el.y - 6,
+              tw: 0
             });
           }
         }
 
         if (!activeBars.length) continue;
 
-        // Anti-collision check for short bars above the base
-        let lastAboveY = null;
-        let lastAboveX = null;
+        // Measure widths
+        activeBars.forEach(b => {
+          b.tw = ctx.measureText(b.formatted).width;
+        });
 
-        activeBars.forEach((barItem) => {
-          const { el, formatted } = barItem;
-          const barHeight = Math.abs(el.base - el.y);
-          const barWidth = el.width || maxBarThickness;
-
-          if (barHeight >= 26 && barWidth >= 14) {
-            // Inside the bar: bold white text centered with subtle drop shadow
-            ctx.save();
-            ctx.font = '700 11px JetBrains Mono, Plus Jakarta Sans, sans-serif';
-            ctx.fillStyle = '#FFFFFF';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-            ctx.shadowBlur = 3;
-            ctx.shadowOffsetY = 1;
-            ctx.fillText(formatted, el.x, el.y + 5);
-            ctx.restore();
-          } else {
-            // Short bar: above the bar with outline
-            let targetY = el.y - 4;
-            if (lastAboveX !== null && Math.abs(el.x - lastAboveX) < 26 && lastAboveY !== null && Math.abs(targetY - lastAboveY) < 14) {
-              targetY = lastAboveY - 14; // Stack vertically to prevent horizontal overlap
+        // Anti-collision: iterative relaxation pass to guarantee zero overlap or touching
+        let changed = true;
+        let passes = 0;
+        while (changed && passes < 6) {
+          changed = false;
+          passes++;
+          for (let i = 0; i < activeBars.length; i++) {
+            for (let j = 0; j < activeBars.length; j++) {
+              if (i === j) continue;
+              const a = activeBars[i];
+              const b = activeBars[j];
+              const dx = Math.abs(a.labelX - b.labelX);
+              const minDist = (a.tw / 2 + b.tw / 2 + (isMobile ? 3 : 5));
+              const dy = Math.abs(a.labelY - b.labelY);
+              if (dx < minDist && dy < minSeparation) {
+                // Determine which should be placed higher (lower labelY):
+                // The taller bar (smaller el.y) gets pushed higher.
+                // If equal, rightmost bar gets pushed higher.
+                if (a.el.y < b.el.y || (a.el.y === b.el.y && a.labelX > b.labelX)) {
+                  a.labelY = Math.min(a.labelY, b.labelY - minSeparation);
+                } else {
+                  b.labelY = Math.min(b.labelY, a.labelY - minSeparation);
+                }
+                changed = true;
+              }
             }
-            lastAboveX = el.x;
-            lastAboveY = targetY;
-
-            ctx.save();
-            ctx.font = '700 11px JetBrains Mono, Plus Jakarta Sans, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = surfaceColor;
-            ctx.fillStyle = axisColor;
-            ctx.strokeText(formatted, el.x, targetY);
-            ctx.fillText(formatted, el.x, targetY);
-            ctx.restore();
           }
+        }
+
+        // Clamp to top margin
+        activeBars.forEach(b => {
+          b.labelY = Math.max(12, b.labelY);
+        });
+
+        // Draw labels strictly on top of each bar
+        activeBars.forEach(bar => {
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+
+          // If label was elevated significantly, draw a delicate connecting stem to the bar
+          if (bar.el.y - bar.labelY > (minSeparation - 2)) {
+            ctx.beginPath();
+            ctx.moveTo(bar.labelX, bar.labelY + 2);
+            ctx.lineTo(bar.labelX, bar.el.y - 2);
+            ctx.strokeStyle = bar.color;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+
+          ctx.lineWidth = isMobile ? 2.5 : 3.5;
+          ctx.strokeStyle = surfaceColor;
+          ctx.fillStyle = bar.color;
+          ctx.strokeText(bar.formatted, bar.labelX, bar.labelY);
+          ctx.fillText(bar.formatted, bar.labelX, bar.labelY);
+          ctx.restore();
         });
       }
 
@@ -5904,6 +5987,15 @@ function renderDashboardTrendChart(period){
           }
         },
         tooltip: {
+          enabled: true,
+          position: 'bottomAxis',
+          yAlign: 'bottom',
+          filter: function(item) {
+            // 1. Only show if hovering over the X-axis below!
+            if (!isMouseOverXAxis) return false;
+            // 2. Only show if value > 0 (never show 0 0 0!)
+            return item && item.parsed && item.parsed.y > 0;
+          },
           backgroundColor: '#0F172A',
           titleColor: '#F8FAFC',
           titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '700' },
@@ -5939,7 +6031,7 @@ function renderDashboardTrendChart(period){
         y: {
           grid: { display: false },
           border: { display: false },
-          grace: '22%',
+          grace: '28%',
           ticks: {
             color: axisColor,
             font: { family: 'JetBrains Mono', size: isMobile ? 11 : 12, weight: '600' },
