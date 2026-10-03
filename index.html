@@ -1562,6 +1562,7 @@
       </div>
 
       <!-- High-level Overview Grid -->
+      <!-- High-level Overview Grid -->
       <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
         <div class="card" style="padding:20px;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
@@ -1569,7 +1570,10 @@
               <h2 class="section-title">Top Expenses</h2>
               <p class="section-sub">Highest categories</p>
             </div>
-            <a href="#" onclick="goToApp('reports'); return false;" class="link-sm">Reports →</a>
+            <button type="button" onclick="goToApp('reports')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">View Reports</button>
+          </div>
+          <div style="position:relative; height:120px; width:100%; margin-bottom:12px; display:none;" id="wrap-chart-top-expenses">
+            <canvas id="dashboard-chart-top-expenses"></canvas>
           </div>
           <div id="dashboard-top-expenses"></div>
         </div>
@@ -1580,7 +1584,10 @@
               <h2 class="section-title">Budget Overview</h2>
               <p class="section-sub" id="budget-perf-sub">Monthly limits</p>
             </div>
-            <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Budgets →</a>
+            <button type="button" onclick="goToApp('budgets')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">Manage Budgets</button>
+          </div>
+          <div style="position:relative; height:110px; width:100%; margin-bottom:10px; display:none;" id="wrap-chart-budget">
+            <canvas id="dashboard-chart-budget"></canvas>
           </div>
           <div id="dashboard-budget-summary"></div>
         </div>
@@ -1591,7 +1598,7 @@
               <h2 class="section-title">Savings Goals</h2>
               <p class="section-sub">Goal progress</p>
             </div>
-            <a href="#" onclick="goToApp('savings'); return false;" class="link-sm">Goals →</a>
+            <button type="button" onclick="goToApp('savings')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">All Goals</button>
           </div>
           <div id="dash-savings-body"></div>
         </div>
@@ -1602,7 +1609,7 @@
               <h2 class="section-title">Investments</h2>
               <p class="section-sub">Portfolio &amp; wealth</p>
             </div>
-            <a href="#" onclick="goToApp('investments'); return false;" class="link-sm">Portfolio →</a>
+            <button type="button" onclick="goToApp('investments')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">Holdings</button>
           </div>
           <div id="dash-investments-body"></div>
         </div>
@@ -1910,9 +1917,9 @@
           <div class="text-xs" style="margin-top:4px; font-weight:600;" id="inv-kpi-roi">0% ROI</div>
         </div>
         <div class="card ov-card" style="padding:18px 20px;">
-          <div class="ov-label">Monthly Additions</div>
-          <div class="ov-amount figure" id="inv-kpi-monthly" style="color:var(--teal);">$0/mo</div>
-          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-monthly-sub">Recurring deposits</div>
+          <div class="ov-label">Realized Profit</div>
+          <div class="ov-amount figure" id="inv-kpi-realized" style="color:var(--teal);">$0</div>
+          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-realized-sub">From closed trades</div>
         </div>
       </div>
 
@@ -1927,10 +1934,10 @@
                 <h2 class="section-title" style="margin:0;">Outcome Projection</h2>
                 <span class="badge" style="background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">Future Value</span>
               </div>
-              <p class="text-xs muted" style="margin:4px 0 0;">Compound growth simulator</p>
+              <p class="text-xs muted" style="margin:4px 0 0;">Optional compound growth simulator • Real portfolio records below</p>
             </div>
-            <button type="button" onclick="syncSimWithPortfolio()" class="btn-ghost btn-small" style="font-size:11.5px; padding:4px 10px;" title="Reset simulator to match your active portfolio">
-              ↺ Sync with Portfolio
+            <button type="button" onclick="syncSimWithPortfolio()" class="btn-ghost btn-small" style="font-size:11.5px; padding:4px 10px;" title="Auto-fills calculator with your active holdings total">
+              Use My Holdings
             </button>
           </div>
 
@@ -1953,12 +1960,12 @@
                 <strong class="figure" id="sim-result-principal" style="display:block; font-size:13.5px; margin-top:1px;">$0</strong>
               </div>
               <div>
-                <span class="muted text-xs">Growth Multiple:</span>
-                <strong class="figure" id="sim-result-multiple" style="display:block; font-size:13.5px; margin-top:1px; color:var(--primary);">1.0x</strong>
+                <span class="muted text-xs">Projected Gain:</span>
+                <strong class="figure" id="sim-result-pure-gain" style="display:block; font-size:13.5px; margin-top:1px; color:var(--teal);">+$0</strong>
               </div>
               <div>
-                <span class="muted text-xs">Rule of 72 Doubling:</span>
-                <strong class="figure" id="sim-result-doubling" style="display:block; font-size:13.5px; margin-top:1px;">~7.2 years</strong>
+                <span class="muted text-xs">Expected Return Rate:</span>
+                <strong class="figure" id="sim-result-rate" style="display:block; font-size:13.5px; margin-top:1px; color:var(--ink);">10.0% / yr</strong>
               </div>
               <div>
                 <span class="muted text-xs">Passive Income (4%):</span>
@@ -1980,7 +1987,7 @@
               </div>
               <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <label class="field-label" style="margin:0; font-size:12px;">Monthly Contribution</label>
+                  <label class="field-label" style="margin:0; font-size:12px;">Monthly Addition (Optional Planner)</label>
                   <span class="figure" id="sim-disp-monthly" style="font-size:12px; font-weight:700; color:var(--teal);">$0/mo</span>
                 </div>
                 <input type="number" min="0" step="25" id="sim-input-monthly" class="field-input figure" value="0" oninput="onSimInputChange('monthly', this.value)">
@@ -1995,9 +2002,10 @@
               </div>
               <input type="range" min="1" max="25" step="0.5" id="sim-slider-rate" value="10" class="wealth-range-slider" oninput="onSimInputChange('rate', this.value)">
               <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
-                <button type="button" class="btn-chip" id="preset-rate-5" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(5.0)">Conservative (5%)</button>
-                <button type="button" class="btn-chip active" id="preset-rate-10" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(10.0)">S&amp;P 500 Avg (10%)</button>
-                <button type="button" class="btn-chip" id="preset-rate-14" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(14.0)">Growth / Tech (14%)</button>
+                <button type="button" class="btn-chip" id="preset-rate-6" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(6.0)">Safe / Bank (6%)</button>
+                <button type="button" class="btn-chip active" id="preset-rate-10" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(10.0)">Balanced (10%)</button>
+                <button type="button" class="btn-chip" id="preset-rate-14" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(14.0)">PSX Stocks (14%)</button>
+                <button type="button" class="btn-chip" id="preset-rate-18" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(18.0)">High Growth (18%)</button>
               </div>
             </div>
 
@@ -2005,6 +2013,8 @@
             <div>
               <label class="field-label" style="margin-bottom:6px; font-size:12px;">Time Horizon</label>
               <div style="display:flex; gap:6px; flex-wrap:wrap;" id="sim-horizon-chips">
+                <button type="button" class="btn-chip" id="horizon-chip-1" onclick="setSimHorizon(1)">1 Year</button>
+                <button type="button" class="btn-chip" id="horizon-chip-2" onclick="setSimHorizon(2)">2 Years</button>
                 <button type="button" class="btn-chip" id="horizon-chip-3" onclick="setSimHorizon(3)">3 Years</button>
                 <button type="button" class="btn-chip" id="horizon-chip-5" onclick="setSimHorizon(5)">5 Years</button>
                 <button type="button" class="btn-chip active" id="horizon-chip-10" onclick="setSimHorizon(10)">10 Years</button>
@@ -2021,7 +2031,7 @@
             <div id="sim-chart-empty" style="display:none; min-height:270px; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; border:1px dashed var(--line); border-radius:12px; background:var(--surface-2);">
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted); margin-bottom:8px;"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
               <p style="margin:0 0 4px; font-weight:600; font-size:13.5px; color:var(--ink);">No Investment Projections Yet</p>
-              <p class="text-xs muted" style="margin:0; max-width:300px;">Add assets to your portfolio or enter a starting capital and monthly deposit above to project compound wealth growth.</p>
+              <p class="text-xs muted" style="margin:0; max-width:300px;">Add assets to your portfolio or enter a starting capital above to project compound wealth growth.</p>
             </div>
           </div>
         </div>
@@ -2058,10 +2068,14 @@
       <div class="card" style="padding:22px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
           <div>
-            <h2 class="section-title" style="margin:0;">Holdings</h2>
-            <p class="text-xs muted" style="margin:4px 0 0;">Tracked assets and platforms</p>
+            <h2 class="section-title" style="margin:0;">Asset Portfolio &amp; Trades</h2>
+            <p class="text-xs muted" style="margin:4px 0 0;">Tracked holdings and realized sale records</p>
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div style="display:flex; gap:5px; background:var(--surface-2); padding:3px; border-radius:8px; border:1px solid var(--line-soft);" id="inv-holding-view-tabs">
+              <button type="button" class="btn-chip active" id="inv-tab-active" style="font-size:11.5px; padding:3px 9px;" onclick="setInvHoldingTab('active')">Active Holdings</button>
+              <button type="button" class="btn-chip" id="inv-tab-sold" style="font-size:11.5px; padding:3px 9px;" onclick="setInvHoldingTab('sold')">Closed Trades</button>
+            </div>
             <div style="display:flex; gap:5px; flex-wrap:wrap;" id="inv-category-filter-chips"></div>
             <button onclick="openInvestmentModal()" class="btn-dark btn-small" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; font-size:12px;">
               + Add Asset
@@ -2071,16 +2085,14 @@
 
         <div class="table-responsive report-table-wrap">
           <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
-            <thead>
+            <thead id="inv-holdings-thead">
               <tr style="border-bottom:1px solid var(--line); color:var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em;">
                 <th style="padding:10px 12px;">Asset Name</th>
                 <th style="padding:10px 12px;">Class</th>
-                <th style="padding:10px 12px;">Platform / Vault</th>
+                <th style="padding:10px 12px;">Platform</th>
                 <th style="padding:10px 12px; text-align:right;">Invested (Cost)</th>
                 <th style="padding:10px 12px; text-align:right;">Current Value</th>
-                <th style="padding:10px 12px; text-align:right;">Net Return (ROI)</th>
-                <th style="padding:10px 12px; text-align:right;">Monthly DCA</th>
-                <th style="padding:10px 12px; text-align:right;">Exp. Return</th>
+                <th style="padding:10px 12px; text-align:right;">Gain / Loss (ROI)</th>
                 <th style="padding:10px 12px; text-align:center;">Actions</th>
               </tr>
             </thead>
@@ -2573,23 +2585,12 @@
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" id="inv-initial-label" for="inv-initial">Invested (Cost Basis) <span style="color:var(--rose);">*</span></label>
+          <label class="field-label" id="inv-initial-label" for="inv-initial">Total Invested (Cost) <span style="color:var(--rose);">*</span></label>
           <input type="number" min="0" step="any" id="inv-initial" placeholder="1000" class="field-input figure" required oninput="if(!document.getElementById('inv-current').value || document.getElementById('inv-current').dataset.autofilled === 'true') { document.getElementById('inv-current').value = this.value; document.getElementById('inv-current').dataset.autofilled = 'true'; }">
         </div>
         <div>
           <label class="field-label" id="inv-current-label" for="inv-current">Current Market Value <span style="color:var(--rose);">*</span></label>
           <input type="number" min="0" step="any" id="inv-current" placeholder="1000" class="field-input figure" required oninput="delete this.dataset.autofilled;">
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-        <div>
-          <label class="field-label" for="inv-monthly">Monthly Addition ($/mo)</label>
-          <input type="number" min="0" step="any" id="inv-monthly" placeholder="0" value="0" class="field-input figure">
-        </div>
-        <div>
-          <label class="field-label" for="inv-return">Expected Return (%/yr)</label>
-          <input type="number" min="0" max="100" step="0.1" id="inv-return" placeholder="10.0" value="10.0" class="field-input figure">
         </div>
       </div>
 
@@ -2600,7 +2601,7 @@
         </div>
         <div>
           <label class="field-label" for="inv-notes">Strategy / Notes (optional)</label>
-          <input type="text" id="inv-notes" placeholder="e.g. Long-term retirement" class="field-input">
+          <input type="text" id="inv-notes" placeholder="e.g. 100 shares @ Rs. 10" class="field-input">
         </div>
       </div>
 
@@ -2621,7 +2622,7 @@
       </div>
       <div>
         <h2 style="margin:0; font-size:18px;">Edit Investment</h2>
-        <p class="text-xs muted" style="margin:2px 0 0;">Update valuation, contributions, and projected return</p>
+        <p class="text-xs muted" style="margin:2px 0 0;">Update asset cost, valuation, and notes</p>
       </div>
     </div>
     <form onsubmit="handleSaveEditInvestment(event)">
@@ -2652,23 +2653,12 @@
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" id="edit-inv-initial-label" for="edit-inv-initial">Invested (Cost Basis) <span style="color:var(--rose);">*</span></label>
+          <label class="field-label" id="edit-inv-initial-label" for="edit-inv-initial">Total Invested (Cost) <span style="color:var(--rose);">*</span></label>
           <input type="number" min="0" step="any" id="edit-inv-initial" class="field-input figure" required>
         </div>
         <div>
           <label class="field-label" id="edit-inv-current-label" for="edit-inv-current">Current Market Value <span style="color:var(--rose);">*</span></label>
           <input type="number" min="0" step="any" id="edit-inv-current" class="field-input figure" required>
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-        <div>
-          <label class="field-label" for="edit-inv-monthly">Monthly Addition ($/mo)</label>
-          <input type="number" min="0" step="any" id="edit-inv-monthly" class="field-input figure">
-        </div>
-        <div>
-          <label class="field-label" for="edit-inv-return">Expected Return (%/yr)</label>
-          <input type="number" min="0" max="100" step="0.1" id="edit-inv-return" class="field-input figure">
         </div>
       </div>
 
@@ -2686,6 +2676,70 @@
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
         <button type="button" onclick="closeEditInvestmentModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Record Sale / Close Position Modal -->
+<div id="sell-investment-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSellInvestmentModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeSellInvestmentModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(20,184,166,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Record Sale / Realize Gain</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;">Close asset position and calculate realized profit or loss</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleConfirmSellInvestment(event)">
+      <input type="hidden" id="sell-inv-id">
+
+      <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="text-xs muted">Asset Name</span>
+          <strong id="sell-inv-name" style="font-size:13.5px; color:var(--ink);"></strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="text-xs muted">Original Buy Cost</span>
+          <span class="figure" id="sell-inv-cost" style="font-size:13.5px; font-weight:600;"></span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div>
+          <label class="field-label" id="sell-inv-price-label" for="sell-inv-price">Total Sale Proceeds <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="sell-inv-price" class="field-input figure" required oninput="updateSellGainPreview()">
+        </div>
+        <div>
+          <label class="field-label" for="sell-inv-date">Sale Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="sell-inv-date" class="field-input figure" required>
+        </div>
+      </div>
+
+      <!-- Realized Gain/Loss Preview Banner -->
+      <div id="sell-inv-preview-banner" style="background:rgba(20,184,166,0.08); border:1px solid rgba(20,184,166,0.25); border-radius:10px; padding:12px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+        <span class="text-xs muted" style="font-weight:600;">Realized Return</span>
+        <div style="text-align:right;">
+          <span class="figure" id="sell-inv-preview-net" style="font-size:16px; font-weight:700; color:var(--teal);">+PKR 0</span>
+          <span class="text-xs" id="sell-inv-preview-roi" style="display:block; font-weight:600; color:var(--teal); font-size:11px;">(+0.0%)</span>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:16px;">
+        <input type="checkbox" id="sell-inv-sync-tx" checked style="width:16px; height:16px; cursor:pointer;">
+        <label for="sell-inv-sync-tx" style="font-size:12.5px; cursor:pointer; margin:0; line-height:1.3;">
+          <strong>Record profit in Transactions as Income</strong>
+          <span class="text-xs muted" style="display:block;">Credits your cash balance under category "Investments"</span>
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeSellInvestmentModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary" style="background:var(--teal); border-color:var(--teal);">Confirm Sale</button>
       </div>
     </form>
   </div>
@@ -2910,6 +2964,15 @@ const DEFAULT_INCOME_CATEGORIES = [
   "Other Income"
 ];
 const DEFAULT_SAVINGS_CATEGORIES = ["Emergency Fund", "Vacation Fund", "General Savings"];
+const DEFAULT_INVESTMENT_CATEGORIES = [
+  "PSX Stocks",
+  "Mutual Funds",
+  "Gold & Commodities",
+  "Crypto",
+  "Real Estate",
+  "Bonds / Fixed Income",
+  "Other"
+];
 const DEFAULT_EXPENSE_CATEGORIES = [
   { name: "Food & Dining", subcategories: ["Restaurant", "Fast Food", "Food Delivery", "Lunch", "Dinner", "Cafe", "Coffee", "Tea", "Snacks"] },
   { name: "Groceries", subcategories: ["General Grocery", "Fruits", "Vegetables", "Meat", "Dairy", "Household Items", "Cleaning Products", "Kitchen Supplies"] },
@@ -2948,7 +3011,7 @@ const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"
 
 /* ---------------- Excel-Style Multi-Select Filter Engine ---------------- */
 let comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
-let dashboardSelectedMonths = [];
+let dashboardSelectedMonths = [new Date().getMonth() + 1];
 let dashTypeFilter = null;
 let dashSelectedCategories = [];
 let dashSelectedSubcategories = [];
@@ -3129,10 +3192,12 @@ function closeExcelFilter(type){
   const popover = getExcelPopoverEl(type);
   const wrap = getExcelWrapEl(type);
   if(!popover) return;
+  const wasOpen = !popover.classList.contains('hidden');
+  if(!wasOpen) return;
 
-  // Fallback if closed with 0 selected:
+  // Fallback only if user actively closed with 0 selected:
   if(type === 'dashboard' && (!dashboardSelectedMonths || dashboardSelectedMonths.length === 0)){
-    const fallbackMonth = dashboardSelMonth || 9;
+    const fallbackMonth = dashboardSelMonth || (new Date().getMonth() + 1);
     dashboardSelectedMonths = [fallbackMonth];
     updateExcelFilterUI('dashboard');
     renderDashboard();
@@ -3493,24 +3558,33 @@ function buildSeed(){
   const yearlyBudget = { year:y, incomeGoal:0, expenseLimit:0, savingsTarget:0 };
   const savingsGoals = [];
   const investments = [];
+  const soldInvestments = [];
   const categories = {
     income: [...DEFAULT_INCOME_CATEGORIES],
     expense: JSON.parse(JSON.stringify(DEFAULT_EXPENSE_CATEGORIES)),
     savings: [...DEFAULT_SAVINGS_CATEGORIES],
+    investments: [...DEFAULT_INVESTMENT_CATEGORIES],
   };
   const currency = DEFAULT_CURRENCY;
-  return { transactions, budgets, yearlyBudget, savingsGoals, investments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[] };
+  return { transactions, budgets, yearlyBudget, savingsGoals, investments, soldInvestments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[] };
 }
 
 function mergeDefaultCategories(cats){
-  if(!cats) cats = { income:[], expense:[], savings:[] };
+  if(!cats) cats = { income:[], expense:[], savings:[], investments:[] };
   if(!Array.isArray(cats.income)) cats.income = [];
   if(!Array.isArray(cats.expense)) cats.expense = [];
   if(!Array.isArray(cats.savings)) cats.savings = [];
+  if(!Array.isArray(cats.investments)) cats.investments = [];
 
   DEFAULT_INCOME_CATEGORIES.forEach(name => {
     if(!cats.income.some(existing => existing.trim().toLowerCase() === name.trim().toLowerCase())){
       cats.income.push(name);
+    }
+  });
+
+  DEFAULT_INVESTMENT_CATEGORIES.forEach(name => {
+    if(!cats.investments.some(existing => existing.trim().toLowerCase() === name.trim().toLowerCase())){
+      cats.investments.push(name);
     }
   });
 
@@ -3545,6 +3619,7 @@ function ensureDemoBudgetData(){
   DB.categories = mergeDefaultCategories(DB.categories || {});
   DB.budgets = DB.budgets || [];
   DB.investments = Array.isArray(DB.investments) ? DB.investments : [];
+  DB.soldInvestments = Array.isArray(DB.soldInvestments) ? DB.soldInvestments : [];
   if(!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length){
     DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
   }
@@ -3552,7 +3627,7 @@ function ensureDemoBudgetData(){
 ensureDemoBudgetData();
 
 function migrateCategories(cats){
-  if(!cats) cats = { income:[], expense:[], savings:[] };
+  if(!cats) cats = { income:[], expense:[], savings:[], investments:[] };
   if(!cats.expense) cats.expense = JSON.parse(JSON.stringify(DEFAULT_EXPENSE_CATEGORIES));
   cats.expense = cats.expense.map(c => {
     if(typeof c === 'string') return { name: c, subcategories: [] };
@@ -3572,6 +3647,7 @@ function loadDB(){
       parsed.budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
       parsed.savingsGoals = Array.isArray(parsed.savingsGoals) ? parsed.savingsGoals : [];
       parsed.investments = Array.isArray(parsed.investments) ? parsed.investments : [];
+      parsed.soldInvestments = Array.isArray(parsed.soldInvestments) ? parsed.soldInvestments : [];
       parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
       if(!parsed.currency) parsed.currency = DEFAULT_CURRENCY;
       if(!parsed.currencyMigrationDone){
@@ -3705,10 +3781,7 @@ async function handleGoogleSignIn(){
   if (googleText) googleText.textContent = 'Redirecting to Google...';
   
   try {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const redirectUrl = isLocal 
-      ? (window.location.origin + window.location.pathname) 
-      : 'https://wealthnest-yahya-kq.vercel.app/';
+    const redirectUrl = window.location.origin + window.location.pathname;
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -3967,6 +4040,9 @@ async function loadUserFinancesFromSupabase(userId){
         if (!Array.isArray(DB.investments)) {
           DB.investments = [];
         }
+        if (!Array.isArray(DB.soldInvestments)) {
+          DB.soldInvestments = [];
+        }
         lastSyncedAt = data.updated_at ? new Date(data.updated_at) : new Date();
         localStorage.setItem('wealthnest_user_' + userId, JSON.stringify(DB));
       }
@@ -3981,6 +4057,9 @@ async function loadUserFinancesFromSupabase(userId){
       }
       if (!Array.isArray(DB.investments)) {
         DB.investments = [];
+      }
+      if (!Array.isArray(DB.soldInvestments)) {
+        DB.soldInvestments = [];
       }
       const nowIso = new Date().toISOString();
       await supabaseClient.from('user_finances').upsert({
@@ -5399,34 +5478,89 @@ function dashboardBudgetRows(period){
   });
 }
 
+let chartDashboardTopExpenses = null;
+let chartDashboardBudget = null;
+
 function renderDashboardTopExpenses(periodTxs, totals){
   const container = document.getElementById('dashboard-top-expenses');
+  const wrapEl = document.getElementById('wrap-chart-top-expenses');
+  const canvas = document.getElementById('dashboard-chart-top-expenses');
   if(!container) return;
+
+  if(chartDashboardTopExpenses){
+    chartDashboardTopExpenses.destroy();
+    chartDashboardTopExpenses = null;
+  }
+
   if(dashTypeFilter === 'income'){
+    if(wrapEl) wrapEl.style.display = 'none';
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Income filter active.</p>';
     return;
   }
   if(dashTypeFilter === 'savings'){
+    if(wrapEl) wrapEl.style.display = 'none';
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Savings Goals filter active.</p>';
     return;
   }
   const categories = expenseByCategory(periodTxs).slice(0, 4);
   if(!categories.length || totals.expense === 0){
+    if(wrapEl) wrapEl.style.display = 'none';
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">No expenses logged for this period.</p>';
     return;
   }
+
+  if(wrapEl && canvas && typeof Chart !== 'undefined'){
+    wrapEl.style.display = 'block';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.classList.contains('dark'));
+    const sliceColors = ['#F43F5E', '#F59E0B', '#8B5CF6', '#06B6D4', '#10B981'];
+
+    chartDashboardTopExpenses = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: categories.map(c => titleCase(c.category)),
+        datasets: [{
+          data: categories.map(c => c.amount),
+          backgroundColor: sliceColors.slice(0, categories.length),
+          borderWidth: 2,
+          borderColor: isDark ? '#1E293B' : '#FFFFFF',
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            displayColors: false,
+            backgroundColor: '#0F172A',
+            padding: 8,
+            cornerRadius: 6,
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${fmt(ctx.parsed)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  const palette = ['#F43F5E', '#F59E0B', '#8B5CF6', '#06B6D4'];
   container.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:12px;">
-      ${categories.map(cat => {
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${categories.map((cat, idx) => {
         const pct = totals.expense > 0 ? Math.round((cat.amount / totals.expense) * 100) : 0;
+        const color = palette[idx % palette.length];
         return `
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-              <span style="font-size:13px; font-weight:600;">${titleCase(cat.category)}</span>
-              <span class="figure" style="font-size:13px; font-weight:600;">${fmt(cat.amount)} <span class="muted text-xs" style="font-weight:400;">(${pct}%)</span></span>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; padding:3px 0; border-bottom:1px solid var(--line-soft);">
+            <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+              <span style="width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
+              <span style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${titleCase(cat.category)}</span>
             </div>
-            <div class="progress-track" style="height:6px;">
-              <div class="progress-fill fill-primary" style="width:${Math.min(100, pct)}%;"></div>
+            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+              <span class="figure" style="font-weight:600;">${fmt(cat.amount)}</span>
+              <span class="badge" style="font-size:10.5px; padding:1px 5px; background:var(--surface-2);">${pct}%</span>
             </div>
           </div>
         `;
@@ -5439,7 +5573,7 @@ function renderDashboardBudgetSummary(period, totals){
   const categoryRows = dashboardBudgetRows(period);
   const budgeted = categoryRows.reduce((s,r)=>s+r.budgetAmount,0);
   const spent = categoryRows.reduce((s,r)=>s+r.spent,0);
-  const percent = budgeted>0 ? Math.min(100, Math.round((spent/budgeted)*100)) : 0;
+  const percent = budgeted>0 ? Math.round((spent/budgeted)*100) : 0;
   const remaining = budgeted - spent;
   const isOver = spent > budgeted;
   const overCats = categoryRows.filter(r=>r.spent > r.budgetAmount);
@@ -5452,14 +5586,22 @@ function renderDashboardBudgetSummary(period, totals){
   const subEl = document.getElementById('budget-perf-sub');
   if(subEl){
     subEl.textContent = budgeted > 0
-      ? `${fmt(spent)} spent of ${fmt(budgeted)} budgeted`
+      ? `${fmt(spent)} of ${fmt(budgeted)} limit`
       : (dashTypeFilter === 'income' ? 'Income filter active' : (dashTypeFilter === 'savings' ? 'Savings filter active' : 'No category budgets configured'));
   }
 
   const container = document.getElementById('dashboard-budget-summary');
+  const wrapEl = document.getElementById('wrap-chart-budget');
+  const canvas = document.getElementById('dashboard-chart-budget');
   if(!container) return;
 
+  if(chartDashboardBudget){
+    chartDashboardBudget.destroy();
+    chartDashboardBudget = null;
+  }
+
   if(categoryRows.length === 0 || budgeted === 0){
+    if(wrapEl) wrapEl.style.display = 'none';
     const noneMsg = dashTypeFilter === 'income' ? 'Budget limits apply to expenses.' : (dashTypeFilter === 'savings' ? 'Budget limits apply to expenses.' : 'No budget categories set yet.');
     container.innerHTML = `
       <div style="padding:8px 0;">
@@ -5470,10 +5612,47 @@ function renderDashboardBudgetSummary(period, totals){
           </div>
           <span class="badge badge-off">${dashTypeFilter ? 'Filtered' : 'None configured'}</span>
         </div>
-        <p class="empty-note" style="margin:0; padding:4px 0;">${noneMsg} <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Manage budgets →</a></p>
+        <p class="empty-note" style="margin:0; padding:4px 0;">${noneMsg} <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Manage budgets</a></p>
       </div>
     `;
     return;
+  }
+
+  if(wrapEl && canvas && typeof Chart !== 'undefined'){
+    wrapEl.style.display = 'block';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.classList.contains('dark'));
+    const spentSlice = Math.min(spent, budgeted);
+    const remSlice = Math.max(0, budgeted - spent);
+    const mainColor = isOver ? '#F43F5E' : (percent >= 85 ? '#F59E0B' : '#0D9488');
+    const trackColor = isDark ? '#334155' : '#E2E8F0';
+
+    chartDashboardBudget = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Spent', 'Remaining'],
+        datasets: [{
+          data: isOver ? [budgeted, 0] : [spentSlice, remSlice],
+          backgroundColor: isOver ? ['#F43F5E'] : [mainColor, trackColor],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        circumference: 180,
+        rotation: 270,
+        cutout: '76%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            displayColors: false,
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${fmt(ctx.parsed)}`
+            }
+          }
+        }
+      }
+    });
   }
 
   const statusBadgeHtml = isOver
@@ -5481,30 +5660,18 @@ function renderDashboardBudgetSummary(period, totals){
     : '<span class="badge badge-ok">On track</span>';
 
   container.innerHTML = `
-    <div style="margin-bottom:14px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <span class="text-xs muted">Overall budget usage</span>
-        <span class="figure text-xs" style="font-weight:600; color:${isOver ? 'var(--rose)' : 'var(--primary)'};">${percent}%</span>
-      </div>
-      <div class="progress-track" style="height:8px;">
-        <div class="progress-fill ${isOver ? 'fill-rose' : (percent >= 85 ? 'fill-amber' : 'fill-primary')}" style="width:${percent}%;"></div>
-      </div>
-    </div>
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:10px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:9px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:8px;">
       <div>
         <span class="text-xs muted">${isOver ? 'Over budget by' : 'Remaining budget'}</span>
         <div class="figure" style="font-size:15px; font-weight:700; color:${isOver ? 'var(--rose)' : 'var(--teal)'};">${fmt(Math.abs(remaining))}</div>
       </div>
-      ${statusBadgeHtml}
-    </div>
-    ${unbudgetedSpent > 0 ? `
-      <div style="margin-bottom:10px; padding:6px 10px; background:var(--surface-muted); border-radius:6px; font-size:11.5px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;">
-        <span>Other spending:</span>
-        <strong class="figure">${fmt(unbudgetedSpent)}</strong>
+      <div style="text-align:right;">
+        <span class="text-xs muted" style="display:block;">${percent}% used</span>
+        ${statusBadgeHtml}
       </div>
-    ` : ''}
-    <div style="font-size:12px; color:var(--muted);">
-      ${overCats.length ? `<span class="tone-neg" style="font-weight:600;">⚠️ ${overCats.length} planned categor${overCats.length===1?'y':'ies'} exceeded limit</span>` : '<span class="tone-pos">✓ All planned categories within set limits</span>'}
+    </div>
+    <div style="font-size:11.5px; color:var(--muted);">
+      ${overCats.length ? `<span class="tone-neg" style="font-weight:600;">⚠️ ${overCats.length} planned categor${overCats.length===1?'y':'ies'} exceeded</span>` : '<span class="tone-pos">✓ All planned categories within limits</span>'}
     </div>
   `;
 }
@@ -5871,7 +6038,8 @@ function renderDashboardTrendChart(period){
   const dashTrendBarLabelsPlugin = {
     id: 'dashTrendBarLabels',
     afterDatasetsDraw(chart) {
-      const { ctx } = chart;
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
       const dsCount = chart.data.datasets.length;
       if (!dsCount) return;
 
@@ -5890,85 +6058,112 @@ function renderDashboardTrendChart(period){
 
       const labelsCount = chart.data.labels ? chart.data.labels.length : 0;
       ctx.save();
-      ctx.font = isMobile 
-        ? '700 9.5px Plus Jakarta Sans, Manrope, sans-serif' 
-        : '700 11.5px Plus Jakarta Sans, Manrope, sans-serif';
+      const fontSize = isMobile ? 9.5 : 11;
+      ctx.font = `700 ${fontSize}px Plus Jakarta Sans, Manrope, sans-serif`;
 
-      const minSeparation = isMobile ? 15 : 18;
-
+      const allBars = [];
       for (let mIdx = 0; mIdx < labelsCount; mIdx++) {
-        const activeBars = [];
         for (let dIdx = 0; dIdx < dsCount; dIdx++) {
           const meta = chart.getDatasetMeta(dIdx);
           if (!meta || meta.hidden) continue;
           const val = chart.data.datasets[dIdx].data ? chart.data.datasets[dIdx].data[mIdx] : 0;
           const el = meta.data && meta.data[mIdx];
           if (val && val > 0 && el) {
-            activeBars.push({
-              datasetIndex: dIdx,
-              label: chart.data.datasets[dIdx].label,
+            const formatted = formatVal(val);
+            const tw = ctx.measureText(formatted).width;
+            const barHeight = Math.abs(el.base - el.y);
+            allBars.push({
+              mIdx,
+              dIdx,
               val,
-              formatted: formatVal(val),
+              formatted,
               el,
               color: labelColors[dIdx] || (isDark ? '#F1F5F9' : '#0F172A'),
-              labelX: el.x,
-              labelY: el.y - 6,
-              tw: 0
+              x: el.x,
+              y: el.y - 6,
+              barY: el.y,
+              barBase: el.base,
+              barHeight,
+              tw,
+              th: fontSize,
+              inside: false
             });
           }
         }
+      }
 
-        if (!activeBars.length) continue;
+      if (!allBars.length) {
+        ctx.restore();
+        return;
+      }
 
-        // Measure widths
-        activeBars.forEach(b => {
-          b.tw = ctx.measureText(b.formatted).width;
-        });
+      allBars.sort((a, b) => a.x - b.x);
 
-        // Anti-collision: iterative relaxation pass to guarantee zero overlap
-        let changed = true;
-        let passes = 0;
-        while (changed && passes < 6) {
-          changed = false;
-          passes++;
-          for (let i = 0; i < activeBars.length; i++) {
-            for (let j = 0; j < activeBars.length; j++) {
-              if (i === j) continue;
-              const a = activeBars[i];
-              const b = activeBars[j];
-              const dx = Math.abs(a.labelX - b.labelX);
-              const minDist = (a.tw / 2 + b.tw / 2 + (isMobile ? 3 : 5));
-              const dy = Math.abs(a.labelY - b.labelY);
-              if (dx < minDist && dy < minSeparation) {
-                if (a.el.y < b.el.y || (a.el.y === b.el.y && a.labelX > b.labelX)) {
-                  a.labelY = Math.min(a.labelY, b.labelY - minSeparation);
+      const minPaddingX = isMobile ? 3 : 5;
+      const minSeparationY = fontSize + 4;
+
+      for (let pass = 0; pass < 8; pass++) {
+        let collided = false;
+        for (let i = 0; i < allBars.length; i++) {
+          for (let j = i + 1; j < allBars.length; j++) {
+            const a = allBars[i];
+            const b = allBars[j];
+
+            if (Math.abs(a.x - b.x) > (a.tw / 2 + b.tw / 2 + minPaddingX)) {
+              continue;
+            }
+
+            const dy = Math.abs(a.y - b.y);
+            if (dy < minSeparationY) {
+              collided = true;
+              if (!a.inside && a.barHeight >= 36 && (a.barY - chartArea.top < 24 || a.barY < b.barY)) {
+                a.inside = true;
+                a.y = a.barY + fontSize + 4;
+              } else if (!b.inside && b.barHeight >= 36) {
+                b.inside = true;
+                b.y = b.barY + fontSize + 4;
+              } else {
+                if (a.y <= b.y) {
+                  a.y = b.y - minSeparationY;
                 } else {
-                  b.labelY = Math.min(b.labelY, a.labelY - minSeparation);
+                  b.y = a.y - minSeparationY;
                 }
-                changed = true;
               }
             }
           }
         }
-
-        // Clamp to top margin
-        activeBars.forEach(b => {
-          b.labelY = Math.max(12, b.labelY);
-        });
-
-        // Draw numbers cleanly strictly on top of each bar (no dashed lines or stems)
-        activeBars.forEach(bar => {
-          ctx.save();
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
-          ctx.lineWidth = isMobile ? 2.5 : 3.5;
-          ctx.strokeStyle = surfaceColor;
-          ctx.fillStyle = bar.color;
-          ctx.strokeText(bar.formatted, bar.labelX, bar.labelY);
-          ctx.fillText(bar.formatted, bar.labelX, bar.labelY);
-          ctx.restore();
-        });
+        if (!collided) break;
       }
+
+      allBars.forEach(b => {
+        if (!b.inside && b.y < chartArea.top + fontSize) {
+          if (b.barHeight >= 32) {
+            b.inside = true;
+            b.y = b.barY + fontSize + 4;
+          } else {
+            b.y = chartArea.top + fontSize;
+          }
+        }
+      });
+
+      allBars.forEach(b => {
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.lineWidth = isMobile ? 2.5 : 3.5;
+        if (b.inside) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.strokeText(b.formatted, b.x, b.y);
+          ctx.fillText(b.formatted, b.x, b.y);
+        } else {
+          ctx.strokeStyle = surfaceColor;
+          ctx.fillStyle = b.color;
+          ctx.strokeText(b.formatted, b.x, b.y);
+          ctx.fillText(b.formatted, b.x, b.y);
+        }
+        ctx.restore();
+      });
 
       ctx.restore();
     }
@@ -6008,32 +6203,7 @@ function renderDashboardTrendChart(period){
           }
         },
         tooltip: {
-          enabled: true,
-          displayColors: false,
-          position: 'mobileSafe',
-          xAlign: 'center',
-          caretPadding: 6,
-          caretSize: 0,
-          filter: function(item) {
-            return item && item.parsed && item.parsed.y > 0;
-          },
-          backgroundColor: '#0F172A',
-          titleColor: '#F8FAFC',
-          titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '700' },
-          bodyColor: '#F1F5F9',
-          bodyFont: { family: 'JetBrains Mono', size: 12, weight: '600' },
-          padding: 10,
-          cornerRadius: 8,
-          callbacks: {
-            title: function(items){
-              if(!items || !items.length) return '';
-              const idx = items[0].dataIndex;
-              return (trendPoints[idx] && trendPoints[idx].fullLabel) ? trendPoints[idx].fullLabel : items[0].label;
-            },
-            label: function(ctx) {
-              return ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
-            }
-          }
+          enabled: false
         }
       },
       scales: {
@@ -8014,6 +8184,7 @@ let chartAssetAllocation = null;
 
 const ASSET_CLASSES = [
   { id: 'Stocks', label: 'Stocks', color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
+  { id: 'PSX Stocks', label: 'PSX Stocks', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
   { id: 'ETFs & Index Funds', label: 'ETFs & Index Funds', color: '#10B981', bg: '#ECFDF5', border: '#A7F3D0' },
   { id: 'Crypto', label: 'Crypto', color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A' },
   { id: 'Real Estate', label: 'Real Estate', color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE' },
@@ -8024,12 +8195,14 @@ const ASSET_CLASSES = [
 ];
 
 function getAssetClassMeta(type){
-  return ASSET_CLASSES.find(c => c.id.toLowerCase() === (type || '').toLowerCase()) || {
+  const found = ASSET_CLASSES.find(c => c.id.toLowerCase() === (type || '').toLowerCase());
+  if(found) return found;
+  return {
     id: type || 'Other',
     label: type || 'Other',
-    color: '#64748B',
-    bg: '#F8FAFC',
-    border: '#E2E8F0'
+    color: '#0D9488',
+    bg: '#F0FDFA',
+    border: '#CCFBF1'
   };
 }
 
@@ -8106,14 +8279,17 @@ function renderInvestments(){
   const list = DB.investments || [];
   const totalInvested = list.reduce((s, i) => s + (i.initialInvested || 0), 0);
   const totalValue = list.reduce((s, i) => s + (i.currentValue || 0), 0);
-  const totalMonthly = list.reduce((s, i) => s + (i.monthlyContribution || 0), 0);
   const netReturn = totalValue - totalInvested;
   const roiPct = totalInvested > 0 ? ((netReturn / totalInvested) * 100) : 0;
+
+  // Realized profit from sold trades
+  const soldList = DB.soldInvestments || [];
+  const totalRealized = soldList.reduce((s, i) => s + (i.realizedGain || 0), 0);
 
   // Header count
   const countLabel = document.getElementById('investments-count-label');
   if(countLabel){
-    countLabel.textContent = `${list.length} tracked asset${list.length === 1 ? '' : 's'} • ${fmt(totalValue)} total portfolio value`;
+    countLabel.textContent = `${list.length} active asset${list.length === 1 ? '' : 's'} • ${fmt(totalValue)} portfolio valuation`;
   }
 
   // Top KPIs
@@ -8133,16 +8309,22 @@ function renderInvestments(){
     kpiRoi.className = `text-xs ${netReturn >= 0 ? 'tone-pos' : 'tone-neg'}`;
   }
 
-  const kpiMonthly = document.getElementById('inv-kpi-monthly');
-  if(kpiMonthly) kpiMonthly.textContent = `${fmt(totalMonthly)}/mo`;
+  const kpiRealized = document.getElementById('inv-kpi-realized');
+  if(kpiRealized){
+    kpiRealized.textContent = `${totalRealized >= 0 ? '+' : ''}${fmt(totalRealized)}`;
+    kpiRealized.style.color = totalRealized >= 0 ? 'var(--teal)' : 'var(--rose)';
+  }
+  const kpiRealizedSub = document.getElementById('inv-kpi-realized-sub');
+  if(kpiRealizedSub){
+    kpiRealizedSub.textContent = `${soldList.length} closed trade${soldList.length === 1 ? '' : 's'}`;
+  }
 
   // Init / sync simulator defaults if first load
-  if(totalValue > 0 && list.length > 0 && simStartingCapital === 0 && simMonthlyContrib === 0){
+  if(totalValue > 0 && list.length > 0 && simStartingCapital === 0){
     simStartingCapital = Math.round(totalValue);
-    simMonthlyContrib = Math.round(totalMonthly);
-    const avgReturn = list.reduce((s, i) => s + (i.expectedAnnualReturn || 10) * (i.currentValue || 1), 0) / Math.max(1, totalValue);
-    simAnnualReturn = Math.round(avgReturn * 10) / 10;
-  } else if(list.length === 0){
+    simMonthlyContrib = 0;
+    simAnnualReturn = 14.0;
+  } else if(list.length === 0 && simStartingCapital === 0){
     simStartingCapital = 0;
     simMonthlyContrib = 0;
   }
@@ -8185,6 +8367,10 @@ function updateSimulationOutputs(){
   }
   const prinEl = document.getElementById('sim-result-principal');
   if(prinEl) prinEl.textContent = fmt(res.finalPrincipal);
+  const pureGainEl = document.getElementById('sim-result-pure-gain');
+  if(pureGainEl) pureGainEl.textContent = `+${fmt(res.finalGain)}`;
+  const rateEl = document.getElementById('sim-result-rate');
+  if(rateEl) rateEl.textContent = `${simAnnualReturn.toFixed(1)}% / yr`;
   const multEl = document.getElementById('sim-result-multiple');
   if(multEl) multEl.textContent = `${res.multiple.toFixed(2)}x Return`;
   const dblEl = document.getElementById('sim-result-doubling');
@@ -8210,7 +8396,7 @@ function onSimInputChange(type, val){
     simAnnualReturn = Math.max(0.5, Math.min(30, val));
     const disp = document.getElementById('sim-disp-rate');
     if(disp) disp.textContent = `${simAnnualReturn.toFixed(1)}% / yr`;
-    [5, 10, 14].forEach(p => {
+    [6, 10, 14, 18].forEach(p => {
       const btn = document.getElementById('preset-rate-' + p);
       if(btn) btn.classList.toggle('active', Math.abs(simAnnualReturn - p) < 0.25);
     });
@@ -8238,14 +8424,10 @@ function setSimHorizon(years){
 function syncSimWithPortfolio(){
   const list = DB.investments || [];
   const totalVal = list.reduce((s, inv) => s + (inv.currentValue || 0), 0);
-  const totalMonthly = list.reduce((s, inv) => s + (inv.monthlyContribution || 0), 0);
-  const avgReturn = (list.length > 0)
-    ? (list.reduce((s, inv) => s + (inv.expectedAnnualReturn || 10) * (inv.currentValue || 1), 0) / Math.max(1, totalVal))
-    : 10.0;
 
   simStartingCapital = Math.round(totalVal);
-  simMonthlyContrib = Math.round(totalMonthly);
-  simAnnualReturn = Math.round(avgReturn * 10) / 10;
+  simMonthlyContrib = 0;
+  simAnnualReturn = 14.0;
 
   const inputP = document.getElementById('sim-input-principal');
   if(inputP) inputP.value = simStartingCapital;
@@ -8518,6 +8700,31 @@ function renderHoldingsFilters(){
   }).join('');
 }
 
+let invHoldingTab = 'active';
+
+function setInvHoldingTab(tab){
+  invHoldingTab = tab;
+  const activeBtn = document.getElementById('inv-tab-active');
+  const soldBtn = document.getElementById('inv-tab-sold');
+  if(activeBtn) activeBtn.classList.toggle('active', tab === 'active');
+  if(soldBtn) soldBtn.classList.toggle('active', tab === 'sold');
+  invCategoryFilter = 'all';
+  renderHoldingsFilters();
+  renderHoldingsTable();
+}
+
+function renderHoldingsFilters(){
+  const container = document.getElementById('inv-category-filter-chips');
+  if(!container) return;
+  const list = invHoldingTab === 'active' ? (DB.investments || []) : (DB.soldInvestments || []);
+  const categories = ['all', ...Array.from(new Set(list.map(i => i.assetType || 'Other')))];
+
+  container.innerHTML = categories.map(cat => {
+    const count = cat === 'all' ? list.length : list.filter(i => (i.assetType || 'Other') === cat).length;
+    return `<button type="button" class="btn-chip ${invCategoryFilter === cat ? 'active' : ''}" style="font-size:11.5px; padding:4px 9px;" onclick="setInvCategoryFilter('${escapeHtml(cat)}')">${cat === 'all' ? 'All' : cat} (${count})</button>`;
+  }).join('');
+}
+
 function setInvCategoryFilter(cat){
   invCategoryFilter = cat;
   renderHoldingsFilters();
@@ -8525,98 +8732,207 @@ function setInvCategoryFilter(cat){
 }
 
 function renderHoldingsTable(){
+  const thead = document.getElementById('inv-holdings-thead');
   const tbody = document.getElementById('inv-holdings-tbody');
   const emptyWrap = document.getElementById('inv-holdings-empty');
   if(!tbody || !emptyWrap) return;
 
-  const list = DB.investments || [];
-  const filtered = invCategoryFilter === 'all'
-    ? list
-    : list.filter(i => (i.assetType || 'Other') === invCategoryFilter);
+  if(invHoldingTab === 'active'){
+    if(thead){
+      thead.innerHTML = `
+        <tr style="border-bottom:1px solid var(--line); color:var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em;">
+          <th style="padding:10px 12px;">Asset Name</th>
+          <th style="padding:10px 12px;">Class</th>
+          <th style="padding:10px 12px;">Platform</th>
+          <th style="padding:10px 12px; text-align:right;">Invested (Cost)</th>
+          <th style="padding:10px 12px; text-align:right;">Current Value</th>
+          <th style="padding:10px 12px; text-align:right;">Gain / Loss (ROI)</th>
+          <th style="padding:10px 12px; text-align:center;">Actions</th>
+        </tr>`;
+    }
 
-  if(!filtered.length){
-    tbody.innerHTML = '';
-    emptyWrap.style.display = 'block';
-    emptyWrap.innerHTML = `
-      <div style="max-width:380px; margin:0 auto;">
-        <div style="width:48px; height:48px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--primary);">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-        </div>
-        <h3 style="margin:0 0 6px; font-size:17px;">${list.length === 0 ? 'No investments added yet' : 'No assets in this category'}</h3>
-        <p class="text-xs muted" style="margin:0 0 16px; line-height:1.5;">
-          ${list.length === 0 
-            ? 'Start building your wealth portfolio to track market value, ROI, and compound growth outcomes.' 
-            : 'Switch to "All" or add an asset to this category.'}
-        </p>
-        <div style="display:flex; justify-content:center; gap:8px;">
-          <button onclick="openInvestmentModal()" class="btn-primary">+ Add Investment</button>
-        </div>
-      </div>`;
-    return;
-  }
+    const list = DB.investments || [];
+    const filtered = invCategoryFilter === 'all'
+      ? list
+      : list.filter(i => (i.assetType || 'Other') === invCategoryFilter);
 
-  emptyWrap.style.display = 'none';
-  tbody.innerHTML = filtered.map(inv => {
-    const meta = getAssetClassMeta(inv.assetType);
-    const invested = inv.initialInvested || 0;
-    const current = inv.currentValue || 0;
-    const net = current - invested;
-    const roi = invested > 0 ? ((net / invested) * 100) : 0;
-    const isPos = net >= 0;
+    if(!filtered.length){
+      tbody.innerHTML = '';
+      emptyWrap.style.display = 'block';
+      emptyWrap.innerHTML = `
+        <div style="max-width:380px; margin:0 auto;">
+          <div style="width:48px; height:48px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--primary);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          </div>
+          <h3 style="margin:0 0 6px; font-size:17px;">${list.length === 0 ? 'No active holdings yet' : 'No assets in this category'}</h3>
+          <p class="text-xs muted" style="margin:0 0 16px; line-height:1.5;">
+            ${list.length === 0 
+              ? 'Start building your portfolio to track current market value and realize profit when you sell.' 
+              : 'Switch to "All" or add an asset to this category.'}
+          </p>
+          <div style="display:flex; justify-content:center; gap:8px;">
+            <button onclick="openInvestmentModal()" class="btn-primary">+ Add Investment</button>
+          </div>
+        </div>`;
+      return;
+    }
 
-    return `
-      <tr style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
-        <td style="padding:12px;">
-          <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
-          ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
-        </td>
-        <td style="padding:12px;">
-          <span class="asset-tag-badge" style="background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border};">
-            <span>${escapeHtml(meta.label)}</span>
-          </span>
-        </td>
-        <td style="padding:12px;">
-          <span style="font-size:12.5px; color:var(--muted-2);">${escapeHtml(inv.holdingLocation || 'Self-Custody')}</span>
-        </td>
-        <td style="padding:12px; text-align:right;" class="figure">
-          ${fmt(invested)}
-        </td>
-        <td style="padding:12px; text-align:right;" class="figure" style="font-weight:600;">
-          <strong>${fmt(current)}</strong>
-        </td>
-        <td style="padding:12px; text-align:right;" class="figure">
-          <span style="color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-weight:600;">
-            ${isPos ? '+' : ''}${fmt(net)}
-          </span>
-          <span class="text-xs" style="display:block; color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-size:11px;">
-            (${isPos ? '+' : ''}${roi.toFixed(1)}%)
-          </span>
-        </td>
-        <td style="padding:12px; text-align:right;" class="figure">
-          ${inv.monthlyContribution > 0 ? `<span style="color:var(--teal);">${fmt(inv.monthlyContribution)}/mo</span>` : '<span class="muted">–</span>'}
-        </td>
-        <td style="padding:12px; text-align:right;" class="figure">
-          <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:11.5px; padding:2px 7px;">
-            ${inv.expectedAnnualReturn || 10}%
-          </span>
-        </td>
-        <td style="padding:12px; text-align:center;">
-          <div style="display:inline-flex; align-items:center; gap:4px;">
-            <button class="icon-btn" onclick="openEditInvestmentModal('${inv.id}')" title="Edit investment" aria-label="Edit ${escapeHtml(inv.name)}">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="icon-btn" onclick="deleteInvestment('${inv.id}')" title="Delete investment" aria-label="Delete investment">
+    emptyWrap.style.display = 'none';
+    tbody.innerHTML = filtered.map(inv => {
+      const meta = getAssetClassMeta(inv.assetType);
+      const invested = inv.initialInvested || 0;
+      const current = inv.currentValue || 0;
+      const net = current - invested;
+      const roi = invested > 0 ? ((net / invested) * 100) : 0;
+      const isPos = net >= 0;
+
+      return `
+        <tr style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:12px;">
+            <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
+            ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
+          </td>
+          <td style="padding:12px;">
+            <span class="asset-tag-badge" style="background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border};">
+              <span>${escapeHtml(meta.label)}</span>
+            </span>
+          </td>
+          <td style="padding:12px;">
+            <span style="font-size:12.5px; color:var(--muted-2);">${escapeHtml(inv.holdingLocation || 'Self-Custody')}</span>
+          </td>
+          <td style="padding:12px; text-align:right;" class="figure">
+            ${fmt(invested)}
+          </td>
+          <td style="padding:12px; text-align:right;" class="figure" style="font-weight:600;">
+            <strong>${fmt(current)}</strong>
+          </td>
+          <td style="padding:12px; text-align:right;" class="figure">
+            <span style="color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-weight:600;">
+              ${isPos ? '+' : ''}${fmt(net)}
+            </span>
+            <span class="text-xs" style="display:block; color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-size:11px;">
+              (${isPos ? '+' : ''}${roi.toFixed(1)}%)
+            </span>
+          </td>
+          <td style="padding:12px; text-align:center;">
+            <div style="display:inline-flex; align-items:center; gap:6px;">
+              <button class="btn-small" onclick="openSellInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Sell asset & calculate realized profit">
+                Sell
+              </button>
+              <button class="icon-btn" onclick="openEditInvestmentModal('${inv.id}')" title="Edit asset" aria-label="Edit ${escapeHtml(inv.name)}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="icon-btn" onclick="deleteInvestment('${inv.id}')" title="Delete asset" aria-label="Delete investment">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  } else {
+    // Closed / Sold Trades Tab
+    if(thead){
+      thead.innerHTML = `
+        <tr style="border-bottom:1px solid var(--line); color:var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em;">
+          <th style="padding:10px 12px;">Asset Name</th>
+          <th style="padding:10px 12px;">Class</th>
+          <th style="padding:10px 12px;">Platform</th>
+          <th style="padding:10px 12px; text-align:right;">Buy Cost Basis</th>
+          <th style="padding:10px 12px; text-align:right;">Sale Proceeds</th>
+          <th style="padding:10px 12px; text-align:right;">Realized Gain (ROI)</th>
+          <th style="padding:10px 12px; text-align:center;">Date Sold</th>
+          <th style="padding:10px 12px; text-align:center;">Actions</th>
+        </tr>`;
+    }
+
+    const list = DB.soldInvestments || [];
+    const filtered = invCategoryFilter === 'all'
+      ? list
+      : list.filter(i => (i.assetType || 'Other') === invCategoryFilter);
+
+    if(!filtered.length){
+      tbody.innerHTML = '';
+      emptyWrap.style.display = 'block';
+      emptyWrap.innerHTML = `
+        <div style="max-width:380px; margin:0 auto;">
+          <div style="width:48px; height:48px; border-radius:12px; background:rgba(20,184,166,0.1); border:1px solid rgba(20,184,166,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--teal);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3 style="margin:0 0 6px; font-size:17px;">No closed trades yet</h3>
+          <p class="text-xs muted" style="margin:0; line-height:1.5;">
+            When you sell any active holding, its sale proceeds, buy cost basis, and realized profit will be preserved here.
+          </p>
+        </div>`;
+      return;
+    }
+
+    emptyWrap.style.display = 'none';
+    tbody.innerHTML = filtered.map(inv => {
+      const meta = getAssetClassMeta(inv.assetType);
+      const cost = inv.initialInvested || 0;
+      const sold = inv.soldPrice || 0;
+      const gain = inv.realizedGain !== undefined ? inv.realizedGain : (sold - cost);
+      const roi = inv.roiPct !== undefined ? inv.roiPct : (cost > 0 ? ((gain / cost) * 100) : 0);
+      const isPos = gain >= 0;
+
+      return `
+        <tr style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:12px;">
+            <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
+            ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
+          </td>
+          <td style="padding:12px;">
+            <span class="asset-tag-badge" style="background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border};">
+              <span>${escapeHtml(meta.label)}</span>
+            </span>
+          </td>
+          <td style="padding:12px;">
+            <span style="font-size:12.5px; color:var(--muted-2);">${escapeHtml(inv.holdingLocation || 'Self-Custody')}</span>
+          </td>
+          <td style="padding:12px; text-align:right;" class="figure">
+            ${fmt(cost)}
+          </td>
+          <td style="padding:12px; text-align:right;" class="figure" style="font-weight:600;">
+            <strong>${fmt(sold)}</strong>
+          </td>
+          <td style="padding:12px; text-align:right;" class="figure">
+            <span style="color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-weight:700;">
+              ${isPos ? '+' : ''}${fmt(gain)}
+            </span>
+            <span class="text-xs" style="display:block; color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-size:11px;">
+              (${isPos ? '+' : ''}${roi.toFixed(1)}%)
+            </span>
+          </td>
+          <td style="padding:12px; text-align:center; font-size:12px; color:var(--muted);">
+            ${escapeHtml(inv.soldDate || '–')}
+          </td>
+          <td style="padding:12px; text-align:center;">
+            <button class="icon-btn" onclick="deleteSoldInvestment('${inv.id}')" title="Delete trade record" aria-label="Delete closed trade record">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
             </button>
-          </div>
-        </td>
-      </tr>`;
-  }).join('');
+          </td>
+        </tr>`;
+    }).join('');
+  }
+}
+
+function populateInvestmentCategorySelects(){
+  const cats = (DB && DB.categories && Array.isArray(DB.categories.investments) && DB.categories.investments.length)
+    ? DB.categories.investments
+    : DEFAULT_INVESTMENT_CATEGORIES;
+  ['inv-type', 'edit-inv-type'].forEach(selectId => {
+    const sel = document.getElementById(selectId);
+    if(sel){
+      const cur = sel.value;
+      sel.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}" ${c===cur?'selected':''}>${escapeHtml(c)}</option>`).join('');
+    }
+  });
 }
 
 function openInvestmentModal(){
+  populateInvestmentCategorySelects();
   const initLabel = document.getElementById('inv-initial-label');
-  if(initLabel) initLabel.textContent = `Invested (Cost Basis, ${currencySymbol()}) *`;
+  if(initLabel) initLabel.textContent = `Total Invested (Cost Basis, ${currencySymbol()}) *`;
   const currLabel = document.getElementById('inv-current-label');
   if(currLabel) currLabel.textContent = `Current Market Value (${currencySymbol()}) *`;
   const dateInput = document.getElementById('inv-start-date');
@@ -8638,10 +8954,8 @@ function handleAddInvestment(e){
   const holdingLocation = document.getElementById('inv-location').value.trim() || 'Self-Custody';
   const initialInvested = parseFloat(document.getElementById('inv-initial').value);
   const currentValue = parseFloat(document.getElementById('inv-current').value);
-  const monthlyContribution = parseFloat(document.getElementById('inv-monthly').value) || 0;
-  const expectedAnnualReturn = parseFloat(document.getElementById('inv-return').value) || 10.0;
-  const startDate = document.getElementById('inv-start-date').value || ymd(new Date());
-  const notes = document.getElementById('inv-notes').value.trim();
+  const startDate = document.getElementById('inv-start-date')?.value || ymd(new Date());
+  const notes = document.getElementById('inv-notes')?.value.trim() || '';
 
   if(!name || isNaN(initialInvested) || initialInvested < 0 || isNaN(currentValue) || currentValue < 0){
     showToast('Please enter valid asset details and amounts', 'error');
@@ -8656,8 +8970,8 @@ function handleAddInvestment(e){
     holdingLocation,
     initialInvested,
     currentValue,
-    monthlyContribution,
-    expectedAnnualReturn,
+    monthlyContribution: 0,
+    expectedAnnualReturn: 14.0,
     startDate,
     notes,
     createdAt: new Date().toISOString()
@@ -8671,10 +8985,9 @@ function handleAddInvestment(e){
   document.getElementById('inv-name').value = '';
   document.getElementById('inv-initial').value = '';
   document.getElementById('inv-current').value = '';
-  document.getElementById('inv-monthly').value = '0';
-  document.getElementById('inv-return').value = '10.0';
   document.getElementById('inv-location').value = '';
-  document.getElementById('inv-notes').value = '';
+  const notesEl = document.getElementById('inv-notes');
+  if(notesEl) notesEl.value = '';
 
   renderAllForCurrentPage();
   showToast(`Added investment "${name}"`);
@@ -8684,19 +8997,18 @@ function openEditInvestmentModal(id){
   const inv = (DB.investments || []).find(i => i.id === id);
   if(!inv) return;
 
+  populateInvestmentCategorySelects();
   document.getElementById('edit-inv-id').value = id;
   document.getElementById('edit-inv-name').value = inv.name || '';
   document.getElementById('edit-inv-type').value = inv.assetType || 'Stocks';
   document.getElementById('edit-inv-location').value = inv.holdingLocation || '';
   document.getElementById('edit-inv-initial').value = inv.initialInvested || 0;
   document.getElementById('edit-inv-current').value = inv.currentValue || 0;
-  document.getElementById('edit-inv-monthly').value = inv.monthlyContribution || 0;
-  document.getElementById('edit-inv-return').value = inv.expectedAnnualReturn || 10.0;
   document.getElementById('edit-inv-start-date').value = inv.startDate || '';
   document.getElementById('edit-inv-notes').value = inv.notes || '';
 
   const initLabel = document.getElementById('edit-inv-initial-label');
-  if(initLabel) initLabel.textContent = `Invested (Cost Basis, ${currencySymbol()}) *`;
+  if(initLabel) initLabel.textContent = `Total Invested (Cost Basis, ${currencySymbol()}) *`;
   const currLabel = document.getElementById('edit-inv-current-label');
   if(currLabel) currLabel.textContent = `Current Market Value (${currencySymbol()}) *`;
 
@@ -8723,10 +9035,8 @@ function handleSaveEditInvestment(e){
   const holdingLocation = document.getElementById('edit-inv-location').value.trim() || 'Self-Custody';
   const initialInvested = parseFloat(document.getElementById('edit-inv-initial').value);
   const currentValue = parseFloat(document.getElementById('edit-inv-current').value);
-  const monthlyContribution = parseFloat(document.getElementById('edit-inv-monthly').value) || 0;
-  const expectedAnnualReturn = parseFloat(document.getElementById('edit-inv-return').value) || 10.0;
-  const startDate = document.getElementById('edit-inv-start-date').value || ymd(new Date());
-  const notes = document.getElementById('edit-inv-notes').value.trim();
+  const startDate = document.getElementById('edit-inv-start-date')?.value || ymd(new Date());
+  const notes = document.getElementById('edit-inv-notes')?.value.trim() || '';
 
   if(!name || isNaN(initialInvested) || initialInvested < 0 || isNaN(currentValue) || currentValue < 0){
     showToast('Please check the values entered', 'error');
@@ -8738,8 +9048,6 @@ function handleSaveEditInvestment(e){
   inv.holdingLocation = holdingLocation;
   inv.initialInvested = initialInvested;
   inv.currentValue = currentValue;
-  inv.monthlyContribution = monthlyContribution;
-  inv.expectedAnnualReturn = expectedAnnualReturn;
   inv.startDate = startDate;
   inv.notes = notes;
 
@@ -8752,11 +9060,153 @@ function handleSaveEditInvestment(e){
 function deleteInvestment(id){
   const inv = (DB.investments || []).find(i => i.id === id);
   if(!inv) return;
-  if(!confirm(`Remove "${inv.name}" from your investments?`)) return;
+  if(!confirm(`Remove "${inv.name}" from your active investments?`)) return;
 
   DB.investments = (DB.investments || []).filter(i => i.id !== id);
   saveDB(true);
   renderAllForCurrentPage();
+  showToast(`Removed "${inv.name}"`);
+}
+
+/* ---------------- Selling / Realized Profit Handlers ---------------- */
+function openSellInvestmentModal(id){
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+
+  document.getElementById('sell-inv-id').value = id;
+  const nameEl = document.getElementById('sell-inv-name');
+  if(nameEl) nameEl.textContent = inv.name;
+  const costEl = document.getElementById('sell-inv-cost');
+  if(costEl) costEl.textContent = fmt(inv.initialInvested || 0);
+
+  const priceLabel = document.getElementById('sell-inv-price-label');
+  if(priceLabel) priceLabel.textContent = `Total Sale Proceeds (${currencySymbol()}) *`;
+
+  const priceInput = document.getElementById('sell-inv-price');
+  if(priceInput) priceInput.value = inv.currentValue || inv.initialInvested || 0;
+
+  const dateInput = document.getElementById('sell-inv-date');
+  if(dateInput) dateInput.value = ymd(new Date());
+
+  const syncCheckbox = document.getElementById('sell-inv-sync-tx');
+  if(syncCheckbox) syncCheckbox.checked = true;
+
+  updateSellGainPreview();
+
+  const backdrop = document.getElementById('sell-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+  setTimeout(() => priceInput && priceInput.focus(), 60);
+}
+
+function closeSellInvestmentModal(){
+  const backdrop = document.getElementById('sell-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function updateSellGainPreview(){
+  const id = document.getElementById('sell-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  const cost = inv ? (inv.initialInvested || 0) : 0;
+  const salePrice = parseFloat(document.getElementById('sell-inv-price')?.value) || 0;
+  const gain = salePrice - cost;
+  const roi = cost > 0 ? ((gain / cost) * 100) : 0;
+  const isPos = gain >= 0;
+
+  const netEl = document.getElementById('sell-inv-preview-net');
+  if(netEl){
+    netEl.textContent = `${isPos ? '+' : ''}${fmt(gain)}`;
+    netEl.style.color = isPos ? 'var(--teal)' : 'var(--rose)';
+  }
+  const roiEl = document.getElementById('sell-inv-preview-roi');
+  if(roiEl){
+    roiEl.textContent = `(${isPos ? '+' : ''}${roi.toFixed(1)}%)`;
+    roiEl.style.color = isPos ? 'var(--teal)' : 'var(--rose)';
+  }
+  const banner = document.getElementById('sell-inv-preview-banner');
+  if(banner){
+    banner.style.background = isPos ? 'rgba(20,184,166,0.08)' : 'rgba(239,68,68,0.08)';
+    banner.style.borderColor = isPos ? 'rgba(20,184,166,0.25)' : 'rgba(239,68,68,0.25)';
+  }
+}
+
+function handleConfirmSellInvestment(e){
+  e.preventDefault();
+  const id = document.getElementById('sell-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv){
+    closeSellInvestmentModal();
+    return;
+  }
+
+  const salePrice = parseFloat(document.getElementById('sell-inv-price')?.value);
+  const saleDate = document.getElementById('sell-inv-date')?.value || ymd(new Date());
+  const syncTx = document.getElementById('sell-inv-sync-tx')?.checked;
+
+  if(isNaN(salePrice) || salePrice < 0){
+    showToast('Please enter a valid sale proceeds amount', 'error');
+    return;
+  }
+
+  const cost = inv.initialInvested || 0;
+  const gain = salePrice - cost;
+  const roi = cost > 0 ? ((gain / cost) * 100) : 0;
+
+  // Optional: record realized profit as an Income transaction in Transactions
+  if(syncTx && gain > 0){
+    DB.transactions = DB.transactions || [];
+    if(!DB.categories.income.includes('Investment Income') && !DB.categories.income.includes('Investments')){
+      DB.categories.income.push('Investment Income');
+    }
+    const incomeCategory = DB.categories.income.includes('Investment Income') ? 'Investment Income' : 'Investments';
+    
+    DB.transactions.unshift({
+      id: uid(),
+      date: saleDate,
+      description: `Sold ${inv.name} (Realized Capital Gain)`,
+      amount: Math.round(gain * 100) / 100,
+      type: 'income',
+      category: incomeCategory,
+      subCategory: 'Capital Gains',
+      paymentMethod: inv.holdingLocation || (DB.paymentMethods && DB.paymentMethods[0]) || 'Bank Transfer'
+    });
+  }
+
+  // Push to closed trades
+  DB.soldInvestments = Array.isArray(DB.soldInvestments) ? DB.soldInvestments : [];
+  DB.soldInvestments.unshift({
+    id: uid(),
+    originalId: inv.id,
+    name: inv.name,
+    assetType: inv.assetType || 'Other',
+    holdingLocation: inv.holdingLocation || 'Self-Custody',
+    initialInvested: cost,
+    soldPrice: salePrice,
+    realizedGain: gain,
+    roiPct: roi,
+    soldDate: saleDate,
+    notes: inv.notes || '',
+    closedAt: new Date().toISOString()
+  });
+
+  // Remove from active investments
+  DB.investments = (DB.investments || []).filter(i => i.id !== id);
+
+  saveDB(true);
+  closeSellInvestmentModal();
+  renderAllForCurrentPage();
+
+  showToast(`Sold "${inv.name}" with ${gain >= 0 ? '+' : ''}${fmt(gain)} realized profit!`);
+}
+
+function deleteSoldInvestment(id){
+  const inv = (DB.soldInvestments || []).find(i => i.id === id);
+  if(!inv) return;
+  if(!confirm(`Remove closed trade record for "${inv.name}"?`)) return;
+
+  DB.soldInvestments = (DB.soldInvestments || []).filter(i => i.id !== id);
+  saveDB(true);
+  renderAllForCurrentPage();
+  showToast(`Removed closed trade record for "${inv.name}"`);
 }
 
 /* ---------------- render: settings ---------------- */
@@ -9114,8 +9564,8 @@ function renderRecycleBin(){
 }
 
 function renderCatTypeChips(){
-  const types = ['income','expense','savings'];
-  document.getElementById('cat-type-chips').innerHTML = types.map(t => `<button class="btn-chip ${catTypeTab===t?'active':''}" onclick="setCatTypeTab('${t}')">${t}</button>`).join('');
+  const types = ['income','expense','savings','investments'];
+  document.getElementById('cat-type-chips').innerHTML = types.map(t => `<button class="btn-chip ${catTypeTab===t?'active':''}" onclick="setCatTypeTab('${t}')">${titleCase(t)}</button>`).join('');
 }
 
 function setCatTypeTab(t){
