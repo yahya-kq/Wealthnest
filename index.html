@@ -2212,6 +2212,10 @@
         </div>
       </div>
 
+      <div id="settings-backup" class="hidden">
+        <div id="settings-backup-container"></div>
+      </div>
+
       <div id="settings-activity" class="hidden">
         <div class="card" style="padding:22px;">
           <h2 class="section-title" style="margin-bottom:4px;">Recent Changes</h2>
@@ -4367,9 +4371,49 @@ function exportFinancesJSON(){
     document.body.appendChild(a);
     a.click();
     a.remove();
+    try {
+      localStorage.setItem('wealthnest_last_manual_backup', new Date().toISOString());
+      if (typeof renderBackupSettings === 'function') renderBackupSettings();
+    } catch(e){}
     showToast("Backup exported successfully!");
   } catch(e) {
     showToast("Export failed: " + e.message, "error");
+  }
+}
+
+function exportTransactionsCSV(){
+  try {
+    const txs = DB.transactions || [];
+    if (!txs.length) {
+      showToast("No transactions to export", "info");
+      return;
+    }
+    const headers = ["ID", "Date", "Type", "Amount", "Currency", "Category", "Subcategory", "PaymentMethod", "Account", "Note"];
+    const rows = txs.map(t => [
+      t.id,
+      t.date || '',
+      t.type || '',
+      t.amount || 0,
+      t.currency || (DB.currency && DB.currency.code) || 'USD',
+      `"${(t.category || '').replace(/"/g, '""')}"`,
+      `"${(t.subcategory || '').replace(/"/g, '""')}"`,
+      `"${(t.paymentMethod || '').replace(/"/g, '""')}"`,
+      `"${(t.account || '').replace(/"/g, '""')}"`,
+      `"${(t.note || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = ymd(new Date());
+    a.href = url;
+    a.download = `wealthnest_transactions_${dateStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast(`Exported ${txs.length} transactions as CSV!`);
+  } catch(e) {
+    showToast("CSV export failed: " + e.message, "error");
   }
 }
 
@@ -6082,7 +6126,6 @@ function renderDashboardTrendChart(period){
       data: trendPoints.map(t => t.income),
       backgroundColor: incomeGrad,
       hoverBackgroundColor: '#0D9488',
-      shadowColor: 'rgba(13, 148, 136, 0.42)',
       borderRadius: 6,
       borderSkipped: false,
       maxBarThickness: maxBarThickness
@@ -6095,7 +6138,6 @@ function renderDashboardTrendChart(period){
       data: trendPoints.map(t => t.expense),
       backgroundColor: expenseGrad,
       hoverBackgroundColor: '#E11D48',
-      shadowColor: 'rgba(225, 29, 72, 0.42)',
       borderRadius: 6,
       borderSkipped: false,
       maxBarThickness: maxBarThickness
@@ -6108,35 +6150,11 @@ function renderDashboardTrendChart(period){
       data: trendPoints.map(t => t.savings),
       backgroundColor: savingsGrad,
       hoverBackgroundColor: '#D97706',
-      shadowColor: 'rgba(217, 119, 6, 0.42)',
       borderRadius: 6,
       borderSkipped: false,
       maxBarThickness: maxBarThickness
     });
   }
-
-  const barShadowPlugin = {
-    id: 'barShadowPlugin',
-    beforeDatasetDraw(chart, args) {
-      const { ctx } = chart;
-      const meta = chart.getDatasetMeta(args.index);
-      if(!meta || meta.hidden) return;
-      const ds = chart.data.datasets[args.index];
-      if(ds && ds.shadowColor){
-        ctx.save();
-        ctx.shadowColor = ds.shadowColor;
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetY = 3;
-        ctx.shadowOffsetX = 0;
-      }
-    },
-    afterDatasetDraw(chart, args) {
-      const ds = chart.data.datasets[args.index];
-      if(ds && ds.shadowColor){
-        chart.ctx.restore();
-      }
-    }
-  };
 
   // Register mobileSafe tooltip positioner if not yet registered
   if(typeof Chart !== 'undefined' && Chart.Tooltip && Chart.Tooltip.positioners && !Chart.Tooltip.positioners.mobileSafe){
@@ -6155,7 +6173,7 @@ function renderDashboardTrendChart(period){
     };
   }
 
-  // Interactive Bar Hover Glow Plugin: adds luminous aura around hovered bar
+  // Interactive Bar Hover Glow Plugin: adds luminous aura around hovered bar ONLY upon mouse hover
   const barHoverGlowPlugin = {
     id: 'barHoverGlow',
     afterDatasetsDraw(chart) {
@@ -6174,13 +6192,13 @@ function renderDashboardTrendChart(period){
 
         const dsLabel = (chart.data.datasets[datasetIndex].label || '').toLowerCase();
         let glowColor = 'rgba(20, 184, 166, 0.95)';  // Teal glow for Income
-        let glowFill = 'rgba(20, 184, 166, 0.28)';
+        let glowFill = 'rgba(20, 184, 166, 0.22)';
         if (dsLabel.includes('expense')) {
           glowColor = 'rgba(244, 63, 94, 0.95)';    // Rose glow for Expenses
-          glowFill = 'rgba(244, 63, 94, 0.28)';
+          glowFill = 'rgba(244, 63, 94, 0.22)';
         } else if (dsLabel.includes('saving')) {
           glowColor = 'rgba(245, 158, 11, 0.95)';   // Amber glow for Savings
-          glowFill = 'rgba(245, 158, 11, 0.28)';
+          glowFill = 'rgba(245, 158, 11, 0.22)';
         }
 
         ctx.save();
@@ -6195,14 +6213,14 @@ function renderDashboardTrendChart(period){
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
         ctx.strokeStyle = glowColor;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2.2;
         ctx.fillStyle = glowFill;
 
         ctx.beginPath();
         if (ctx.roundRect) {
-          ctx.roundRect(x, y, w, h, [r, r, 0, 0]);
+          ctx.roundRect(x - 1, y - 1, w + 2, h + 1, [r, r, 0, 0]);
         } else {
-          ctx.rect(x, y, w, h);
+          ctx.rect(x - 1, y - 1, w + 2, h + 1);
         }
         ctx.stroke();
         ctx.fill();
@@ -6219,13 +6237,22 @@ function renderDashboardTrendChart(period){
       const dsCount = chart.data.datasets.length;
       if (!dsCount) return;
 
+      // Compact format prevents horizontal collision between adjacent month bars
       const formatVal = (v) => {
         if (!v || v <= 0) return '';
-        if (isMobile && v >= 100000) {
-          if (v >= 1000000) return (Math.round(v / 100000) / 10).toFixed(1).replace(/\.0$/, '') + 'M';
-          return Math.round(v / 1000).toString() + 'k';
+        if (v >= 1000000) {
+          const m = v / 1000000;
+          return (m >= 10 ? Math.round(m) : m.toFixed(1).replace(/\.0$/, '')) + 'M';
         }
-        return Math.round(v).toLocaleString();
+        if (v >= 10000) {
+          const k = v / 1000;
+          return (k >= 100 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, '')) + 'k';
+        }
+        if (v >= 1000) {
+          const k = v / 1000;
+          return k.toFixed(1).replace(/\.0$/, '') + 'k';
+        }
+        return Math.round(v).toString();
       };
 
       const labelColors = isDark 
@@ -6234,7 +6261,7 @@ function renderDashboardTrendChart(period){
 
       const labelsCount = chart.data.labels ? chart.data.labels.length : 0;
       ctx.save();
-      const fontSize = isMobile ? 9.5 : 11;
+      const fontSize = isMobile ? 9 : 10.5;
       ctx.font = `700 ${fontSize}px Plus Jakarta Sans, Manrope, sans-serif`;
 
       const allBars = [];
@@ -6273,11 +6300,13 @@ function renderDashboardTrendChart(period){
         return;
       }
 
+      // Sort bars horizontally from left to right
       allBars.sort((a, b) => a.x - b.x);
 
       const minPaddingX = isMobile ? 3 : 5;
-      const minSeparationY = fontSize + 4;
+      const minSeparationY = fontSize + 8; // ~18.5px clear vertical separation
 
+      // Multi-pass collision resolver to prevent adjacent bar labels from overlapping
       for (let pass = 0; pass < 8; pass++) {
         let collided = false;
         for (let i = 0; i < allBars.length; i++) {
@@ -6285,6 +6314,7 @@ function renderDashboardTrendChart(period){
             const a = allBars[i];
             const b = allBars[j];
 
+            // Only check pairs that overlap horizontally
             if (Math.abs(a.x - b.x) > (a.tw / 2 + b.tw / 2 + minPaddingX)) {
               continue;
             }
@@ -6292,13 +6322,15 @@ function renderDashboardTrendChart(period){
             const dy = Math.abs(a.y - b.y);
             if (dy < minSeparationY) {
               collided = true;
-              if (!a.inside && a.barHeight >= 36 && (a.barY - chartArea.top < 24 || a.barY < b.barY)) {
+              // If a bar is tall enough, safely place label inside
+              if (!a.inside && a.barHeight >= 34 && (a.barY - chartArea.top < 24 || a.barY < b.barY)) {
                 a.inside = true;
                 a.y = a.barY + fontSize + 4;
-              } else if (!b.inside && b.barHeight >= 36) {
+              } else if (!b.inside && b.barHeight >= 34) {
                 b.inside = true;
                 b.y = b.barY + fontSize + 4;
               } else {
+                // Stagger vertically
                 if (a.y <= b.y) {
                   a.y = b.y - minSeparationY;
                 } else {
@@ -6311,9 +6343,10 @@ function renderDashboardTrendChart(period){
         if (!collided) break;
       }
 
+      // Ensure no label is pushed above chart top boundary
       allBars.forEach(b => {
         if (!b.inside && b.y < chartArea.top + fontSize) {
-          if (b.barHeight >= 32) {
+          if (b.barHeight >= 28) {
             b.inside = true;
             b.y = b.barY + fontSize + 4;
           } else {
@@ -6322,14 +6355,15 @@ function renderDashboardTrendChart(period){
         }
       });
 
+      // Render crisp labels with outline halo to prevent any visual blend
       allBars.forEach(b => {
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.lineWidth = isMobile ? 2.5 : 3.5;
+        ctx.lineWidth = isMobile ? 3 : 3.8;
         if (b.inside) {
           ctx.fillStyle = '#FFFFFF';
-          ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
           ctx.strokeText(b.formatted, b.x, b.y);
           ctx.fillText(b.formatted, b.x, b.y);
         } else {
@@ -6351,7 +6385,7 @@ function renderDashboardTrendChart(period){
       labels: trendPoints.map(t => t.label),
       datasets: datasets
     },
-    plugins: [barShadowPlugin, barHoverGlowPlugin, dashTrendBarLabelsPlugin],
+    plugins: [barHoverGlowPlugin, dashTrendBarLabelsPlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -6360,8 +6394,7 @@ function renderDashboardTrendChart(period){
       events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
       interaction: {
         mode: 'nearest',
-        axis: 'x',
-        intersect: false
+        intersect: true
       },
       plugins: {
         legend: {
@@ -9393,6 +9426,7 @@ function renderSettingsTabs(){
     {id:'categories', label:'Categories'},
     {id:'payment-methods', label:'Payment Methods'},
     {id:'account', label:'Account'},
+    {id:'backup', label:'Backup & Data'},
     {id:'activity', label:'Recent Changes'},
     {id:'recycle', label:'Recycle Bin'}
   ];
@@ -9401,6 +9435,8 @@ function renderSettingsTabs(){
   const pmEl = document.getElementById('settings-payment-methods');
   if(pmEl) pmEl.classList.toggle('hidden', settingsTab!=='payment-methods');
   document.getElementById('settings-account').classList.toggle('hidden', settingsTab!=='account');
+  const bkEl = document.getElementById('settings-backup');
+  if(bkEl) bkEl.classList.toggle('hidden', settingsTab!=='backup');
   const actEl = document.getElementById('settings-activity');
   if(actEl) actEl.classList.toggle('hidden', settingsTab!=='activity');
   document.getElementById('settings-recycle').classList.toggle('hidden', settingsTab!=='recycle');
@@ -9409,6 +9445,7 @@ function setSettingsTab(t){
   settingsTab = t;
   renderSettingsTabs();
   if(t==='payment-methods') renderPaymentMethodsSettings();
+  if(t==='backup') renderBackupSettings();
   if(t==='recycle') renderRecycleBin();
   if(t==='activity') renderActivityLog();
 }
@@ -10173,6 +10210,179 @@ function removeSubcategory(categoryName, subName){
   saveDB();
   renderCategoryList();
 }
+function renderBackupSettings(){
+  const container = document.getElementById('settings-backup-container');
+  if(!container) return;
+
+  const txCount = Array.isArray(DB.transactions) ? DB.transactions.length : 0;
+  const bCount = Array.isArray(DB.budgets) ? DB.budgets.length : 0;
+  const gCount = Array.isArray(DB.savingsGoals) ? DB.savingsGoals.length : 0;
+  const invCount = Array.isArray(DB.investments) ? DB.investments.length : 0;
+
+  const rawLastBackup = localStorage.getItem('wealthnest_last_manual_backup');
+  let lastBackupStr = 'No offline backup downloaded yet';
+  let lastBackupBadge = `<span class="badge" style="background:var(--amber-light); color:var(--amber); border:1px solid rgba(217,119,6,0.3); font-size:11.5px; font-weight:700;">Needs Backup</span>`;
+  if(rawLastBackup){
+    try {
+      const dt = new Date(rawLastBackup);
+      const daysAgo = Math.floor((Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24));
+      if(daysAgo === 0){
+        lastBackupStr = `Downloaded Today (${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+        lastBackupBadge = `<span class="badge" style="background:var(--teal-light); color:var(--teal); border:1px solid rgba(13,148,136,0.3); font-size:11.5px; font-weight:700;">Up to Date</span>`;
+      } else {
+        lastBackupStr = `${dt.toLocaleDateString([], {month:'short', day:'numeric'})} (${daysAgo} day${daysAgo > 1 ? 's' : ''} ago)`;
+        if(daysAgo <= 15){
+          lastBackupBadge = `<span class="badge" style="background:var(--teal-light); color:var(--teal); border:1px solid rgba(13,148,136,0.3); font-size:11.5px; font-weight:700;">Fresh (${daysAgo}d)</span>`;
+        } else {
+          lastBackupBadge = `<span class="badge" style="background:var(--amber-light); color:var(--amber); border:1px solid rgba(217,119,6,0.3); font-size:11.5px; font-weight:700;">${daysAgo}d Ago - Backup Recommended</span>`;
+        }
+      }
+    } catch(e){}
+  }
+
+  const userEmail = currentUser && currentUser.email ? currentUser.email : 'Local Device Account';
+  const isCloud = !!currentUser;
+
+  container.innerHTML = `
+    <!-- Top Safeguard Overview Card -->
+    <div class="card" style="padding:22px; margin-bottom:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h2 class="section-title" style="margin:0;">Data Safeguard &amp; Backup Center</h2>
+            ${lastBackupBadge}
+          </div>
+          <p class="text-xs muted" style="margin:4px 0 0;">Download portable snapshots, restore records, or sync data to another email address.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge ${isCloud ? 'badge-ok' : 'badge-off'}" style="font-size:12px;">
+            ${isCloud ? 'Cloud Sync Active' : 'Offline Storage'}
+          </span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:14px 16px;">
+        <div>
+          <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Active Account</span>
+          <div style="font-weight:700; font-size:13.5px; color:var(--ink); margin-top:2px; word-break:break-all;">${escapeHtml(userEmail)}</div>
+        </div>
+        <div>
+          <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Last Manual Backup</span>
+          <div style="font-weight:700; font-size:13.5px; color:var(--ink); margin-top:2px;">${lastBackupStr}</div>
+        </div>
+        <div>
+          <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Total Records In DB</span>
+          <div style="font-weight:700; font-size:13.5px; color:var(--teal); margin-top:2px;">
+            ${txCount} Txs · ${bCount} Budgets · ${gCount} Goals · ${invCount} Assets
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 Column Action Cards: Download vs Restore -->
+    <div class="grid grid-2" style="margin-bottom:18px;">
+      <!-- Download Backup Card -->
+      <div class="card" style="padding:22px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div>
+              <h3 style="margin:0; font-size:15px; font-weight:700;">Download Backup</h3>
+              <span class="text-xs muted">Save an offline snapshot to your device</span>
+            </div>
+          </div>
+          <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;">
+            Exports all transactions, category settings, budgets, savings goals, and investment assets into a portable, standard JSON file.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" onclick="exportFinancesJSON()" class="btn-primary" style="padding:10px 18px; display:inline-flex; align-items:center; gap:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Backup (.json)
+          </button>
+          <button type="button" onclick="exportTransactionsCSV()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px;" title="Spreadsheet-compatible format">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Export CSV (Excel)
+          </button>
+        </div>
+      </div>
+
+      <!-- Restore from File Card -->
+      <div class="card" style="padding:22px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:var(--teal-light); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div>
+              <h3 style="margin:0; font-size:15px; font-weight:700;">Restore from Backup</h3>
+              <span class="text-xs muted">Load a saved JSON file into WealthNest</span>
+            </div>
+          </div>
+          <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;">
+            Migrating from another device or rolling back to a previous backup? Select your previously saved <code style="background:var(--surface-2); padding:1px 5px; border-radius:4px;">.json</code> file to restore instantly.
+          </p>
+        </div>
+        <div>
+          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:10px 18px; display:inline-flex; align-items:center; gap:8px; border-color:var(--line);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Select Backup File to Restore
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution Plan & Routine Guide -->
+    <div class="card" style="padding:22px; margin-bottom:18px;">
+      <h3 style="margin:0 0 12px; font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Recommended 10–15 Day Backup Routine (Execution Plan)
+      </h3>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+        <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 16px;">
+          <strong style="display:block; font-size:13px; color:var(--ink); margin-bottom:4px;">1. Real-time Cloud Sync</strong>
+          <p style="margin:0; font-size:12px; color:var(--muted); line-height:1.45;">Every transaction, budget, and goal is automatically synced directly to Supabase cloud storage the moment you make changes.</p>
+        </div>
+        <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 16px;">
+          <strong style="display:block; font-size:13px; color:var(--ink); margin-bottom:4px;">2. Rolling Local Guard</strong>
+          <p style="margin:0; font-size:12px; color:var(--muted); line-height:1.45;">Your browser maintains an emergency safety snapshot in local storage so your data remains intact even if connection drops.</p>
+        </div>
+        <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 16px;">
+          <strong style="display:block; font-size:13px; color:var(--ink); margin-bottom:4px;">3. Routine 15-Day Offline Copy</strong>
+          <p style="margin:0; font-size:12px; color:var(--muted); line-height:1.45;">Download a JSON copy every 10–15 days and place it in Google Drive or iCloud for 100% independent data sovereignty.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sync with Secondary Email Guide -->
+    <div class="card" style="padding:22px;">
+      <h3 style="margin:0 0 10px; font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Sync Data with Another Email Address
+      </h3>
+      <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:14px;">
+        Want your financial records mirrored on a second Google or email account? Follow these 3 easy steps:
+      </p>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:12.5px;">
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <span style="width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
+          <div>Click <strong>Download Backup (.json)</strong> above to save your latest complete dataset to your phone or computer.</div>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <span style="width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span>
+          <div>Sign out, then sign in with your <strong>second email address</strong>.</div>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <span style="width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</span>
+          <div>Open <strong>Settings → Backup &amp; Data</strong> and click <strong>Select Backup File to Restore</strong>. WealthNest will load and permanently sync all your records into the second account!</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderSettings(){
   cleanupRecycleBin();
   renderSettingsTabs();
@@ -10184,6 +10394,7 @@ function renderSettings(){
   renderPaymentMethodsSettings();
   populateCurrencySelect('settings-currency-select', DB.currency.code);
   renderSettingsAccount();
+  renderBackupSettings();
   renderActivityLog();
   renderRecycleBin();
 }
