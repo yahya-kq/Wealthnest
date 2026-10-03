@@ -2255,10 +2255,10 @@
         <div id="tx-saving-in-wrap" class="hidden">
           <label class="field-label" for="tx-saving-in" style="margin-bottom:4px;">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
           <select id="tx-saving-in" class="field-input">
-            <option value="Bank Account">🏦 Bank Account</option>
-            <option value="Personal Safe / Cash">💵 Personal Safe / Cash</option>
-            <option value="Digital Wallet">📱 Digital Wallet</option>
-            <option value="Other">🔐 Other</option>
+            <option value="Bank Account">Bank Account</option>
+            <option value="Personal Safe / Cash">Personal Safe / Cash</option>
+            <option value="Digital Wallet">Digital Wallet</option>
+            <option value="Other">Other</option>
           </select>
         </div>
       </div>
@@ -2317,10 +2317,10 @@
       <input type="number" min="0" id="goal-target" placeholder="1000" class="field-input figure mb-3" required>
       <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
       <select id="goal-saving-in" class="field-input mb-3">
-        <option value="Bank Account">🏦 Bank Account</option>
-        <option value="Personal Safe / Cash">💵 Personal Safe / Cash</option>
-        <option value="Digital Wallet">📱 Digital Wallet</option>
-        <option value="Other">🔐 Other</option>
+        <option value="Bank Account">Bank Account</option>
+        <option value="Personal Safe / Cash">Personal Safe / Cash</option>
+        <option value="Digital Wallet">Digital Wallet</option>
+        <option value="Other">Other</option>
       </select>
       <label class="field-label">Deadline (optional)</label>
       <input type="date" id="goal-deadline" class="field-input mb-5">
@@ -2408,10 +2408,10 @@
       <input type="number" min="0" step="any" id="edit-goal-target" placeholder="1000" class="field-input figure mb-3" required>
       <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
       <select id="edit-goal-saving-in" class="field-input mb-3">
-        <option value="Bank Account">🏦 Bank Account</option>
-        <option value="Personal Safe / Cash">💵 Personal Safe / Cash</option>
-        <option value="Digital Wallet">📱 Digital Wallet</option>
-        <option value="Other">🔐 Other</option>
+        <option value="Bank Account">Bank Account</option>
+        <option value="Personal Safe / Cash">Personal Safe / Cash</option>
+        <option value="Digital Wallet">Digital Wallet</option>
+        <option value="Other">Other</option>
       </select>
       <label class="field-label">Deadline (optional)</label>
       <input type="date" id="edit-goal-deadline" class="field-input mb-5">
@@ -6495,8 +6495,7 @@ function renderTransactions(){
         }
       } else if(t.type === 'savings'){
         const savingInText = t.savingIn || 'Bank Account';
-        const savingInIcon = (savingInText.includes('Cash') || savingInText.includes('Safe')) ? '💵' : savingInText.includes('Wallet') ? '📱' : '🏦';
-        subcatContent = `<span style="font-size:12px; color:var(--ink); font-weight:600; display:inline-flex; align-items:center; gap:4px;"><span style="font-size:11px;">${savingInIcon}</span> ${escapeHtml(savingInText)}</span>`;
+        subcatContent = `<span style="font-size:12px; color:var(--ink); font-weight:600;">${escapeHtml(savingInText)}</span>`;
       } else {
         subcatContent = t.subCategory ? escapeHtml(t.subCategory) : '<span style="color:var(--muted-2);">-</span>';
       }
@@ -6512,7 +6511,7 @@ function renderTransactions(){
     const methodBadges = displayMethods.map(m => `<span class="badge badge-off" style="font-size:12px; font-weight:500; margin-right:4px; display:inline-block;">${escapeHtml(m)}</span>`).join('');
     const savingInBadge = (t.type === 'savings' && t.savingIn && !showSubcat) ? `
       <span class="badge" style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; font-size:11px; font-weight:600; margin-left:4px;" title="Saved in ${escapeHtml(t.savingIn)}">
-        🏦 In: ${escapeHtml(t.savingIn)}
+        In: ${escapeHtml(t.savingIn)}
       </span>
     ` : '';
 
@@ -7758,7 +7757,6 @@ function renderSavings(){
       statusBadge = `<span class="badge" style="background:#FEF2F2; color:#B91C1C; border:1px solid #FECACA; font-weight:600; font-size:11px; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Deadline Passed</span>`;
     }
 
-    const savingInIcon = (g.savingIn === 'Personal Safe / Cash') ? '💵' : (g.savingIn === 'Digital Wallet') ? '📱' : (g.savingIn === 'Other') ? '💼' : '🏦';
     const savingInLabel = g.savingIn || 'Bank Account';
 
     return `<div class="card" style="padding:22px; ${reached ? 'border-color:#86EFAC;' : isExpired ? 'border-color:#FECACA;' : ''}">
@@ -7770,7 +7768,6 @@ function renderSavings(){
           </div>
           ${g.deadline ? `<p class="text-xs muted" style="margin:4px 0 0;">Target date: <strong>${escapeHtml(g.deadline)}</strong>${isExpired ? ' <span style="color:var(--rose); font-weight:600;">(Passed)</span>' : ''}</p>` : ''}
           <div style="margin-top:6px; display:inline-flex; align-items:center; gap:5px; background:var(--surface-2, #F8FAFC); border:1px solid var(--border-subtle, #E2E8F0); padding:2px 8px; border-radius:6px; font-size:11.5px; color:var(--ink-light, #475569);">
-            <span>${savingInIcon}</span>
             <span>Saving in: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
           </div>
         </div>
@@ -7840,10 +7837,10 @@ function showContributeRow(id){
       <div style="grid-column:1 / -1;">
         <label class="field-label" style="font-size:11px; margin-bottom:5px;">Saving In (Holding Location / Vault)</label>
         <select id="contribute-saving-in-${id}" class="field-input">
-          <option value="Bank Account" ${savingInDefault === 'Bank Account' ? 'selected' : ''}>🏦 Bank Account</option>
-          <option value="Personal Safe / Cash" ${savingInDefault === 'Personal Safe / Cash' ? 'selected' : ''}>💵 Personal Safe / Cash</option>
-          <option value="Digital Wallet" ${savingInDefault === 'Digital Wallet' ? 'selected' : ''}>📱 Digital Wallet</option>
-          <option value="Other" ${savingInDefault === 'Other' ? 'selected' : ''}>💼 Other</option>
+          <option value="Bank Account" ${savingInDefault === 'Bank Account' ? 'selected' : ''}>Bank Account</option>
+          <option value="Personal Safe / Cash" ${savingInDefault === 'Personal Safe / Cash' ? 'selected' : ''}>Personal Safe / Cash</option>
+          <option value="Digital Wallet" ${savingInDefault === 'Digital Wallet' ? 'selected' : ''}>Digital Wallet</option>
+          <option value="Other" ${savingInDefault === 'Other' ? 'selected' : ''}>Other</option>
         </select>
       </div>
       <div style="grid-column:1 / -1; display:flex; align-items:center; gap:8px;">
