@@ -6083,7 +6083,7 @@ function renderDashboardTrendChart(period){
         savings: sumByType(dayTxs, 'savings')
       });
     }
-  } else {
+  } else if(period.months && period.months.length === 12 && dashboardSelPeriod === 'year'){
     const yr = period.year || dashboardSelYear || new Date().getFullYear();
     if(subEl) subEl.textContent = `Monthly cash flow (${yr})`;
     for(let m = 1; m <= 12; m++){
@@ -6091,6 +6091,24 @@ function renderDashboardTrendChart(period){
       trendPoints.push({
         label: SHORT_MONTH_NAMES[m - 1],
         fullLabel: `${MONTH_NAMES[m - 1]} ${yr}`,
+        income: t.income,
+        expense: t.expense,
+        savings: t.savings
+      });
+    }
+  } else {
+    // 6-month rolling trend ending at active month (identical to Reports Income vs Expense!)
+    const activeM = (period.months && period.months.length === 1) ? period.months[0] : (dashboardSelMonth || (new Date().getMonth() + 1));
+    const activeY = period.year || dashboardSelYear || new Date().getFullYear();
+    if(subEl) subEl.textContent = `6-month cash flow trend`;
+    for(let i = 5; i >= 0; i--){
+      const dt = new Date(activeY, activeM - 1 - i, 1);
+      const m = dt.getMonth() + 1;
+      const y = dt.getFullYear();
+      const t = monthTotals(chartTxs, m, y);
+      trendPoints.push({
+        label: dt.toLocaleDateString(undefined, { month:'short' }),
+        fullLabel: `${MONTH_NAMES[m - 1]} ${y}`,
         income: t.income,
         expense: t.expense,
         savings: t.savings
@@ -6122,7 +6140,7 @@ function renderDashboardTrendChart(period){
   savingsGrad.addColorStop(1, '#D97706');
 
   const isMobile = (typeof window !== 'undefined' && window.innerWidth < 640);
-  const maxBarThickness = isMobile ? 18 : 28;
+  const maxBarThickness = isMobile ? 20 : 26;
 
   const datasets = [];
 
@@ -6243,22 +6261,10 @@ function renderDashboardTrendChart(period){
       const dsCount = chart.data.datasets.length;
       if (!dsCount) return;
 
-      // Compact format prevents horizontal collision between adjacent month bars
+      // Full proper formatted figure with commas (matching Reports Income vs Expense)
       const formatVal = (v) => {
         if (!v || v <= 0) return '';
-        if (v >= 1000000) {
-          const m = v / 1000000;
-          return (m >= 10 ? Math.round(m) : m.toFixed(1).replace(/\.0$/, '')) + 'M';
-        }
-        if (v >= 10000) {
-          const k = v / 1000;
-          return (k >= 100 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, '')) + 'k';
-        }
-        if (v >= 1000) {
-          const k = v / 1000;
-          return k.toFixed(1).replace(/\.0$/, '') + 'k';
-        }
-        return Math.round(v).toString();
+        return Math.round(v).toLocaleString();
       };
 
       const labelColors = isDark 
@@ -6267,7 +6273,7 @@ function renderDashboardTrendChart(period){
 
       const labelsCount = chart.data.labels ? chart.data.labels.length : 0;
       ctx.save();
-      const fontSize = isMobile ? 9 : 10.5;
+      const fontSize = isMobile ? 9.5 : 11;
       ctx.font = `700 ${fontSize}px Plus Jakarta Sans, Manrope, sans-serif`;
 
       const allBars = [];
@@ -6281,21 +6287,24 @@ function renderDashboardTrendChart(period){
             const formatted = formatVal(val);
             const tw = ctx.measureText(formatted).width;
             const barHeight = Math.abs(el.base - el.y);
+            const barW = el.width || maxBarThickness;
             allBars.push({
               mIdx,
               dIdx,
               val,
               formatted,
               el,
+              barW,
+              barLeft: el.x - barW / 2,
+              barRight: el.x + barW / 2,
+              barTop: el.y,
+              barBase: el.base,
+              barHeight,
               color: labelColors[dIdx] || (isDark ? '#F1F5F9' : '#0F172A'),
               x: el.x,
               y: el.y - 6,
-              barY: el.y,
-              barBase: el.base,
-              barHeight,
               tw,
-              th: fontSize,
-              inside: false
+              th: fontSize
             });
           }
         }
@@ -6306,13 +6315,35 @@ function renderDashboardTrendChart(period){
         return;
       }
 
-      // Sort bars horizontally from left to right
+      // Step 1: Ensure no label touches any adjacent bar
+      // If a label at (x, y) overlaps horizontally with any neighbor bar that is taller than y,
+      // shift x away from that taller bar so it maintains a clean 5px margin.
+      allBars.forEach(b => {
+        allBars.forEach(other => {
+          if (b === other || b.mIdx !== other.mIdx) return;
+          // Check if 'other' bar extends vertically across b's position
+          if (b.y >= other.barTop - 2 && (b.y - b.th) <= other.barBase) {
+            const pad = 5;
+            const labelLeft = b.x - b.tw / 2;
+            const labelRight = b.x + b.tw / 2;
+            if (labelLeft < other.barRight + pad && labelRight > other.barLeft - pad) {
+              if (b.el.x >= other.el.x) {
+                // b is to the right of 'other': push b.x completely clear of other bar's right edge
+                b.x = other.barRight + pad + b.tw / 2;
+              } else {
+                // b is to the left of 'other': push b.x completely clear of other bar's left edge
+                b.x = other.barLeft - pad - b.tw / 2;
+              }
+            }
+          }
+        });
+      });
+
+      // Step 2: Multi-pass collision resolver between adjacent labels
       allBars.sort((a, b) => a.x - b.x);
+      const minPaddingX = 4;
+      const minSeparationY = fontSize + 8; // ~19px clear vertical separation
 
-      const minPaddingX = isMobile ? 3 : 5;
-      const minSeparationY = fontSize + 8; // ~18.5px clear vertical separation
-
-      // Multi-pass collision resolver to prevent adjacent bar labels from overlapping
       for (let pass = 0; pass < 8; pass++) {
         let collided = false;
         for (let i = 0; i < allBars.length; i++) {
@@ -6320,7 +6351,6 @@ function renderDashboardTrendChart(period){
             const a = allBars[i];
             const b = allBars[j];
 
-            // Only check pairs that overlap horizontally
             if (Math.abs(a.x - b.x) > (a.tw / 2 + b.tw / 2 + minPaddingX)) {
               continue;
             }
@@ -6328,20 +6358,10 @@ function renderDashboardTrendChart(period){
             const dy = Math.abs(a.y - b.y);
             if (dy < minSeparationY) {
               collided = true;
-              // If a bar is tall enough, safely place label inside
-              if (!a.inside && a.barHeight >= 34 && (a.barY - chartArea.top < 24 || a.barY < b.barY)) {
-                a.inside = true;
-                a.y = a.barY + fontSize + 4;
-              } else if (!b.inside && b.barHeight >= 34) {
-                b.inside = true;
-                b.y = b.barY + fontSize + 4;
+              if (a.y <= b.y) {
+                a.y = b.y - minSeparationY;
               } else {
-                // Stagger vertically
-                if (a.y <= b.y) {
-                  a.y = b.y - minSeparationY;
-                } else {
-                  b.y = a.y - minSeparationY;
-                }
+                b.y = a.y - minSeparationY;
               }
             }
           }
@@ -6349,35 +6369,23 @@ function renderDashboardTrendChart(period){
         if (!collided) break;
       }
 
-      // Ensure no label is pushed above chart top boundary
+      // Step 3: Ensure no label goes above top of chartArea
       allBars.forEach(b => {
-        if (!b.inside && b.y < chartArea.top + fontSize) {
-          if (b.barHeight >= 28) {
-            b.inside = true;
-            b.y = b.barY + fontSize + 4;
-          } else {
-            b.y = chartArea.top + fontSize;
-          }
+        if (b.y < chartArea.top + fontSize + 2) {
+          b.y = chartArea.top + fontSize + 2;
         }
       });
 
-      // Render crisp labels with outline halo to prevent any visual blend
+      // Step 4: Render labels with protective surface halo
       allBars.forEach(b => {
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.lineWidth = isMobile ? 3 : 3.8;
-        if (b.inside) {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
-          ctx.strokeText(b.formatted, b.x, b.y);
-          ctx.fillText(b.formatted, b.x, b.y);
-        } else {
-          ctx.strokeStyle = surfaceColor;
-          ctx.fillStyle = b.color;
-          ctx.strokeText(b.formatted, b.x, b.y);
-          ctx.fillText(b.formatted, b.x, b.y);
-        }
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = surfaceColor;
+        ctx.fillStyle = b.color;
+        ctx.strokeText(b.formatted, b.x, b.y);
+        ctx.fillText(b.formatted, b.x, b.y);
         ctx.restore();
       });
 
@@ -6395,8 +6403,8 @@ function renderDashboardTrendChart(period){
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      categoryPercentage: 0.82,
-      barPercentage: 0.88,
+      categoryPercentage: 0.72,
+      barPercentage: 0.84,
       events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
       interaction: {
         mode: 'nearest',
@@ -6435,7 +6443,7 @@ function renderDashboardTrendChart(period){
         y: {
           grid: { display: false },
           border: { display: false },
-          grace: '28%',
+          grace: '38%',
           ticks: {
             color: axisColor,
             font: { family: 'JetBrains Mono', size: isMobile ? 11 : 12, weight: '600' },
