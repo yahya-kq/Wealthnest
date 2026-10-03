@@ -842,9 +842,16 @@
   .report-toolbar-copy h2{font-family:var(--font-display); font-size:15px; margin:0 0 4px;}
   .report-toolbar-copy p{font-size:12px; color:var(--muted); margin:0; line-height:1.5;}
   .report-section-kicker{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted-2); font-weight:700; margin:0 0 8px;}
-  .budget-summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
-  .budget-summary-item{padding:12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:9px;}
-  .budget-summary-item strong{display:block; font-family:var(--font-mono); font-size:17px; margin-top:5px;}
+  .budget-summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px;}
+  .budget-summary-item{padding:14px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px;}
+  .budget-summary-item .label-eyebrow{font-size:11.5px; font-weight:700; color:var(--ink); opacity:0.8;}
+  .budget-summary-item strong{display:block; font-family:var(--font-mono); font-size:18.5px; font-weight:700; color:var(--ink); margin-top:5px; margin-bottom:4px;}
+  .budget-summary-item .text-xs{font-size:13px !important; font-weight:600; color:#334155; display:inline-block;}
+  [data-theme="dark"] .budget-summary-item .text-xs{color:#CBD5E1;}
+  .cat-block-head .figure, .subcat-row .figure{font-size:13px !important; font-weight:600; color:#334155;}
+  [data-theme="dark"] .cat-block-head .figure, [data-theme="dark"] .subcat-row .figure{color:#CBD5E1;}
+  .cat-block p.text-xs{font-size:13px !important; font-weight:600; color:#334155;}
+  [data-theme="dark"] .cat-block p.text-xs{color:#CBD5E1;}
   @media(max-width:960px){.budget-summary-grid{grid-template-columns:repeat(2,1fr);}}
   @media(max-width:540px){.budget-summary-grid{grid-template-columns:1fr;}}
   @media(max-width:700px){.report-toolbar{align-items:stretch;}}
@@ -951,6 +958,66 @@
   .tx-subcat-chip{display:inline-flex; align-items:center; padding:5px 11px; border-radius:20px; font-size:12.5px; font-weight:500; cursor:pointer; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); transition:all .15s ease; user-select:none;}
   .tx-subcat-chip:hover{border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark);}
   .tx-subcat-chip.active{background:var(--primary); border-color:var(--primary); color:#FFFFFF; font-weight:600;}
+
+  /* Investment & Projections UI */
+  .wealth-range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--line, #e2e8f0);
+    border-radius: 999px;
+    outline: none;
+    transition: background 0.2s;
+  }
+  .wealth-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--ink, #0f172a);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .wealth-range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    background: var(--primary, #0284c7);
+  }
+  .wealth-range-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--ink, #0f172a);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    cursor: pointer;
+  }
+  .projection-stat-card {
+    background: var(--surface-2, #F8FAFC);
+    border: 1px solid var(--line-soft, #E2E8F0);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .asset-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .grid-investments{display:grid; grid-template-columns:1fr; gap:16px;}
+  @media(min-width:992px){.grid-investments{grid-template-columns:1.8fr 1.2fr;}}
+  .sim-input-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:540px){.sim-input-grid{grid-template-columns:1fr; gap:10px;}}
+  .table-responsive{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
 
   h1,h2,h3,.section-title,.section-sub,.field-label,.btn-primary,.btn-dark,.btn-ghost,.btn-small,.btn-chip,.nav-link,.nav-section-label,.badge,.link-sm,.topbar p,.modal h2{ text-transform:capitalize; }
   .label-eyebrow{ text-transform:uppercase; }
@@ -1490,12 +1557,12 @@
       </div>
 
       <!-- High-level Overview Grid -->
-      <div class="grid grid-3 mb-4">
+      <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
         <div class="card" style="padding:20px;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
             <div>
               <h2 class="section-title">Top Expenses</h2>
-              <p class="section-sub">Highest spending categories</p>
+              <p class="section-sub">Highest categories</p>
             </div>
             <a href="#" onclick="goToApp('reports'); return false;" class="link-sm">Reports →</a>
           </div>
@@ -1508,7 +1575,7 @@
               <h2 class="section-title">Budget Overview</h2>
               <p class="section-sub" id="budget-perf-sub">Monthly limits</p>
             </div>
-            <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Manage budgets →</a>
+            <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Budgets →</a>
           </div>
           <div id="dashboard-budget-summary"></div>
         </div>
@@ -1519,9 +1586,20 @@
               <h2 class="section-title">Savings Goals</h2>
               <p class="section-sub">Goal progress</p>
             </div>
-            <a href="#" onclick="goToApp('savings'); return false;" class="link-sm">View goals →</a>
+            <a href="#" onclick="goToApp('savings'); return false;" class="link-sm">Goals →</a>
           </div>
           <div id="dash-savings-body"></div>
+        </div>
+
+        <div class="card" style="padding:20px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+            <div>
+              <h2 class="section-title">Investments</h2>
+              <p class="section-sub">Portfolio &amp; wealth</p>
+            </div>
+            <a href="#" onclick="goToApp('investments'); return false;" class="link-sm">Portfolio →</a>
+          </div>
+          <div id="dash-investments-body"></div>
         </div>
       </div>
     </section>
@@ -1791,6 +1869,216 @@
         <button onclick="openGoalModal()" class="btn-primary">+ New Goal</button>
       </div>
       <div class="grid grid-2" id="savings-grid"></div>
+    </section>
+
+    <!-- ---- INVESTMENTS ---- -->
+    <section id="page-investments" class="page hidden">
+      <div class="topbar">
+        <div>
+          <h1>Investments</h1>
+          <p id="investments-count-label" class="muted">Holdings, asset allocation, and wealth projections.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button onclick="openInvestmentModal()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Investment
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
+      </div>
+
+      <!-- Top KPI Row -->
+      <div class="grid grid-4 mb-4" id="investment-kpi-grid">
+        <div class="card ov-card" style="padding:18px 20px;">
+          <div class="ov-label">Total Invested</div>
+          <div class="ov-amount figure" id="inv-kpi-invested">$0</div>
+          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-invested-sub">Cost basis</div>
+        </div>
+        <div class="card ov-card" style="padding:18px 20px;">
+          <div class="ov-label">Portfolio Value</div>
+          <div class="ov-amount figure" id="inv-kpi-value" style="color:var(--primary);">$0</div>
+          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-value-sub">Market valuation</div>
+        </div>
+        <div class="card ov-card" style="padding:18px 20px;">
+          <div class="ov-label">Total Return</div>
+          <div class="ov-amount figure" id="inv-kpi-return">$0</div>
+          <div class="text-xs" style="margin-top:4px; font-weight:600;" id="inv-kpi-roi">0% ROI</div>
+        </div>
+        <div class="card ov-card" style="padding:18px 20px;">
+          <div class="ov-label">Monthly Additions</div>
+          <div class="ov-amount figure" id="inv-kpi-monthly" style="color:var(--teal);">$0/mo</div>
+          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-monthly-sub">Recurring deposits</div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Outcome Simulator (Left) & Allocation + Milestones (Right) -->
+      <div class="grid-investments mb-4">
+        
+        <!-- Interactive Outcome Forecast Simulator -->
+        <div class="card" style="padding:22px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:12px; flex-wrap:wrap;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h2 class="section-title" style="margin:0;">Outcome Projection</h2>
+                <span class="badge" style="background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">Future Value</span>
+              </div>
+              <p class="text-xs muted" style="margin:4px 0 0;">Compound growth simulator</p>
+            </div>
+            <button type="button" onclick="syncSimWithPortfolio()" class="btn-ghost btn-small" style="font-size:11.5px; padding:4px 10px;" title="Reset simulator to match your active portfolio">
+              ↺ Sync with Portfolio
+            </button>
+          </div>
+
+          <!-- Highlight Result Banner -->
+          <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(2,132,199,0.06) 100%); border:1px solid rgba(16,185,129,0.22); border-radius:14px; padding:18px 20px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+              <div>
+                <span class="text-xs uppercase muted" style="font-weight:700; letter-spacing:0.05em;" id="sim-horizon-title">Projected Wealth in 10 Years</span>
+                <div class="figure" id="sim-result-fv" style="font-size:32px; font-weight:700; color:var(--ink); margin-top:2px; line-height:1.1;">$0</div>
+              </div>
+              <div style="text-align:right;">
+                <span class="text-xs muted">Pure Wealth Created</span>
+                <div class="figure" id="sim-result-gain" style="font-size:20px; font-weight:700; color:var(--teal); margin-top:2px;">+$0</div>
+              </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; padding-top:12px; border-top:1px solid rgba(16,185,129,0.15); font-size:12px;">
+              <div>
+                <span class="muted text-xs">Total Principal:</span>
+                <strong class="figure" id="sim-result-principal" style="display:block; font-size:13.5px; margin-top:1px;">$0</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Growth Multiple:</span>
+                <strong class="figure" id="sim-result-multiple" style="display:block; font-size:13.5px; margin-top:1px; color:var(--primary);">1.0x</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Rule of 72 Doubling:</span>
+                <strong class="figure" id="sim-result-doubling" style="display:block; font-size:13.5px; margin-top:1px;">~7.2 years</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Passive Income (4%):</span>
+                <strong class="figure" id="sim-result-passive" style="display:block; font-size:13.5px; margin-top:1px; color:#059669;">$0/mo</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulator Interactive Sliders & Inputs -->
+          <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:20px;">
+            <!-- Row 1: Starting Capital & Monthly Contribution -->
+            <div class="sim-input-grid">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <label class="field-label" style="margin:0; font-size:12px;">Starting Capital</label>
+                  <span class="figure" id="sim-disp-principal" style="font-size:12px; font-weight:700; color:var(--primary);">$0</span>
+                </div>
+                <input type="number" min="0" step="100" id="sim-input-principal" class="field-input figure" value="10000" oninput="onSimInputChange('principal', this.value)">
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <label class="field-label" style="margin:0; font-size:12px;">Monthly Contribution</label>
+                  <span class="figure" id="sim-disp-monthly" style="font-size:12px; font-weight:700; color:var(--teal);">$500/mo</span>
+                </div>
+                <input type="number" min="0" step="25" id="sim-input-monthly" class="field-input figure" value="500" oninput="onSimInputChange('monthly', this.value)">
+              </div>
+            </div>
+
+            <!-- Row 2: Expected Return Rate Slider + Quick Preset Pills -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="field-label" style="margin:0; font-size:12px;">Expected Annual Return Rate</label>
+                <span class="figure" id="sim-disp-rate" style="font-size:13px; font-weight:700; color:var(--ink);">10.0% / yr</span>
+              </div>
+              <input type="range" min="1" max="25" step="0.5" id="sim-slider-rate" value="10" class="wealth-range-slider" oninput="onSimInputChange('rate', this.value)">
+              <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                <button type="button" class="btn-chip" id="preset-rate-5" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(5.0)">🛡️ Conservative (5%)</button>
+                <button type="button" class="btn-chip active" id="preset-rate-10" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(10.0)">📈 S&amp;P 500 Avg (10%)</button>
+                <button type="button" class="btn-chip" id="preset-rate-14" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(14.0)">🚀 Growth / Tech (14%)</button>
+              </div>
+            </div>
+
+            <!-- Row 3: Horizon Selector Pills -->
+            <div>
+              <label class="field-label" style="margin-bottom:6px; font-size:12px;">Time Horizon</label>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;" id="sim-horizon-chips">
+                <button type="button" class="btn-chip" id="horizon-chip-3" onclick="setSimHorizon(3)">3 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-5" onclick="setSimHorizon(5)">5 Years</button>
+                <button type="button" class="btn-chip active" id="horizon-chip-10" onclick="setSimHorizon(10)">10 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-15" onclick="setSimHorizon(15)">15 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-20" onclick="setSimHorizon(20)">20 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-30" onclick="setSimHorizon(30)">30 Years</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Area Chart -->
+          <div style="height:270px; position:relative;">
+            <canvas id="investment-projection-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Right Column: Asset Allocation + Milestones -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          
+          <!-- Asset Allocation Donut -->
+          <div class="card" style="padding:22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <h2 class="section-title" style="margin:0;">Asset Allocation</h2>
+              <span class="text-xs muted" id="inv-allocation-total"></span>
+            </div>
+            <div style="height:190px; position:relative; display:flex; align-items:center; justify-content:center;">
+              <canvas id="asset-allocation-chart"></canvas>
+            </div>
+            <div id="asset-allocation-legend" style="margin-top:14px; display:flex; flex-direction:column; gap:6px;"></div>
+          </div>
+
+          <!-- Milestone Roadmap Card -->
+          <div class="card" style="padding:22px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+              <h2 class="section-title" style="margin:0;">Wealth Milestones</h2>
+              <span class="badge" style="font-size:10px; padding:1px 6px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line);">Projected</span>
+            </div>
+            <p class="text-xs muted" style="margin:0 0 12px;">Timeline to reach portfolio milestones at current rate:</p>
+            <div id="inv-milestones-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom: Asset Holdings & Performance Table -->
+      <div class="card" style="padding:22px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div>
+            <h2 class="section-title" style="margin:0;">Holdings</h2>
+            <p class="text-xs muted" style="margin:4px 0 0;">Tracked assets and platforms</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div style="display:flex; gap:5px; flex-wrap:wrap;" id="inv-category-filter-chips"></div>
+            <button onclick="openInvestmentModal()" class="btn-dark btn-small" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; font-size:12px;">
+              + Add Asset
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive report-table-wrap">
+          <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--line); color:var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em;">
+                <th style="padding:10px 12px;">Asset Name</th>
+                <th style="padding:10px 12px;">Class</th>
+                <th style="padding:10px 12px;">Platform / Vault</th>
+                <th style="padding:10px 12px; text-align:right;">Invested (Cost)</th>
+                <th style="padding:10px 12px; text-align:right;">Current Value</th>
+                <th style="padding:10px 12px; text-align:right;">Net Return (ROI)</th>
+                <th style="padding:10px 12px; text-align:right;">Monthly DCA</th>
+                <th style="padding:10px 12px; text-align:right;">Exp. Return</th>
+                <th style="padding:10px 12px; text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inv-holdings-tbody"></tbody>
+          </table>
+        </div>
+        <div id="inv-holdings-empty" style="display:none; text-align:center; padding:36px 16px;"></div>
+      </div>
     </section>
 
     <!-- ---- SETTINGS ---- -->
@@ -2237,6 +2525,162 @@
   </div>
 </div>
 
+<div id="investment-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeInvestmentModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeInvestmentModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v18h18"/><path d="m19 7-7 7-4-4-5 5"/><circle cx="19" cy="7" r="2"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Add New Investment</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;">Track an asset and project its future compound growth</p>
+      </div>
+    </div>
+    <form onsubmit="handleAddInvestment(event)">
+      <label class="field-label" for="inv-name">Asset Name <span style="color:var(--rose);">*</span></label>
+      <input type="text" id="inv-name" placeholder="e.g. Vanguard S&P 500 ETF (VOO), Apple, Bitcoin" class="field-input mb-3" required autocomplete="off">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
+          <select id="inv-type" class="field-input" required>
+            <option value="Stocks">📈 Stocks / Equities</option>
+            <option value="ETFs & Index Funds" selected>🌐 ETFs &amp; Index Funds</option>
+            <option value="Crypto">🪙 Crypto</option>
+            <option value="Real Estate">🏠 Real Estate</option>
+            <option value="Bonds / Fixed Income">🏛️ Bonds / Fixed Income</option>
+            <option value="Gold & Commodities">🪙 Gold &amp; Commodities</option>
+            <option value="Mutual Funds">📊 Mutual Funds</option>
+            <option value="Other">💼 Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="inv-location">Platform / Vault</label>
+          <input type="text" id="inv-location" placeholder="e.g. Fidelity, Binance, Bank" class="field-input" autocomplete="off">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" id="inv-initial-label" for="inv-initial">Invested (Cost Basis) <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="inv-initial" placeholder="1000" class="field-input figure" required oninput="if(!document.getElementById('inv-current').value || document.getElementById('inv-current').dataset.autofilled === 'true') { document.getElementById('inv-current').value = this.value; document.getElementById('inv-current').dataset.autofilled = 'true'; }">
+        </div>
+        <div>
+          <label class="field-label" id="inv-current-label" for="inv-current">Current Market Value <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="inv-current" placeholder="1000" class="field-input figure" required oninput="delete this.dataset.autofilled;">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="inv-monthly">Monthly Addition ($/mo)</label>
+          <input type="number" min="0" step="any" id="inv-monthly" placeholder="0" value="0" class="field-input figure">
+        </div>
+        <div>
+          <label class="field-label" for="inv-return">Expected Return (%/yr)</label>
+          <input type="number" min="0" max="100" step="0.1" id="inv-return" placeholder="10.0" value="10.0" class="field-input figure">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div>
+          <label class="field-label" for="inv-start-date">Date Acquired</label>
+          <input type="date" id="inv-start-date" class="field-input figure">
+        </div>
+        <div>
+          <label class="field-label" for="inv-notes">Strategy / Notes (optional)</label>
+          <input type="text" id="inv-notes" placeholder="e.g. Long-term retirement" class="field-input">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" onclick="closeInvestmentModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Add Investment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="edit-investment-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditInvestmentModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeEditInvestmentModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Edit Investment</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;">Update valuation, contributions, and projected return</p>
+      </div>
+    </div>
+    <form onsubmit="handleSaveEditInvestment(event)">
+      <input type="hidden" id="edit-inv-id">
+
+      <label class="field-label" for="edit-inv-name">Asset Name <span style="color:var(--rose);">*</span></label>
+      <input type="text" id="edit-inv-name" class="field-input mb-3" required autocomplete="off">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="edit-inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
+          <select id="edit-inv-type" class="field-input" required>
+            <option value="Stocks">📈 Stocks / Equities</option>
+            <option value="ETFs & Index Funds">🌐 ETFs &amp; Index Funds</option>
+            <option value="Crypto">🪙 Crypto</option>
+            <option value="Real Estate">🏠 Real Estate</option>
+            <option value="Bonds / Fixed Income">🏛️ Bonds / Fixed Income</option>
+            <option value="Gold & Commodities">🪙 Gold &amp; Commodities</option>
+            <option value="Mutual Funds">📊 Mutual Funds</option>
+            <option value="Other">💼 Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="edit-inv-location">Platform / Vault</label>
+          <input type="text" id="edit-inv-location" class="field-input" autocomplete="off">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" id="edit-inv-initial-label" for="edit-inv-initial">Invested (Cost Basis) <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="edit-inv-initial" class="field-input figure" required>
+        </div>
+        <div>
+          <label class="field-label" id="edit-inv-current-label" for="edit-inv-current">Current Market Value <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="edit-inv-current" class="field-input figure" required>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="edit-inv-monthly">Monthly Addition ($/mo)</label>
+          <input type="number" min="0" step="any" id="edit-inv-monthly" class="field-input figure">
+        </div>
+        <div>
+          <label class="field-label" for="edit-inv-return">Expected Return (%/yr)</label>
+          <input type="number" min="0" max="100" step="0.1" id="edit-inv-return" class="field-input figure">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div>
+          <label class="field-label" for="edit-inv-start-date">Date Acquired</label>
+          <input type="date" id="edit-inv-start-date" class="field-input figure">
+        </div>
+        <div>
+          <label class="field-label" for="edit-inv-notes">Strategy / Notes (optional)</label>
+          <input type="text" id="edit-inv-notes" class="field-input">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" onclick="closeEditInvestmentModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="currency-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal" style="max-width:380px;">
     <h2>Choose Currency</h2>
@@ -2421,17 +2865,19 @@ const ICONS = {
   transactions: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>',
   budgets: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h4M7 16h8"/></svg>',
   savings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  investments: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 7-7 7-4-4-5 5"/><circle cx="19" cy="7" r="2"/></svg>',
   settings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
 };
 
 const NAV_TOP = [
   { id: "dashboard", label: "Dashboard" },
-  { id: "reports", label: "Reports" },
   { id: "transactions", label: "Transactions" },
+  { id: "reports", label: "Reports" },
 ];
 const NAV_BOTTOM = [
   { id: "budgets", label: "Budgets" },
   { id: "savings", label: "Savings Goals" },
+  { id: "investments", label: "Investments" },
 ];
 const NAV_SETTINGS = [
   { id: "settings", label: "Settings" },
@@ -3036,13 +3482,14 @@ function buildSeed(){
   const budgets = [];
   const yearlyBudget = { year:y, incomeGoal:0, expenseLimit:0, savingsTarget:0 };
   const savingsGoals = [];
+  const investments = [];
   const categories = {
     income: [...DEFAULT_INCOME_CATEGORIES],
     expense: JSON.parse(JSON.stringify(DEFAULT_EXPENSE_CATEGORIES)),
     savings: [...DEFAULT_SAVINGS_CATEGORIES],
   };
   const currency = DEFAULT_CURRENCY;
-  return { transactions, budgets, yearlyBudget, savingsGoals, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[] };
+  return { transactions, budgets, yearlyBudget, savingsGoals, investments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[] };
 }
 
 function mergeDefaultCategories(cats){
@@ -3087,6 +3534,7 @@ let DB = loadDB();
 function ensureDemoBudgetData(){
   DB.categories = mergeDefaultCategories(DB.categories || {});
   DB.budgets = DB.budgets || [];
+  DB.investments = Array.isArray(DB.investments) ? DB.investments : [];
   if(!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length){
     DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
   }
@@ -3113,6 +3561,7 @@ function loadDB(){
       parsed.transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
       parsed.budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
       parsed.savingsGoals = Array.isArray(parsed.savingsGoals) ? parsed.savingsGoals : [];
+      parsed.investments = Array.isArray(parsed.investments) ? parsed.investments : [];
       parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
       if(!parsed.currency) parsed.currency = DEFAULT_CURRENCY;
       if(!parsed.currencyMigrationDone){
@@ -3505,6 +3954,9 @@ async function loadUserFinancesFromSupabase(userId){
         if (!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length) {
           DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
         }
+        if (!Array.isArray(DB.investments)) {
+          DB.investments = [];
+        }
         lastSyncedAt = data.updated_at ? new Date(data.updated_at) : new Date();
         localStorage.setItem('wealthnest_user_' + userId, JSON.stringify(DB));
       }
@@ -3516,6 +3968,9 @@ async function loadUserFinancesFromSupabase(userId){
       }
       if (!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length) {
         DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
+      }
+      if (!Array.isArray(DB.investments)) {
+        DB.investments = [];
       }
       const nowIso = new Date().toISOString();
       await supabaseClient.from('user_finances').upsert({
@@ -3842,7 +4297,7 @@ function changeCurrencyFromSettings(){
   renderAllForCurrentPage();
 }
 function goToApp(page){
-  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'settings'];
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'settings'];
   if(!validPages.includes(page)) page = 'dashboard';
 
   const pageTitles = {
@@ -3851,6 +4306,7 @@ function goToApp(page){
     transactions: 'Transactions – WealthNest',
     budgets: 'Budgets – WealthNest',
     savings: 'Savings Goals – WealthNest',
+    investments: 'Investments & Projections – WealthNest',
     settings: 'Settings – WealthNest'
   };
   document.title = pageTitles[page] || 'WealthNest';
@@ -4409,8 +4865,8 @@ function renderReportCharts(month, year){
             grid: { display: false },
             border: { display: false },
             ticks: {
-              color: themeValue('--ink') || '#0F172A',
-              font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
+              color: (document.documentElement.getAttribute('data-theme') === 'dark') ? '#E2E8F0' : '#0F172A',
+              font: { family: 'Plus Jakarta Sans', size: 12.5, weight: '700' }
             }
           }
         }
@@ -4428,7 +4884,7 @@ function renderReportCharts(month, year){
                 const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
                 const text = `${pct}%`;
                 ctx.save();
-                ctx.font = '700 11px Plus Jakarta Sans, Manrope, sans-serif';
+                ctx.font = '700 12px Plus Jakarta Sans, Manrope, sans-serif';
                 ctx.fillStyle = '#FFFFFF';
                 const barWidth = Math.abs(bar.x - bar.base);
                 if (barWidth >= 32) {
@@ -5141,7 +5597,49 @@ function renderDashboard(){
   renderDashboardTopExpenses(periodTxs, totals);
   renderDashboardBudgetSummary(period, totals);
   renderDashboardSavings(period, totals);
+  renderDashboardInvestments();
   renderDashboardTrendChart(period);
+}
+
+function renderDashboardInvestments(){
+  const body = document.getElementById('dash-investments-body');
+  if(!body) return;
+  const list = DB.investments || [];
+  if(!list.length){
+    body.innerHTML = `
+      <div style="padding:12px 0; text-align:center;">
+        <p class="muted text-xs" style="margin:0 0 10px; line-height:1.4;">Track stocks, ETFs, crypto, and real estate with outcome projections.</p>
+        <button type="button" onclick="goToApp('investments')" class="btn-small" style="font-size:12px; padding:5px 12px;">+ Track Assets</button>
+      </div>`;
+    return;
+  }
+  const totalCost = list.reduce((s, i) => s + (Number(i.initialInvested) || 0), 0);
+  const totalVal = list.reduce((s, i) => s + (Number(i.currentValue) || 0), 0);
+  const totalGain = totalVal - totalCost;
+  const roi = totalCost > 0 ? ((totalGain / totalCost) * 100) : 0;
+  const roiSign = totalGain >= 0 ? '+' : '';
+
+  body.innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+        <span class="muted text-xs" style="font-weight:600;">Portfolio Value</span>
+        <span class="badge ${totalGain >= 0 ? 'badge-ok' : 'badge-over'}" style="font-size:11px; padding:1px 6px;">${roiSign}${roi.toFixed(1)}%</span>
+      </div>
+      <div class="figure" style="font-size:20px; font-weight:700; color:var(--ink); line-height:1.2; margin-bottom:8px;">${fmt(totalVal)}</div>
+      <div style="display:flex; flex-direction:column; gap:5px;">
+        ${list.slice(0, 2).map(inv => {
+          const invCost = Number(inv.initialInvested) || 0;
+          const invVal = Number(inv.currentValue) || 0;
+          const invGain = invVal - invCost;
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:3px 0; border-top:1px solid var(--line-soft);">
+              <span style="font-weight:600; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${inv.name}</span>
+              <span class="figure ${invGain>=0?'tone-pos':'tone-neg'}" style="font-weight:600;">${fmt(invVal)}</span>
+            </div>`;
+        }).join('')}
+      </div>
+      ${list.length > 2 ? `<div class="text-xs muted" style="margin-top:6px; text-align:right;">+${list.length - 2} more asset${list.length - 2 === 1 ? '' : 's'}</div>` : ''}
+    </div>`;
 }
 
 let chartDashboardTrend = null;
@@ -5184,7 +5682,7 @@ function renderDashboardTrendChart(period){
     }
   } else {
     const yr = period.year || dashboardSelYear || new Date().getFullYear();
-    if(subEl) subEl.textContent = `Monthly income, expenses, and savings (${yr})`;
+    if(subEl) subEl.textContent = `Monthly cash flow (${yr})`;
     for(let m = 1; m <= 12; m++){
       const t = monthTotals(chartTxs, m, yr);
       trendPoints.push({
@@ -5199,7 +5697,11 @@ function renderDashboardTrendChart(period){
 
   if(chartDashboardTrend) chartDashboardTrend.destroy();
 
-  const textColor = themeValue('--muted') || '#667085';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.classList.contains('dark'));
+  const axisColor = isDark ? '#CBD5E1' : '#334155';
+  const legendColor = isDark ? '#F1F5F9' : '#0F172A';
+  const surfaceColor = themeValue('--surface') || (isDark ? '#1E293B' : '#FFFFFF');
+
   const ctx = canvas.getContext('2d');
   const chartHeight = canvas.clientHeight || 200;
 
@@ -5217,7 +5719,7 @@ function renderDashboardTrendChart(period){
   savingsGrad.addColorStop(1, '#D97706');
 
   const isMobile = (typeof window !== 'undefined' && window.innerWidth < 640);
-  const maxBarThickness = isMobile ? 12 : 20;
+  const maxBarThickness = isMobile ? 18 : 28;
 
   const datasets = [];
 
@@ -5283,20 +5785,107 @@ function renderDashboardTrendChart(period){
     }
   };
 
+  const dashTrendBarLabelsPlugin = {
+    id: 'dashTrendBarLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      const dsCount = chart.data.datasets.length;
+      if (!dsCount) return;
+
+      const formatVal = (v) => {
+        if (!v || v <= 0) return '';
+        const abs = Math.abs(v);
+        if (abs >= 1000000) return (abs / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (abs >= 1000) return Math.round(abs / 1000) + 'k';
+        return Math.round(abs).toString();
+      };
+
+      const labelsCount = chart.data.labels ? chart.data.labels.length : 0;
+      ctx.save();
+
+      for (let mIdx = 0; mIdx < labelsCount; mIdx++) {
+        const activeBars = [];
+        for (let dIdx = 0; dIdx < dsCount; dIdx++) {
+          const meta = chart.getDatasetMeta(dIdx);
+          if (!meta || meta.hidden) continue;
+          const val = chart.data.datasets[dIdx].data ? chart.data.datasets[dIdx].data[mIdx] : 0;
+          const el = meta.data && meta.data[mIdx];
+          if (val && val > 0 && el) {
+            activeBars.push({
+              datasetIndex: dIdx,
+              label: chart.data.datasets[dIdx].label,
+              val,
+              formatted: formatVal(val),
+              el
+            });
+          }
+        }
+
+        if (!activeBars.length) continue;
+
+        // Anti-collision check for short bars above the base
+        let lastAboveY = null;
+        let lastAboveX = null;
+
+        activeBars.forEach((barItem) => {
+          const { el, formatted } = barItem;
+          const barHeight = Math.abs(el.base - el.y);
+          const barWidth = el.width || maxBarThickness;
+
+          if (barHeight >= 26 && barWidth >= 14) {
+            // Inside the bar: bold white text centered with subtle drop shadow
+            ctx.save();
+            ctx.font = '700 11px JetBrains Mono, Plus Jakarta Sans, sans-serif';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetY = 1;
+            ctx.fillText(formatted, el.x, el.y + 5);
+            ctx.restore();
+          } else {
+            // Short bar: above the bar with outline
+            let targetY = el.y - 4;
+            if (lastAboveX !== null && Math.abs(el.x - lastAboveX) < 26 && lastAboveY !== null && Math.abs(targetY - lastAboveY) < 14) {
+              targetY = lastAboveY - 14; // Stack vertically to prevent horizontal overlap
+            }
+            lastAboveX = el.x;
+            lastAboveY = targetY;
+
+            ctx.save();
+            ctx.font = '700 11px JetBrains Mono, Plus Jakarta Sans, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = surfaceColor;
+            ctx.fillStyle = axisColor;
+            ctx.strokeText(formatted, el.x, targetY);
+            ctx.fillText(formatted, el.x, targetY);
+            ctx.restore();
+          }
+        });
+      }
+
+      ctx.restore();
+    }
+  };
+
   chartDashboardTrend = new Chart(canvas, {
     type: 'bar',
     data: {
       labels: trendPoints.map(t => t.label),
       datasets: datasets
     },
-    plugins: [barShadowPlugin],
+    plugins: [barShadowPlugin, dashTrendBarLabelsPlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      categoryPercentage: 0.72,
-      barPercentage: 0.85,
+      categoryPercentage: 0.82,
+      barPercentage: 0.88,
       interaction: {
         mode: 'index',
+        axis: 'x',
         intersect: false
       },
       plugins: {
@@ -5304,22 +5893,26 @@ function renderDashboardTrendChart(period){
           position: 'top',
           align: 'end',
           labels: {
-            color: textColor,
-            font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
-            boxWidth: 10,
-            boxHeight: 10,
+            color: legendColor,
+            font: { family: 'Plus Jakarta Sans', size: 12.5, weight: '700' },
+            boxWidth: 12,
+            boxHeight: 12,
             borderRadius: 3,
             usePointStyle: true,
             pointStyle: 'rectRounded',
-            padding: 12
+            padding: 14
           }
         },
         tooltip: {
-          backgroundColor: '#111321',
-          titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
-          bodyFont: { family: 'JetBrains Mono', size: 11 },
-          padding: 9,
-          cornerRadius: 6,
+          backgroundColor: '#0F172A',
+          titleColor: '#F8FAFC',
+          titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '700' },
+          bodyColor: '#F1F5F9',
+          bodyFont: { family: 'JetBrains Mono', size: 12, weight: '600' },
+          padding: 12,
+          cornerRadius: 8,
+          boxPadding: 6,
+          usePointStyle: true,
           callbacks: {
             title: function(items){
               if(!items || !items.length) return '';
@@ -5337,8 +5930,8 @@ function renderDashboardTrendChart(period){
           grid: { display: false },
           border: { display: false },
           ticks: {
-            color: textColor,
-            font: { family: 'Plus Jakarta Sans', size: 11 },
+            color: axisColor,
+            font: { family: 'Plus Jakarta Sans', size: isMobile ? 11 : 12.5, weight: '700' },
             autoSkip: false,
             maxRotation: 0
           }
@@ -5346,9 +5939,10 @@ function renderDashboardTrendChart(period){
         y: {
           grid: { display: false },
           border: { display: false },
+          grace: '22%',
           ticks: {
-            color: textColor,
-            font: { family: 'JetBrains Mono', size: 10 },
+            color: axisColor,
+            font: { family: 'JetBrains Mono', size: isMobile ? 11 : 12, weight: '600' },
             callback: function(v){
               if(v === 0) return '0';
               const abs = Math.abs(v);
@@ -5392,14 +5986,16 @@ function miniIcon(name){
   return map[name]||'';
 }
 function barChartConfig(trend){
-  const textColor=themeValue('--muted') || '#64748B';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.classList.contains('dark'));
+  const axisColor = isDark ? '#CBD5E1' : '#334155';
+  const legendColor = isDark ? '#F1F5F9' : '#0F172A';
   return {
     type:'bar',
     data:{
       labels: trend.map(t=>t.label),
       datasets:[
-        {label:'Income', data:trend.map(t=>t.income), backgroundColor:'#0F9E93', borderRadius:6, maxBarThickness:22, borderSkipped:false},
-        {label:'Expense', data:trend.map(t=>t.expense), backgroundColor:'#E1435C', borderRadius:6, maxBarThickness:22, borderSkipped:false},
+        {label:'Income', data:trend.map(t=>t.income), backgroundColor:'#0F9E93', borderRadius:6, maxBarThickness:24, borderSkipped:false},
+        {label:'Expense', data:trend.map(t=>t.expense), backgroundColor:'#E1435C', borderRadius:6, maxBarThickness:24, borderSkipped:false},
       ]
     },
     options:{
@@ -5412,18 +6008,20 @@ function barChartConfig(trend){
         intersect: false
       },
       plugins:{
-        legend:{labels:{color:textColor,font:{family:'Manrope',size:11}, boxWidth:10}},
+        legend:{labels:{color:legendColor,font:{family:'Plus Jakarta Sans',size:12.5,weight:'700'}, boxWidth:12}},
         tooltip:{
           displayColors: false,
           position: 'mobileSafe',
           xAlign: 'center',
           caretPadding: 6,
           caretSize: 0,
-          backgroundColor:'#111321',
-          titleFont:{family:'Plus Jakarta Sans',size:12,weight:'700'},
-          bodyFont:{family:'JetBrains Mono',size:11},
-          padding:8,
-          cornerRadius:6,
+          backgroundColor:'#0F172A',
+          titleColor:'#F8FAFC',
+          titleFont:{family:'Plus Jakarta Sans',size:13,weight:'700'},
+          bodyColor:'#F1F5F9',
+          bodyFont:{family:'JetBrains Mono',size:12,weight:'600'},
+          padding:10,
+          cornerRadius:8,
           callbacks:{
             label: function(ctx){
               return ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
@@ -5435,15 +6033,15 @@ function barChartConfig(trend){
         x:{
           grid:{display:false},
           border:{display:false},
-          ticks:{color:textColor,font:{family:'Manrope',size:11}, autoSkip:false}
+          ticks:{color:axisColor,font:{family:'Plus Jakarta Sans',size:12.5,weight:'700'}, autoSkip:false}
         },
         y:{
           grid:{display:false},
           border:{display:false},
           grace:'28%',
           ticks:{
-            color:textColor,
-            font:{family:'JetBrains Mono',size:10},
+            color:axisColor,
+            font:{family:'JetBrains Mono',size:12,weight:'600'},
             callback:v=>Math.round(v).toLocaleString()
           }
         }
@@ -5461,10 +6059,10 @@ function barChartConfig(trend){
         if(isHidden0 && isHidden1) return;
 
         const isMobile = chart.width < 540 || (typeof window !== 'undefined' && window.innerWidth < 640);
-        const fontSize = isMobile ? 10 : 11;
+        const fontSize = isMobile ? 11 : 12;
         ctx.save();
         ctx.font = `700 ${fontSize}px Plus Jakarta Sans, Manrope, sans-serif`;
-        const surfaceColor = themeValue('--surface') || '#FFFFFF';
+        const surfaceColor = themeValue('--surface') || (isDark ? '#1E293B' : '#FFFFFF');
 
         const formatVal = (v) => {
           if(!v || v <= 0) return '';
@@ -7283,6 +7881,784 @@ function handleSaveEditGoal(e){
   showToast(`Updated savings goal "${newName}"`);
 }
 
+/* ---------------- render: investments ---------------- */
+let invCategoryFilter = 'all';
+let simStartingCapital = 10000;
+let simMonthlyContrib = 500;
+let simAnnualReturn = 10.0;
+let simHorizonYears = 10;
+let chartInvestmentProjection = null;
+let chartAssetAllocation = null;
+
+const ASSET_CLASSES = [
+  { id: 'Stocks', label: 'Stocks', icon: '📈', color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
+  { id: 'ETFs & Index Funds', label: 'ETFs & Index Funds', icon: '🌐', color: '#10B981', bg: '#ECFDF5', border: '#A7F3D0' },
+  { id: 'Crypto', label: 'Crypto', icon: '🪙', color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A' },
+  { id: 'Real Estate', label: 'Real Estate', icon: '🏠', color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE' },
+  { id: 'Bonds / Fixed Income', label: 'Bonds / Fixed Income', icon: '🏛️', color: '#06B6D4', bg: '#ECFEFF', border: '#A5F3FC' },
+  { id: 'Gold & Commodities', label: 'Gold & Commodities', icon: '✨', color: '#D97706', bg: '#FEF3C7', border: '#FDE68A' },
+  { id: 'Mutual Funds', label: 'Mutual Funds', icon: '📊', color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8' },
+  { id: 'Other', label: 'Other', icon: '💼', color: '#64748B', bg: '#F8FAFC', border: '#E2E8F0' },
+];
+
+function getAssetClassMeta(type){
+  return ASSET_CLASSES.find(c => c.id.toLowerCase() === (type || '').toLowerCase()) || {
+    id: type || 'Other',
+    label: type || 'Other',
+    icon: '💼',
+    color: '#64748B',
+    bg: '#F8FAFC',
+    border: '#E2E8F0'
+  };
+}
+
+function calculateInvestmentProjections(principal, monthly, annualRatePct, years){
+  const r = (annualRatePct || 0) / 100;
+  const monthlyRate = r / 12;
+  const labels = [];
+  const fvPoints = [];
+  const principalPoints = [];
+  const gainsPoints = [];
+
+  for(let y = 0; y <= years; y++){
+    const months = y * 12;
+    const totalPrincipal = principal + (monthly * months);
+    let fv = totalPrincipal;
+    if(r > 0 && months > 0){
+      fv = (principal * Math.pow(1 + monthlyRate, months)) + 
+           (monthly * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+    }
+    labels.push(y === 0 ? 'Today' : `Year ${y}`);
+    fvPoints.push(Math.round(fv));
+    principalPoints.push(Math.round(totalPrincipal));
+    gainsPoints.push(Math.round(Math.max(0, fv - totalPrincipal)));
+  }
+
+  const finalFV = fvPoints[fvPoints.length - 1] || 0;
+  const finalPrincipal = principalPoints[principalPoints.length - 1] || 0;
+  const finalGain = Math.max(0, finalFV - finalPrincipal);
+  const multiple = finalPrincipal > 0 ? (finalFV / finalPrincipal) : 1;
+  const doublingYears = annualRatePct > 0 ? (72 / annualRatePct).toFixed(1) : 'N/A';
+  const monthlyPassive = Math.round((finalFV * 0.04) / 12);
+
+  return {
+    labels,
+    fvPoints,
+    principalPoints,
+    gainsPoints,
+    finalFV,
+    finalPrincipal,
+    finalGain,
+    multiple,
+    doublingYears,
+    monthlyPassive
+  };
+}
+
+function calculateMilestones(principal, monthly, annualRatePct){
+  const milestones = [25000, 50000, 100000, 250000, 500000, 1000000, 2000000];
+  const r = (annualRatePct || 0) / 100;
+  const monthlyRate = r / 12;
+
+  return milestones.map(target => {
+    if(principal >= target){
+      return { target, reached: true, yearsText: 'Achieved! 🏆' };
+    }
+    if(monthly <= 0 && r <= 0){
+      return { target, reached: false, yearsText: 'Needs contributions' };
+    }
+    let cur = principal;
+    let m = 0;
+    while(cur < target && m <= 600){
+      m++;
+      cur = cur * (1 + monthlyRate) + monthly;
+    }
+    if(m > 600){
+      return { target, reached: false, yearsText: '50+ yrs' };
+    }
+    const yrs = (m / 12).toFixed(1);
+    return { target, reached: false, yearsText: `in ~${yrs} yrs` };
+  });
+}
+
+function renderInvestments(){
+  const list = DB.investments || [];
+  const totalInvested = list.reduce((s, i) => s + (i.initialInvested || 0), 0);
+  const totalValue = list.reduce((s, i) => s + (i.currentValue || 0), 0);
+  const totalMonthly = list.reduce((s, i) => s + (i.monthlyContribution || 0), 0);
+  const netReturn = totalValue - totalInvested;
+  const roiPct = totalInvested > 0 ? ((netReturn / totalInvested) * 100) : 0;
+
+  // Header count
+  const countLabel = document.getElementById('investments-count-label');
+  if(countLabel){
+    countLabel.textContent = `${list.length} tracked asset${list.length === 1 ? '' : 's'} • ${fmt(totalValue)} total portfolio value`;
+  }
+
+  // Top KPIs
+  const kpiInvested = document.getElementById('inv-kpi-invested');
+  if(kpiInvested) kpiInvested.textContent = fmt(totalInvested);
+  const kpiValue = document.getElementById('inv-kpi-value');
+  if(kpiValue) kpiValue.textContent = fmt(totalValue);
+  
+  const kpiReturn = document.getElementById('inv-kpi-return');
+  if(kpiReturn){
+    kpiReturn.textContent = `${netReturn >= 0 ? '+' : ''}${fmt(netReturn)}`;
+    kpiReturn.style.color = netReturn >= 0 ? 'var(--teal)' : 'var(--rose)';
+  }
+  const kpiRoi = document.getElementById('inv-kpi-roi');
+  if(kpiRoi){
+    kpiRoi.textContent = `${netReturn >= 0 ? '+' : ''}${roiPct.toFixed(1)}% ROI`;
+    kpiRoi.className = `text-xs ${netReturn >= 0 ? 'tone-pos' : 'tone-neg'}`;
+  }
+
+  const kpiMonthly = document.getElementById('inv-kpi-monthly');
+  if(kpiMonthly) kpiMonthly.textContent = `${fmt(totalMonthly)}/mo`;
+
+  // Init / sync simulator defaults if first load
+  if(totalValue > 0 && simStartingCapital === 10000 && simMonthlyContrib === 500 && list.length > 0){
+    simStartingCapital = Math.round(totalValue);
+    simMonthlyContrib = Math.round(totalMonthly);
+    const avgReturn = list.reduce((s, i) => s + (i.expectedAnnualReturn || 10) * (i.currentValue || 1), 0) / Math.max(1, totalValue);
+    simAnnualReturn = Math.round(avgReturn * 10) / 10;
+  }
+
+  // Update simulator input elements
+  const inputP = document.getElementById('sim-input-principal');
+  if(inputP) inputP.value = simStartingCapital;
+  const dispP = document.getElementById('sim-disp-principal');
+  if(dispP) dispP.textContent = fmt(simStartingCapital);
+
+  const inputM = document.getElementById('sim-input-monthly');
+  if(inputM) inputM.value = simMonthlyContrib;
+  const dispM = document.getElementById('sim-disp-monthly');
+  if(dispM) dispM.textContent = `${fmt(simMonthlyContrib)}/mo`;
+
+  const sliderR = document.getElementById('sim-slider-rate');
+  if(sliderR) sliderR.value = simAnnualReturn;
+  const dispR = document.getElementById('sim-disp-rate');
+  if(dispR) dispR.textContent = `${simAnnualReturn.toFixed(1)}% / yr`;
+
+  // Render Simulation & Outcome outputs
+  updateSimulationOutputs();
+
+  // Render Asset Allocation
+  renderAssetAllocationChart();
+
+  // Render Holdings Filters & Table
+  renderHoldingsFilters();
+  renderHoldingsTable();
+}
+
+function updateSimulationOutputs(){
+  const res = calculateInvestmentProjections(simStartingCapital, simMonthlyContrib, simAnnualReturn, simHorizonYears);
+
+  const fvEl = document.getElementById('sim-result-fv');
+  if(fvEl) fvEl.textContent = fmt(res.finalFV);
+  const gainEl = document.getElementById('sim-result-gain');
+  if(gainEl){
+    gainEl.textContent = `+${fmt(res.finalGain)} (${res.finalPrincipal > 0 ? Math.round((res.finalGain / res.finalPrincipal) * 100) : 0}% ROI)`;
+  }
+  const prinEl = document.getElementById('sim-result-principal');
+  if(prinEl) prinEl.textContent = fmt(res.finalPrincipal);
+  const multEl = document.getElementById('sim-result-multiple');
+  if(multEl) multEl.textContent = `${res.multiple.toFixed(2)}x Return`;
+  const dblEl = document.getElementById('sim-result-doubling');
+  if(dblEl) dblEl.textContent = res.doublingYears !== 'N/A' ? `~${res.doublingYears} yrs` : 'N/A';
+  const passEl = document.getElementById('sim-result-passive');
+  if(passEl) passEl.textContent = `~${fmt(res.monthlyPassive)}/mo`;
+
+  renderInvestmentProjectionChart(res);
+  renderMilestones(simStartingCapital, simMonthlyContrib, simAnnualReturn);
+}
+
+function onSimInputChange(type, val){
+  val = parseFloat(val) || 0;
+  if(type === 'principal'){
+    simStartingCapital = Math.max(0, val);
+    const disp = document.getElementById('sim-disp-principal');
+    if(disp) disp.textContent = fmt(simStartingCapital);
+  } else if(type === 'monthly'){
+    simMonthlyContrib = Math.max(0, val);
+    const disp = document.getElementById('sim-disp-monthly');
+    if(disp) disp.textContent = `${fmt(simMonthlyContrib)}/mo`;
+  } else if(type === 'rate'){
+    simAnnualReturn = Math.max(0.5, Math.min(30, val));
+    const disp = document.getElementById('sim-disp-rate');
+    if(disp) disp.textContent = `${simAnnualReturn.toFixed(1)}% / yr`;
+    [5, 10, 14].forEach(p => {
+      const btn = document.getElementById('preset-rate-' + p);
+      if(btn) btn.classList.toggle('active', Math.abs(simAnnualReturn - p) < 0.25);
+    });
+  }
+  updateSimulationOutputs();
+}
+
+function setSimRatePreset(pct){
+  simAnnualReturn = pct;
+  const slider = document.getElementById('sim-slider-rate');
+  if(slider) slider.value = pct;
+  onSimInputChange('rate', pct);
+}
+
+function setSimHorizon(years){
+  simHorizonYears = years;
+  document.querySelectorAll('#sim-horizon-chips .btn-chip').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById('horizon-chip-' + years);
+  if(activeBtn) activeBtn.classList.add('active');
+  const titleEl = document.getElementById('sim-horizon-title');
+  if(titleEl) titleEl.textContent = `Projected Wealth in ${years} Years`;
+  updateSimulationOutputs();
+}
+
+function syncSimWithPortfolio(){
+  const list = DB.investments || [];
+  const totalVal = list.reduce((s, inv) => s + (inv.currentValue || 0), 0);
+  const totalMonthly = list.reduce((s, inv) => s + (inv.monthlyContribution || 0), 0);
+  const avgReturn = (list.length > 0)
+    ? (list.reduce((s, inv) => s + (inv.expectedAnnualReturn || 10) * (inv.currentValue || 1), 0) / Math.max(1, totalVal))
+    : 10.0;
+
+  simStartingCapital = totalVal > 0 ? Math.round(totalVal) : 10000;
+  simMonthlyContrib = totalMonthly > 0 ? Math.round(totalMonthly) : 500;
+  simAnnualReturn = Math.round(avgReturn * 10) / 10;
+
+  const inputP = document.getElementById('sim-input-principal');
+  if(inputP) inputP.value = simStartingCapital;
+  const inputM = document.getElementById('sim-input-monthly');
+  if(inputM) inputM.value = simMonthlyContrib;
+  const sliderR = document.getElementById('sim-slider-rate');
+  if(sliderR) sliderR.value = simAnnualReturn;
+
+  onSimInputChange('principal', simStartingCapital);
+  onSimInputChange('monthly', simMonthlyContrib);
+  onSimInputChange('rate', simAnnualReturn);
+  showToast('Simulator synced with your active portfolio');
+}
+
+function renderInvestmentProjectionChart(res){
+  const canvas = document.getElementById('investment-projection-chart');
+  if(!canvas || typeof Chart === 'undefined') return;
+
+  if(chartInvestmentProjection){
+    chartInvestmentProjection.destroy();
+    chartInvestmentProjection = null;
+  }
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+  const axisColor = isDark ? '#CBD5E1' : '#334155';
+  const legendColor = isDark ? '#F1F5F9' : '#0F172A';
+
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+  gradient.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
+  gradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+
+  chartInvestmentProjection = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: res.labels,
+      datasets: [
+        {
+          label: 'Total Projected Wealth',
+          data: res.fvPoints,
+          borderColor: '#10B981',
+          borderWidth: 2.8,
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.35,
+          pointRadius: res.fvPoints.length > 20 ? 0 : 3,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#10B981',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1.5,
+        },
+        {
+          label: 'Contributed Capital (Principal)',
+          data: res.principalPoints,
+          borderColor: isDark ? '#64748B' : '#94A3B8',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0,
+          tension: 0.1,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          align: 'end',
+          labels: {
+            boxWidth: 12,
+            boxHeight: 12,
+            font: { family: 'Plus Jakarta Sans', size: 12.5, weight: '700' },
+            color: legendColor,
+            padding: 14
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0F172A',
+          titleColor: '#F8FAFC',
+          titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '700' },
+          bodyColor: '#F1F5F9',
+          bodyFont: { family: 'JetBrains Mono', size: 12, weight: '600' },
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            label: function(ctx){
+              return ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
+            },
+            afterBody: function(items){
+              if(items.length >= 2){
+                const fv = items[0].parsed.y;
+                const p = items[1].parsed.y;
+                const gain = Math.max(0, fv - p);
+                return ` Pure Growth: +${fmt(gain)}`;
+              }
+              return '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' }, color: axisColor }
+        },
+        y: {
+          grid: { color: gridColor },
+          ticks: {
+            font: { family: 'JetBrains Mono', size: 12, weight: '600' },
+            color: axisColor,
+            callback: function(val){ return fmt(val); }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderAssetAllocationChart(){
+  const canvas = document.getElementById('asset-allocation-chart');
+  if(!canvas || typeof Chart === 'undefined') return;
+
+  if(chartAssetAllocation){
+    chartAssetAllocation.destroy();
+    chartAssetAllocation = null;
+  }
+
+  const list = DB.investments || [];
+  const totalVal = list.reduce((s, i) => s + (i.currentValue || 0), 0);
+  const totalEl = document.getElementById('inv-allocation-total');
+  if(totalEl) totalEl.textContent = `Total: ${fmt(totalVal)}`;
+
+  const classTotals = {};
+  list.forEach(inv => {
+    const cls = inv.assetType || 'Other';
+    classTotals[cls] = (classTotals[cls] || 0) + (inv.currentValue || 0);
+  });
+
+  const keys = Object.keys(classTotals);
+  const legendEl = document.getElementById('asset-allocation-legend');
+
+  if(!keys.length || totalVal <= 0){
+    canvas.style.display = 'none';
+    if(legendEl){
+      legendEl.innerHTML = `<p class="empty-note" style="padding:14px; text-align:center;">Add assets to view your portfolio allocation.</p>`;
+    }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#D97706', '#64748B'];
+  const labels = keys;
+  const data = keys.map(k => classTotals[k]);
+  const bgColors = keys.map((k, idx) => {
+    const meta = getAssetClassMeta(k);
+    return meta.color || colors[idx % colors.length];
+  });
+
+  chartAssetAllocation = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: bgColors,
+        borderWidth: 2,
+        borderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1E293B' : '#FFFFFF',
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '72%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#111321',
+          titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+          padding: 9,
+          cornerRadius: 6,
+          callbacks: {
+            label: function(ctx){
+              const val = ctx.parsed;
+              const pct = totalVal > 0 ? ((val / totalVal) * 100).toFixed(1) : 0;
+              return ` ${ctx.label}: ${fmt(val)} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if(legendEl){
+    legendEl.innerHTML = keys.map((k, idx) => {
+      const val = classTotals[k];
+      const pct = totalVal > 0 ? ((val / totalVal) * 100).toFixed(1) : 0;
+      const meta = getAssetClassMeta(k);
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:3px 0;">
+          <div style="display:flex; align-items:center; gap:7px;">
+            <span style="width:10px; height:10px; border-radius:3px; background:${bgColors[idx]}; display:inline-block;"></span>
+            <span>${meta.icon} ${escapeHtml(k)}</span>
+          </div>
+          <div class="figure" style="font-weight:600;">
+            ${fmt(val)} <span class="muted" style="font-size:11px; font-weight:normal;">(${pct}%)</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+}
+
+function renderMilestones(principal, monthly, annualRatePct){
+  const container = document.getElementById('inv-milestones-list');
+  if(!container) return;
+
+  const milestones = calculateMilestones(principal, monthly, annualRatePct);
+  container.innerHTML = milestones.map(m => {
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; border-radius:8px; background:${m.reached ? '#ECFDF5' : 'var(--surface-2)'}; border:1px solid ${m.reached ? '#A7F3D0' : 'var(--line-soft)'}; font-size:12px;">
+        <div style="display:flex; align-items:center; gap:7px;">
+          <span>${m.reached ? '🏆' : '🎯'}</span>
+          <strong class="figure" style="color:${m.reached ? '#059669' : 'var(--ink)'}; font-size:13px;">${fmt(m.target)}</strong>
+        </div>
+        <span class="badge" style="font-size:11px; font-weight:600; padding:2px 7px; border-radius:6px; background:${m.reached ? '#D1FAE5' : 'transparent'}; color:${m.reached ? '#065F46' : 'var(--muted)'};">
+          ${m.yearsText}
+        </span>
+      </div>`;
+  }).join('');
+}
+
+function renderHoldingsFilters(){
+  const container = document.getElementById('inv-category-filter-chips');
+  if(!container) return;
+  const list = DB.investments || [];
+  const categories = ['all', ...Array.from(new Set(list.map(i => i.assetType || 'Other')))];
+
+  container.innerHTML = categories.map(cat => {
+    const count = cat === 'all' ? list.length : list.filter(i => (i.assetType || 'Other') === cat).length;
+    return `<button type="button" class="btn-chip ${invCategoryFilter === cat ? 'active' : ''}" style="font-size:11.5px; padding:4px 9px;" onclick="setInvCategoryFilter('${escapeHtml(cat)}')">${cat === 'all' ? 'All' : cat} (${count})</button>`;
+  }).join('');
+}
+
+function setInvCategoryFilter(cat){
+  invCategoryFilter = cat;
+  renderHoldingsFilters();
+  renderHoldingsTable();
+}
+
+function renderHoldingsTable(){
+  const tbody = document.getElementById('inv-holdings-tbody');
+  const emptyWrap = document.getElementById('inv-holdings-empty');
+  if(!tbody || !emptyWrap) return;
+
+  const list = DB.investments || [];
+  const filtered = invCategoryFilter === 'all'
+    ? list
+    : list.filter(i => (i.assetType || 'Other') === invCategoryFilter);
+
+  if(!filtered.length){
+    tbody.innerHTML = '';
+    emptyWrap.style.display = 'block';
+    emptyWrap.innerHTML = `
+      <div style="max-width:380px; margin:0 auto;">
+        <div style="font-size:36px; margin-bottom:10px;">📈</div>
+        <h3 style="margin:0 0 6px; font-size:17px;">${list.length === 0 ? 'No investments added yet' : 'No assets in this category'}</h3>
+        <p class="text-xs muted" style="margin:0 0 16px; line-height:1.5;">
+          ${list.length === 0 
+            ? 'Start building your wealth portfolio to track market value, ROI, and compound growth outcomes.' 
+            : 'Switch to "All" or add an asset to this category.'}
+        </p>
+        <div style="display:flex; justify-content:center; gap:8px;">
+          <button onclick="openInvestmentModal()" class="btn-primary">+ Add Investment</button>
+          ${list.length === 0 ? `<button onclick="loadSamplePortfolio()" class="btn-ghost">Load Starter Portfolio</button>` : ''}
+        </div>
+      </div>`;
+    return;
+  }
+
+  emptyWrap.style.display = 'none';
+  tbody.innerHTML = filtered.map(inv => {
+    const meta = getAssetClassMeta(inv.assetType);
+    const invested = inv.initialInvested || 0;
+    const current = inv.currentValue || 0;
+    const net = current - invested;
+    const roi = invested > 0 ? ((net / invested) * 100) : 0;
+    const isPos = net >= 0;
+
+    return `
+      <tr style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+        <td style="padding:12px;">
+          <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
+          ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
+        </td>
+        <td style="padding:12px;">
+          <span class="asset-tag-badge" style="background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border};">
+            <span>${meta.icon}</span> <span>${escapeHtml(meta.label)}</span>
+          </span>
+        </td>
+        <td style="padding:12px;">
+          <span style="font-size:12.5px; color:var(--muted-2);">${escapeHtml(inv.holdingLocation || 'Self-Custody')}</span>
+        </td>
+        <td style="padding:12px; text-align:right;" class="figure">
+          ${fmt(invested)}
+        </td>
+        <td style="padding:12px; text-align:right;" class="figure" style="font-weight:600;">
+          <strong>${fmt(current)}</strong>
+        </td>
+        <td style="padding:12px; text-align:right;" class="figure">
+          <span style="color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-weight:600;">
+            ${isPos ? '+' : ''}${fmt(net)}
+          </span>
+          <span class="text-xs" style="display:block; color:${isPos ? 'var(--teal)' : 'var(--rose)'}; font-size:11px;">
+            (${isPos ? '+' : ''}${roi.toFixed(1)}%)
+          </span>
+        </td>
+        <td style="padding:12px; text-align:right;" class="figure">
+          ${inv.monthlyContribution > 0 ? `<span style="color:var(--teal);">${fmt(inv.monthlyContribution)}/mo</span>` : '<span class="muted">–</span>'}
+        </td>
+        <td style="padding:12px; text-align:right;" class="figure">
+          <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:11.5px; padding:2px 7px;">
+            ${inv.expectedAnnualReturn || 10}%
+          </span>
+        </td>
+        <td style="padding:12px; text-align:center;">
+          <div style="display:inline-flex; align-items:center; gap:4px;">
+            <button class="icon-btn" onclick="openEditInvestmentModal('${inv.id}')" title="Edit investment" aria-label="Edit ${escapeHtml(inv.name)}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="icon-btn" onclick="deleteInvestment('${inv.id}')" title="Delete investment" aria-label="Delete investment">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function openInvestmentModal(){
+  const initLabel = document.getElementById('inv-initial-label');
+  if(initLabel) initLabel.textContent = `Invested (Cost Basis, ${currencySymbol()}) *`;
+  const currLabel = document.getElementById('inv-current-label');
+  if(currLabel) currLabel.textContent = `Current Market Value (${currencySymbol()}) *`;
+  const dateInput = document.getElementById('inv-start-date');
+  if(dateInput) dateInput.value = ymd(new Date());
+
+  const backdrop = document.getElementById('investment-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeInvestmentModal(){
+  const backdrop = document.getElementById('investment-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function handleAddInvestment(e){
+  e.preventDefault();
+  const name = document.getElementById('inv-name').value.trim();
+  const assetType = document.getElementById('inv-type').value;
+  const holdingLocation = document.getElementById('inv-location').value.trim() || 'Self-Custody';
+  const initialInvested = parseFloat(document.getElementById('inv-initial').value);
+  const currentValue = parseFloat(document.getElementById('inv-current').value);
+  const monthlyContribution = parseFloat(document.getElementById('inv-monthly').value) || 0;
+  const expectedAnnualReturn = parseFloat(document.getElementById('inv-return').value) || 10.0;
+  const startDate = document.getElementById('inv-start-date').value || ymd(new Date());
+  const notes = document.getElementById('inv-notes').value.trim();
+
+  if(!name || isNaN(initialInvested) || initialInvested < 0 || isNaN(currentValue) || currentValue < 0){
+    showToast('Please enter valid asset details and amounts', 'error');
+    return;
+  }
+
+  DB.investments = DB.investments || [];
+  const newAsset = {
+    id: uid(),
+    name,
+    assetType,
+    holdingLocation,
+    initialInvested,
+    currentValue,
+    monthlyContribution,
+    expectedAnnualReturn,
+    startDate,
+    notes,
+    createdAt: new Date().toISOString()
+  };
+
+  DB.investments.push(newAsset);
+  saveDB(true);
+  closeInvestmentModal();
+
+  // Reset form
+  document.getElementById('inv-name').value = '';
+  document.getElementById('inv-initial').value = '';
+  document.getElementById('inv-current').value = '';
+  document.getElementById('inv-monthly').value = '0';
+  document.getElementById('inv-return').value = '10.0';
+  document.getElementById('inv-location').value = '';
+  document.getElementById('inv-notes').value = '';
+
+  renderAllForCurrentPage();
+  showToast(`Added investment "${name}"`);
+}
+
+function openEditInvestmentModal(id){
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+
+  document.getElementById('edit-inv-id').value = id;
+  document.getElementById('edit-inv-name').value = inv.name || '';
+  document.getElementById('edit-inv-type').value = inv.assetType || 'Stocks';
+  document.getElementById('edit-inv-location').value = inv.holdingLocation || '';
+  document.getElementById('edit-inv-initial').value = inv.initialInvested || 0;
+  document.getElementById('edit-inv-current').value = inv.currentValue || 0;
+  document.getElementById('edit-inv-monthly').value = inv.monthlyContribution || 0;
+  document.getElementById('edit-inv-return').value = inv.expectedAnnualReturn || 10.0;
+  document.getElementById('edit-inv-start-date').value = inv.startDate || '';
+  document.getElementById('edit-inv-notes').value = inv.notes || '';
+
+  const initLabel = document.getElementById('edit-inv-initial-label');
+  if(initLabel) initLabel.textContent = `Invested (Cost Basis, ${currencySymbol()}) *`;
+  const currLabel = document.getElementById('edit-inv-current-label');
+  if(currLabel) currLabel.textContent = `Current Market Value (${currencySymbol()}) *`;
+
+  const backdrop = document.getElementById('edit-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeEditInvestmentModal(){
+  const backdrop = document.getElementById('edit-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function handleSaveEditInvestment(e){
+  e.preventDefault();
+  const id = document.getElementById('edit-inv-id').value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv){
+    closeEditInvestmentModal();
+    return;
+  }
+
+  const name = document.getElementById('edit-inv-name').value.trim();
+  const assetType = document.getElementById('edit-inv-type').value;
+  const holdingLocation = document.getElementById('edit-inv-location').value.trim() || 'Self-Custody';
+  const initialInvested = parseFloat(document.getElementById('edit-inv-initial').value);
+  const currentValue = parseFloat(document.getElementById('edit-inv-current').value);
+  const monthlyContribution = parseFloat(document.getElementById('edit-inv-monthly').value) || 0;
+  const expectedAnnualReturn = parseFloat(document.getElementById('edit-inv-return').value) || 10.0;
+  const startDate = document.getElementById('edit-inv-start-date').value || ymd(new Date());
+  const notes = document.getElementById('edit-inv-notes').value.trim();
+
+  if(!name || isNaN(initialInvested) || initialInvested < 0 || isNaN(currentValue) || currentValue < 0){
+    showToast('Please check the values entered', 'error');
+    return;
+  }
+
+  inv.name = name;
+  inv.assetType = assetType;
+  inv.holdingLocation = holdingLocation;
+  inv.initialInvested = initialInvested;
+  inv.currentValue = currentValue;
+  inv.monthlyContribution = monthlyContribution;
+  inv.expectedAnnualReturn = expectedAnnualReturn;
+  inv.startDate = startDate;
+  inv.notes = notes;
+
+  saveDB(true);
+  closeEditInvestmentModal();
+  renderAllForCurrentPage();
+  showToast(`Updated "${name}"`);
+}
+
+function deleteInvestment(id){
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+  if(!confirm(`Remove "${inv.name}" from your investments?`)) return;
+
+  DB.investments = (DB.investments || []).filter(i => i.id !== id);
+  saveDB(true);
+  renderAllForCurrentPage();
+  showToast(`Removed "${inv.name}"`);
+}
+
+function loadSamplePortfolio(){
+  DB.investments = [
+    {
+      id: uid(),
+      name: 'Vanguard S&P 500 ETF (VOO)',
+      assetType: 'ETFs & Index Funds',
+      holdingLocation: 'Fidelity Brokerage',
+      initialInvested: 12000,
+      currentValue: 15400,
+      monthlyContribution: 400,
+      expectedAnnualReturn: 10.0,
+      startDate: '2023-01-15',
+      notes: 'Core passive broad-market index holding',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: uid(),
+      name: 'Apple Inc. (AAPL)',
+      assetType: 'Stocks',
+      holdingLocation: 'Robinhood',
+      initialInvested: 4500,
+      currentValue: 6200,
+      monthlyContribution: 100,
+      expectedAnnualReturn: 12.5,
+      startDate: '2023-04-10',
+      notes: 'Large-cap technology equity',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: uid(),
+      name: 'US Treasury Bonds (BND)',
+      assetType: 'Bonds / Fixed Income',
+      holdingLocation: 'Vanguard',
+      initialInvested: 3500,
+      currentValue: 3650,
+      monthlyContribution: 50,
+      expectedAnnualReturn: 4.8,
+      startDate: '2023-06-01',
+      notes: 'Capital preservation & yield',
+      createdAt: new Date().toISOString()
+    }
+  ];
+  saveDB(true);
+  syncSimWithPortfolio();
+  renderAllForCurrentPage();
+  showToast('Starter portfolio loaded!');
+}
+
 /* ---------------- render: settings ---------------- */
 let settingsTab = 'categories';
 let catTypeTab = 'expense';
@@ -8105,6 +9481,7 @@ function renderPage(page){
   }
   else if(page==='budgets') renderBudgets();
   else if(page==='savings') renderSavings();
+  else if(page==='investments') renderInvestments();
   else if(page==='settings') renderSettings();
 }
 function renderAllForCurrentPage(){ renderPage(currentPage); }
@@ -8134,6 +9511,10 @@ window.addEventListener('keydown', (e) => {
     if (editGoalEl && !editGoalEl.classList.contains('hidden')) closeEditGoalModal();
     const rolloverGoalEl = document.getElementById('rollover-goal-modal-backdrop');
     if (rolloverGoalEl && !rolloverGoalEl.classList.contains('hidden')) closeRolloverGoalModal();
+    const invEl = document.getElementById('investment-modal-backdrop');
+    if (invEl && !invEl.classList.contains('hidden')) closeInvestmentModal();
+    const editInvEl = document.getElementById('edit-investment-modal-backdrop');
+    if (editInvEl && !editInvEl.classList.contains('hidden')) closeEditInvestmentModal();
     const authEl = document.getElementById('auth-modal-backdrop');
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
     const deleteAccountEl = document.getElementById('delete-account-modal-backdrop');
@@ -8150,6 +9531,10 @@ window.addEventListener('resize', () => {
   if (currentPage === 'dashboard' && chartDashboardTrend) {
     chartDashboardTrend.resize();
   }
+  if (currentPage === 'investments') {
+    if (chartInvestmentProjection) chartInvestmentProjection.resize();
+    if (chartAssetAllocation) chartAssetAllocation.resize();
+  }
   if (!document.getElementById('landing-page').classList.contains('hidden') && chartHeroPreview) {
     chartHeroPreview.resize();
   }
@@ -8161,7 +9546,7 @@ injectLogos();
 // Restore previous app view and page on refresh/reload
 (function restoreAppSession(){
   const hashPage = window.location.hash ? window.location.hash.replace('#', '') : null;
-  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'settings'];
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'settings'];
   const savedPage = localStorage.getItem('wealthnest_current_page');
   const savedView = localStorage.getItem('wealthnest_view_mode');
 
@@ -8178,7 +9563,7 @@ injectLogos();
 
 window.addEventListener('hashchange', () => {
   const hash = window.location.hash.replace('#', '');
-  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'settings'];
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'settings'];
   if(validPages.includes(hash) && currentPage !== hash){
     goToApp(hash);
   }
