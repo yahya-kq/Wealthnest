@@ -842,10 +842,12 @@
   .report-toolbar-copy h2{font-family:var(--font-display); font-size:15px; margin:0 0 4px;}
   .report-toolbar-copy p{font-size:12px; color:var(--muted); margin:0; line-height:1.5;}
   .report-section-kicker{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted-2); font-weight:700; margin:0 0 8px;}
-  .budget-summary-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;}
+  .budget-summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
   .budget-summary-item{padding:12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:9px;}
   .budget-summary-item strong{display:block; font-family:var(--font-mono); font-size:17px; margin-top:5px;}
-  @media(max-width:700px){.budget-summary-grid{grid-template-columns:1fr;}.report-toolbar{align-items:stretch;}}
+  @media(max-width:960px){.budget-summary-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:540px){.budget-summary-grid{grid-template-columns:1fr;}}
+  @media(max-width:700px){.report-toolbar{align-items:stretch;}}
   .dashboard-filter{display:flex; align-items:end; gap:10px; flex-wrap:wrap;}
   .dashboard-filter-field{min-width:148px;}
   .dashboard-filter-note{font-size:12px; color:var(--muted); margin:0 0 9px;}
@@ -5175,6 +5177,24 @@ function renderDashboardTrendChart(period){
   if(chartDashboardTrend) chartDashboardTrend.destroy();
 
   const textColor = themeValue('--muted') || '#667085';
+  const ctx = canvas.getContext('2d');
+  const chartHeight = canvas.clientHeight || 200;
+
+  // WealthNest Brand Glowing Gradients
+  const incomeGrad = ctx.createLinearGradient(0, 0, 0, chartHeight);
+  incomeGrad.addColorStop(0, '#14B8A6');
+  incomeGrad.addColorStop(1, '#0D9488');
+
+  const expenseGrad = ctx.createLinearGradient(0, 0, 0, chartHeight);
+  expenseGrad.addColorStop(0, '#FB7185');
+  expenseGrad.addColorStop(1, '#E11D48');
+
+  const savingsGrad = ctx.createLinearGradient(0, 0, 0, chartHeight);
+  savingsGrad.addColorStop(0, '#FBBF24');
+  savingsGrad.addColorStop(1, '#D97706');
+
+  const isMobile = (typeof window !== 'undefined' && window.innerWidth < 640);
+  const maxBarThickness = isMobile ? 12 : 20;
 
   const datasets = [];
 
@@ -5182,16 +5202,12 @@ function renderDashboardTrendChart(period){
     datasets.push({
       label: 'Income',
       data: trendPoints.map(t => t.income),
-      borderColor: '#0F9E93',
-      backgroundColor: 'transparent',
-      fill: false,
-      tension: 0.2,
-      borderWidth: 2.5,
-      pointRadius: 4,
-      pointHoverRadius: 6.5,
-      pointBackgroundColor: '#0F9E93',
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 1.5
+      backgroundColor: incomeGrad,
+      hoverBackgroundColor: '#0D9488',
+      shadowColor: 'rgba(13, 148, 136, 0.42)',
+      borderRadius: 6,
+      borderSkipped: false,
+      maxBarThickness: maxBarThickness
     });
   }
 
@@ -5199,16 +5215,12 @@ function renderDashboardTrendChart(period){
     datasets.push({
       label: 'Expenses',
       data: trendPoints.map(t => t.expense),
-      borderColor: '#E1435C',
-      backgroundColor: 'transparent',
-      fill: false,
-      tension: 0.2,
-      borderWidth: 2.5,
-      pointRadius: 4,
-      pointHoverRadius: 6.5,
-      pointBackgroundColor: '#E1435C',
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 1.5
+      backgroundColor: expenseGrad,
+      hoverBackgroundColor: '#E11D48',
+      shadowColor: 'rgba(225, 29, 72, 0.42)',
+      borderRadius: 6,
+      borderSkipped: false,
+      maxBarThickness: maxBarThickness
     });
   }
 
@@ -5216,33 +5228,50 @@ function renderDashboardTrendChart(period){
     datasets.push({
       label: 'Savings',
       data: trendPoints.map(t => t.savings),
-      borderColor: '#C4820A',
-      backgroundColor: 'transparent',
-      fill: false,
-      tension: 0.2,
-      borderWidth: 2.5,
-      pointRadius: 4,
-      pointHoverRadius: 6.5,
-      pointBackgroundColor: '#C4820A',
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 1.5
+      backgroundColor: savingsGrad,
+      hoverBackgroundColor: '#D97706',
+      shadowColor: 'rgba(217, 119, 6, 0.42)',
+      borderRadius: 6,
+      borderSkipped: false,
+      maxBarThickness: maxBarThickness
     });
   }
 
+  const barShadowPlugin = {
+    id: 'barShadowPlugin',
+    beforeDatasetDraw(chart, args) {
+      const { ctx } = chart;
+      const meta = chart.getDatasetMeta(args.index);
+      if(!meta || meta.hidden) return;
+      const ds = chart.data.datasets[args.index];
+      if(ds && ds.shadowColor){
+        ctx.save();
+        ctx.shadowColor = ds.shadowColor;
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 3;
+        ctx.shadowOffsetX = 0;
+      }
+    },
+    afterDatasetDraw(chart, args) {
+      const ds = chart.data.datasets[args.index];
+      if(ds && ds.shadowColor){
+        chart.ctx.restore();
+      }
+    }
+  };
+
   chartDashboardTrend = new Chart(canvas, {
-    type: 'line',
+    type: 'bar',
     data: {
       labels: trendPoints.map(t => t.label),
       datasets: datasets
     },
+    plugins: [barShadowPlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      elements: {
-        line: {
-          fill: false
-        }
-      },
+      categoryPercentage: 0.72,
+      barPercentage: 0.85,
       interaction: {
         mode: 'index',
         intersect: false
@@ -5254,9 +5283,11 @@ function renderDashboardTrendChart(period){
           labels: {
             color: textColor,
             font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
-            boxWidth: 8,
+            boxWidth: 10,
+            boxHeight: 10,
+            borderRadius: 3,
             usePointStyle: true,
-            pointStyle: 'circle',
+            pointStyle: 'rectRounded',
             padding: 12
           }
         },
@@ -6332,6 +6363,12 @@ function renderBudgets(){
   }
 
   const remaining = totalBudget - totalSpent;
+  const mCash = monthTotals(DB.transactions, budgetSelMonth, budgetSelYear);
+  const netBalance = mCash.net;
+  const netTone = netBalance < 0 ? 'tone-neg' : (netBalance > 0 ? 'tone-pos' : 'tone-neu');
+  const netSign = netBalance < 0 ? '-' : '';
+  const netSub = netBalance < 0 ? 'Monthly deficit' : (netBalance > 0 ? 'Monthly surplus' : 'Balanced');
+
   document.getElementById('budget-summary-grid').innerHTML = catCards.length ? `
     <div class="budget-summary-item">
       <span class="label-eyebrow">Total Budget</span>
@@ -6348,6 +6385,11 @@ function renderBudgets(){
       <strong class="${remaining<0?'tone-neg':'tone-pos'}">${fmt(Math.abs(remaining))}</strong>
       <span class="text-xs muted">${remaining<0?'Over budget':'Available'}</span>
     </div>
+    <div class="budget-summary-item">
+      <span class="label-eyebrow">Net Balance</span>
+      <strong class="${netTone}">${netSign}${fmt(Math.abs(netBalance))}</strong>
+      <span class="text-xs muted">${netSub}</span>
+    </div>
   ` : `
     <div class="budget-summary-item">
       <span class="label-eyebrow">Total Budget</span>
@@ -6363,6 +6405,11 @@ function renderBudgets(){
       <span class="label-eyebrow">Remaining</span>
       <strong>${fmt(0)}</strong>
       <span class="text-xs muted">No active limits</span>
+    </div>
+    <div class="budget-summary-item">
+      <span class="label-eyebrow">Net Balance</span>
+      <strong class="${netTone}">${netSign}${fmt(Math.abs(netBalance))}</strong>
+      <span class="text-xs muted">${netSub}</span>
     </div>
   `;
 
@@ -6446,25 +6493,138 @@ function renderBudgets(){
 
   renderBudgetHistory();
 }
+
+let openBudgetHistoryKey = null;
+let budgetHistoryFilterState = {};
+
+function toggleBudgetHistoryDropdown(year, month){
+  const key = `${year}-${month}`;
+  openBudgetHistoryKey = (openBudgetHistoryKey === key) ? null : key;
+  renderBudgetHistory();
+}
+
+function setBudgetHistoryFilter(key, filter, e){
+  if(e) e.stopPropagation();
+  budgetHistoryFilterState[key] = filter;
+  renderBudgetHistory();
+}
+
 function renderBudgetHistory(){
-  const now = new Date();
   const rowsOut = [];
   for(let i=0; i<8; i++){
     const dt = new Date(budgetSelYear, budgetSelMonth-1-i, 1);
-    const s = monthBudgetSummary(dt.getMonth()+1, dt.getFullYear());
-    if(s) rowsOut.push({ label: `${MONTH_NAMES[dt.getMonth()]} ${dt.getFullYear()}`, month:dt.getMonth()+1, year:dt.getFullYear(), s });
+    const m = dt.getMonth() + 1;
+    const y = dt.getFullYear();
+    const s = monthBudgetSummary(m, y);
+    if(s) rowsOut.push({ label: `${MONTH_NAMES[dt.getMonth()]} ${y}`, month: m, year: y, s });
   }
-  document.getElementById('budget-history-rows').innerHTML = rowsOut.length ? rowsOut.map(r => `
-    <div onclick="budgetSelMonth=${r.month}; budgetSelYear=${r.year}; renderBudgets();" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--line); border-radius:9px; margin-bottom:8px; cursor:pointer;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='#fff'">
-      <div style="flex:1; display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-weight:500; font-size:13.5px;">${r.label}</span>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span class="figure text-xs muted">${fmt(r.s.spent)} / ${fmt(r.s.budgeted)}</span>
-          <span class="badge ${r.s.over?'badge-over':'badge-ok'}">${r.s.over ? 'Over budget' : 'On track'}</span>
-          ${r.s.categoriesOver>0 ? `<span class="badge badge-amber">${r.s.categoriesOver} categor${r.s.categoriesOver===1?'y':'ies'} over</span>` : ''}
+
+  const container = document.getElementById('budget-history-rows');
+  if(!container) return;
+
+  if(!rowsOut.length){
+    container.innerHTML = '<p class="empty-note">No past months with budgets set yet.</p>';
+    return;
+  }
+
+  container.innerHTML = rowsOut.map(r => {
+    const key = `${r.year}-${r.month}`;
+    const isOpen = openBudgetHistoryKey === key;
+    const currentFilter = budgetHistoryFilterState[key] || 'all';
+
+    // Retrieve category / subcategory budget progress items for this specific month
+    const items = (budgetProgress(DB.transactions, DB.budgets, r.month, r.year) || []).slice();
+    items.sort((a, b) => {
+      const c = a.category.localeCompare(b.category);
+      if(c !== 0) return c;
+      if(!a.subCategory && b.subCategory) return -1;
+      if(a.subCategory && !b.subCategory) return 1;
+      return (a.subCategory || '').localeCompare(b.subCategory || '');
+    });
+
+    const onTrackCount = items.filter(it => !it.overspent).length;
+    const overBudgetCount = items.filter(it => it.overspent).length;
+
+    let displayItems = items;
+    if(currentFilter === 'on-track'){
+      displayItems = items.filter(it => !it.overspent);
+    } else if(currentFilter === 'over-budget'){
+      displayItems = items.filter(it => it.overspent);
+    }
+
+    return `
+      <div style="border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; background:var(--surface); transition:box-shadow .15s ease;">
+        <div onclick="toggleBudgetHistoryDropdown(${r.year}, ${r.month})"
+             style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; cursor:pointer; background:${isOpen ? 'var(--surface-2)' : 'var(--surface)'}; user-select:none; transition:background .15s ease;"
+             onmouseover="if(!${isOpen}) this.style.background='var(--surface-2)'"
+             onmouseout="if(!${isOpen}) this.style.background='var(--surface)'"
+             title="Click to view category details">
+          <span style="font-weight:600; font-size:14px; color:var(--ink);">${r.label}</span>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span class="figure text-xs muted" style="font-weight:600; font-size:12.5px;">${fmt(r.s.spent)} / ${fmt(r.s.budgeted)}</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen ? 90 : 0}deg); transition:transform .2s ease; color:var(--muted-2); flex-shrink:0;">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
         </div>
+        ${isOpen ? `
+          <div style="padding:14px 16px 16px; background:var(--surface); border-top:1px solid var(--line-soft);" onclick="event.stopPropagation()">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn-chip ${currentFilter === 'all' ? 'active' : ''}"
+                        style="border:1px solid var(--line); padding:4px 10px; font-size:11.5px; border-radius:6px;"
+                        onclick="setBudgetHistoryFilter('${key}', 'all', event)">
+                  All (${items.length})
+                </button>
+                <button type="button" class="btn-chip ${currentFilter === 'on-track' ? 'active' : ''}"
+                        style="border:1px solid var(--line); padding:4px 10px; font-size:11.5px; border-radius:6px;"
+                        onclick="setBudgetHistoryFilter('${key}', 'on-track', event)">
+                  On Track (${onTrackCount})
+                </button>
+                <button type="button" class="btn-chip ${currentFilter === 'over-budget' ? 'active' : ''}"
+                        style="border:1px solid var(--line); padding:4px 10px; font-size:11.5px; border-radius:6px;"
+                        onclick="setBudgetHistoryFilter('${key}', 'over-budget', event)">
+                  Over Budget (${overBudgetCount})
+                </button>
+              </div>
+            </div>
+            ${displayItems.length ? `
+              <div style="overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface);">
+                <table style="width:100%; min-width:440px; border-collapse:collapse; font-size:12.5px; text-align:left;">
+                  <thead>
+                    <tr style="background:var(--surface-2); border-bottom:1px solid var(--line);">
+                      <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700;">Category</th>
+                      <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700;">Subcategory</th>
+                      <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Budget</th>
+                      <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Spent</th>
+                      <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:center;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${displayItems.map(it => `
+                      <tr style="border-bottom:1px solid var(--line-soft); transition:background .1s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+                        <td style="padding:9px 12px; font-weight:600; color:var(--ink);">${it.category}</td>
+                        <td style="padding:9px 12px; color:var(--muted); font-size:12px;">${it.subCategory ? it.subCategory : '<span style="color:var(--muted-2); font-style:italic;">All</span>'}</td>
+                        <td class="figure" style="padding:9px 12px; text-align:right; font-weight:500;">${fmt(it.budgetAmount)}</td>
+                        <td class="figure" style="padding:9px 12px; text-align:right; font-weight:600; color:${it.overspent ? 'var(--rose)' : 'var(--ink)'};">${fmt(it.spent)}</td>
+                        <td style="padding:9px 12px; text-align:center;">
+                          ${it.overspent ? '<span class="badge badge-over">Over Budget</span>' : '<span class="badge badge-ok">On Track</span>'}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : `
+              <div style="padding:16px 12px; text-align:center; color:var(--muted); font-size:12.5px; background:var(--surface-2); border-radius:8px; border:1px dashed var(--line);">
+                No categories found matching "${currentFilter === 'over-budget' ? 'Over Budget' : 'On Track'}".
+              </div>
+            `}
+          </div>
+        ` : ''}
       </div>
-    </div>`).join('') : '<p class="empty-note">No past months with budgets set yet.</p>';
+    `;
+  }).join('');
 }
 function handleAddBudget(e){
   e.preventDefault();
