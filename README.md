@@ -1,6 +1,6 @@
 # WealthNest
 
-**Live App**: [https://wealthnest-yahya-kq.vercel.app](https://wealthnest-yahya-kq.vercel.app)
+**Live App**: thewealthnest.vercel.app
 
 WealthNest is a personal finance tracker that runs entirely in the browser. The name combines **wealth** (your money and financial goals) with **nest** (a safe, organized place to keep and grow what matters) — the idea being that your finances have a secure home.
 
