@@ -5944,6 +5944,7 @@ function generateReportPDFContent(month, year) {
       
       ${renderFooter(1)}
     </div>
+    <div class="html2pdf__page-break"></div>
   `;
   
   /* ========================================================
@@ -6045,6 +6046,7 @@ function generateReportPDFContent(month, year) {
       
       ${renderFooter(2)}
     </div>
+    <div class="html2pdf__page-break"></div>
   `;
   
   /* ========================================================
@@ -6129,6 +6131,7 @@ function generateReportPDFContent(month, year) {
       
       ${renderFooter(3)}
     </div>
+    <div class="html2pdf__page-break"></div>
   `;
   
   /* ========================================================
@@ -6211,6 +6214,7 @@ function generateReportPDFContent(month, year) {
       
       ${renderFooter(4)}
     </div>
+    <div class="html2pdf__page-break"></div>
   `;
   
   /* ========================================================
@@ -6291,6 +6295,7 @@ function generateReportPDFContent(month, year) {
         
         ${renderFooter(pageNum)}
       </div>
+      ${chunkIdx < txChunks.length - 1 ? '<div class="html2pdf__page-break"></div>' : ''}
     `;
   });
   
@@ -6322,8 +6327,49 @@ async function downloadReportPDF() {
       <span>Generating PDF...</span>
     `;
   }
+
+  // Create elegant loading modal overlay
+  let modalOverlay = document.getElementById('wealthnest-pdf-loading-modal');
+  if (!modalOverlay) {
+    modalOverlay = document.createElement('div');
+    modalOverlay.id = 'wealthnest-pdf-loading-modal';
+    modalOverlay.style.cssText = `
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.25s ease;
+      opacity: 0;
+    `;
+    modalOverlay.innerHTML = `
+      <div style="background:#ffffff; border-radius:18px; padding:32px 36px; max-width:440px; width:90%; text-align:center; box-shadow:0 25px 60px -12px rgba(15,23,42,0.45); border:1px solid rgba(226,232,240,0.8); font-family:var(--font-sans, -apple-system, sans-serif);">
+        <div style="width:54px; height:54px; margin:0 auto 16px; background:linear-gradient(135deg, #160D2E 0%, #7C3AED 100%); border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(124,58,237,0.35);">
+          <svg class="spin-animation" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        </div>
+        <h3 style="margin:0 0 6px; font-size:18px; font-weight:800; color:#0F172A; letter-spacing:-0.02em;">Generating Financial Statement</h3>
+        <p id="pdf-modal-status-text" style="margin:0 0 18px; font-size:13px; color:#64748B; line-height:1.5;">Compiling high-resolution 5-page PDF report for ${MONTH_NAMES[reportSelMonth - 1]} ${reportSelYear}...</p>
+        <div style="width:100%; height:6px; background:#F1F5F9; border-radius:99px; overflow:hidden; position:relative;">
+          <div style="width:45%; height:100%; background:linear-gradient(90deg, #7C3AED, #A855F7); border-radius:99px;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:14px; font-size:11px; color:#94A3B8; font-weight:600;">
+          <span>KPIs &amp; Variances</span>
+          <span>Budgets &amp; Goals</span>
+          <span>Audit Ledger</span>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modalOverlay);
+    requestAnimationFrame(() => { modalOverlay.style.opacity = '1'; });
+  }
+
   showToast(`Preparing ${MONTH_NAMES[reportSelMonth - 1]} ${reportSelYear} PDF report...`);
 
+  let hiddenWrapper = null;
   try {
     if (typeof html2pdf === 'undefined') {
       try {
@@ -6335,20 +6381,19 @@ async function downloadReportPDF() {
 
     const htmlContent = generateReportPDFContent(reportSelMonth, reportSelYear);
     
-    let container = document.getElementById('wealthnest-pdf-export-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'wealthnest-pdf-export-container';
-      document.body.appendChild(container);
-    }
+    // In-flow hidden wrapper: allows html2canvas to compute true element heights and styles without visual flash
+    hiddenWrapper = document.createElement('div');
+    hiddenWrapper.id = 'wealthnest-pdf-export-wrapper';
+    hiddenWrapper.style.cssText = 'height:0; overflow:hidden; opacity:0; pointer-events:none; position:relative; margin:0; padding:0;';
+    
+    const container = document.createElement('div');
+    container.id = 'wealthnest-pdf-export-container';
+    container.style.cssText = 'width:794px; background:#ffffff; margin:0;';
     container.innerHTML = htmlContent;
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '-9999px';
-    container.style.width = '794px';
-    container.style.background = '#ffffff';
-    container.style.zIndex = '-9999';
+    hiddenWrapper.appendChild(container);
+    document.body.appendChild(hiddenWrapper);
 
+    // Allow DOM to calculate layout and fonts
     await new Promise(r => setTimeout(r, 300));
 
     const monthName = MONTH_NAMES[reportSelMonth - 1];
@@ -6361,10 +6406,7 @@ async function downloadReportPDF() {
       html2canvas: {
         scale: 2,
         useCORS: true,
-        letterRendering: true,
-        scrollY: 0,
-        scrollX: 0,
-        windowWidth: 794
+        letterRendering: true
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'] }
@@ -6385,9 +6427,16 @@ async function downloadReportPDF() {
       btn.disabled = false;
       btn.innerHTML = originalText;
     }
-    const container = document.getElementById('wealthnest-pdf-export-container');
-    if (container) {
-      setTimeout(() => { container.innerHTML = ''; }, 4000);
+    if (modalOverlay && document.body.contains(modalOverlay)) {
+      modalOverlay.style.opacity = '0';
+      setTimeout(() => {
+        if (document.body.contains(modalOverlay)) {
+          document.body.removeChild(modalOverlay);
+        }
+      }, 250);
+    }
+    if (hiddenWrapper && document.body.contains(hiddenWrapper)) {
+      document.body.removeChild(hiddenWrapper);
     }
   }
 }
@@ -6424,7 +6473,7 @@ function openPrintReportView(month, year) {
             window.print();
           }, 400);
         };
-      <\\/script>
+      <\/script>
     </body>
     </html>
   `);
