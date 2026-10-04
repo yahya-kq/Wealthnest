@@ -3016,7 +3016,7 @@ const DEFAULT_INCOME_CATEGORIES = [
   "Refund Received",
   "Other Income"
 ];
-const DEFAULT_SAVINGS_CATEGORIES = ["Emergency Fund", "Vacation Fund", "General Savings", "Monthly Savings"];
+const DEFAULT_SAVINGS_CATEGORIES = ["Emergency Fund", "Vacation Fund", "General Savings", "Monthly Savings", "Goal Savings", "Retirement Savings"];
 const DEFAULT_INVESTMENT_CATEGORIES = [
   "PSX Stocks",
   "Mutual Funds",
@@ -3027,29 +3027,38 @@ const DEFAULT_INVESTMENT_CATEGORIES = [
   "Other"
 ];
 const DEFAULT_EXPENSE_CATEGORIES = [
-  { name: "Food & Dining", subcategories: ["Restaurant", "Fast Food", "Food Delivery", "Lunch", "Dinner", "Cafe", "Coffee", "Tea", "Snacks"] },
-  { name: "Groceries", subcategories: ["Weekly shop", "General Grocery", "Fruits", "Vegetables", "Meat", "Dairy", "Household Items", "Cleaning Products", "Kitchen Supplies"] },
-  { name: "Housing", subcategories: ["Rent", "Maintenance", "House Repair", "Home Improvement", "Home Appliances", "Furniture", "Property Tax"] },
-  { name: "Utilities", subcategories: ["Electricity", "Gas", "Water", "Internet", "Mobile Package"] },
-  { name: "Transportation", subcategories: ["Fuel", "Cab Service", "Commute to Job"] },
+  { name: "Food & Dining", subcategories: ["Restaurant", "Fast Food", "Food Delivery", "Lunch", "Dinner", "Cafe", "Coffee", "Tea", "Snacks", "Takeaway", "Breakfast", "Dinner With Friends", "Lunch With Friends", "Coffee With Friends", "Outing", "Hangout", "Party", "Social Gathering", "Food With Colleagues", "Social Events"] },
+  { name: "Groceries", subcategories: ["General Grocery", "Fruits", "Vegetables", "Meat", "Dairy", "Household Items", "Cleaning Products", "Kitchen Supplies", "Weekly shop", "Groceries", "Fruits & Vegetables", "Meat & Poultry", "Fish & Seafood", "Bakery", "Beverages"] },
+  { name: "Housing", subcategories: ["Rent", "Maintenance", "House Repair", "Home Improvement", "Home Appliances", "Furniture", "Property Tax", "Mortgage", "Plumbing", "Electrical Repairs", "Home Maintenance", "Home Repairs", "Carpentry", "Home Cleaning", "Security", "Property Charges"] },
+  { name: "Utilities", subcategories: ["Electricity", "Gas", "Water", "Internet", "Mobile Package", "Mobile Phone", "Cable TV", "Other Bills"] },
+  { name: "Transportation", subcategories: ["Fuel", "Cab Service", "Commute to Job", "Cab", "Public Transport", "Bus Fare", "Train Fare", "Other Transport"] },
   { name: "Vehicle Maintenance", subcategories: ["Repair", "Service", "Oil Change", "Tires", "Parts"] },
-  { name: "Health & Medical", subcategories: ["Pharmacy", "Medicine", "Doctor Visit", "Dental", "Eye Care", "Lab Tests", "Medical Checkup", "Medical Equipment", "Health Products"] },
-  { name: "Personal Care", subcategories: ["Haircut", "Beard Care", "Skincare", "Hygiene Products", "Grooming Products", "Cosmetics"] },
-  { name: "Fitness", subcategories: ["Gym Membership", "Gym Fees", "Diet", "Supplements", "Sports Equipment"] },
-  { name: "Education", subcategories: ["Books", "Courses", "Certifications", "Training", "Study Materials"] },
-  { name: "Shopping", subcategories: ["Clothing", "Clothes", "Shoes", "Bags", "Accessories", "Watches", "Summer Shopping", "Winter Shopping", "Personal Items", "General Shopping"] },
-  { name: "Subscriptions", subcategories: ["AI Subscription", "Netflix", "Spotify", "YouTube Premium", "Microsoft 365", "Cloud Storage", "Software Subscription", "Other Subscription"] },
-  { name: "Entertainment", subcategories: ["Streaming", "Movies", "Music", "Cinema", "Gaming", "Concerts", "Events"] },
-  { name: "Travel", subcategories: ["Hotels", "Local Travel", "Travel with Friends", "Travel for Events", "Hotel", "Vacation", "Tourism"] },
-  { name: "Gifts & Occasions", subcategories: ["Gifts", "Birthdays", "Weddings", "Celebrations", "Family Occasions", "Other Occasions"] },
+  { name: "Health & Medical", subcategories: ["Medicine", "Doctor Visit", "Dental", "Eye Care", "Lab Tests", "Medical Checkup", "Medical Equipment", "Health Products", "Pharmacy", "Eye Examination", "Eye Test", "Eye Drops", "Glasses", "Contact Lenses", "Eye Treatment", "Eye Surgery", "Dental Checkup", "Teeth Cleaning", "Filling", "Tooth Extraction", "Root Canal", "Braces", "Dental Treatment", "Dental Surgery", "Doctor Consultation", "Hospital", "Medical Tests", "Vaccination", "Emergency Medical", "Physiotherapy", "Dermatology"] },
+  { name: "Personal Care", subcategories: ["Haircut", "Beard Care", "Skincare", "Hygiene Products", "Grooming Products", "Cosmetics", "Barber", "Grooming", "Perfume", "Personal Hygiene"] },
+  { name: "Fitness", subcategories: ["Gym Membership", "Gym Fees", "Diet", "Supplements", "Sports Equipment", "Gym", "Fitness Classes", "Personal Trainer", "Sports Membership", "Sports Events", "Outdoor Sports", "Diet & Nutrition", "Fitness Food", "Protein & Supplements"] },
+  { name: "Education", subcategories: ["Books", "Courses", "Certifications", "Training", "Study Materials", "Tuition", "Exams", "Educational Software"] },
+  { name: "Shopping", subcategories: ["Clothes", "Shoes", "Bags", "Accessories", "Watches", "Summer Shopping", "Winter Shopping", "Personal Items", "General Shopping", "Clothing", "Footwear", "Jewelry", "Household Shopping", "Online Shopping"] },
+  { name: "Subscriptions", subcategories: ["AI Subscription", "Netflix", "Spotify", "YouTube Premium", "Microsoft 365", "Cloud Storage", "Software Subscription", "Other Subscription", "Amazon Prime", "Streaming Services", "AI Subscriptions", "ChatGPT", "Claude", "Gemini", "AI Tools", "Software Subscriptions", "Productivity Apps", "Other Digital Subscriptions"] },
+  { name: "Travel", subcategories: ["Local Travel", "Travel with Friends", "Travel for Events", "Hotel", "Vacation", "Tourism", "Hotels", "Airfare", "Accommodation", "Travel Transport", "Travel Food", "Travel Activities", "Travel Tickets", "Travel Insurance", "Visa", "Passport", "Travel Documents", "Luggage"] },
+  { name: "Gifts & Occasions", subcategories: ["Gifts", "Birthdays", "Weddings", "Celebrations", "Family Occasions", "Other Occasions", "Birthday", "Wedding", "Anniversary", "Eid", "Family Gifts", "Friend Gifts", "Wedding Expenses", "Social Occasions"] },
   { name: "Technology", subcategories: ["Laptop Repair", "Computer Hardware", "Computer Accessories", "Software", "Hosting", "Domain", "AI Tools", "Tech Equipment"] },
   { name: "Parking", subcategories: ["Parking Fee", "Parking Pass"] },
-  { name: "Family Support", subcategories: ["Allowance", "Family Gifts", "Family Events"] },
-  { name: "Insurance", subcategories: ["Health Insurance", "Life Insurance", "Vehicle Insurance", "Home Insurance"] },
-  { name: "Investments", subcategories: ["Stocks", "Mutual Funds", "Crypto", "Retirement/Pension", "Real Estate"] },
-  { name: "Emergency", subcategories: ["Medical Emergency", "Vehicle Emergency", "Family Emergency", "Unexpected Expense"] },
-  { name: "Leisure & Activities", subcategories: ["Games", "Hobbies", "Sports & Recreation", "Books & Reading", "Other Activities"] },
-  { name: "Miscellaneous", subcategories: ["Other Expense"] }
+  { name: "Family Support", subcategories: ["Family Gifts", "Family Events", "Allowance", "Wife Support", "Parents Support", "Children Support", "Relatives Support", "Family Household", "Family Medical", "Family Education", "Family Emergency", "Family Travel", "Family Dinner", "Family Outing"] },
+  { name: "Financial", subcategories: ["Bank Charges", "Loan Payment", "Loan Return", "Taxes", "Bank Fees", "ATM Fees", "Transfer Fees", "Credit Card Fees", "Loan Interest", "Installment Payment", "Debt Repayment", "Currency Exchange Fees", "Investment Fees"] },
+  { name: "Insurance", subcategories: ["Health Insurance", "Life Insurance", "Vehicle Insurance", "Home Insurance", "Travel Insurance", "Other Insurance"] },
+  { name: "Investments", subcategories: ["Stocks", "Mutual Funds", "Crypto", "Retirement/Pension", "Real Estate", "Investments", "Gold", "Fixed Deposit"] },
+  { name: "Emergency", subcategories: ["Medical Emergency", "Vehicle Emergency", "Family Emergency", "Unexpected Expense", "Emergency Medical", "Emergency Transportation", "Emergency Repairs", "Emergency Family Support", "Unexpected Bills", "Urgent Purchases", "Emergency Travel", "Other Emergency Expense"] },
+  { name: "Leisure & Activities", subcategories: ["Games", "Hobbies", "Sports & Recreation", "Concerts", "Events", "Books & Reading", "Other Activities", "Books", "Recreation", "Outdoor Activities", "Creative Activities", "Collecting", "Leisure Activities"] },
+  { name: "Miscellaneous", subcategories: ["Other Expense", "Miscellaneous Expense", "Small Purchases", "Unclassified Expense"] },
+  { name: "Entertainment", subcategories: ["Streaming", "Movies", "Music", "Cinema", "Gaming", "Concerts", "Events", "Shows"] },
+  { name: "Clothing & Tailoring", subcategories: ["Tailoring", "Stitching", "Alteration", "Dry Cleaning", "Laundry", "Ironing", "Clothes Repair"] },
+  { name: "Stationery & Office", subcategories: ["Notebooks", "Pens & Pencils", "Paper", "Files & Folders", "Printing", "Photocopy", "Scanning", "Office Supplies", "Desk Supplies", "Work Supplies"] },
+  { name: "Work & Career", subcategories: ["Work Equipment", "Professional Services", "Professional Memberships", "Work Travel", "Work Meals", "Business Expenses", "Freelancing Expenses", "Professional Development", "Job Application Expenses"] },
+  { name: "Accessories", subcategories: ["Headphones", "Earphones", "AirPods", "Keyboard", "Mouse", "Speakers", "Smartwatch", "Power Bank", "Chargers", "Cables", "Laptop Bag", "Phone Accessories", "Computer Accessories", "Storage Devices", "Webcam", "Microphone", "Device Repairs"] },
+  { name: "Children", subcategories: ["Toys", "Baby Supplies", "Childcare", "Children's Activities", "Children's Medical", "Children's Transport", "Children's Gifts"] },
+  { name: "Pets", subcategories: ["Pet Food", "Veterinary", "Medicine", "Grooming", "Pet Supplies", "Pet Accessories"] },
+  { name: "Household Supplies", subcategories: ["Cleaning Supplies", "Laundry Supplies", "Kitchen Supplies", "Bathroom Supplies", "Tissue & Paper Products", "Light Bulbs", "Batteries", "Household Tools"] },
+  { name: "Government & Legal", subcategories: ["Government Fees", "Taxes", "Fines", "License Fees", "Registration Fees", "Passport Fees", "Visa Fees", "Legal Services", "Documentation", "Notary Services"] }
 ];
 const DEFAULT_PAYMENT_METHODS = ["Cash","Bank Transfer","Debit Card","Credit Card","Easypaisa","Other"];
 function getPaymentMethods(){
