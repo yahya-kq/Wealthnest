@@ -10,6 +10,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>if(typeof Chart==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>if(typeof html2pdf==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"><\\/script>');}</script>
 <style>
   :root{
     --bg:#F8FAFC; --surface:#FFFFFF; --surface-2:#F8FAFC; --ink:#0F172A; --muted:#64748B; --muted-2:#94A3B8;
@@ -54,6 +56,8 @@
   .btn-dark:active{transform:translateY(1px);}
   .btn-ghost{padding:10px 18px; border-radius:var(--radius-sm); background:var(--surface); border:1px solid var(--line); color:var(--ink); font-weight:600; font-size:14px; transition:background .15s, border-color .15s;}
   .btn-ghost:hover{background:var(--surface-2); border-color:var(--muted-2);}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .spin-animation{animation:spin 0.8s linear infinite;}
 
   /* ---------- Landing Page & Hero Section ---------- */
   #landing-page{
@@ -1681,7 +1685,17 @@
             <span class="badge badge-ok" style="margin-bottom:9px;">Analytics</span>
           </div>
         </div>
-        <button class="btn-small" style="margin-top:14px;" onclick="toggleReportComparison()" id="report-comparison-toggle">Compare Months</button>
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:14px; border-top:1px solid var(--line-soft); padding-top:14px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="btn-small" onclick="toggleReportComparison()" id="report-comparison-toggle">Compare Months</button>
+          </div>
+          <div>
+            <button class="btn-primary" id="btn-download-pdf-report" onclick="downloadReportPDF()" title="Download professional monthly financial report as PDF" style="display:inline-flex; align-items:center; gap:8px; padding:7px 18px; font-size:13px; font-weight:600; border-radius:var(--radius-sm); box-shadow:0 2px 10px rgba(124,58,237,0.25);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download Report</span>
+            </button>
+          </div>
+        </div>
         <div class="comparison-panel" id="report-comparison-panel">
           <div class="comparison-shell">
             <div class="comparison-header">
@@ -5433,6 +5447,991 @@ function renderReportCharts(month, year){
   }
 }
 
+/* ---------------- Executive PDF Report Generation Engine ---------------- */
+
+function generateReportPDFContent(month, year) {
+  const monthName = MONTH_NAMES[month - 1];
+  const cur = (DB && DB.currency) ? DB.currency : DEFAULT_CURRENCY;
+  
+  function fmtMoney(n) {
+    const num = Math.round(n || 0).toLocaleString();
+    return cur.position === 'suffix' ? (num + ' ' + cur.symbol) : (cur.symbol + ' ' + num);
+  }
+  
+  const txsInMonth = (DB.transactions || []).filter(t => inMonth(t, month, year));
+  // Sort chronologically ascending from 1st to end of month
+  txsInMonth.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  
+  const totals = monthTotals(DB.transactions || [], month, year);
+  const netCashFlow = totals.income - totals.expense;
+  const netBalance = totals.income - totals.expense - totals.savings;
+  const savingsRate = totals.income > 0 ? Math.round((totals.savings / totals.income) * 100) : 0;
+  const expenseRatio = totals.income > 0 ? Math.round((totals.expense / totals.income) * 100) : 0;
+  
+  // Category spending breakdown for Page 1 & 2
+  const catRows = reportCategoryRows(month, year);
+  const totalActualExpense = totals.expense;
+  
+  // Budgets for this month for Page 3
+  const monthBudgets = (DB.budgets || []).filter(b => b.month === month && b.year === year);
+  const totalBudgetPlanned = monthBudgets.reduce((s, b) => s + (b.budgetAmount || 0), 0);
+  
+  // Calculate budgeted spent
+  let budgetedSpent = 0;
+  const budgetCats = [...new Set(monthBudgets.map(b => b.category))];
+  budgetCats.forEach(c => {
+    budgetedSpent += spentFor(DB.transactions || [], month, year, c, null);
+  });
+  
+  // Savings goals for Page 4
+  const goals = DB.savingsGoals || [];
+  
+  // Pagination for transactions (Page 5+)
+  const ROWS_PER_PAGE = 18;
+  const txChunks = [];
+  if (txsInMonth.length === 0) {
+    txChunks.push([]);
+  } else {
+    for (let i = 0; i < txsInMonth.length; i += ROWS_PER_PAGE) {
+      txChunks.push(txsInMonth.slice(i, i + ROWS_PER_PAGE));
+    }
+  }
+  
+  const totalPages = 4 + txChunks.length;
+  const generatedDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  const periodLabel = monthName.toUpperCase() + ' ' + year;
+  
+  function renderHeader() {
+    return `
+      <div class="pdf-header">
+        <div class="pdf-brand">
+          <div class="pdf-brand-mark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+          </div>
+          <div>
+            <div class="pdf-brand-title">WealthNest</div>
+            <div class="pdf-brand-sub">Private Wealth &amp; Financial Statement</div>
+          </div>
+        </div>
+        <div class="pdf-meta">
+          <div class="pdf-period-badge">${periodLabel}</div>
+          <div class="pdf-meta-date">Generated ${generatedDate} • Currency: ${escapeHtml(cur.code || 'PKR')}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  function renderFooter(pageNumber) {
+    return `
+      <div class="pdf-footer">
+        <div class="pdf-footer-left">WealthNest Personal Finance Tracker • Confidential Financial Document</div>
+        <div class="pdf-footer-right">Page ${pageNumber} of ${totalPages}</div>
+      </div>
+    `;
+  }
+  
+  let styles = `
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
+      
+      * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      
+      .pdf-page {
+        width: 794px;
+        min-height: 1120px;
+        height: 1120px;
+        padding: 32px 38px 24px;
+        background: #ffffff;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        page-break-after: always;
+        break-after: page;
+        box-sizing: border-box;
+        overflow: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #0F172A;
+      }
+      
+      /* Header */
+      .pdf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #7C3AED;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+      }
+      .pdf-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .pdf-brand-mark {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #160D2E 0%, #7C3AED 100%);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pdf-brand-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 18px;
+        color: #160D2E;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      .pdf-brand-sub {
+        font-size: 10.5px;
+        color: #64748B;
+        margin-top: 3px;
+        font-weight: 500;
+      }
+      .pdf-meta {
+        text-align: right;
+      }
+      .pdf-period-badge {
+        display: inline-block;
+        background: #F3E8FF;
+        color: #6D28D9;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 6px;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+      }
+      .pdf-meta-date {
+        font-size: 10px;
+        color: #64748B;
+      }
+
+      /* Content Area */
+      .pdf-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* Titles */
+      .pdf-page-title-box {
+        margin-bottom: 16px;
+      }
+      .pdf-section-kicker {
+        font-size: 9.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #7C3AED;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 2px;
+      }
+      .pdf-page-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        color: #0F172A;
+        letter-spacing: -0.01em;
+        margin: 0 0 4px;
+      }
+      .pdf-page-sub {
+        font-size: 11px;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.45;
+      }
+      
+      /* KPI Grid */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .kpi-card {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 11px;
+        padding: 12px 14px;
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        width: 4px;
+      }
+      .kpi-income::before { background: #10B981; }
+      .kpi-expense::before { background: #E11D48; }
+      .kpi-savings::before { background: #0D9488; }
+      .kpi-net::before { background: #7C3AED; }
+      
+      .kpi-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: #64748B;
+        margin-bottom: 4px;
+      }
+      .kpi-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .kpi-sub {
+        font-size: 10px;
+        color: #64748B;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .text-income { color: #059669; }
+      .text-expense { color: #E11D48; }
+      .text-savings { color: #0D9488; }
+      .text-primary { color: #7C3AED; }
+      
+      /* Cards */
+      .pdf-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 11px;
+        padding: 14px 16px;
+      }
+      .pdf-card-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 12.5px;
+        color: #0F172A;
+        margin-bottom: 8px;
+      }
+      
+      /* Tables */
+      .pdf-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+        margin-bottom: 12px;
+      }
+      .pdf-table th {
+        background: #F1F5F9;
+        color: #475569;
+        font-weight: 700;
+        text-align: left;
+        padding: 6.5px 9px;
+        border-top: 1px solid #CBD5E1;
+        border-bottom: 1px solid #CBD5E1;
+        font-size: 9.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .pdf-table td {
+        padding: 6.5px 9px;
+        border-bottom: 1px solid #F1F5F9;
+        color: #1E293B;
+      }
+      .pdf-table tr:nth-child(even) td {
+        background: #FAFBFD;
+      }
+      .pdf-table .figure {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10.5px;
+        text-align: right;
+      }
+      .pdf-table th.figure {
+        text-align: right;
+      }
+
+      /* Badges */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+      .badge-ok { background: #DCFCE7; color: #166534; }
+      .badge-over { background: #FFE4E6; color: #9F1239; }
+      .badge-warn { background: #FEF3C7; color: #92400E; }
+      .badge-savings { background: #CCFBF1; color: #115E59; }
+      .badge-neutral { background: #F1F5F9; color: #475569; }
+      .badge-type-income { background: #DCFCE7; color: #166534; }
+      .badge-type-expense { background: #FFE4E6; color: #9F1239; }
+      .badge-type-savings { background: #CCFBF1; color: #115E59; }
+
+      .pdf-empty {
+        text-align: center;
+        padding: 24px 10px;
+        color: #94A3B8;
+        font-size: 11px;
+        font-style: italic;
+      }
+      
+      /* Footer */
+      .pdf-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #E2E8F0;
+        padding-top: 10px;
+        font-size: 9.5px;
+        color: #94A3B8;
+      }
+    </style>
+  `;
+  
+  let html = styles;
+  
+  /* ========================================================
+     PAGE 1: EXECUTIVE FINANCIAL PERFORMANCE OVERVIEW
+     ======================================================== */
+  html += `
+    <div class="pdf-page" id="pdf-page-1">
+      ${renderHeader()}
+      
+      <div class="pdf-content">
+        <div class="pdf-page-title-box">
+          <span class="pdf-section-kicker">EXECUTIVE FINANCIAL STATEMENT</span>
+          <h1 class="pdf-page-title">Monthly Financial Performance Overview</h1>
+          <p class="pdf-page-sub">Comprehensive consolidated audit of income streams, operational expenditures, and savings allocation for ${monthName} ${year}.</p>
+        </div>
+        
+        <!-- 4 Core Financial KPI Metric Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-income">
+            <div class="kpi-label">Total Inflow / Income</div>
+            <div class="kpi-value text-income">${fmtMoney(totals.income)}</div>
+            <div class="kpi-sub">
+              <span class="badge badge-ok">100% Inflow</span>
+              <span>Primary Revenue</span>
+            </div>
+          </div>
+          
+          <div class="kpi-card kpi-expense">
+            <div class="kpi-label">Total Outflow / Expenses</div>
+            <div class="kpi-value text-expense">${fmtMoney(totals.expense)}</div>
+            <div class="kpi-sub">
+              <span class="badge badge-over">${expenseRatio}% of income</span>
+              <span>Total Outflow</span>
+            </div>
+          </div>
+          
+          <div class="kpi-card kpi-savings">
+            <div class="kpi-label">Total Capital Savings</div>
+            <div class="kpi-value text-savings">${fmtMoney(totals.savings)}</div>
+            <div class="kpi-sub">
+              <span class="badge badge-savings">${savingsRate}% saved</span>
+              <span>Allocated Capital</span>
+            </div>
+          </div>
+          
+          <div class="kpi-card kpi-net">
+            <div class="kpi-label">Net Surplus / Balance</div>
+            <div class="kpi-value text-primary">${fmtMoney(netBalance)}</div>
+            <div class="kpi-sub">
+              <span class="badge ${netBalance >= 0 ? 'badge-ok' : 'badge-over'}">${netBalance >= 0 ? 'Surplus' : 'Deficit'}</span>
+              <span>Retained Reserves</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Spending by Category Ranking & Proportional Chart -->
+        <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-bottom: 20px;">
+          <div class="pdf-card">
+            <div class="pdf-card-title">
+              <span>Top Spending Categories</span>
+              <span class="badge badge-neutral">${catRows.length} Categories</span>
+            </div>
+            <div style="margin-top: 10px;">
+              ${catRows.length ? catRows.slice(0, 6).map((cat, idx) => {
+                const pct = totalActualExpense > 0 ? Math.min(100, Math.round((cat.actual / totalActualExpense) * 100)) : 0;
+                const colors = ['#7C3AED', '#0D9488', '#2563EB', '#D97706', '#E11D48', '#64748B'];
+                const barColor = colors[idx % colors.length];
+                return `
+                  <div style="margin-bottom: 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; margin-bottom:3px;">
+                      <span style="font-weight:600; color:#1E293B;">${escapeHtml(cat.category)}</span>
+                      <div>
+                        <span style="font-family:'JetBrains Mono',monospace; font-weight:700; color:#0F172A;">${fmtMoney(cat.actual)}</span>
+                        <span style="color:#64748B; font-size:10px; margin-left:4px;">(${pct}%)</span>
+                      </div>
+                    </div>
+                    <div style="height:6px; background:#F1F5F9; border-radius:3px; overflow:hidden;">
+                      <div style="width:${pct}%; height:100%; background:${barColor}; border-radius:3px;"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('') : '<p class="pdf-empty">No expenses recorded for this month.</p>'}
+            </div>
+          </div>
+          
+          <div class="pdf-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div class="pdf-card-title">
+                <span>Monthly Cash Flow Split</span>
+                <span class="badge badge-neutral">Allocation</span>
+              </div>
+              <p style="font-size:11px; color:#64748B; margin:4px 0 14px;">Distribution of total earned income across operational costs and wealth creation.</p>
+              
+              <div style="display:flex; flex-direction:column; gap:9px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#FAFBFD; border:1px solid #F1F5F9; border-radius:8px;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#E11D48;"></span>
+                    <span style="font-size:11px; color:#334155; font-weight:500;">Living Expenses</span>
+                  </div>
+                  <strong style="font-family:'JetBrains Mono',monospace; font-size:11px;">${expenseRatio}%</strong>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#FAFBFD; border:1px solid #F1F5F9; border-radius:8px;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#0D9488;"></span>
+                    <span style="font-size:11px; color:#334155; font-weight:500;">Savings Goals</span>
+                  </div>
+                  <strong style="font-family:'JetBrains Mono',monospace; font-size:11px;">${savingsRate}%</strong>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#FAFBFD; border:1px solid #F1F5F9; border-radius:8px;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#7C3AED;"></span>
+                    <span style="font-size:11px; color:#334155; font-weight:500;">Retained Reserves</span>
+                  </div>
+                  <strong style="font-family:'JetBrains Mono',monospace; font-size:11px;">${Math.max(0, 100 - expenseRatio - savingsRate)}%</strong>
+                </div>
+              </div>
+            </div>
+            
+            <div style="padding:10px 12px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:9px; margin-top:10px;">
+              <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.04em; color:#64748B; font-weight:700;">Financial Health Summary</div>
+              <div style="font-size:11.5px; color:#1E293B; margin-top:3px; line-height:1.4;">
+                ${netBalance >= 0 
+                  ? 'Healthy surplus of ' + fmtMoney(netBalance) + ' retained. Spending is managed within total revenue.' 
+                  : 'Total expenditures exceed revenue by ' + fmtMoney(Math.abs(netBalance)) + '. Review category limits.'}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Activity Strip -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px 16px;">
+          <div>
+            <div style="font-size:10px; text-transform:uppercase; color:#64748B; font-weight:700;">Total Transactions</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#0F172A; margin-top:2px;">${txsInMonth.length} Records</div>
+          </div>
+          <div>
+            <div style="font-size:10px; text-transform:uppercase; color:#64748B; font-weight:700;">Active Budgets</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#0F172A; margin-top:2px;">${monthBudgets.length} Targets</div>
+          </div>
+          <div>
+            <div style="font-size:10px; text-transform:uppercase; color:#64748B; font-weight:700;">Savings Target Status</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#0D9488; margin-top:2px;">${goals.length} Goals Active</div>
+          </div>
+        </div>
+      </div>
+      
+      ${renderFooter(1)}
+    </div>
+  `;
+  
+  /* ========================================================
+     PAGE 2: BUDGET VS ACTUAL ANALYSIS (CATEGORIES & SUBCATEGORIES)
+     ======================================================== */
+  html += `
+    <div class="pdf-page" id="pdf-page-2">
+      ${renderHeader()}
+      
+      <div class="pdf-content">
+        <div class="pdf-page-title-box">
+          <span class="pdf-section-kicker">BUDGET VARIANCE REPORT</span>
+          <h1 class="pdf-page-title">Budget Vs. Actual Spending Analysis</h1>
+          <p class="pdf-page-sub">Granular breakdown comparing planned budget limits against actual spending across all categories and subcategories for ${monthName} ${year}.</p>
+        </div>
+        
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th style="width:38%;">Category / Subcategory</th>
+              <th class="figure" style="width:16%;">Budget Limit</th>
+              <th class="figure" style="width:16%;">Actual Spent</th>
+              <th class="figure" style="width:16%;">Variance / Cushion</th>
+              <th style="width:14%; text-align:center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${catRows.length ? catRows.map(c => {
+              const diff = c.budget > 0 ? (c.budget - c.actual) : 0;
+              const isOver = c.budget > 0 && c.actual > c.budget;
+              const hasBudget = c.budget > 0;
+              
+              let catRow = `
+                <tr style="background:#F8FAFC; font-weight:600;">
+                  <td style="color:#0F172A; font-weight:700;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="color:#7C3AED;">■</span>
+                      <span>${escapeHtml(c.category)}</span>
+                    </div>
+                  </td>
+                  <td class="figure" style="font-weight:700;">${hasBudget ? fmtMoney(c.budget) : '<span style="color:#94a3b8;">—</span>'}</td>
+                  <td class="figure" style="font-weight:700; color:#0F172A;">${fmtMoney(c.actual)}</td>
+                  <td class="figure ${hasBudget ? (diff < 0 ? 'text-expense' : 'text-income') : ''}" style="font-weight:700;">
+                    ${hasBudget ? ((diff < 0 ? '-' : '+') + fmtMoney(Math.abs(diff))) : '<span style="color:#94a3b8;">—</span>'}
+                  </td>
+                  <td style="text-align:center;">
+                    ${hasBudget 
+                      ? (isOver ? '<span class="badge badge-over">Over Budget</span>' : '<span class="badge badge-ok">On Track</span>')
+                      : '<span class="badge badge-neutral">Unbudgeted</span>'}
+                  </td>
+                </tr>
+              `;
+              
+              // Subcategories
+              let subRows = '';
+              if (Array.isArray(c.subs) && c.subs.length) {
+                subRows = c.subs.map(s => {
+                  const sDiff = s.hasBudget ? (s.budget - s.spent) : 0;
+                  const sOver = s.hasBudget && s.spent > s.budget;
+                  return `
+                    <tr style="font-size:10.5px;">
+                      <td style="padding-left:24px; color:#475569;">
+                        <span style="color:#94A3B8; margin-right:4px;">↳</span> ${escapeHtml(s.subCategory)}
+                      </td>
+                      <td class="figure">${s.hasBudget ? fmtMoney(s.budget) : '<span style="color:#94a3b8;">—</span>'}</td>
+                      <td class="figure">${fmtMoney(s.spent)}</td>
+                      <td class="figure ${s.hasBudget ? (sDiff < 0 ? 'text-expense' : 'text-income') : ''}">
+                        ${s.hasBudget ? ((sDiff < 0 ? '-' : '+') + fmtMoney(Math.abs(sDiff))) : '<span style="color:#94a3b8;">—</span>'}
+                      </td>
+                      <td style="text-align:center;">
+                        ${s.hasBudget 
+                          ? (sOver ? '<span class="badge badge-over" style="font-size:8.5px;">Over</span>' : '<span class="badge badge-ok" style="font-size:8.5px;">OK</span>')
+                          : '<span style="color:#94A3B8; font-size:10px;">—</span>'}
+                      </td>
+                    </tr>
+                  `;
+                }).join('');
+              }
+              return catRow + subRows;
+            }).join('') : '<tr><td colspan="5" class="pdf-empty">No expenses or budget items found for this period.</td></tr>'}
+          </tbody>
+          <tfoot>
+            <tr style="background:#F1F5F9; font-weight:700; border-top:2px solid #CBD5E1;">
+              <td>TOTAL PORTFOLIO SUMMARY</td>
+              <td class="figure">${totalBudgetPlanned > 0 ? fmtMoney(totalBudgetPlanned) : '<span style="color:#94a3b8;">—</span>'}</td>
+              <td class="figure">${fmtMoney(totalActualExpense)}</td>
+              <td class="figure ${totalBudgetPlanned > 0 ? (totalBudgetPlanned - totalActualExpense < 0 ? 'text-expense' : 'text-income') : ''}">
+                ${totalBudgetPlanned > 0 ? ((totalBudgetPlanned - totalActualExpense < 0 ? '-' : '+') + fmtMoney(Math.abs(totalBudgetPlanned - totalActualExpense))) : '<span style="color:#94a3b8;">—</span>'}
+              </td>
+              <td style="text-align:center;">
+                ${totalBudgetPlanned > 0 
+                  ? (totalActualExpense > totalBudgetPlanned ? '<span class="badge badge-over">Net Exceeded</span>' : '<span class="badge badge-ok">Net On Track</span>')
+                  : '<span class="badge badge-neutral">Active</span>'}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      
+      ${renderFooter(2)}
+    </div>
+  `;
+  
+  /* ========================================================
+     PAGE 3: ALL MONTHLY BUDGETS SET IN THAT MONTH
+     ======================================================== */
+  html += `
+    <div class="pdf-page" id="pdf-page-3">
+      ${renderHeader()}
+      
+      <div class="pdf-content">
+        <div class="pdf-page-title-box">
+          <span class="pdf-section-kicker">ALLOCATION SCHEDULE</span>
+          <h1 class="pdf-page-title">Monthly Budgets &amp; Target Allocations</h1>
+          <p class="pdf-page-sub">All established spending caps, allocated limits, and performance utilization rates established for ${monthName} ${year}.</p>
+        </div>
+        
+        <!-- Budget KPIs -->
+        <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Monthly Budget Planned</div>
+            <div class="kpi-value text-primary">${fmtMoney(totalBudgetPlanned)}</div>
+            <div class="kpi-sub">${monthBudgets.length} Category Allocations</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Actual Spent in Budgeted Areas</div>
+            <div class="kpi-value text-expense">${fmtMoney(budgetedSpent)}</div>
+            <div class="kpi-sub">${totalBudgetPlanned > 0 ? Math.round((budgetedSpent / totalBudgetPlanned) * 100) : 0}% Utilized</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Remaining Budget Cushion</div>
+            <div class="kpi-value ${totalBudgetPlanned - budgetedSpent >= 0 ? 'text-income' : 'text-expense'}">${fmtMoney(totalBudgetPlanned - budgetedSpent)}</div>
+            <div class="kpi-sub">${totalBudgetPlanned - budgetedSpent >= 0 ? 'Cushion Remaining' : 'Exceeded Cushion'}</div>
+          </div>
+        </div>
+        
+        <!-- Budgets Table -->
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th style="width:30%;">Budget Target Category</th>
+              <th style="width:20%;">Scope</th>
+              <th class="figure" style="width:16%;">Target Limit</th>
+              <th class="figure" style="width:16%;">Actual Spent</th>
+              <th style="width:18%;">Utilization &amp; Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${monthBudgets.length ? monthBudgets.map(b => {
+              const spent = spentFor(DB.transactions || [], month, year, b.category, b.subCategory);
+              const pct = b.budgetAmount > 0 ? Math.round((spent / b.budgetAmount) * 100) : 0;
+              const isOver = spent > b.budgetAmount;
+              const barColor = isOver ? '#E11D48' : (pct >= 85 ? '#D97706' : '#7C3AED');
+              const badgeClass = isOver ? 'badge-over' : (pct >= 85 ? 'badge-warn' : 'badge-ok');
+              const badgeText = isOver ? 'Exceeded' : (pct >= 85 ? 'Warning (85%+)' : 'Within Limit');
+              
+              return `
+                <tr>
+                  <td>
+                    <strong style="color:#0F172A;">${escapeHtml(b.category)}</strong>
+                    ${b.subCategory ? '<div style="font-size:10px; color:#64748B;">Sub: ' + escapeHtml(b.subCategory) + '</div>' : ''}
+                  </td>
+                  <td>
+                    <span class="badge badge-neutral">${b.subCategory ? 'Subcategory' : 'Category-wide'}</span>
+                  </td>
+                  <td class="figure" style="font-weight:700;">${fmtMoney(b.budgetAmount)}</td>
+                  <td class="figure" style="font-weight:700; color:${isOver ? '#E11D48' : '#0F172A'};">${fmtMoney(spent)}</td>
+                  <td>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; font-size:10px;">
+                      <span class="badge ${badgeClass}">${badgeText}</span>
+                      <strong style="font-family:'JetBrains Mono',monospace;">${pct}%</strong>
+                    </div>
+                    <div style="height:5px; background:#F1F5F9; border-radius:3px; overflow:hidden;">
+                      <div style="width:${Math.min(100, pct)}%; height:100%; background:${barColor}; border-radius:3px;"></div>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('') : '<tr><td colspan="5" class="pdf-empty">No budgets configured for this month. Go to Budgets to set spending targets.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      
+      ${renderFooter(3)}
+    </div>
+  `;
+  
+  /* ========================================================
+     PAGE 4: SAVINGS GOALS & ASSET ACCUMULATION
+     ======================================================== */
+  html += `
+    <div class="pdf-page" id="pdf-page-4">
+      ${renderHeader()}
+      
+      <div class="pdf-content">
+        <div class="pdf-page-title-box">
+          <span class="pdf-section-kicker">WEALTH ACCUMULATION</span>
+          <h1 class="pdf-page-title">Personal Savings Goals &amp; Capital Assets</h1>
+          <p class="pdf-page-sub">Tracking progress toward dedicated wealth milestones, monthly contributions, and asset reserve targets.</p>
+        </div>
+        
+        <!-- Savings Goals Summary Card -->
+        <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+          <div class="kpi-card">
+            <div class="kpi-label">Active Savings Goals</div>
+            <div class="kpi-value text-savings">${goals.length} Targets</div>
+            <div class="kpi-sub">Portfolio Milestones</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Added This Month</div>
+            <div class="kpi-value text-savings">${fmtMoney(totals.savings)}</div>
+            <div class="kpi-sub">Monthly Capital Contribution</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Target Capital</div>
+            <div class="kpi-value text-primary">${fmtMoney(goals.reduce((s, g) => s + (g.targetAmount || 0), 0))}</div>
+            <div class="kpi-sub">Target Portfolio Value</div>
+          </div>
+        </div>
+        
+        <!-- Goals List -->
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th style="width:28%;">Goal Milestone</th>
+              <th style="width:18%;">Storage Account</th>
+              <th class="figure" style="width:16%;">Target Amount</th>
+              <th class="figure" style="width:16%;">Current Saved</th>
+              <th style="width:22%;">Milestone Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${goals.length ? goals.map(g => {
+              const target = g.targetAmount || 0;
+              const current = g.currentAmount || 0;
+              const pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
+              const isCompleted = current >= target && target > 0;
+              
+              return `
+                <tr>
+                  <td>
+                    <strong style="color:#0F172A; font-size:12px;">${escapeHtml(g.name)}</strong>
+                    ${g.deadline ? '<div style="font-size:10px; color:#64748B;">Target Date: ' + escapeHtml(g.deadline) + '</div>' : ''}
+                  </td>
+                  <td>
+                    <span class="badge badge-neutral">${escapeHtml(g.savingIn || 'Bank Account')}</span>
+                  </td>
+                  <td class="figure" style="font-weight:700;">${fmtMoney(target)}</td>
+                  <td class="figure" style="font-weight:700; color:#0D9488;">${fmtMoney(current)}</td>
+                  <td>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; font-size:10px;">
+                      <span class="badge ${isCompleted ? 'badge-ok' : 'badge-savings'}">${isCompleted ? 'Completed' : pct + '% Funded'}</span>
+                      <strong style="font-family:'JetBrains Mono',monospace;">${fmtMoney(target - current)} left</strong>
+                    </div>
+                    <div style="height:6px; background:#F1F5F9; border-radius:3px; overflow:hidden;">
+                      <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #0D9488, #10B981); border-radius:3px;"></div>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('') : '<tr><td colspan="5" class="pdf-empty">No savings goals configured yet. Go to Savings Goals to establish milestone funds.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      
+      ${renderFooter(4)}
+    </div>
+  `;
+  
+  /* ========================================================
+     PAGE 5+: DETAILED TRANSACTION AUDIT LEDGER
+     ======================================================== */
+  txChunks.forEach((chunk, chunkIdx) => {
+    const pageNum = 5 + chunkIdx;
+    const isFirstLedgerPage = chunkIdx === 0;
+    
+    html += `
+      <div class="pdf-page" id="pdf-page-${pageNum}">
+        ${renderHeader()}
+        
+        <div class="pdf-content">
+          ${isFirstLedgerPage ? `
+            <div class="pdf-page-title-box">
+              <span class="pdf-section-kicker">ITEMIZED AUDIT TRAIL</span>
+              <h1 class="pdf-page-title">Detailed Monthly Transaction Ledger</h1>
+              <p class="pdf-page-sub">Complete chronological register of all transactions recorded from 1st to ${new Date(year, month, 0).getDate()}th of ${monthName} ${year}.</p>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:8px 14px; margin-bottom:14px; font-size:11px;">
+              <span>Total Transactions: <strong>${txsInMonth.length} Records</strong></span>
+              <span>Total Inflow: <strong class="text-income">${fmtMoney(totals.income)}</strong></span>
+              <span>Total Outflow: <strong class="text-expense">${fmtMoney(totals.expense + totals.savings)}</strong></span>
+              <span>Net Movement: <strong class="${netBalance >= 0 ? 'text-income' : 'text-expense'}">${fmtMoney(netBalance)}</strong></span>
+            </div>
+          ` : `
+            <div class="pdf-page-title-box" style="margin-bottom:12px;">
+              <span class="pdf-section-kicker">ITEMIZED AUDIT TRAIL (CONTINUED)</span>
+              <h2 class="pdf-page-title" style="font-size:16px;">Transaction Ledger (Continued)</h2>
+            </div>
+          `}
+          
+          <table class="pdf-table">
+            <thead>
+              <tr>
+                <th style="width:6%;">#</th>
+                <th style="width:14%;">Date</th>
+                <th style="width:12%;">Type</th>
+                <th style="width:20%;">Category</th>
+                <th style="width:18%;">Subcategory</th>
+                <th style="width:14%;">Method</th>
+                <th class="figure" style="width:16%;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${chunk.length ? chunk.map((tx, idx) => {
+                const globalIdx = (chunkIdx * ROWS_PER_PAGE) + idx + 1;
+                const isInc = tx.type === 'income';
+                const isExp = tx.type === 'expense';
+                const isSav = tx.type === 'savings';
+                const typeBadge = isInc ? 'badge-type-income' : (isExp ? 'badge-type-expense' : 'badge-type-savings');
+                const typeLabel = isInc ? 'Income' : (isExp ? 'Expense' : 'Savings');
+                const amountPrefix = isInc ? '+ ' : (isExp ? '- ' : '');
+                const amountColor = isInc ? 'text-income' : (isExp ? 'text-expense' : 'text-savings');
+                
+                return `
+                  <tr>
+                    <td style="color:#94A3B8; font-family:'JetBrains Mono',monospace; font-size:10px;">${globalIdx}</td>
+                    <td style="font-family:'JetBrains Mono',monospace; font-size:10.5px;">${escapeHtml(tx.date)}</td>
+                    <td><span class="badge ${typeBadge}">${typeLabel}</span></td>
+                    <td style="font-weight:600; color:#0F172A;">
+                      ${escapeHtml(tx.category)}
+                      ${tx.note ? '<div style="font-size:9.5px; color:#64748B; font-weight:normal;">' + escapeHtml(tx.note) + '</div>' : ''}
+                    </td>
+                    <td style="color:#475569;">${tx.subCategory ? escapeHtml(tx.subCategory) : '<span style="color:#94A3B8;">—</span>'}</td>
+                    <td><span class="badge badge-neutral" style="font-size:9px;">${escapeHtml(tx.paymentMethod || 'Other')}</span></td>
+                    <td class="figure ${amountColor}" style="font-weight:700;">
+                      ${amountPrefix}${fmtMoney(tx.amount)}
+                    </td>
+                  </tr>
+                `;
+              }).join('') : '<tr><td colspan="7" class="pdf-empty">No transactions recorded for this period.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+        
+        ${renderFooter(pageNum)}
+      </div>
+    `;
+  });
+  
+  return html;
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      resolve();
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = (e) => reject(e);
+    document.head.appendChild(s);
+  });
+}
+
+async function downloadReportPDF() {
+  const btn = document.getElementById('btn-download-pdf-report');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `
+      <svg class="spin-animation" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      <span>Generating PDF...</span>
+    `;
+  }
+  showToast(`Preparing ${MONTH_NAMES[reportSelMonth - 1]} ${reportSelYear} PDF report...`);
+
+  try {
+    if (typeof html2pdf === 'undefined') {
+      try {
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+      } catch (e) {
+        await loadScript('https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js');
+      }
+    }
+
+    const htmlContent = generateReportPDFContent(reportSelMonth, reportSelYear);
+    
+    let container = document.getElementById('wealthnest-pdf-export-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'wealthnest-pdf-export-container';
+      document.body.appendChild(container);
+    }
+    container.innerHTML = htmlContent;
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '-9999px';
+    container.style.width = '794px';
+    container.style.background = '#ffffff';
+    container.style.zIndex = '-9999';
+
+    await new Promise(r => setTimeout(r, 300));
+
+    const monthName = MONTH_NAMES[reportSelMonth - 1];
+    const filename = `WealthNest_Financial_Report_${monthName}_${reportSelYear}.pdf`;
+    
+    const opt = {
+      margin: 0,
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        letterRendering: true,
+        scrollY: 0,
+        scrollX: 0,
+        windowWidth: 794
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
+
+    if (typeof html2pdf !== 'undefined') {
+      await html2pdf().set(opt).from(container).save();
+      showToast(`✓ Report downloaded: ${filename}`);
+    } else {
+      openPrintReportView(reportSelMonth, reportSelYear);
+    }
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    showToast('Opening print dialog for PDF export...');
+    openPrintReportView(reportSelMonth, reportSelYear);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+    const container = document.getElementById('wealthnest-pdf-export-container');
+    if (container) {
+      setTimeout(() => { container.innerHTML = ''; }, 4000);
+    }
+  }
+}
+
+function openPrintReportView(month, year) {
+  const htmlContent = generateReportPDFContent(month, year);
+  const printWindow = window.open('', '_blank', 'width=880,height=960');
+  if (!printWindow) {
+    showToast('⚠️ Pop-up blocked. Please allow pop-ups to print/export PDF.');
+    return;
+  }
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>WealthNest Report - ${MONTH_NAMES[month-1]} ${year}</title>
+      <meta charset="utf-8">
+      <style>
+        @page { size: A4 portrait; margin: 0; }
+        body { margin: 0; background: #eaedf2; }
+        @media print {
+          body { background: transparent; }
+          .pdf-page { box-shadow: none !important; margin: 0 !important; }
+        }
+      </style>
+    </head>
+    <body>
+      <div style="width:794px; margin:20px auto;">
+        ${htmlContent}
+      </div>
+      <script>
+        window.onload = function() {
+          setTimeout(function() {
+            window.print();
+          }, 400);
+        };
+      <\\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+
 /* ---------------- render: dashboard ---------------- */
 let chartTrend, chartCategoryPie;
 let dashboardSelPeriod = 'month', dashboardSelMonth, dashboardSelYear;
@@ -7034,9 +8033,26 @@ function renderTxFilterChips(){
   renderTxCategoryFilter();
 }
 function transactionCategories(type){
-  const stored = type==='expense' ? (DB.categories.expense||[]).map(category=>category.name) : type==='savings' ? (DB.savingsGoals||[]).map(goal=>goal.name) : (DB.categories[type]||[]);
-  const recorded = DB.transactions.filter(transaction=>type==='all'||transaction.type===type).map(transaction=>transaction.category);
-  return [...new Set([...stored,...recorded])].filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  let stored = [];
+  if(type === 'expense'){
+    stored = (DB.categories.expense || []).map(category => (category.name || category));
+  } else if(type === 'income'){
+    stored = (DB.categories.income || []);
+  } else if(type === 'savings'){
+    stored = [
+      ...(DB.savingsGoals || []).map(goal => (goal.name || goal)),
+      ...(DB.categories.savings || [])
+    ];
+  } else if(type === 'all'){
+    stored = [
+      ...(DB.categories.expense || []).map(c => (c.name || c)),
+      ...(DB.categories.income || []),
+      ...(DB.savingsGoals || []).map(g => (g.name || g)),
+      ...(DB.categories.savings || [])
+    ];
+  }
+  const recorded = DB.transactions.filter(transaction => type === 'all' || transaction.type === type).map(transaction => transaction.category);
+  return [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
 }
 function renderTxCategoryFilter(){
   const wrap = document.getElementById('tx-category-filter-wrap');
