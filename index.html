@@ -4347,12 +4347,20 @@ function renderSettingsAccount(){
       <div style="margin-top:20px; padding:16px 18px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
         <h4 style="margin:0 0 4px; font-size:13.5px; font-weight:700;">Data Backup &amp; Recovery</h4>
         <p style="margin:0 0 12px; font-size:12px; color:var(--muted); line-height:1.45;">Safely export a snapshot of your transactions, budgets, goals, and investments, or restore from a previous JSON backup.</p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export Backup (.json)
+            Full Backup (.json)
           </button>
-          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+          <button type="button" onclick="exportCategoriesJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export categories and subcategories">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            Categories (.json)
+          </button>
+          <button type="button" onclick="exportTransactionsJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export all transactions">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Transactions (.json)
+          </button>
+          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Restore / Import (.json)
           </button>
@@ -4389,12 +4397,20 @@ function renderSettingsAccount(){
       <div style="margin-top:20px; padding:16px 18px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
         <h4 style="margin:0 0 4px; font-size:13.5px; font-weight:700;">Data Backup &amp; Recovery</h4>
         <p style="margin:0 0 12px; font-size:12px; color:var(--muted); line-height:1.45;">Safely export your local transactions and budgets to your device, or restore an existing backup file.</p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export Backup (.json)
+            Full Backup (.json)
           </button>
-          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:8px 14px; display:inline-flex; align-items:center; gap:6px;">
+          <button type="button" onclick="exportCategoriesJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export categories and subcategories">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            Categories (.json)
+          </button>
+          <button type="button" onclick="exportTransactionsJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export all transactions">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Transactions (.json)
+          </button>
+          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Restore / Import (.json)
           </button>
@@ -4468,6 +4484,58 @@ function exportFinancesJSON(){
   }
 }
 
+function exportCategoriesJSON(){
+  try {
+    const catsData = {
+      appName: "WealthNest",
+      type: "categories_backup",
+      exportedAt: new Date().toISOString(),
+      categories: DB.categories || {}
+    };
+    const dataStr = JSON.stringify(catsData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = ymd(new Date());
+    a.href = url;
+    a.download = `wealthnest_categories_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast("Categories & subcategories exported successfully!");
+  } catch(e) {
+    showToast("Category export failed: " + e.message, "error");
+  }
+}
+
+function exportTransactionsJSON(){
+  try {
+    const sortedTxs = Array.isArray(DB.transactions) 
+      ? [...DB.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || '')) 
+      : [];
+    const txData = {
+      appName: "WealthNest",
+      type: "transactions_backup",
+      exportedAt: new Date().toISOString(),
+      totalTransactions: sortedTxs.length,
+      transactions: sortedTxs
+    };
+    const dataStr = JSON.stringify(txData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = ymd(new Date());
+    a.href = url;
+    a.download = `wealthnest_transactions_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast(`Exported all ${sortedTxs.length} transactions as JSON!`);
+  } catch(e) {
+    showToast("Transactions export failed: " + e.message, "error");
+  }
+}
+
 function exportTransactionsCSV(){
   try {
     const txs = Array.isArray(DB.transactions) ? [...DB.transactions] : [];
@@ -4508,7 +4576,6 @@ function exportTransactionsCSV(){
   }
 }
 
-
 function triggerImportFinancesJSON(){
   let fileInput = document.getElementById('wn-import-file-input');
   if(!fileInput){
@@ -4531,19 +4598,69 @@ function handleImportFinancesFile(e){
     try {
       const parsed = JSON.parse(evt.target.result);
       const data = parsed.data || parsed;
+
+      // Case 1: Categories-only import
+      if (data.type === 'categories_backup' || (data.categories && !data.transactions && !data.budgets)) {
+        const newCats = data.categories || data;
+        if (!Array.isArray(newCats.income) && !Array.isArray(newCats.expense)) {
+          showToast("Invalid categories file format", "error");
+          return;
+        }
+        if (confirm("Restore categories & subcategories from file? Your existing transactions will remain safe.")) {
+          createLocalDataBackup('pre_cat_import');
+          DB.categories = newCats;
+          sanitizeLoadedDB(DB);
+          saveDB(true);
+          renderAllForCurrentPage();
+          showToast("Categories & subcategories updated successfully!");
+        }
+        return;
+      }
+
+      // Case 2: Transactions-only import
+      if (data.type === 'transactions_backup' || (Array.isArray(data.transactions) && !data.budgets && !data.categories)) {
+        const importTxs = Array.isArray(data.transactions) ? data.transactions : (Array.isArray(data) ? data : []);
+        if (!importTxs.length) {
+          showToast("No transactions found in file", "info");
+          return;
+        }
+        if (confirm(`Import ${importTxs.length} transactions? They will be merged with your existing records.`)) {
+          createLocalDataBackup('pre_tx_import');
+          const existingIds = new Set((DB.transactions || []).map(t => t.id));
+          let added = 0;
+          for (const tx of importTxs) {
+            if (tx && tx.id && !existingIds.has(tx.id)) {
+              DB.transactions.push(tx);
+              existingIds.add(tx.id);
+              added++;
+            } else if (tx && !tx.id) {
+              tx.id = uid();
+              DB.transactions.push(tx);
+              added++;
+            }
+          }
+          sanitizeLoadedDB(DB);
+          saveDB(true);
+          renderAllForCurrentPage();
+          showToast(`Imported ${added} new transactions successfully!`);
+        }
+        return;
+      }
+
+      // Case 3: Complete A-to-Z Database Backup
       if (!hasMeaningfulFinances(data) && !Array.isArray(data.categories?.income)) {
         showToast("Invalid WealthNest backup file", "error");
         return;
       }
       const txLen = Array.isArray(data.transactions) ? data.transactions.length : 0;
       const bLen = Array.isArray(data.budgets) ? data.budgets.length : 0;
-      if (confirm(`Restore data from backup? This will load ${txLen} transactions and ${bLen} budgets.`)) {
+      if (confirm(`Restore full data from backup? This will load ${txLen} transactions and ${bLen} budgets.`)) {
         createLocalDataBackup('pre_import');
         DB = data;
         sanitizeLoadedDB(DB);
         saveDB(true);
         renderAllForCurrentPage();
-        showToast(`Restored ${txLen} transactions & ${bLen} budgets!`);
+        showToast(`Restored full backup: ${txLen} transactions & ${bLen} budgets!`);
       }
     } catch(err) {
       showToast("Error reading JSON file: " + err.message, "error");
@@ -10512,11 +10629,19 @@ function renderBackupSettings(){
           </p>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" onclick="exportFinancesJSON()" class="btn-primary" style="padding:10px 18px; display:inline-flex; align-items:center; gap:8px;">
+          <button type="button" onclick="exportFinancesJSON()" class="btn-primary" style="padding:10px 16px; display:inline-flex; align-items:center; gap:8px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download Backup (.json)
+            Full Backup (.json)
           </button>
-          <button type="button" onclick="exportTransactionsCSV()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px;" title="Spreadsheet-compatible format">
+          <button type="button" onclick="exportCategoriesJSON()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px; border-color:var(--line);" title="Download all categories and subcategories">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/><polyline points="7 10 12 15 17 10"/></svg>
+            Download Categories &amp; Subcategories (.json)
+          </button>
+          <button type="button" onclick="exportTransactionsJSON()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px; border-color:var(--line);" title="Download all transactions">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Download All Transactions (.json)
+          </button>
+          <button type="button" onclick="exportTransactionsCSV()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px; border-color:var(--line);" title="Spreadsheet-compatible format">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Export All CSV (Excel)
           </button>
@@ -10536,7 +10661,7 @@ function renderBackupSettings(){
             </div>
           </div>
           <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;">
-            Migrating from another device or restoring records? Select your previously saved <code style="background:var(--surface-2); padding:1px 5px; border-radius:4px;">.json</code> file to restore instantly.
+            Select any WealthNest <code style="background:var(--surface-2); padding:1px 5px; border-radius:4px;">.json</code> file to restore. WealthNest automatically detects if it's a <strong>Full Backup</strong>, <strong>Categories &amp; Subcategories</strong>, or <strong>Transactions</strong> file and restores or merges it safely.
           </p>
         </div>
         <div>
