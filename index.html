@@ -2374,6 +2374,14 @@
         <input type="text" id="tx-description" placeholder="Optional note" class="field-input">
       </div>
 
+      <!-- Dedicated Company Allowance Option (Expense Transactions Only) -->
+      <div id="tx-allowance-field-wrap" style="margin-bottom:12px;">
+        <label class="field-label" for="tx-allowance">Company Allowance</label>
+        <select id="tx-allowance" class="field-input">
+          <option value="">None (Personal Expense)</option>
+        </select>
+      </div>
+
       <!-- Row 4: Payment Method & Amount in one line -->
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
         <div>
@@ -3199,37 +3207,25 @@
 <div id="allowance-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeAllowanceModal()">
   <div class="modal" style="max-width:440px;">
     <button class="modal-close" onclick="closeAllowanceModal()" aria-label="Close">✕</button>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-      <div style="width:38px; height:38px; border-radius:10px; background:rgba(124,58,237,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:20px;">
-        💼
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
       </div>
       <div>
-        <h2 id="allowance-modal-title" style="margin:0; font-size:18px;">Company Benefit / Allowance</h2>
-        <p class="text-xs muted" style="margin:2px 0 0;">Company-sponsored fuel cards, health insurance &amp; perks</p>
+        <h2 id="allowance-modal-title" style="margin:0; font-size:18px;">Company Benefit</h2>
       </div>
     </div>
 
     <form onsubmit="handleSaveAllowance(event)">
       <div style="margin-bottom:12px;">
-        <label class="field-label" for="allowance-name">Benefit / Card Name <span style="color:var(--rose);">*</span></label>
-        <input type="text" id="allowance-name" placeholder="e.g. Company Fuel Card" class="field-input" required>
+        <label class="field-label" for="allowance-name">Benefit Name <span style="color:var(--rose);">*</span></label>
+        <input type="text" id="allowance-name" placeholder="e.g. Food Card, Fuel Allowance, Health Insurance" class="field-input" required autocomplete="off">
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" for="allowance-icon">Icon (Emoji)</label>
-          <input type="text" id="allowance-icon" placeholder="⛽, 🏥, or 📱" class="field-input">
-        </div>
-        <div>
-          <label class="field-label" for="allowance-color">Accent Color</label>
-          <input type="color" id="allowance-color" value="#7C3AED" class="field-input" style="height:38px; padding:2px; cursor:pointer;">
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-        <div>
-          <label class="field-label" for="allowance-limit">Allowance Limit <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="0" step="any" id="allowance-limit" placeholder="e.g. 20000" class="field-input figure" required>
+          <label class="field-label" for="allowance-limit">Quota Limit <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="allowance-limit" placeholder="e.g. 10000" class="field-input figure" required>
         </div>
         <div>
           <label class="field-label" for="allowance-period">Quota Period</label>
@@ -3244,13 +3240,94 @@
         <input type="checkbox" id="allowance-active" checked style="width:16px; height:16px; cursor:pointer;">
         <label for="allowance-active" style="font-size:12.5px; cursor:pointer; margin:0;">
           <strong>Active Benefit</strong>
-          <span class="text-xs muted" style="display:block;">Available as payment method in transactions</span>
+          <span class="text-xs muted" style="display:block;">Available for selection when logging expenses</span>
         </label>
       </div>
 
       <div style="display:flex; justify-content:flex-end; gap:8px;">
         <button type="button" class="btn-ghost" onclick="closeAllowanceModal()">Cancel</button>
         <button type="submit" class="btn-primary">Save Benefit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ TRANSFER ALLOWANCE MODAL ============ -->
+<div id="transfer-allowance-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeTransferAllowanceModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeTransferAllowanceModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(16,185,129,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Transfer Surplus Quota</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;">Move remaining allowance balance to personal Income or Savings</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleConfirmTransferAllowance(event)">
+      <input type="hidden" id="transfer-allowance-id">
+
+      <!-- Balance Info Box -->
+      <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:13.5px; font-weight:600; color:var(--ink);" id="transfer-allowance-name">Food Card</span>
+          <span style="font-size:12px; color:var(--muted-2);">Available: <strong style="color:var(--teal); font-size:14px;" id="transfer-allowance-available">PKR 5,000</strong></span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="transfer-allowance-amount">Transfer Amount <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="1" step="any" id="transfer-allowance-amount" placeholder="0" class="field-input figure" required>
+        </div>
+        <div>
+          <label class="field-label" for="transfer-allowance-date">Date</label>
+          <input type="date" id="transfer-allowance-date" class="field-input figure" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label class="field-label">Transfer Destination</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <label style="display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; font-size:12.5px; background:var(--surface);">
+            <input type="radio" name="transfer-allowance-dest-type" value="income" checked onchange="toggleTransferAllowanceDest('income')">
+            <span>To Income (Bank)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; font-size:12.5px; background:var(--surface);">
+            <input type="radio" name="transfer-allowance-dest-type" value="savings" onchange="toggleTransferAllowanceDest('savings')">
+            <span>To Savings Goal</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Income Destination Options -->
+      <div id="transfer-allowance-income-wrap" style="margin-bottom:14px;">
+        <label class="field-label" for="transfer-allowance-dest-account">Deposit Account</label>
+        <select id="transfer-allowance-dest-account" class="field-input"></select>
+      </div>
+
+      <!-- Savings Destination Options -->
+      <div id="transfer-allowance-savings-wrap" class="hidden" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div>
+          <label class="field-label" for="transfer-allowance-dest-goal">Target Goal</label>
+          <select id="transfer-allowance-dest-goal" class="field-input"></select>
+        </div>
+        <div>
+          <label class="field-label" for="transfer-allowance-dest-holding">Holding Account</label>
+          <select id="transfer-allowance-dest-holding" class="field-input">
+            <option value="Bank Account">Bank Account</option>
+            <option value="Personal Safe / Cash">Personal Safe / Cash</option>
+            <option value="Digital Wallet">Digital Wallet</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+        <button type="button" class="btn-ghost" onclick="closeTransferAllowanceModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Confirm Transfer</button>
       </div>
     </form>
   </div>
@@ -5005,24 +5082,31 @@ function downloadTransactionsExcel(){
 }
 
 /* ============================================================
-   COMPANY BENEFITS & ALLOWANCES SYSTEM
+   COMPANY BENEFITS & ALLOWANCES SYSTEM (CLEAN & DYNAMIC)
    ============================================================ */
 function getAllowanceAccounts(){ return Array.isArray(DB.allowanceAccounts) ? DB.allowanceAccounts : []; }
 function getActiveAllowanceAccounts(){ return getAllowanceAccounts().filter(function(a){ return a.active; }); }
+
+function sanitizePaymentMethods(){
+  if(Array.isArray(DB.paymentMethods)){
+    var allwNames = getAllowanceAccounts().map(function(a){ return (a.name||'').toLowerCase(); });
+    DB.paymentMethods = DB.paymentMethods.filter(function(pm){ return !allwNames.includes((pm||'').toLowerCase()); });
+  }
+}
 
 function getAllowanceMonthUsed(acc, month, year){
   if(!acc) return 0;
   var txs = DB.transactions || [];
   if(acc.period === 'year'){
-    return txs.filter(function(t){ return t.companyCovered && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
+    return txs.filter(function(t){ return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
               .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
   }
-  return txs.filter(function(t){ return t.companyCovered && t.allowanceId===acc.id && inMonth(t,month,year); })
+  return txs.filter(function(t){ return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && inMonth(t,month,year); })
              .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
 }
 function getAllowanceYearUsed(acc, year){
   if(!acc) return 0;
-  return (DB.transactions||[]).filter(function(t){ return t.companyCovered && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
+  return (DB.transactions||[]).filter(function(t){ return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
                               .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
 }
 function computeAllowanceAvailable(acc){
@@ -5036,16 +5120,25 @@ function calculateAllowanceSplit(acc, amount){
   return { coveredAmount: covered, overflowAmount: amount-covered };
 }
 function processAllowanceForTransaction(txData){
-  var pmArr = typeof txData.paymentMethod === 'string' ? txData.paymentMethod.split(',').map(function(s){ return s.trim(); }) : (Array.isArray(txData.paymentMethod) ? txData.paymentMethod : [txData.paymentMethod||'']);
-  var acc = getAllowanceAccounts().find(function(a){
-    return a.active && pmArr.some(function(pm){ return pm.toLowerCase() === a.name.toLowerCase(); });
-  });
-  if(!acc) return txData;
+  if(!txData.allowanceId){
+    txData.companyCovered = false;
+    txData.companyCoveredAmount = 0;
+    return txData;
+  }
+  var acc = getAllowanceAccounts().find(function(a){ return a.active && a.id === txData.allowanceId; });
+  if(!acc){
+    txData.companyCovered = false;
+    txData.companyCoveredAmount = 0;
+    txData.allowanceId = undefined;
+    return txData;
+  }
   var amount = txData.amount || 0;
   var split = calculateAllowanceSplit(acc, amount);
   if(split.coveredAmount <= 0){
-    showToast('Allowance quota (' + acc.name + ') is fully exhausted! Entire ' + fmt(amount) + ' marked as personal expense.', 'warning');
+    showToast('Allowance quota for "' + acc.name + '" is exhausted! Entire ' + fmt(amount) + ' marked as personal expense.', 'warning');
     txData.companyCovered = false;
+    txData.companyCoveredAmount = 0;
+    txData.allowanceId = undefined;
     return txData;
   }
   txData.allowanceId = acc.id;
@@ -5053,13 +5146,13 @@ function processAllowanceForTransaction(txData){
   txData.companyCoveredAmount = split.coveredAmount;
   txData.amount = split.coveredAmount;
   if(split.overflowAmount > 0){
-    showToast('Allowance limit reached! ' + fmt(split.coveredAmount) + ' covered by company, ' + fmt(split.overflowAmount) + ' marked as personal expense.', 'info');
+    showToast('Allowance limit reached! ' + fmt(split.coveredAmount) + ' covered by ' + acc.name + ', ' + fmt(split.overflowAmount) + ' marked as personal expense.', 'info');
     DB.transactions.unshift({
       id: uid(), date: txData.date, type: 'expense',
       category: txData.category,
       subcategory: txData.subcategory||txData.subCategory||'',
       subCategory: txData.subcategory||txData.subCategory||'',
-      paymentMethod: 'Cash',
+      paymentMethod: txData.paymentMethod || 'Cash',
       description: '[Personal overflow from ' + acc.name + '] ' + (txData.description||txData.note||'').trim(),
       note: '[Personal overflow from ' + acc.name + '] ' + (txData.description||txData.note||'').trim(),
       amount: split.overflowAmount, companyCovered: false, createdAt: new Date().toISOString()
@@ -5074,55 +5167,83 @@ function renderAllowancesSettings(){
   var accounts = getAllowanceAccounts();
   var now = new Date();
   var m = now.getMonth()+1, y = now.getFullYear();
+
   var cardsHtml = accounts.length ? accounts.map(function(acc){
     var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
-    var pct = acc.limit > 0 ? Math.min(100,Math.round((used/acc.limit)*100)) : 0;
+    var available = Math.max(0, acc.limit - used);
+    var pct = acc.limit > 0 ? Math.min(100, Math.round((used/acc.limit)*100)) : 0;
     var isOver = used > acc.limit;
-    var isWarn = pct>=85 && !isOver;
-    var barColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : (acc.color||'var(--primary)'));
-    var statusText = isOver ? 'Over Limit!' : (isWarn ? 'Near Limit' : 'Within Quota');
-    var statusColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : 'var(--teal)');
-    var pLabel = acc.period==='year' ? 'annual' : 'monthly';
-    return '<div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:10px;">'
-      +'<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">'
-      +'<div style="display:flex; align-items:center; gap:12px;"><span style="font-size:26px;">'+escapeHtml(acc.icon||'&#128188;')+'</span>'
-      +'<div><div style="font-weight:700; font-size:14.5px;">'+escapeHtml(acc.name)+'</div>'
-      +'<div style="font-size:11.5px; color:var(--muted-2);">Limit: '+fmt(acc.limit)+' / '+pLabel+' &bull; <span style="color:'+statusColor+'; font-weight:600;">'+statusText+'</span></div></div></div>'
-      +'<div style="display:flex; align-items:center; gap:8px;">'
-      +'<label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--muted-2);">'
-      +'<input type="checkbox" '+(acc.active?'checked':'')+' onchange="toggleAllowanceActive(\''+acc.id+'\', this.checked)" style="width:15px; height:15px; cursor:pointer;">Active</label>'
-      +'<button onclick="openEditAllowanceModal(\''+acc.id+'\')" class="icon-btn icon-btn-edit" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
-      +'<button onclick="deleteAllowanceAccount(\''+acc.id+'\')" class="icon-btn icon-btn-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
-      +'</div></div>'
-      +'<div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; margin-bottom:8px;">'
-      +'<div style="height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden;">'
-      +'<div style="width:'+pct+'%; height:100%; background:'+barColor+'; border-radius:6px; transition:width .4s;"></div></div>'
-      +'<div style="font-size:12px; font-weight:700; color:'+barColor+'; font-family:\'JetBrains Mono\',monospace;">'+pct+'%</div></div>'
-      +'<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px;">'
-      +'<div style="text-align:center; padding:8px; background:var(--surface-2); border-radius:8px;"><div style="font-size:10px; text-transform:uppercase; color:var(--muted-2); font-weight:600;">Used</div><div style="font-size:13px; font-weight:700; color:var(--rose); font-family:\'JetBrains Mono\',monospace;">'+fmt(used)+'</div></div>'
-      +'<div style="text-align:center; padding:8px; background:var(--surface-2); border-radius:8px;"><div style="font-size:10px; text-transform:uppercase; color:var(--muted-2); font-weight:600;">Remaining</div><div style="font-size:13px; font-weight:700; color:var(--teal); font-family:\'JetBrains Mono\',monospace;">'+fmt(Math.max(0,acc.limit-used))+'</div></div>'
-      +'<div style="text-align:center; padding:8px; background:var(--surface-2); border-radius:8px;"><div style="font-size:10px; text-transform:uppercase; color:var(--muted-2); font-weight:600;">Limit</div><div style="font-size:13px; font-weight:700; color:var(--ink); font-family:\'JetBrains Mono\',monospace;">'+fmt(acc.limit)+'<span style="font-size:10px; font-weight:400; color:var(--muted-2);"> /'+(acc.period==='year'?'yr':'mo')+'</span></div></div>'
-      +'</div></div>';
-  }).join('') : '<div style="text-align:center;padding:40px 20px;color:var(--muted-2);">'
-    +'<div style="font-size:36px;margin-bottom:12px;">&#128188;</div>'
-    +'<div style="font-weight:600;font-size:15px;color:var(--ink);margin-bottom:6px;">No Allowances Configured</div>'
-    +'<p style="font-size:13px;line-height:1.5;">Add benefits like Fuel Card, Health Insurance, or Mobile Allowance.</p>'
-    +'<button onclick="openAddAllowanceModal()" class="btn-primary" style="margin-top:16px;height:36px;padding:0 20px;">+ Add First Benefit</button></div>';
+    var isWarn = pct >= 85 && !isOver;
+    var barColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : 'var(--primary)');
+    var statusText = isOver ? 'Over Limit' : (isWarn ? 'Near Limit' : 'Within Quota');
+    var badgeClass = isOver ? 'badge-over' : (isWarn ? 'badge-warn' : 'badge-ok');
+    var pLabel = acc.period==='year' ? 'year' : 'month';
+
+    return '<div class="card" style="padding:18px 20px; margin-bottom:12px; border:1px solid var(--line);">'
+      + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">'
+      + '  <div style="display:flex; align-items:center; gap:12px;">'
+      + '    <div>'
+      + '      <div style="font-weight:700; font-size:16px; color:var(--ink); line-height:1.2;">' + escapeHtml(acc.name) + '</div>'
+      + '      <div style="font-size:12px; color:var(--muted-2); margin-top:3px;">Limit: ' + fmt(acc.limit) + ' / ' + pLabel + ' &bull; <span class="badge ' + badgeClass + '" style="font-size:10.5px; padding:2px 8px;">' + statusText + '</span></div>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div style="display:flex; align-items:center; gap:8px;">'
+      + '    <button type="button" onclick="openTransferAllowanceModal(\'' + acc.id + '\')" class="btn-ghost" style="height:32px; font-size:12.5px; padding:0 12px; border:1px solid var(--line); border-radius:6px; color:var(--teal); font-weight:600; display:inline-flex; align-items:center; gap:5px;" ' + (available <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : '') + '>'
+      + '      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Transfer'
+      + '    </button>'
+      + '    <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--muted-2); margin-left:4px;">'
+      + '      <input type="checkbox" ' + (acc.active ? 'checked' : '') + ' onchange="toggleAllowanceActive(\'' + acc.id + '\', this.checked)" style="width:15px; height:15px; cursor:pointer;">Active'
+      + '    </label>'
+      + '    <button onclick="openEditAllowanceModal(\'' + acc.id + '\')" class="icon-btn icon-btn-edit" title="Edit Benefit" aria-label="Edit Benefit">'
+      + '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+      + '    </button>'
+      + '    <button onclick="deleteAllowanceAccount(\'' + acc.id + '\')" class="icon-btn icon-btn-delete" title="Delete Benefit" aria-label="Delete Benefit">'
+      + '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
+      + '    </button>'
+      + '  </div>'
+      + '</div>'
+      + '<div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; margin-bottom:10px;">'
+      + '  <div style="height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden;">'
+      + '    <div style="width:' + pct + '%; height:100%; background:' + barColor + '; border-radius:6px; transition:width .4s;"></div>'
+      + '  </div>'
+      + '  <div style="font-size:12.5px; font-weight:700; color:' + barColor + '; font-family:var(--font-mono);">' + pct + '%</div>'
+      + '</div>'
+      + '<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">'
+      + '  <div style="text-align:center; padding:10px; background:var(--surface-2); border-radius:8px;">'
+      + '    <div style="font-size:11px; text-transform:uppercase; color:var(--muted-2); font-weight:600; letter-spacing:0.04em;">Limit</div>'
+      + '    <div style="font-size:14px; font-weight:700; color:var(--ink); font-family:var(--font-mono); margin-top:2px;">' + fmt(acc.limit) + '</div>'
+      + '  </div>'
+      + '  <div style="text-align:center; padding:10px; background:var(--surface-2); border-radius:8px;">'
+      + '    <div style="font-size:11px; text-transform:uppercase; color:var(--muted-2); font-weight:600; letter-spacing:0.04em;">Used</div>'
+      + '    <div style="font-size:14px; font-weight:700; color:var(--rose); font-family:var(--font-mono); margin-top:2px;">' + fmt(used) + '</div>'
+      + '  </div>'
+      + '  <div style="text-align:center; padding:10px; background:var(--surface-2); border-radius:8px;">'
+      + '    <div style="font-size:11px; text-transform:uppercase; color:var(--muted-2); font-weight:600; letter-spacing:0.04em;">Available</div>'
+      + '    <div style="font-size:14px; font-weight:700; color:var(--teal); font-family:var(--font-mono); margin-top:2px;">' + fmt(available) + '</div>'
+      + '  </div>'
+      + '</div>'
+      + '</div>';
+  }).join('') : '<div style="text-align:center; padding:44px 20px; color:var(--muted-2); background:var(--surface); border:1px dashed var(--line); border-radius:12px;">'
+    + '<div style="width:44px; height:44px; margin:0 auto 12px; border-radius:12px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--muted-2);">'
+    + '  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>'
+    + '</div>'
+    + '<div style="font-weight:600; font-size:15px; color:var(--ink); margin-bottom:4px;">No Company Benefits Configured</div>'
+    + '<p style="font-size:13px; line-height:1.5; margin:0 0 16px;">Add company allowances like Food Card, Fuel Allowance, or Health Insurance.</p>'
+    + '<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:36px; padding:0 20px;">+ Add First Benefit</button>'
+    + '</div>';
 
   el.innerHTML = '<div class="card" style="padding:22px; margin-bottom:18px;">'
-    +'<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">'
-    +'<div><h2 class="section-title">Company Benefits &amp; Allowances</h2>'
-    +'<p class="text-xs muted" style="margin:4px 0 0;">Covered expenses do not reduce your personal balance or appear as income.</p></div>'
-    +'<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:34px;padding:0 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px;">'
-    +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Benefit</button></div>'
-    +'<div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);border-radius:10px;padding:14px 16px;margin:14px 0;">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">How Allowances Work</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">'
-    +'<div style="font-size:12px;color:var(--ink-2);"><strong>&#128179; Zero Income Distortion</strong><br>Company payments are NOT your cash. Personal salary is untouched.</div>'
-    +'<div style="font-size:12px;color:var(--ink-2);"><strong>&#128737; Zero Personal Drain</strong><br>Purchases within limit do not decrease your personal bank balance.</div>'
-    +'<div style="font-size:12px;color:var(--ink-2);"><strong>&#9888; Over-Limit Overflow</strong><br>If you exceed your limit, excess is logged as personal out-of-pocket.</div>'
-    +'</div></div>'
-    +'<div style="display:flex;flex-direction:column;gap:0;">'+cardsHtml+'</div></div>';
+    + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">'
+    + '  <div>'
+    + '    <h2 class="section-title">Company Benefits &amp; Allowances</h2>'
+    + '    <p class="text-xs muted" style="margin:4px 0 0;">Manage company-provided allowances and transfer surplus funds.</p>'
+    + '  </div>'
+    + '  <button onclick="openAddAllowanceModal()" class="btn-primary" style="height:34px; padding:0 14px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">'
+    + '    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Benefit'
+    + '  </button>'
+    + '</div>'
+    + '<div style="display:flex; flex-direction:column; gap:0;">' + cardsHtml + '</div>'
+    + '</div>';
 }
 
 function renderAllowanceTrackerWidget(){
@@ -5133,44 +5254,59 @@ function renderAllowanceTrackerWidget(){
   container.classList.remove('hidden');
   var now = new Date();
   var m = now.getMonth()+1, y = now.getFullYear();
+
   var rows = accounts.map(function(acc){
     var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
-    var available = Math.max(0,acc.limit-used);
-    var pct = acc.limit>0 ? Math.min(100,Math.round((used/acc.limit)*100)) : 0;
-    var isOver = used>acc.limit, isWarn = pct>=85&&!isOver;
-    var barColor = isOver?'var(--rose)':(isWarn?'#D97706':(acc.color||'var(--primary)'));
-    var badgeClass = isOver?'badge-over':(isWarn?'badge-warn':'badge-ok');
-    var badgeText = isOver?'Over Limit':(isWarn?'Near Limit':'On Track');
-    return '<div style="padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">'
-      +'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">'+escapeHtml(acc.icon||'&#128188;')+'</span>'
-      +'<span style="font-size:13px;font-weight:600;color:var(--ink);">'+escapeHtml(acc.name)+'</span></div>'
-      +'<div style="display:flex;align-items:center;gap:8px;"><span class="badge '+badgeClass+'" style="font-size:10.5px;">'+badgeText+'</span>'
-      +'<span style="font-size:12px;font-family:\'JetBrains Mono\',monospace;color:var(--muted-2);">'+pct+'%</span></div></div>'
-      +'<div style="height:7px;background:var(--surface-2);border-radius:6px;overflow:hidden;margin-bottom:8px;">'
-      +'<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:6px;transition:width .5s;"></div></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted-2);">'
-      +'<span>Used: <strong style="color:var(--rose);">'+fmt(used)+'</strong></span>'
-      +'<span>Available: <strong style="color:var(--teal);">'+fmt(available)+'</strong></span>'
-      +'<span>Limit: <strong style="color:var(--ink);">'+fmt(acc.limit)+'/'+(acc.period==='year'?'yr':'mo')+'</strong></span></div></div>';
+    var available = Math.max(0, acc.limit - used);
+    var pct = acc.limit > 0 ? Math.min(100, Math.round((used/acc.limit)*100)) : 0;
+    var isOver = used > acc.limit, isWarn = pct >= 85 && !isOver;
+    var barColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : 'var(--primary)');
+    var badgeClass = isOver ? 'badge-over' : (isWarn ? 'badge-warn' : 'badge-ok');
+    var badgeText = isOver ? 'Over Limit' : (isWarn ? 'Near Limit' : 'Within Quota');
+
+    return '<div style="padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">'
+      + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">'
+      + '  <div style="display:flex; align-items:center; gap:8px;">'
+      + '    <span style="font-size:14px; font-weight:700; color:var(--ink);">' + escapeHtml(acc.name) + '</span>'
+      + '    <span class="badge ' + badgeClass + '" style="font-size:10.5px; padding:2px 7px;">' + badgeText + '</span>'
+      + '  </div>'
+      + '  <div style="display:flex; align-items:center; gap:8px;">'
+      + '    <span style="font-size:12px; font-family:var(--font-mono); font-weight:600; color:' + barColor + ';">' + pct + '%</span>'
+      + '    <button type="button" onclick="openTransferAllowanceModal(\'' + acc.id + '\')" class="btn-ghost" style="height:28px; font-size:11.5px; padding:0 10px; border:1px solid var(--line); border-radius:6px; color:var(--teal); font-weight:600; display:inline-flex; align-items:center; gap:4px;" ' + (available <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : '') + '>'
+      + '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Transfer'
+      + '    </button>'
+      + '  </div>'
+      + '</div>'
+      + '<div style="height:7px; background:var(--surface-2); border-radius:6px; overflow:hidden; margin-bottom:8px;">'
+      + '  <div style="width:' + pct + '%; height:100%; background:' + barColor + '; border-radius:6px; transition:width .4s;"></div>'
+      + '</div>'
+      + '<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted-2);">'
+      + '  <span>Limit: <strong style="color:var(--ink); font-family:var(--font-mono);">' + fmt(acc.limit) + '</strong></span>'
+      + '  <span>Used: <strong style="color:var(--rose); font-family:var(--font-mono);">' + fmt(used) + '</strong></span>'
+      + '  <span>Available: <strong style="color:var(--teal); font-family:var(--font-mono);">' + fmt(available) + '</strong></span>'
+      + '</div>'
+      + '</div>';
   }).join('');
+
   container.innerHTML = '<div class="card" style="padding:18px 20px;">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
-    +'<div><h3 class="section-title" style="margin:0 0 2px;">Company Benefits Tracker</h3>'
-    +'<p class="text-xs muted" style="margin:0;">Live quota usage &mdash; '+MONTH_NAMES[m-1]+' '+y+'</p></div>'
-    +'<span class="badge badge-ok" style="font-size:11px;">'+accounts.length+' Active</span></div>'
-    +'<div style="display:flex;flex-direction:column;gap:10px;">'+rows+'</div></div>';
+    + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">'
+    + '  <div>'
+    + '    <h3 class="section-title" style="margin:0 0 2px;">Company Benefits &amp; Allowances</h3>'
+    + '    <p class="text-xs muted" style="margin:0;">Active benefit quotas &mdash; ' + MONTH_NAMES[m-1] + ' ' + y + '</p>'
+    + '  </div>'
+    + '  <span class="badge badge-ok" style="font-size:11px;">' + accounts.length + ' Active</span>'
+    + '</div>'
+    + '<div style="display:flex; flex-direction:column; gap:10px;">' + rows + '</div>'
+    + '</div>';
 }
 
 var _editAllowanceId = null;
 function openAddAllowanceModal(){
   _editAllowanceId = null;
-  document.getElementById('allowance-modal-title').textContent = 'Add Company Benefit / Allowance';
+  document.getElementById('allowance-modal-title').textContent = 'Add Company Benefit';
   document.getElementById('allowance-name').value = '';
-  document.getElementById('allowance-icon').value = '';
   document.getElementById('allowance-limit').value = '';
   document.getElementById('allowance-period').value = 'month';
-  document.getElementById('allowance-color').value = '#7C3AED';
   document.getElementById('allowance-active').checked = true;
   document.getElementById('allowance-modal-backdrop').classList.remove('hidden');
   setTimeout(function(){ var el=document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
@@ -5179,12 +5315,10 @@ function openEditAllowanceModal(id){
   var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
   if(!acc) return;
   _editAllowanceId = id;
-  document.getElementById('allowance-modal-title').textContent = 'Edit Benefit / Allowance';
+  document.getElementById('allowance-modal-title').textContent = 'Edit Company Benefit';
   document.getElementById('allowance-name').value = acc.name;
-  document.getElementById('allowance-icon').value = acc.icon||'';
   document.getElementById('allowance-limit').value = acc.limit||'';
   document.getElementById('allowance-period').value = acc.period||'month';
-  document.getElementById('allowance-color').value = acc.color||'#7C3AED';
   document.getElementById('allowance-active').checked = acc.active!==false;
   document.getElementById('allowance-modal-backdrop').classList.remove('hidden');
   setTimeout(function(){ var el=document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
@@ -5195,40 +5329,174 @@ function closeAllowanceModal(){
 function handleSaveAllowance(e){
   e.preventDefault();
   var name = document.getElementById('allowance-name').value.trim();
-  var icon = document.getElementById('allowance-icon').value.trim() || '&#128179;';
   var limit = parseFloat(document.getElementById('allowance-limit').value) || 0;
   var period = document.getElementById('allowance-period').value;
-  var color = document.getElementById('allowance-color').value || '#7C3AED';
   var active = document.getElementById('allowance-active').checked;
-  if(!name){ showToast('Please enter a name', 'error'); return; }
-  if(limit <= 0){ showToast('Please enter a valid limit', 'error'); return; }
+  if(!name){ showToast('Please enter a benefit name', 'error'); return; }
+  if(limit <= 0){ showToast('Please enter a valid quota limit', 'error'); return; }
   if(!Array.isArray(DB.allowanceAccounts)) DB.allowanceAccounts = [];
   if(_editAllowanceId){
     var accE = DB.allowanceAccounts.find(function(a){ return a.id===_editAllowanceId; });
-    if(accE){ accE.name=name; accE.icon=icon; accE.limit=limit; accE.period=period; accE.color=color; accE.active=active; }
+    if(accE){ accE.name=name; accE.limit=limit; accE.period=period; accE.active=active; }
   } else {
     var newId = 'allw-'+Date.now().toString(36);
-    DB.allowanceAccounts.push({ id:newId, name:name, icon:icon, limit:limit, period:period, color:color, active:active });
-    if(!DB.paymentMethods) DB.paymentMethods = DEFAULT_PAYMENT_METHODS.slice();
-    if(DB.paymentMethods.indexOf(name) < 0) DB.paymentMethods.push(name);
+    DB.allowanceAccounts.push({ id:newId, name:name, limit:limit, period:period, active:active });
   }
+  sanitizePaymentMethods();
   saveDB();
   closeAllowanceModal();
   renderAllowancesSettings();
+  if(typeof renderAllowanceTrackerWidget === 'function') renderAllowanceTrackerWidget();
   showToast((_editAllowanceId ? 'Updated' : 'Added')+' "'+name+'"');
   _editAllowanceId = null;
 }
 function toggleAllowanceActive(id, active){
   var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
-  if(acc){ acc.active=active; saveDB(); renderAllowancesSettings(); }
+  if(acc){ acc.active=active; saveDB(); renderAllowancesSettings(); if(typeof renderAllowanceTrackerWidget === 'function') renderAllowanceTrackerWidget(); }
 }
 function deleteAllowanceAccount(id){
-  if(!confirm('Delete this benefit/allowance? Existing transactions will not be affected.')) return;
+  if(!confirm('Delete this benefit? Existing transactions will not be affected.')) return;
   DB.allowanceAccounts = (DB.allowanceAccounts||[]).filter(function(a){ return a.id!==id; });
   saveDB();
   renderAllowancesSettings();
+  if(typeof renderAllowanceTrackerWidget === 'function') renderAllowanceTrackerWidget();
   showToast('Benefit deleted');
 }
+
+/* --- Allowance Surplus Transfer Flow --- */
+function openTransferAllowanceModal(id){
+  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  if(!acc) return;
+  var avail = computeAllowanceAvailable(acc);
+  if(avail <= 0){
+    showToast('No remaining quota available to transfer for ' + acc.name, 'warning');
+    return;
+  }
+  document.getElementById('transfer-allowance-id').value = id;
+  document.getElementById('transfer-allowance-name').textContent = acc.name;
+  document.getElementById('transfer-allowance-available').textContent = fmt(avail);
+  var amtInp = document.getElementById('transfer-allowance-amount');
+  if(amtInp){
+    amtInp.value = '';
+    amtInp.max = avail;
+  }
+  var dateInp = document.getElementById('transfer-allowance-date');
+  if(dateInp) dateInp.value = ymd(new Date());
+
+  // Populate deposit account options
+  var accSel = document.getElementById('transfer-allowance-dest-account');
+  if(accSel){
+    var methods = getPaymentMethods();
+    accSel.innerHTML = methods.map(function(m){ return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>'; }).join('');
+  }
+
+  // Populate savings goals options
+  var goalSel = document.getElementById('transfer-allowance-dest-goal');
+  if(goalSel){
+    var goals = DB.savingsGoals || [];
+    goalSel.innerHTML = goals.length ? goals.map(function(g){ return '<option value="' + escapeHtml(g.name) + '">' + escapeHtml(g.name) + '</option>'; }).join('') : '<option value="">(No active goals)</option>';
+  }
+
+  // Reset destination to income
+  var radios = document.querySelectorAll('input[name="transfer-allowance-dest-type"]');
+  radios.forEach(function(r){ if(r.value === 'income') r.checked = true; });
+  toggleTransferAllowanceDest('income');
+
+  var backdrop = document.getElementById('transfer-allowance-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeTransferAllowanceModal(){
+  var backdrop = document.getElementById('transfer-allowance-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function toggleTransferAllowanceDest(type){
+  var incWrap = document.getElementById('transfer-allowance-income-wrap');
+  var savWrap = document.getElementById('transfer-allowance-savings-wrap');
+  if(incWrap) incWrap.classList.toggle('hidden', type !== 'income');
+  if(savWrap) savWrap.classList.toggle('hidden', type !== 'savings');
+}
+
+function handleConfirmTransferAllowance(e){
+  e.preventDefault();
+  var id = document.getElementById('transfer-allowance-id').value;
+  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  if(!acc) return;
+  var amount = parseFloat(document.getElementById('transfer-allowance-amount').value);
+  var avail = computeAllowanceAvailable(acc);
+  if(isNaN(amount) || amount <= 0){
+    showToast('Please enter a valid transfer amount', 'error');
+    return;
+  }
+  if(amount > avail){
+    showToast('Amount exceeds available quota of ' + fmt(avail), 'error');
+    return;
+  }
+  var transferDate = document.getElementById('transfer-allowance-date').value || ymd(new Date());
+  var destType = document.querySelector('input[name="transfer-allowance-dest-type"]:checked')?.value || 'income';
+
+  if(destType === 'income'){
+    var destAccount = document.getElementById('transfer-allowance-dest-account')?.value || 'Bank Transfer';
+    DB.transactions.unshift({
+      id: uid(),
+      date: transferDate,
+      type: 'income',
+      category: 'Company Benefits',
+      subCategory: 'Allowance Payout',
+      paymentMethod: destAccount,
+      description: 'Surplus quota transfer from ' + acc.name,
+      amount: amount,
+      allowanceId: acc.id,
+      isAllowanceTransfer: true,
+      createdAt: new Date().toISOString()
+    });
+    showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' to ' + destAccount + ' as Income!', 'success');
+  } else {
+    var goalName = document.getElementById('transfer-allowance-dest-goal')?.value;
+    if(!goalName){
+      showToast('Please select a valid savings goal', 'error');
+      return;
+    }
+    var holdingAccount = document.getElementById('transfer-allowance-dest-holding')?.value || 'Bank Account';
+    DB.transactions.unshift({
+      id: uid(),
+      date: transferDate,
+      type: 'savings',
+      category: goalName,
+      savingIn: holdingAccount,
+      description: 'Allowance surplus transfer from ' + acc.name,
+      amount: amount,
+      allowanceId: acc.id,
+      isAllowanceTransfer: true,
+      createdAt: new Date().toISOString()
+    });
+    var goal = (DB.savingsGoals || []).find(function(g){ return g.name === goalName; });
+    if(goal && typeof getGoalCurrentAmount === 'function'){
+      goal.currentAmount = getGoalCurrentAmount(goal);
+    }
+    showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' into "' + goalName + '"!', 'success');
+  }
+
+  saveDB(true);
+  closeTransferAllowanceModal();
+  renderAllForCurrentPage();
+}
+
+function populateTxAllowanceSelect(selectedId){
+  var sel = document.getElementById('tx-allowance');
+  if(!sel) return;
+  var accounts = getActiveAllowanceAccounts();
+  var html = '<option value="">None (Personal Expense)</option>';
+  accounts.forEach(function(a){
+    var avail = computeAllowanceAvailable(a);
+    html += '<option value="' + escapeHtml(a.id) + '" ' + (a.id === selectedId ? 'selected' : '') + '>'
+      + escapeHtml(a.name) + ' (' + fmt(avail) + ' available)</option>';
+  });
+  sel.innerHTML = html;
+  if(selectedId) sel.value = selectedId;
+}
+
 function triggerImportFinancesJSON(){
   let fileInput = document.getElementById('wn-import-file-input');
   if(!fileInput){
@@ -6504,7 +6772,7 @@ function generateReportPDFContent(month, year) {
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; margin-bottom:3px;">
                       <span style="font-weight:600; color:#1E293B;">${escapeHtml(cat.category)}</span>
                       <div>
-                        <span style="font-family:'JetBrains Mono',monospace; font-weight:700; color:#0F172A;">${fmtMoney(cat.actual)}</span>
+                        <span style="font-family:var(--font-mono); font-weight:700; color:#0F172A;">${fmtMoney(cat.actual)}</span>
                         <span style="color:#64748B; font-size:10px; margin-left:4px;">(${pct}%)</span>
                       </div>
                     </div>
@@ -6531,7 +6799,7 @@ function generateReportPDFContent(month, year) {
                     <span style="width:8px; height:8px; border-radius:50%; background:#E11D48;"></span>
                     <span style="font-size:11px; color:#334155; font-weight:500;">Living Expenses</span>
                   </div>
-                  <strong style="font-family:'JetBrains Mono',monospace; font-size:11px;">${expenseRatio}%</strong>
+                  <strong style="font-family:var(--font-mono); font-size:11px;">${expenseRatio}%</strong>
                 </div>
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#FAFBFD; border:1px solid #F1F5F9; border-radius:8px;">
@@ -6539,7 +6807,7 @@ function generateReportPDFContent(month, year) {
                     <span style="width:8px; height:8px; border-radius:50%; background:#0D9488;"></span>
                     <span style="font-size:11px; color:#334155; font-weight:500;">Savings Goals</span>
                   </div>
-                  <strong style="font-family:'JetBrains Mono',monospace; font-size:11px;">${savingsRate}%</strong>
+                  <strong style="font-family:var(--font-mono); font-size:11px;">${savingsRate}%</strong>
                 </div>
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#FAFBFD; border:1px solid #F1F5F9; border-radius:8px;">
@@ -6547,7 +6815,7 @@ function generateReportPDFContent(month, year) {
                     <span style="width:8px; height:8px; border-radius:50%; background:#7C3AED;"></span>
                     <span style="font-size:11px; color:#334155; font-weight:500;">Retained Reserves</span>
                   </div>
-                  <strong style="font-family:'JetBrains Mono',monospace; font-size:11px;">${Math.max(0, 100 - expenseRatio - savingsRate)}%</strong>
+                  <strong style="font-family:var(--font-mono); font-size:11px;">${Math.max(0, 100 - expenseRatio - savingsRate)}%</strong>
                 </div>
               </div>
             </div>
@@ -6567,15 +6835,15 @@ function generateReportPDFContent(month, year) {
         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px 16px;">
           <div>
             <div style="font-size:10px; text-transform:uppercase; color:#64748B; font-weight:700;">Total Transactions</div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#0F172A; margin-top:2px;">${txsInMonth.length} Records</div>
+            <div style="font-family:var(--font-mono); font-size:15px; font-weight:700; color:#0F172A; margin-top:2px;">${txsInMonth.length} Records</div>
           </div>
           <div>
             <div style="font-size:10px; text-transform:uppercase; color:#64748B; font-weight:700;">Active Budgets</div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#0F172A; margin-top:2px;">${monthBudgets.length} Targets</div>
+            <div style="font-family:var(--font-mono); font-size:15px; font-weight:700; color:#0F172A; margin-top:2px;">${monthBudgets.length} Targets</div>
           </div>
           <div>
             <div style="font-size:10px; text-transform:uppercase; color:#64748B; font-weight:700;">Savings Target Status</div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#0D9488; margin-top:2px;">${goals.length} Goals Active</div>
+            <div style="font-family:var(--font-mono); font-size:15px; font-weight:700; color:#0D9488; margin-top:2px;">${goals.length} Goals Active</div>
           </div>
         </div>
       </div>
@@ -6754,7 +7022,7 @@ function generateReportPDFContent(month, year) {
                   <td>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; font-size:10px;">
                       <span class="badge ${badgeClass}">${badgeText}</span>
-                      <strong style="font-family:'JetBrains Mono',monospace;">${pct}%</strong>
+                      <strong style="font-family:var(--font-mono);">${pct}%</strong>
                     </div>
                     <div style="height:5px; background:#F1F5F9; border-radius:3px; overflow:hidden;">
                       <div style="width:${Math.min(100, pct)}%; height:100%; background:${barColor}; border-radius:3px;"></div>
@@ -6837,7 +7105,7 @@ function generateReportPDFContent(month, year) {
                   <td>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; font-size:10px;">
                       <span class="badge ${isCompleted ? 'badge-ok' : 'badge-savings'}">${isCompleted ? 'Completed' : pct + '% Funded'}</span>
-                      <strong style="font-family:'JetBrains Mono',monospace;">${fmtMoney(target - current)} left</strong>
+                      <strong style="font-family:var(--font-mono);">${fmtMoney(target - current)} left</strong>
                     </div>
                     <div style="height:6px; background:#F1F5F9; border-radius:3px; overflow:hidden;">
                       <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #0D9488, #10B981); border-radius:3px;"></div>
@@ -9187,6 +9455,7 @@ function openTxModal(editId = null){
 
       const payVals = tx.paymentMethod ? tx.paymentMethod.split(',').map(s => s.trim()).filter(Boolean) : ['Cash'];
       renderModalPaymentMethods(payVals);
+      populateTxAllowanceSelect(tx.allowanceId || '');
 
       const savingInEl = document.getElementById('tx-saving-in');
       if(savingInEl) savingInEl.value = tx.savingIn || 'Bank Account';
@@ -9206,6 +9475,7 @@ function openTxModal(editId = null){
   setTxType('expense');
   renderModalSubcategories([]);
   renderModalPaymentMethods(['Cash']);
+  populateTxAllowanceSelect('');
   const savingInEl = document.getElementById('tx-saving-in');
   if(savingInEl) savingInEl.value = 'Bank Account';
 }
@@ -9267,6 +9537,16 @@ function setTxType(t){
     if(savingInWrap) savingInWrap.classList.add('hidden');
     if(catRow) catRow.style.gridTemplateColumns = '1fr';
     if(catFieldWrap) catFieldWrap.style.gridColumn = '1 / -1';
+  }
+
+  const allwWrap = document.getElementById('tx-allowance-field-wrap');
+  if(t === 'expense'){
+    if(allwWrap) allwWrap.classList.remove('hidden');
+    populateTxAllowanceSelect(document.getElementById('tx-allowance')?.value || '');
+  } else {
+    if(allwWrap) allwWrap.classList.add('hidden');
+    const allwSel = document.getElementById('tx-allowance');
+    if(allwSel) allwSel.value = '';
   }
 
   onTxCategoryChange();
@@ -9337,6 +9617,7 @@ function handleSaveTransaction(e){
         description: descVal,
         paymentMethod: payVal,
         savingIn: savingInVal,
+        allowanceId: (txType === 'expense' ? (document.getElementById('tx-allowance')?.value || undefined) : undefined),
         amount: amount
       };
       if(txType === 'expense'){
@@ -9357,6 +9638,7 @@ function handleSaveTransaction(e){
       description: descVal,
       paymentMethod: payVal,
       savingIn: savingInVal,
+      allowanceId: (txType === 'expense' ? (document.getElementById('tx-allowance')?.value || undefined) : undefined),
       amount: amount
     };
     if(txType === 'expense'){
@@ -12977,6 +13259,8 @@ window.addEventListener('keydown', (e) => {
     if (depositInvEl && !depositInvEl.classList.contains('hidden')) closeDepositInvestmentModal();
     const withdrawInvEl = document.getElementById('withdraw-investment-modal-backdrop');
     if (withdrawInvEl && !withdrawInvEl.classList.contains('hidden')) closeWithdrawInvestmentModal();
+    const transferAllwEl = document.getElementById('transfer-allowance-modal-backdrop');
+    if (transferAllwEl && !transferAllwEl.classList.contains('hidden')) closeTransferAllowanceModal();
     const allwModalEl = document.getElementById('allowance-modal-backdrop');
     if (allwModalEl && !allwModalEl.classList.contains('hidden')) closeAllowanceModal();
     const authEl = document.getElementById('auth-modal-backdrop');
@@ -13004,6 +13288,7 @@ window.addEventListener('resize', () => {
   }
 });
 
+sanitizePaymentMethods();
 initSidebar();
 injectLogos();
 
