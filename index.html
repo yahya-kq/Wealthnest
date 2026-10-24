@@ -1019,6 +1019,7 @@
   }
   .grid-investments{display:grid; grid-template-columns:1fr; gap:16px;}
   @media(min-width:992px){.grid-investments{grid-template-columns:1.8fr 1.2fr;}}
+  @media(max-width:768px){.grid-inv-sub{grid-template-columns:1fr !important;}}
   .sim-input-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   @media(max-width:540px){.sim-input-grid{grid-template-columns:1fr; gap:10px;}}
   @media(max-width:639px){
@@ -1613,6 +1614,9 @@
       </div>
 
       <!-- High-level Overview Grid -->
+      <!-- Company Benefits & Allowances Live Quota Tracker -->
+      <div id="allowance-tracker-widget" class="mb-4 hidden"></div>
+
       <!-- High-level Overview Grid -->
       <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
         <div class="card" style="padding:20px;">
@@ -1784,6 +1788,10 @@
           <div class="chip-row" id="tx-filter-chips"></div>
           <div class="transaction-top-actions">
             <input type="text" id="tx-search" placeholder="Search category or note..." class="field-input" style="width:210px; max-width:240px; height:36px;" oninput="renderTransactions()">
+            <button onclick="downloadTransactionsExcel()" class="btn-ghost" id="btn-export-excel" style="height:36px; padding:0 14px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-size:13px; border:1px solid var(--line);" title="Export filtered transactions as Excel-compatible CSV">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Export Excel
+            </button>
             <button onclick="openTxModal()" class="btn-primary" style="height:36px; padding:0 18px; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;">+ Add Transaction</button>
           </div>
         </div>
@@ -1986,153 +1994,12 @@
         </div>
       </div>
 
-      <!-- Main Layout: Outcome Simulator (Left) & Allocation + Milestones (Right) -->
-      <div class="grid-investments mb-4">
-        
-        <!-- Interactive Outcome Forecast Simulator -->
-        <div class="card" style="padding:22px;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:12px; flex-wrap:wrap;">
-            <div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <h2 class="section-title" style="margin:0;">Outcome Projection</h2>
-                <span class="badge" style="background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">Future Value</span>
-              </div>
-              <p class="text-xs muted" style="margin:4px 0 0;">Optional compound growth simulator • Real portfolio records below</p>
-            </div>
-            <button type="button" onclick="syncSimWithPortfolio()" class="btn-ghost btn-small" style="font-size:11.5px; padding:4px 10px;" title="Auto-fills calculator with your active holdings total">
-              Use My Holdings
-            </button>
-          </div>
-
-          <!-- Highlight Result Banner -->
-          <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(2,132,199,0.06) 100%); border:1px solid rgba(16,185,129,0.22); border-radius:14px; padding:18px 20px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-              <div>
-                <span class="text-xs uppercase muted" style="font-weight:700; letter-spacing:0.05em;" id="sim-horizon-title">Projected Wealth in 10 Years</span>
-                <div class="figure" id="sim-result-fv" style="font-size:32px; font-weight:700; color:var(--ink); margin-top:2px; line-height:1.1;">$0</div>
-              </div>
-              <div style="text-align:right;">
-                <span class="text-xs muted">Pure Wealth Created</span>
-                <div class="figure" id="sim-result-gain" style="font-size:20px; font-weight:700; color:var(--teal); margin-top:2px;">+$0</div>
-              </div>
-            </div>
-            
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; padding-top:12px; border-top:1px solid rgba(16,185,129,0.15); font-size:12px;">
-              <div>
-                <span class="muted text-xs">Total Principal:</span>
-                <strong class="figure" id="sim-result-principal" style="display:block; font-size:13.5px; margin-top:1px;">$0</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Projected Gain:</span>
-                <strong class="figure" id="sim-result-pure-gain" style="display:block; font-size:13.5px; margin-top:1px; color:var(--teal);">+$0</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Expected Return Rate:</span>
-                <strong class="figure" id="sim-result-rate" style="display:block; font-size:13.5px; margin-top:1px; color:var(--ink);">10.0% / yr</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Passive Income (4%):</span>
-                <strong class="figure" id="sim-result-passive" style="display:block; font-size:13.5px; margin-top:1px; color:#059669;">$0/mo</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- Simulator Interactive Sliders & Inputs -->
-          <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:20px;">
-            <!-- Row 1: Starting Capital & Monthly Contribution -->
-            <div class="sim-input-grid">
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <label class="field-label" style="margin:0; font-size:12px;">Starting Capital</label>
-                  <span class="figure" id="sim-disp-principal" style="font-size:12px; font-weight:700; color:var(--primary);">$0</span>
-                </div>
-                <input type="number" min="0" step="100" id="sim-input-principal" class="field-input figure" value="0" oninput="onSimInputChange('principal', this.value)">
-              </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <label class="field-label" style="margin:0; font-size:12px;">Monthly Addition (Optional Planner)</label>
-                  <span class="figure" id="sim-disp-monthly" style="font-size:12px; font-weight:700; color:var(--teal);">$0/mo</span>
-                </div>
-                <input type="number" min="0" step="25" id="sim-input-monthly" class="field-input figure" value="0" oninput="onSimInputChange('monthly', this.value)">
-              </div>
-            </div>
-
-            <!-- Row 2: Expected Return Rate Slider + Quick Preset Pills -->
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="field-label" style="margin:0; font-size:12px;">Expected Annual Return Rate</label>
-                <span class="figure" id="sim-disp-rate" style="font-size:13px; font-weight:700; color:var(--ink);">10.0% / yr</span>
-              </div>
-              <input type="range" min="1" max="25" step="0.5" id="sim-slider-rate" value="10" class="wealth-range-slider" oninput="onSimInputChange('rate', this.value)">
-              <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
-                <button type="button" class="btn-chip" id="preset-rate-6" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(6.0)">Safe / Bank (6%)</button>
-                <button type="button" class="btn-chip active" id="preset-rate-10" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(10.0)">Balanced (10%)</button>
-                <button type="button" class="btn-chip" id="preset-rate-14" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(14.0)">PSX Stocks (14%)</button>
-                <button type="button" class="btn-chip" id="preset-rate-18" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(18.0)">High Growth (18%)</button>
-              </div>
-            </div>
-
-            <!-- Row 3: Horizon Selector Pills -->
-            <div>
-              <label class="field-label" style="margin-bottom:6px; font-size:12px;">Time Horizon</label>
-              <div style="display:flex; gap:6px; flex-wrap:wrap;" id="sim-horizon-chips">
-                <button type="button" class="btn-chip" id="horizon-chip-1" onclick="setSimHorizon(1)">1 Year</button>
-                <button type="button" class="btn-chip" id="horizon-chip-2" onclick="setSimHorizon(2)">2 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-3" onclick="setSimHorizon(3)">3 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-5" onclick="setSimHorizon(5)">5 Years</button>
-                <button type="button" class="btn-chip active" id="horizon-chip-10" onclick="setSimHorizon(10)">10 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-15" onclick="setSimHorizon(15)">15 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-20" onclick="setSimHorizon(20)">20 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-30" onclick="setSimHorizon(30)">30 Years</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dynamic Area Chart -->
-          <div style="min-height:270px; position:relative;">
-            <canvas id="investment-projection-chart"></canvas>
-            <div id="sim-chart-empty" style="display:none; min-height:270px; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; border:1px dashed var(--line); border-radius:12px; background:var(--surface-2);">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted); margin-bottom:8px;"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-              <p style="margin:0 0 4px; font-weight:600; font-size:13.5px; color:var(--ink);">No Investment Projections Yet</p>
-              <p class="text-xs muted" style="margin:0; max-width:300px;">Add assets to your portfolio or enter a starting capital above to project compound wealth growth.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Column: Asset Allocation + Milestones -->
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          
-          <!-- Asset Allocation Donut -->
-          <div class="card" style="padding:22px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <h2 class="section-title" style="margin:0;">Asset Allocation</h2>
-              <span class="text-xs muted" id="inv-allocation-total"></span>
-            </div>
-            <div style="height:190px; position:relative; display:flex; align-items:center; justify-content:center;">
-              <canvas id="asset-allocation-chart"></canvas>
-            </div>
-            <div id="asset-allocation-legend" style="margin-top:14px; display:flex; flex-direction:column; gap:6px;"></div>
-          </div>
-
-          <!-- Milestone Roadmap Card -->
-          <div class="card" style="padding:22px;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-              <h2 class="section-title" style="margin:0;">Wealth Milestones</h2>
-              <span class="badge" style="font-size:10px; padding:1px 6px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line);">Projected</span>
-            </div>
-            <p class="text-xs muted" style="margin:0 0 12px;">Timeline to reach portfolio milestones at current rate:</p>
-            <div id="inv-milestones-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Bottom: Asset Holdings & Performance Table -->
-      <div class="card" style="padding:22px;">
+      <!-- Main Portfolio Section (Front & Center) -->
+      <div class="card mb-4" style="padding:22px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
           <div>
             <h2 class="section-title" style="margin:0;">Asset Portfolio &amp; Trades</h2>
-            <p class="text-xs muted" style="margin:4px 0 0;">Tracked holdings and realized sale records</p>
+            <p class="text-xs muted" style="margin:4px 0 0;">Tracked holdings, recurring pension funds, and realized sale records</p>
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <div style="display:flex; gap:5px; background:var(--surface-2); padding:3px; border-radius:8px; border:1px solid var(--line-soft);" id="inv-holding-view-tabs">
@@ -2163,6 +2030,155 @@
           </table>
         </div>
         <div id="inv-holdings-empty" style="display:none; text-align:center; padding:36px 16px;"></div>
+      </div>
+
+      <!-- Mid Row: Asset Allocation (Left) & Wealth Milestones (Right) -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;" class="grid-inv-sub">
+        <!-- Asset Allocation Donut -->
+        <div class="card" style="padding:22px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 class="section-title" style="margin:0;">Asset Allocation</h2>
+            <span class="text-xs muted" id="inv-allocation-total"></span>
+          </div>
+          <div style="height:190px; position:relative; display:flex; align-items:center; justify-content:center;">
+            <canvas id="asset-allocation-chart"></canvas>
+          </div>
+          <div id="asset-allocation-legend" style="margin-top:14px; display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+
+        <!-- Milestone Roadmap Card -->
+        <div class="card" style="padding:22px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <h2 class="section-title" style="margin:0;">Wealth Milestones</h2>
+            <span class="badge" style="font-size:10px; padding:1px 6px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line);">Projected</span>
+          </div>
+          <p class="text-xs muted" style="margin:0 0 12px;">Timeline to reach portfolio milestones at current rate:</p>
+          <div id="inv-milestones-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Collapsible Outcome Projection Simulator Card -->
+      <div class="card" style="padding:20px 22px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h2 class="section-title" style="margin:0;">Outcome Projections &amp; Growth Simulator</h2>
+              <span class="badge" style="background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">Future Value</span>
+            </div>
+            <p class="text-xs muted" style="margin:4px 0 0;">Optional compound growth modeler • Test scenarios and project 1–30 year horizons</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" onclick="syncSimWithPortfolio()" class="btn-ghost btn-small" style="font-size:11.5px; padding:5px 11px;" title="Auto-fills calculator with your active holdings total">
+              Use My Holdings
+            </button>
+            <button type="button" id="btn-toggle-sim" onclick="toggleSimDrawer()" class="btn-primary btn-small" style="font-size:11.5px; padding:5px 12px; display:inline-flex; align-items:center; gap:5px;">
+              <span id="btn-toggle-sim-label">Show Simulator</span>
+              <svg id="btn-toggle-sim-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible Simulator Drawer -->
+        <div id="inv-sim-drawer" class="hidden" style="margin-top:18px; padding-top:18px; border-top:1px solid var(--line-soft);">
+          <!-- Highlight Result Banner -->
+          <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(2,132,199,0.06) 100%); border:1px solid rgba(16,185,129,0.22); border-radius:14px; padding:18px 20px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+              <div>
+                <span class="text-xs uppercase muted" style="font-weight:700; letter-spacing:0.05em;" id="sim-horizon-title">Projected Wealth in 10 Years</span>
+                <div class="figure" id="sim-result-fv" style="font-size:32px; font-weight:700; color:var(--ink); margin-top:2px; line-height:1.1;">$0</div>
+              </div>
+              <div style="text-align:right;">
+                <span class="text-xs muted">Pure Wealth Created</span>
+                <div class="figure" id="sim-result-gain" style="font-size:20px; font-weight:700; color:var(--teal); margin-top:2px;">+$0</div>
+              </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; padding-top:12px; border-top:1px solid rgba(16,185,129,0.15); font-size:12px;">
+              <div>
+                <span class="muted text-xs">Total Principal:</span>
+                <strong class="figure" id="sim-result-principal" style="display:block; font-size:13.5px; margin-top:1px;">$0</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Projected Gain:</span>
+                <strong class="figure" id="sim-result-pure-gain" style="display:block; font-size:13.5px; margin-top:1px; color:var(--teal);">+$0</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Expected Return Rate:</span>
+                <strong class="figure" id="sim-result-rate" style="display:block; font-size:13.5px; margin-top:1px; color:var(--ink);">10.0% / yr</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Return Multiple:</span>
+                <strong class="figure" id="sim-result-multiple" style="display:block; font-size:13.5px; margin-top:1px; color:var(--primary);">1.0x Return</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Doubling Time:</span>
+                <strong class="figure" id="sim-result-doubling" style="display:block; font-size:13.5px; margin-top:1px; color:var(--ink);">N/A</strong>
+              </div>
+              <div>
+                <span class="muted text-xs">Passive Income (4%):</span>
+                <strong class="figure" id="sim-result-passive" style="display:block; font-size:13.5px; margin-top:1px; color:#059669;">$0/mo</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulator Interactive Sliders & Inputs -->
+          <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:20px;">
+            <div class="sim-input-grid">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <label class="field-label" style="margin:0; font-size:12px;">Starting Capital</label>
+                  <span class="figure" id="sim-disp-principal" style="font-size:12px; font-weight:700; color:var(--primary);">$0</span>
+                </div>
+                <input type="number" min="0" step="100" id="sim-input-principal" class="field-input figure" value="0" oninput="onSimInputChange('principal', this.value)">
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <label class="field-label" style="margin:0; font-size:12px;">Monthly Addition (Optional Planner)</label>
+                  <span class="figure" id="sim-disp-monthly" style="font-size:12px; font-weight:700; color:var(--teal);">$0/mo</span>
+                </div>
+                <input type="number" min="0" step="25" id="sim-input-monthly" class="field-input figure" value="0" oninput="onSimInputChange('monthly', this.value)">
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="field-label" style="margin:0; font-size:12px;">Expected Annual Return Rate</label>
+                <span class="figure" id="sim-disp-rate" style="font-size:13px; font-weight:700; color:var(--ink);">10.0% / yr</span>
+              </div>
+              <input type="range" min="1" max="25" step="0.5" id="sim-slider-rate" value="10" class="wealth-range-slider" oninput="onSimInputChange('rate', this.value)">
+              <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                <button type="button" class="btn-chip" id="preset-rate-6" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(6.0)">Safe / Bank (6%)</button>
+                <button type="button" class="btn-chip active" id="preset-rate-10" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(10.0)">Balanced (10%)</button>
+                <button type="button" class="btn-chip" id="preset-rate-14" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(14.0)">PSX Stocks (14%)</button>
+                <button type="button" class="btn-chip" id="preset-rate-18" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(18.0)">High Growth (18%)</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label" style="margin-bottom:6px; font-size:12px;">Time Horizon</label>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;" id="sim-horizon-chips">
+                <button type="button" class="btn-chip" id="horizon-chip-1" onclick="setSimHorizon(1)">1 Year</button>
+                <button type="button" class="btn-chip" id="horizon-chip-2" onclick="setSimHorizon(2)">2 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-3" onclick="setSimHorizon(3)">3 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-5" onclick="setSimHorizon(5)">5 Years</button>
+                <button type="button" class="btn-chip active" id="horizon-chip-10" onclick="setSimHorizon(10)">10 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-15" onclick="setSimHorizon(15)">15 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-20" onclick="setSimHorizon(20)">20 Years</button>
+                <button type="button" class="btn-chip" id="horizon-chip-30" onclick="setSimHorizon(30)">30 Years</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Area Chart -->
+          <div style="min-height:270px; position:relative;">
+            <canvas id="investment-projection-chart"></canvas>
+            <div id="sim-chart-empty" style="display:none; min-height:270px; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; border:1px dashed var(--line); border-radius:12px; background:var(--surface-2);">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted); margin-bottom:8px;"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              <p style="margin:0 0 4px; font-weight:600; font-size:13.5px; color:var(--ink);">No Investment Projections Yet</p>
+              <p class="text-xs muted" style="margin:0; max-width:300px;">Add assets to your portfolio or enter a starting capital above to project compound wealth growth.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2286,6 +2302,8 @@
           <div id="activity-log"></div>
         </div>
       </div>
+
+      <div id="settings-allowances" class="hidden"></div>
 
       <div id="settings-recycle" class="hidden">
         <div class="card" style="padding:22px;">
@@ -2512,6 +2530,45 @@
   </div>
 </div>
 
+<!-- Goal Contributions History & Edit Modal -->
+<div id="goal-contributions-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeGoalContributionsModal()">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeGoalContributionsModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(20,184,166,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Savings Contributions</h2>
+        <p id="goal-contrib-subtitle" class="text-xs muted" style="margin:2px 0 0;">View, edit, or adjust contribution records</p>
+      </div>
+    </div>
+
+    <!-- Live Goal Status Summary Card -->
+    <div id="goal-contrib-summary-card" style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+        <span class="text-xs muted" id="goal-contrib-name" style="font-weight:600;"></span>
+        <span class="figure" id="goal-contrib-saved-figure" style="font-size:15px; font-weight:700; color:var(--teal);"></span>
+      </div>
+      <div class="progress-track" style="height:7px; margin-bottom:6px;"><div id="goal-contrib-progress-bar" class="progress-fill fill-teal" style="width:0%;"></div></div>
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted);">
+        <span id="goal-contrib-target-figure"></span>
+        <span id="goal-contrib-remaining-figure"></span>
+      </div>
+    </div>
+
+    <!-- Contributions List Container -->
+    <div style="max-height:280px; overflow-y:auto; margin-bottom:16px;">
+      <div id="goal-contrib-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid var(--line-soft);">
+      <span class="text-xs muted" id="goal-contrib-count">0 records</span>
+      <button type="button" onclick="closeGoalContributionsModal()" class="btn-dark" style="padding:6px 16px; font-size:12.5px;">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="rollover-goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeRolloverGoalModal()">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeRolloverGoalModal()" aria-label="Close">✕</button>
@@ -2633,10 +2690,11 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
           <label class="field-label" for="inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
-          <select id="inv-type" class="field-input" required>
+          <select id="inv-type" class="field-input" required onchange="onInvTypeChange(this.value)">
             <option value="Stocks">Stocks / Equities</option>
             <option value="ETFs & Index Funds" selected>ETFs &amp; Index Funds</option>
             <option value="Crypto">Crypto</option>
+            <option value="Provident Fund / VPS">Provident Fund / VPS</option>
             <option value="Real Estate">Real Estate</option>
             <option value="Bonds / Fixed Income">Bonds / Fixed Income</option>
             <option value="Gold & Commodities">Gold &amp; Commodities</option>
@@ -2647,6 +2705,25 @@
         <div>
           <label class="field-label" for="inv-location">Platform / Vault</label>
           <input type="text" id="inv-location" placeholder="e.g. Fidelity, Binance, Bank" class="field-input" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Provident Fund / VPS Specific Settings (Shown when VPS is selected) -->
+      <div id="inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <strong style="font-size:12.5px; color:var(--ink);">Employer Matching Scheme</strong>
+        </div>
+        <p class="text-xs muted" style="margin:0 0 10px; line-height:1.4;">Automatic 1:1 or custom match when you log monthly contributions.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label class="field-label" for="inv-vps-deduction-pct">Your Cut (%)</label>
+            <input type="number" min="0" max="100" step="0.5" id="inv-vps-deduction-pct" value="10" placeholder="10" class="field-input figure">
+          </div>
+          <div>
+            <label class="field-label" for="inv-vps-match-pct">Employer Match (%)</label>
+            <input type="number" min="0" max="200" step="1" id="inv-vps-match-pct" value="100" placeholder="100" class="field-input figure">
+          </div>
         </div>
       </div>
 
@@ -2701,10 +2778,11 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
           <label class="field-label" for="edit-inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
-          <select id="edit-inv-type" class="field-input" required>
+          <select id="edit-inv-type" class="field-input" required onchange="onEditInvTypeChange(this.value)">
             <option value="Stocks">Stocks / Equities</option>
             <option value="ETFs & Index Funds">ETFs &amp; Index Funds</option>
             <option value="Crypto">Crypto</option>
+            <option value="Provident Fund / VPS">Provident Fund / VPS</option>
             <option value="Real Estate">Real Estate</option>
             <option value="Bonds / Fixed Income">Bonds / Fixed Income</option>
             <option value="Gold & Commodities">Gold &amp; Commodities</option>
@@ -2715,6 +2793,25 @@
         <div>
           <label class="field-label" for="edit-inv-location">Platform / Vault</label>
           <input type="text" id="edit-inv-location" class="field-input" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Provident Fund / VPS Specific Settings (Shown when VPS is selected) -->
+      <div id="edit-inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <strong style="font-size:12.5px; color:var(--ink);">Employer Matching Scheme</strong>
+        </div>
+        <p class="text-xs muted" style="margin:0 0 10px; line-height:1.4;">Automatic 1:1 or custom match when you log monthly contributions.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label class="field-label" for="edit-inv-vps-deduction-pct">Your Cut (%)</label>
+            <input type="number" min="0" max="100" step="0.5" id="edit-inv-vps-deduction-pct" value="10" placeholder="10" class="field-input figure">
+          </div>
+          <div>
+            <label class="field-label" for="edit-inv-vps-match-pct">Employer Match (%)</label>
+            <input type="number" min="0" max="200" step="1" id="edit-inv-vps-match-pct" value="100" placeholder="100" class="field-input figure">
+          </div>
         </div>
       </div>
 
@@ -2807,6 +2904,114 @@
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeSellInvestmentModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary" style="background:var(--teal); border-color:var(--teal);">Confirm Sale</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Log Deposit / Recurring Contribution Modal -->
+<div id="deposit-investment-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeDepositInvestmentModal()">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" onclick="closeDepositInvestmentModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(99,102,241,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <div>
+        <h2 id="deposit-inv-modal-title" style="margin:0; font-size:18px;">Log Monthly Deposit</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;">Add capital or recurring contributions to your asset</p>
+      </div>
+    </div>
+
+    <!-- Asset Summary Card -->
+    <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <span class="text-xs muted">Asset</span>
+        <strong id="deposit-inv-name" style="font-size:13.5px; color:var(--ink);"></strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <span class="text-xs muted">Current Invested Cost</span>
+        <span class="figure" id="deposit-inv-current-cost" style="font-size:13px; font-weight:600;"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="text-xs muted">Current Valuation</span>
+        <span class="figure" id="deposit-inv-current-val" style="font-size:13px; font-weight:600; color:var(--primary);"></span>
+      </div>
+    </div>
+
+    <!-- VPS / Provident Fund 1-Click Salary Calculator (Shown only for VPS) -->
+    <div id="deposit-vps-calc-box" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span style="font-size:12.5px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px;">
+          ⚡ 1-Click Salary Deduction
+        </span>
+        <span class="badge" style="background:rgba(99,102,241,0.15); color:var(--primary); font-size:10.5px;" id="deposit-vps-scheme-badge">10% + 100% Match</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:flex-end; margin-bottom:8px;">
+        <div>
+          <label class="field-label" for="deposit-vps-salary-input" style="font-size:11px;">Enter Monthly Base Salary</label>
+          <input type="number" min="0" step="any" id="deposit-vps-salary-input" placeholder="e.g. 80000" class="field-input figure" oninput="calculateVpsDepositFromSalary()">
+        </div>
+        <button type="button" class="btn-dark btn-small" onclick="applyVpsSalaryCalculation()" style="height:36px; padding:0 12px; font-size:11.5px; white-space:nowrap;">Auto-Apply</button>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; background:var(--surface); border-radius:7px; padding:8px 10px; font-size:11px; border:1px solid var(--line-soft);">
+        <div>
+          <span class="muted" style="display:block;">Your Cut:</span>
+          <strong id="deposit-vps-calc-employee" class="figure text-ink">0</strong>
+        </div>
+        <div>
+          <span class="muted" style="display:block;">Employer Match:</span>
+          <strong id="deposit-vps-calc-match" class="figure" style="color:var(--teal);">+0</strong>
+        </div>
+        <div>
+          <span class="muted" style="display:block;">Total Inflow:</span>
+          <strong id="deposit-vps-calc-total" class="figure" style="color:var(--primary);">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <form onsubmit="handleConfirmDepositInvestment(event)">
+      <input type="hidden" id="deposit-inv-id">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" id="deposit-inv-amount-label" for="deposit-inv-amount">Your Deposit (Cost) <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="deposit-inv-amount" class="field-input figure" required oninput="updateDepositTotalPreview()">
+        </div>
+        <div id="deposit-inv-match-wrap">
+          <label class="field-label" id="deposit-inv-match-label" for="deposit-inv-match">Employer Match (Value Added)</label>
+          <input type="number" min="0" step="any" id="deposit-inv-match" value="0" class="field-input figure" oninput="updateDepositTotalPreview()">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="deposit-inv-date">Deposit Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="deposit-inv-date" class="field-input figure" required>
+        </div>
+        <div>
+          <label class="field-label" id="deposit-inv-new-val-label" for="deposit-inv-new-val">New Total Valuation <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="deposit-inv-new-val" class="field-input figure" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label class="field-label" for="deposit-inv-notes">Note / Month Reference (optional)</label>
+        <input type="text" id="deposit-inv-notes" placeholder="e.g. October 2026 Contribution" class="field-input">
+      </div>
+
+      <!-- Sync Transaction Checkbox -->
+      <div style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:16px;">
+        <input type="checkbox" id="deposit-inv-sync-tx" checked style="width:16px; height:16px; margin-top:2px; cursor:pointer;">
+        <label for="deposit-inv-sync-tx" style="font-size:12px; cursor:pointer; margin:0; line-height:1.4;">
+          <strong>Record your deposit in Transactions as Expense</strong>
+          <span class="text-xs muted" style="display:block;">Only debits your out-of-pocket amount from personal cash. Employer match adds 100% free equity.</span>
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeDepositInvestmentModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Confirm Deposit</button>
       </div>
     </form>
   </div>
@@ -2907,6 +3112,67 @@
       <button type="button" class="btn-ghost" onclick="closeDeleteAccountModal()">Cancel</button>
       <button type="button" id="confirm-delete-account-btn" class="btn-primary" style="background:var(--rose); box-shadow:0 4px 12px rgba(225,29,72,0.3);" onclick="handleConfirmDeleteAccount()">Permanently Delete Account</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ ALLOWANCE MODAL ============ -->
+<div id="allowance-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeAllowanceModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeAllowanceModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:rgba(124,58,237,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:20px;">
+        💼
+      </div>
+      <div>
+        <h2 id="allowance-modal-title" style="margin:0; font-size:18px;">Company Benefit / Allowance</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;">Company-sponsored fuel cards, health insurance &amp; perks</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleSaveAllowance(event)">
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="allowance-name">Benefit / Card Name <span style="color:var(--rose);">*</span></label>
+        <input type="text" id="allowance-name" placeholder="e.g. Company Fuel Card" class="field-input" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="allowance-icon">Icon (Emoji)</label>
+          <input type="text" id="allowance-icon" placeholder="⛽, 🏥, or 📱" class="field-input">
+        </div>
+        <div>
+          <label class="field-label" for="allowance-color">Accent Color</label>
+          <input type="color" id="allowance-color" value="#7C3AED" class="field-input" style="height:38px; padding:2px; cursor:pointer;">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="allowance-limit">Allowance Limit <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="allowance-limit" placeholder="e.g. 20000" class="field-input figure" required>
+        </div>
+        <div>
+          <label class="field-label" for="allowance-period">Quota Period</label>
+          <select id="allowance-period" class="field-input">
+            <option value="month">Monthly Quota</option>
+            <option value="year">Annual Quota</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--surface-2); border-radius:8px; margin-bottom:16px;">
+        <input type="checkbox" id="allowance-active" checked style="width:16px; height:16px; cursor:pointer;">
+        <label for="allowance-active" style="font-size:12.5px; cursor:pointer; margin:0;">
+          <strong>Active Benefit</strong>
+          <span class="text-xs muted" style="display:block;">Available as payment method in transactions</span>
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn-ghost" onclick="closeAllowanceModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Benefit</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -3032,7 +3298,9 @@ const DEFAULT_INCOME_CATEGORIES = [
 ];
 const DEFAULT_SAVINGS_CATEGORIES = ["Emergency Fund", "Vacation Fund", "General Savings", "Monthly Savings", "Goal Savings", "Retirement Savings"];
 const DEFAULT_INVESTMENT_CATEGORIES = [
+  "Provident Fund / VPS",
   "PSX Stocks",
+  "ETFs & Index Funds",
   "Mutual Funds",
   "Gold & Commodities",
   "Crypto",
@@ -3642,7 +3910,12 @@ function buildSeed(){
     investments: [...DEFAULT_INVESTMENT_CATEGORIES],
   };
   const currency = DEFAULT_CURRENCY;
-  return { transactions, budgets, yearlyBudget, savingsGoals, investments, soldInvestments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[] };
+  const allowanceAccounts = [
+    { id: 'fuel-card', name: 'Company Fuel Card', limit: 20000, period: 'month', icon: '⛽', active: true, color: '#F59E0B' },
+    { id: 'health-ins', name: 'Health Insurance', limit: 50000, period: 'year', icon: '🏥', active: true, color: '#10B981' },
+    { id: 'mobile-allow', name: 'Mobile / Internet Allowance', limit: 5000, period: 'month', icon: '📱', active: true, color: '#6366F1' }
+  ];
+  return { transactions, budgets, yearlyBudget, savingsGoals, investments, soldInvestments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[], allowanceAccounts };
 }
 
 function mergeDefaultCategories(cats){
@@ -3699,6 +3972,16 @@ function ensureDemoBudgetData(){
   if(!Array.isArray(DB.paymentMethods) || !DB.paymentMethods.length){
     DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
   }
+  // Ensure allowance accounts exist (backward-compat migration)
+  if(!Array.isArray(DB.allowanceAccounts)){
+    DB.allowanceAccounts = [
+      { id: 'fuel-card', name: 'Company Fuel Card', limit: 20000, period: 'month', icon: '⛽', active: true, color: '#F59E0B' },
+      { id: 'health-ins', name: 'Health Insurance', limit: 50000, period: 'year', icon: '🏥', active: true, color: '#10B981' },
+      { id: 'mobile-allow', name: 'Mobile / Internet Allowance', limit: 5000, period: 'month', icon: '📱', active: true, color: '#6366F1' }
+    ];
+  }
+  // Migrate: add color if missing
+  (DB.allowanceAccounts || []).forEach(a => { if(!a.color) a.color = '#7C3AED'; if(a.name && !DB.paymentMethods.includes(a.name)) DB.paymentMethods.push(a.name); });
 }
 ensureDemoBudgetData();
 
@@ -4599,6 +4882,273 @@ function exportTransactionsCSV(){
   }
 }
 
+/* ============================================================
+   EXCEL EXPORT — Clean user-friendly format (Transactions toolbar)
+   ============================================================ */
+function downloadTransactionsExcel(){
+  try {
+    var txs = Array.isArray(DB.transactions) ? DB.transactions.slice() : [];
+    if (!txs.length) { showToast('No transactions to export', 'info'); return; }
+    txs.sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+    function csvEsc(v) {
+      var s = String(v===null||v===undefined ? '' : v).replace(/"/g, '""');
+      return (s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0) ? ('"'+s+'"') : s;
+    }
+    var allowanceMap = {};
+    (DB.allowanceAccounts||[]).forEach(function(a){ allowanceMap[a.id] = a.name; });
+    var headers = ['Date','Type','Category','Subcategory','Description / Note','Payment Method','Amount','Company Covered?'];
+    var rows = txs.map(function(t) {
+      var pm = t.allowanceId && allowanceMap[t.allowanceId] ? allowanceMap[t.allowanceId]
+        : (Array.isArray(t.paymentMethod) ? t.paymentMethod.join(', ') : (t.paymentMethod||''));
+      return [
+        csvEsc(t.date||''),
+        csvEsc(t.type ? t.type.charAt(0).toUpperCase()+t.type.slice(1) : ''),
+        csvEsc(t.category||''),
+        csvEsc(t.subcategory||t.subCategory||''),
+        csvEsc(t.note||''),
+        csvEsc(pm),
+        t.amount||0,
+        csvEsc(t.companyCovered ? 'Yes' : 'No')
+      ];
+    });
+    var BOM = '\uFEFF';
+    var csvContent = BOM + [headers.join(',')].concat(rows.map(function(r){ return r.join(','); })).join('\n');
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var dateStr = ymd(new Date());
+    a.href = url; a.download = 'WealthNest_Transactions_'+dateStr+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Exported '+txs.length+' transactions to Excel!');
+  } catch(e) { showToast('Export failed: '+e.message, 'error'); }
+}
+
+/* ============================================================
+   COMPANY BENEFITS & ALLOWANCES SYSTEM
+   ============================================================ */
+function getAllowanceAccounts(){ return Array.isArray(DB.allowanceAccounts) ? DB.allowanceAccounts : []; }
+function getActiveAllowanceAccounts(){ return getAllowanceAccounts().filter(function(a){ return a.active; }); }
+
+function getAllowanceMonthUsed(acc, month, year){
+  if(!acc) return 0;
+  var txs = DB.transactions || [];
+  if(acc.period === 'year'){
+    return txs.filter(function(t){ return t.companyCovered && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
+              .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
+  }
+  return txs.filter(function(t){ return t.companyCovered && t.allowanceId===acc.id && inMonth(t,month,year); })
+             .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
+}
+function getAllowanceYearUsed(acc, year){
+  if(!acc) return 0;
+  return (DB.transactions||[]).filter(function(t){ return t.companyCovered && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
+                              .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
+}
+function computeAllowanceAvailable(acc){
+  var now = new Date();
+  var used = acc.period==='year' ? getAllowanceYearUsed(acc,now.getFullYear()) : getAllowanceMonthUsed(acc,now.getMonth()+1,now.getFullYear());
+  return Math.max(0, (acc.limit||0)-used);
+}
+function calculateAllowanceSplit(acc, amount){
+  var available = computeAllowanceAvailable(acc);
+  var covered = Math.min(available, amount);
+  return { coveredAmount: covered, overflowAmount: amount-covered };
+}
+function processAllowanceForTransaction(txData){
+  var pmArr = typeof txData.paymentMethod === 'string' ? txData.paymentMethod.split(',').map(function(s){ return s.trim(); }) : (Array.isArray(txData.paymentMethod) ? txData.paymentMethod : [txData.paymentMethod||'']);
+  var acc = getAllowanceAccounts().find(function(a){
+    return a.active && pmArr.some(function(pm){ return pm.toLowerCase() === a.name.toLowerCase(); });
+  });
+  if(!acc) return txData;
+  var amount = txData.amount || 0;
+  var split = calculateAllowanceSplit(acc, amount);
+  if(split.coveredAmount <= 0){
+    showToast('Allowance quota (' + acc.name + ') is fully exhausted! Entire ' + fmt(amount) + ' marked as personal expense.', 'warning');
+    txData.companyCovered = false;
+    return txData;
+  }
+  txData.allowanceId = acc.id;
+  txData.companyCovered = true;
+  txData.companyCoveredAmount = split.coveredAmount;
+  txData.amount = split.coveredAmount;
+  if(split.overflowAmount > 0){
+    showToast('Allowance limit reached! ' + fmt(split.coveredAmount) + ' covered by company, ' + fmt(split.overflowAmount) + ' marked as personal expense.', 'info');
+    DB.transactions.unshift({
+      id: uid(), date: txData.date, type: 'expense',
+      category: txData.category,
+      subcategory: txData.subcategory||txData.subCategory||'',
+      subCategory: txData.subcategory||txData.subCategory||'',
+      paymentMethod: 'Cash',
+      description: '[Personal overflow from ' + acc.name + '] ' + (txData.description||txData.note||'').trim(),
+      note: '[Personal overflow from ' + acc.name + '] ' + (txData.description||txData.note||'').trim(),
+      amount: split.overflowAmount, companyCovered: false, createdAt: new Date().toISOString()
+    });
+  }
+  return txData;
+}
+
+function renderAllowancesSettings(){
+  var el = document.getElementById('settings-allowances');
+  if(!el) return;
+  var accounts = getAllowanceAccounts();
+  var now = new Date();
+  var m = now.getMonth()+1, y = now.getFullYear();
+  var cardsHtml = accounts.length ? accounts.map(function(acc){
+    var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
+    var pct = acc.limit > 0 ? Math.min(100,Math.round((used/acc.limit)*100)) : 0;
+    var isOver = used > acc.limit;
+    var isWarn = pct>=85 && !isOver;
+    var barColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : (acc.color||'var(--primary)'));
+    var statusText = isOver ? 'Over Limit!' : (isWarn ? 'Near Limit' : 'Within Quota');
+    var statusColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : 'var(--teal)');
+    var pLabel = acc.period==='year' ? 'annual' : 'monthly';
+    return '<div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:10px;">'
+      +'<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">'
+      +'<div style="display:flex; align-items:center; gap:12px;"><span style="font-size:26px;">'+escapeHtml(acc.icon||'&#128188;')+'</span>'
+      +'<div><div style="font-weight:700; font-size:14.5px;">'+escapeHtml(acc.name)+'</div>'
+      +'<div style="font-size:11.5px; color:var(--muted-2);">Limit: '+fmt(acc.limit)+' / '+pLabel+' &bull; <span style="color:'+statusColor+'; font-weight:600;">'+statusText+'</span></div></div></div>'
+      +'<div style="display:flex; align-items:center; gap:8px;">'
+      +'<label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--muted-2);">'
+      +'<input type="checkbox" '+(acc.active?'checked':'')+' onchange="toggleAllowanceActive(\''+acc.id+'\', this.checked)" style="width:15px; height:15px; cursor:pointer;">Active</label>'
+      +'<button onclick="openEditAllowanceModal(\''+acc.id+'\')" class="icon-btn icon-btn-edit" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+      +'<button onclick="deleteAllowanceAccount(\''+acc.id+'\')" class="icon-btn icon-btn-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
+      +'</div></div>'
+      +'<div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; margin-bottom:8px;">'
+      +'<div style="height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden;">'
+      +'<div style="width:'+pct+'%; height:100%; background:'+barColor+'; border-radius:6px; transition:width .4s;"></div></div>'
+      +'<div style="font-size:12px; font-weight:700; color:'+barColor+'; font-family:\'JetBrains Mono\',monospace;">'+pct+'%</div></div>'
+      +'<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px;">'
+      +'<div style="text-align:center; padding:8px; background:var(--surface-2); border-radius:8px;"><div style="font-size:10px; text-transform:uppercase; color:var(--muted-2); font-weight:600;">Used</div><div style="font-size:13px; font-weight:700; color:var(--rose); font-family:\'JetBrains Mono\',monospace;">'+fmt(used)+'</div></div>'
+      +'<div style="text-align:center; padding:8px; background:var(--surface-2); border-radius:8px;"><div style="font-size:10px; text-transform:uppercase; color:var(--muted-2); font-weight:600;">Remaining</div><div style="font-size:13px; font-weight:700; color:var(--teal); font-family:\'JetBrains Mono\',monospace;">'+fmt(Math.max(0,acc.limit-used))+'</div></div>'
+      +'<div style="text-align:center; padding:8px; background:var(--surface-2); border-radius:8px;"><div style="font-size:10px; text-transform:uppercase; color:var(--muted-2); font-weight:600;">Limit</div><div style="font-size:13px; font-weight:700; color:var(--ink); font-family:\'JetBrains Mono\',monospace;">'+fmt(acc.limit)+'<span style="font-size:10px; font-weight:400; color:var(--muted-2);"> /'+(acc.period==='year'?'yr':'mo')+'</span></div></div>'
+      +'</div></div>';
+  }).join('') : '<div style="text-align:center;padding:40px 20px;color:var(--muted-2);">'
+    +'<div style="font-size:36px;margin-bottom:12px;">&#128188;</div>'
+    +'<div style="font-weight:600;font-size:15px;color:var(--ink);margin-bottom:6px;">No Allowances Configured</div>'
+    +'<p style="font-size:13px;line-height:1.5;">Add benefits like Fuel Card, Health Insurance, or Mobile Allowance.</p>'
+    +'<button onclick="openAddAllowanceModal()" class="btn-primary" style="margin-top:16px;height:36px;padding:0 20px;">+ Add First Benefit</button></div>';
+
+  el.innerHTML = '<div class="card" style="padding:22px; margin-bottom:18px;">'
+    +'<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">'
+    +'<div><h2 class="section-title">Company Benefits &amp; Allowances</h2>'
+    +'<p class="text-xs muted" style="margin:4px 0 0;">Covered expenses do not reduce your personal balance or appear as income.</p></div>'
+    +'<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:34px;padding:0 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px;">'
+    +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Benefit</button></div>'
+    +'<div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);border-radius:10px;padding:14px 16px;margin:14px 0;">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">How Allowances Work</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">'
+    +'<div style="font-size:12px;color:var(--ink-2);"><strong>&#128179; Zero Income Distortion</strong><br>Company payments are NOT your cash. Personal salary is untouched.</div>'
+    +'<div style="font-size:12px;color:var(--ink-2);"><strong>&#128737; Zero Personal Drain</strong><br>Purchases within limit do not decrease your personal bank balance.</div>'
+    +'<div style="font-size:12px;color:var(--ink-2);"><strong>&#9888; Over-Limit Overflow</strong><br>If you exceed your limit, excess is logged as personal out-of-pocket.</div>'
+    +'</div></div>'
+    +'<div style="display:flex;flex-direction:column;gap:0;">'+cardsHtml+'</div></div>';
+}
+
+function renderAllowanceTrackerWidget(){
+  var container = document.getElementById('allowance-tracker-widget');
+  if(!container) return;
+  var accounts = getActiveAllowanceAccounts();
+  if(!accounts.length){ container.classList.add('hidden'); return; }
+  container.classList.remove('hidden');
+  var now = new Date();
+  var m = now.getMonth()+1, y = now.getFullYear();
+  var rows = accounts.map(function(acc){
+    var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
+    var available = Math.max(0,acc.limit-used);
+    var pct = acc.limit>0 ? Math.min(100,Math.round((used/acc.limit)*100)) : 0;
+    var isOver = used>acc.limit, isWarn = pct>=85&&!isOver;
+    var barColor = isOver?'var(--rose)':(isWarn?'#D97706':(acc.color||'var(--primary)'));
+    var badgeClass = isOver?'badge-over':(isWarn?'badge-warn':'badge-ok');
+    var badgeText = isOver?'Over Limit':(isWarn?'Near Limit':'On Track');
+    return '<div style="padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">'+escapeHtml(acc.icon||'&#128188;')+'</span>'
+      +'<span style="font-size:13px;font-weight:600;color:var(--ink);">'+escapeHtml(acc.name)+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;"><span class="badge '+badgeClass+'" style="font-size:10.5px;">'+badgeText+'</span>'
+      +'<span style="font-size:12px;font-family:\'JetBrains Mono\',monospace;color:var(--muted-2);">'+pct+'%</span></div></div>'
+      +'<div style="height:7px;background:var(--surface-2);border-radius:6px;overflow:hidden;margin-bottom:8px;">'
+      +'<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:6px;transition:width .5s;"></div></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted-2);">'
+      +'<span>Used: <strong style="color:var(--rose);">'+fmt(used)+'</strong></span>'
+      +'<span>Available: <strong style="color:var(--teal);">'+fmt(available)+'</strong></span>'
+      +'<span>Limit: <strong style="color:var(--ink);">'+fmt(acc.limit)+'/'+(acc.period==='year'?'yr':'mo')+'</strong></span></div></div>';
+  }).join('');
+  container.innerHTML = '<div class="card" style="padding:18px 20px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
+    +'<div><h3 class="section-title" style="margin:0 0 2px;">Company Benefits Tracker</h3>'
+    +'<p class="text-xs muted" style="margin:0;">Live quota usage &mdash; '+MONTH_NAMES[m-1]+' '+y+'</p></div>'
+    +'<span class="badge badge-ok" style="font-size:11px;">'+accounts.length+' Active</span></div>'
+    +'<div style="display:flex;flex-direction:column;gap:10px;">'+rows+'</div></div>';
+}
+
+var _editAllowanceId = null;
+function openAddAllowanceModal(){
+  _editAllowanceId = null;
+  document.getElementById('allowance-modal-title').textContent = 'Add Company Benefit / Allowance';
+  document.getElementById('allowance-name').value = '';
+  document.getElementById('allowance-icon').value = '';
+  document.getElementById('allowance-limit').value = '';
+  document.getElementById('allowance-period').value = 'month';
+  document.getElementById('allowance-color').value = '#7C3AED';
+  document.getElementById('allowance-active').checked = true;
+  document.getElementById('allowance-modal-backdrop').classList.remove('hidden');
+  setTimeout(function(){ var el=document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
+}
+function openEditAllowanceModal(id){
+  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  if(!acc) return;
+  _editAllowanceId = id;
+  document.getElementById('allowance-modal-title').textContent = 'Edit Benefit / Allowance';
+  document.getElementById('allowance-name').value = acc.name;
+  document.getElementById('allowance-icon').value = acc.icon||'';
+  document.getElementById('allowance-limit').value = acc.limit||'';
+  document.getElementById('allowance-period').value = acc.period||'month';
+  document.getElementById('allowance-color').value = acc.color||'#7C3AED';
+  document.getElementById('allowance-active').checked = acc.active!==false;
+  document.getElementById('allowance-modal-backdrop').classList.remove('hidden');
+  setTimeout(function(){ var el=document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
+}
+function closeAllowanceModal(){
+  document.getElementById('allowance-modal-backdrop').classList.add('hidden');
+}
+function handleSaveAllowance(e){
+  e.preventDefault();
+  var name = document.getElementById('allowance-name').value.trim();
+  var icon = document.getElementById('allowance-icon').value.trim() || '&#128179;';
+  var limit = parseFloat(document.getElementById('allowance-limit').value) || 0;
+  var period = document.getElementById('allowance-period').value;
+  var color = document.getElementById('allowance-color').value || '#7C3AED';
+  var active = document.getElementById('allowance-active').checked;
+  if(!name){ showToast('Please enter a name', 'error'); return; }
+  if(limit <= 0){ showToast('Please enter a valid limit', 'error'); return; }
+  if(!Array.isArray(DB.allowanceAccounts)) DB.allowanceAccounts = [];
+  if(_editAllowanceId){
+    var accE = DB.allowanceAccounts.find(function(a){ return a.id===_editAllowanceId; });
+    if(accE){ accE.name=name; accE.icon=icon; accE.limit=limit; accE.period=period; accE.color=color; accE.active=active; }
+  } else {
+    var newId = 'allw-'+Date.now().toString(36);
+    DB.allowanceAccounts.push({ id:newId, name:name, icon:icon, limit:limit, period:period, color:color, active:active });
+    if(!DB.paymentMethods) DB.paymentMethods = DEFAULT_PAYMENT_METHODS.slice();
+    if(DB.paymentMethods.indexOf(name) < 0) DB.paymentMethods.push(name);
+  }
+  saveDB();
+  closeAllowanceModal();
+  renderAllowancesSettings();
+  showToast((_editAllowanceId ? 'Updated' : 'Added')+' "'+name+'"');
+  _editAllowanceId = null;
+}
+function toggleAllowanceActive(id, active){
+  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  if(acc){ acc.active=active; saveDB(); renderAllowancesSettings(); }
+}
+function deleteAllowanceAccount(id){
+  if(!confirm('Delete this benefit/allowance? Existing transactions will not be affected.')) return;
+  DB.allowanceAccounts = (DB.allowanceAccounts||[]).filter(function(a){ return a.id!==id; });
+  saveDB();
+  renderAllowancesSettings();
+  showToast('Benefit deleted');
+}
 function triggerImportFinancesJSON(){
   let fileInput = document.getElementById('wn-import-file-input');
   if(!fileInput){
@@ -4927,7 +5477,15 @@ function inMonth(tx, month, year){
   const pd = parseTxDate(tx.date);
   return pd.month === month && pd.year === year;
 }
-function sumByType(txs, type){ return txs.filter(t=>t.type===type).reduce((s,t)=>s+t.amount,0); }
+function sumByType(txs, type){
+  if(type === 'expense'){
+    return txs.filter(t => t.type === type).reduce((s, t) => {
+      const covered = t.companyCovered ? (t.companyCoveredAmount !== undefined ? t.companyCoveredAmount : (t.amount || 0)) : 0;
+      return s + Math.max(0, (t.amount || 0) - covered);
+    }, 0);
+  }
+  return txs.filter(t => t.type === type).reduce((s, t) => s + (t.amount || 0), 0);
+}
 function monthTotals(txs, month, year){
   const mt = txs.filter(t=>inMonth(t,month,year));
   const income = sumByType(mt,"income"), expense = sumByType(mt,"expense"), savings = sumByType(mt,"savings");
@@ -5486,18 +6044,18 @@ function generateReportPDFContent(month, year) {
   // Savings goals for Page 4
   const goals = DB.savingsGoals || [];
   
-  // Pagination for transactions (Page 5+)
-  const ROWS_PER_PAGE = 18;
-  const txChunks = [];
-  if (txsInMonth.length === 0) {
-    txChunks.push([]);
-  } else {
-    for (let i = 0; i < txsInMonth.length; i += ROWS_PER_PAGE) {
-      txChunks.push(txsInMonth.slice(i, i + ROWS_PER_PAGE));
+  // Allowances for Page 1 summary
+  const allowanceAccounts = (DB.allowanceAccounts || []).filter(a => a.active);
+  function getAllowanceUsed(acc, m, y) {
+    const txs = DB.transactions || [];
+    if (acc.period === 'year') {
+      return txs.filter(t => t.companyCovered && t.allowanceId === acc.id && new Date(t.date).getFullYear() === y).reduce((s, t) => s + (t.companyCoveredAmount || t.amount || 0), 0);
     }
+    return txs.filter(t => t.companyCovered && t.allowanceId === acc.id && inMonth(t, m, y)).reduce((s, t) => s + (t.companyCoveredAmount || t.amount || 0), 0);
   }
+  const totalAllowanceUsed = allowanceAccounts.reduce((s, a) => s + getAllowanceUsed(a, month, year), 0);
   
-  const totalPages = 4 + txChunks.length;
+  const totalPages = 4;
   const generatedDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   const periodLabel = monthName.toUpperCase() + ' ' + year;
   
@@ -5524,7 +6082,7 @@ function generateReportPDFContent(month, year) {
   function renderFooter(pageNumber) {
     return `
       <div class="pdf-footer">
-        <div class="pdf-footer-left">WealthNest Personal Finance Tracker • Confidential Financial Document</div>
+        <div class="pdf-footer-left">WealthNest</div>
         <div class="pdf-footer-right">Page ${pageNumber} of ${totalPages}</div>
       </div>
     `;
@@ -6214,90 +6772,11 @@ function generateReportPDFContent(month, year) {
       
       ${renderFooter(4)}
     </div>
-    <div class="html2pdf__page-break"></div>
   `;
   
   /* ========================================================
-     PAGE 5+: DETAILED TRANSACTION AUDIT LEDGER
+     END: 4-page clean report (no transaction ledger)
      ======================================================== */
-  txChunks.forEach((chunk, chunkIdx) => {
-    const pageNum = 5 + chunkIdx;
-    const isFirstLedgerPage = chunkIdx === 0;
-    
-    html += `
-      <div class="pdf-page" id="pdf-page-${pageNum}">
-        ${renderHeader()}
-        
-        <div class="pdf-content">
-          ${isFirstLedgerPage ? `
-            <div class="pdf-page-title-box">
-              <span class="pdf-section-kicker">ITEMIZED AUDIT TRAIL</span>
-              <h1 class="pdf-page-title">Detailed Monthly Transaction Ledger</h1>
-              <p class="pdf-page-sub">Complete chronological register of all transactions recorded from 1st to ${new Date(year, month, 0).getDate()}th of ${monthName} ${year}.</p>
-            </div>
-            
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:8px 14px; margin-bottom:14px; font-size:11px;">
-              <span>Total Transactions: <strong>${txsInMonth.length} Records</strong></span>
-              <span>Total Inflow: <strong class="text-income">${fmtMoney(totals.income)}</strong></span>
-              <span>Total Outflow: <strong class="text-expense">${fmtMoney(totals.expense + totals.savings)}</strong></span>
-              <span>Net Movement: <strong class="${netBalance >= 0 ? 'text-income' : 'text-expense'}">${fmtMoney(netBalance)}</strong></span>
-            </div>
-          ` : `
-            <div class="pdf-page-title-box" style="margin-bottom:12px;">
-              <span class="pdf-section-kicker">ITEMIZED AUDIT TRAIL (CONTINUED)</span>
-              <h2 class="pdf-page-title" style="font-size:16px;">Transaction Ledger (Continued)</h2>
-            </div>
-          `}
-          
-          <table class="pdf-table">
-            <thead>
-              <tr>
-                <th style="width:6%;">#</th>
-                <th style="width:14%;">Date</th>
-                <th style="width:12%;">Type</th>
-                <th style="width:20%;">Category</th>
-                <th style="width:18%;">Subcategory</th>
-                <th style="width:14%;">Method</th>
-                <th class="figure" style="width:16%;">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${chunk.length ? chunk.map((tx, idx) => {
-                const globalIdx = (chunkIdx * ROWS_PER_PAGE) + idx + 1;
-                const isInc = tx.type === 'income';
-                const isExp = tx.type === 'expense';
-                const isSav = tx.type === 'savings';
-                const typeBadge = isInc ? 'badge-type-income' : (isExp ? 'badge-type-expense' : 'badge-type-savings');
-                const typeLabel = isInc ? 'Income' : (isExp ? 'Expense' : 'Savings');
-                const amountPrefix = isInc ? '+ ' : (isExp ? '- ' : '');
-                const amountColor = isInc ? 'text-income' : (isExp ? 'text-expense' : 'text-savings');
-                
-                return `
-                  <tr>
-                    <td style="color:#94A3B8; font-family:'JetBrains Mono',monospace; font-size:10px;">${globalIdx}</td>
-                    <td style="font-family:'JetBrains Mono',monospace; font-size:10.5px;">${escapeHtml(tx.date)}</td>
-                    <td><span class="badge ${typeBadge}">${typeLabel}</span></td>
-                    <td style="font-weight:600; color:#0F172A;">
-                      ${escapeHtml(tx.category)}
-                      ${tx.note ? '<div style="font-size:9.5px; color:#64748B; font-weight:normal;">' + escapeHtml(tx.note) + '</div>' : ''}
-                    </td>
-                    <td style="color:#475569;">${tx.subCategory ? escapeHtml(tx.subCategory) : '<span style="color:#94A3B8;">—</span>'}</td>
-                    <td><span class="badge badge-neutral" style="font-size:9px;">${escapeHtml(tx.paymentMethod || 'Other')}</span></td>
-                    <td class="figure ${amountColor}" style="font-weight:700;">
-                      ${amountPrefix}${fmtMoney(tx.amount)}
-                    </td>
-                  </tr>
-                `;
-              }).join('') : '<tr><td colspan="7" class="pdf-empty">No transactions recorded for this period.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-        
-        ${renderFooter(pageNum)}
-      </div>
-      ${chunkIdx < txChunks.length - 1 ? '<div class="html2pdf__page-break"></div>' : ''}
-    `;
-  });
   
   return html;
 }
@@ -7298,6 +7777,7 @@ function renderDashboard(){
   renderDashboardBudgetSummary(period, totals);
   renderDashboardSavings(period, totals);
   renderDashboardInvestments();
+  renderAllowanceTrackerWidget();
   renderDashboardTrendChart(period);
 }
 
@@ -8321,7 +8801,8 @@ function renderTransactions(){
     const rawMethods = (t.paymentMethod || 'Other').split(',').map(m => m.trim()).filter(Boolean);
     const safeMethods = rawMethods.map(m => (activePaymentMethods.has(m.toLowerCase()) || m.toLowerCase() === 'other') ? m : 'Other');
     const displayMethods = [...new Set(safeMethods.length ? safeMethods : ['Other'])];
-    const methodBadges = displayMethods.map(m => `<span class="badge badge-off" style="font-size:12px; font-weight:500; margin-right:4px; display:inline-block;">${escapeHtml(m)}</span>`).join('');
+    const companyBadge = t.companyCovered ? `<span class="badge" style="background:rgba(124,58,237,0.12); color:var(--primary); border:1px solid rgba(124,58,237,0.22); font-size:11px; font-weight:600; margin-left:4px;" title="Covered by company benefit">&#127970; Company Covered</span>` : '';
+    const methodBadges = displayMethods.map(m => `<span class="badge badge-off" style="font-size:12px; font-weight:500; margin-right:4px; display:inline-block;">${escapeHtml(m)}</span>`).join('') + companyBadge;
     const savingInBadge = (t.type === 'savings' && t.savingIn && !showSubcat) ? `
       <span class="badge" style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; font-size:11px; font-weight:600; margin-left:4px;" title="Saved in ${escapeHtml(t.savingIn)}">
         In: ${escapeHtml(t.savingIn)}
@@ -8472,7 +8953,12 @@ function confirmDelete(){
 
   recordDeletion(type, activityLabel, restorePayload);
 
-  if(type === 'transaction') DB.transactions = DB.transactions.filter(transaction => transaction.id !== value);
+  if(type === 'transaction') {
+    DB.transactions = DB.transactions.filter(transaction => transaction.id !== value);
+    if(Array.isArray(DB.savingsGoals)){
+      DB.savingsGoals.forEach(g => { g.currentAmount = getGoalCurrentAmount(g); });
+    }
+  }
   if(type === 'budget') DB.budgets = DB.budgets.filter(budget => budget.id !== value);
   if(type === 'goal'){
     const goal = DB.savingsGoals.find(item => item.id === value);
@@ -8762,7 +9248,7 @@ function handleSaveTransaction(e){
   if(editingTxId){
     const index = DB.transactions.findIndex(t => t.id === editingTxId);
     if(index !== -1){
-      DB.transactions[index] = {
+      let updatedTx = {
         ...DB.transactions[index],
         date: dateVal,
         type: txType,
@@ -8773,12 +9259,16 @@ function handleSaveTransaction(e){
         savingIn: savingInVal,
         amount: amount
       };
+      if(txType === 'expense'){
+        updatedTx = processAllowanceForTransaction(updatedTx);
+      }
+      DB.transactions[index] = updatedTx;
       highlightedTxId = editingTxId;
       showToast('Transaction updated successfully', 'success');
     }
   } else {
     const newId = uid();
-    DB.transactions.unshift({
+    let newTx = {
       id: newId,
       date: dateVal,
       type: txType,
@@ -8788,7 +9278,11 @@ function handleSaveTransaction(e){
       paymentMethod: payVal,
       savingIn: savingInVal,
       amount: amount
-    });
+    };
+    if(txType === 'expense'){
+      newTx = processAllowanceForTransaction(newTx);
+    }
+    DB.transactions.unshift(newTx);
     highlightedTxId = newId;
 
     // Reset filters if current filter would conceal the new transaction
@@ -9529,12 +10023,27 @@ function rolloverGoal(id){
   openRolloverGoalModal(id);
 }
 
+function getGoalCurrentAmount(goal){
+  if(!goal) return 0;
+  const txs = Array.isArray(DB.transactions) ? DB.transactions : [];
+  const sum = txs.filter(t => t.type === 'savings' && t.category === goal.name)
+                 .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
+  return Math.round(sum * 100) / 100;
+}
+
 function renderSavings(){
   initSavingsFilters();
   document.getElementById('savings-count-label').textContent = `${DB.savingsGoals.length} active goal${DB.savingsGoals.length===1?'':'s'}`;
   const now = new Date(); const month = now.getMonth()+1, year = now.getFullYear();
   const totalTarget = DB.savingsGoals.reduce((s,g)=>s+g.targetAmount,0);
-  const totalCurrent = DB.savingsGoals.reduce((s,g)=>s+g.currentAmount,0);
+  
+  // Calculate totalCurrent dynamically from transactions
+  const totalCurrent = DB.savingsGoals.reduce((s,g) => {
+    const current = getGoalCurrentAmount(g);
+    g.currentAmount = current;
+    return s + current;
+  }, 0);
+  
   const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
   document.getElementById('savings-overall-body').innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
@@ -9558,10 +10067,12 @@ function renderSavings(){
   const todayStr = ymd(new Date());
 
   document.getElementById('savings-grid').innerHTML = visibleGoals.map(g => {
-    const percent = g.targetAmount > 0 ? Math.min(100, (g.currentAmount / g.targetAmount) * 100) : 0;
-    const reached = g.currentAmount >= g.targetAmount;
+    const currentSaved = getGoalCurrentAmount(g);
+    g.currentAmount = currentSaved;
+    const percent = g.targetAmount > 0 ? Math.min(100, (currentSaved / g.targetAmount) * 100) : 0;
+    const reached = currentSaved >= g.targetAmount;
     const isExpired = Boolean(g.deadline && g.deadline < todayStr && !reached);
-    const remaining = Math.max(0, g.targetAmount - g.currentAmount);
+    const remaining = Math.max(0, g.targetAmount - currentSaved);
 
     let statusBadge = '';
     if(reached){
@@ -9601,44 +10112,52 @@ function renderSavings(){
       </div>
       <div class="progress-track" style="height:10px; border-radius:999px; overflow:hidden;"><div class="progress-fill ${reached ? 'fill-teal' : 'fill-amber'}" style="width:${percent}%; transition:width 0.4s ease;"></div></div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13.5px;">
-        <span class="figure"><strong>${fmt(g.currentAmount)}</strong> <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
+        <span class="figure"><strong>${fmt(currentSaved)}</strong> <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
         ${reached ? '<span class="badge badge-ok" style="font-weight:600;">✓ Complete</span>' : `<span class="text-xs muted">${fmt(remaining)} remaining</span>`}
       </div>
       
-      ${isExpired ? `
-        <button onclick="openRolloverGoalModal('${g.id}')" class="btn-primary" style="margin-top:14px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:9px 14px; font-size:13px; font-weight:600;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          Move Goal to Next Month
-        </button>
-      ` : !reached ? `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-          <button onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; color:var(--primary); font-size:12px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-            Move / Extend Goal
+      <!-- Actions Toolbar on Card -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          ${!reached ? `
+            <button onclick="showContributeRow('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; font-weight:600; color:var(--primary); font-size:12.5px; display:inline-flex; align-items:center; gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              + Contribute
+            </button>
+          ` : ''}
+          <button onclick="openGoalContributionsModal('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; font-weight:600; font-size:12.5px; color:var(--teal); display:inline-flex; align-items:center; gap:4px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            History / Edit
           </button>
         </div>
-      ` : ''}
 
-      ${!reached ? `
-        <div id="contribute-row-${g.id}" style="margin-top:12px;">
-          <button onclick="showContributeRow('${g.id}')" class="link-sm" style="background:none;border:none;padding:0; font-weight:600;">+ Contribute</button>
-        </div>
-      ` : `
-        <div style="margin-top:14px; padding:10px 14px; background:#F0FDF4; border-radius:var(--radius-sm); border:1px solid #BBF7D0; display:flex; align-items:center; gap:8px;">
+        ${!reached ? `
+          <button onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; color:var(--muted); font-size:12px; display:inline-flex; align-items:center; gap:4px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            Extend Deadline
+          </button>
+        ` : ''}
+      </div>
+
+      <div id="contribute-row-${g.id}" style="margin-top:10px;"></div>
+
+      ${reached ? `
+        <div style="margin-top:12px; padding:10px 14px; background:#F0FDF4; border-radius:var(--radius-sm); border:1px solid #BBF7D0; display:flex; align-items:center; gap:8px;">
           <span style="font-size:18px;">🏆</span>
           <span class="text-xs" style="color:#15803D; font-weight:600;">Congratulations! You achieved your target savings goal.</span>
         </div>
-      `}
+      ` : ''}
     </div>`;
   }).join('') || '<p class="empty-note">No savings goals yet.</p>';
 }
+
 function showContributeRow(id){
   const goal=DB.savingsGoals.find(item=>item.id===id);
   const today=ymd(new Date());
   const defaultDate=goal&&goal.startDate&&goal.startDate>today?goal.startDate:today;
   const savingInDefault = goal?.savingIn || 'Bank Account';
   document.getElementById('contribute-row-'+id).innerHTML = `
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:var(--surface-2); padding:10px; border-radius:8px; border:1px solid var(--line-soft);">
       <div>
         <label class="field-label" style="font-size:11px; margin-bottom:5px;">Date</label>
         <input type="date" id="contribute-date-${id}" value="${defaultDate}" min="${goal?.startDate||''}" max="${goal?.deadline||''}" class="field-input figure" style="min-width:0;">
@@ -9659,13 +10178,14 @@ function showContributeRow(id){
         </select>
       </div>
       <div style="grid-column:1 / -1; display:flex; align-items:center; gap:8px;">
-        <input type="number" min="0" step="1" id="contribute-amount-${id}" placeholder="Amount" class="field-input figure" style="flex:1;">
+        <input type="number" min="0" step="any" id="contribute-amount-${id}" placeholder="Amount" class="field-input figure" style="flex:1;">
         <button onclick="contribute('${id}')" class="btn-dark" style="padding:8px 14px;">Add</button>
-        <button onclick="renderSavings()" style="background:none; border:none; color:var(--muted-2);">✕</button>
+        <button onclick="document.getElementById('contribute-row-${id}').innerHTML=''" style="background:none; border:none; color:var(--muted-2); cursor:pointer;">✕</button>
       </div>
       <p id="contribute-message-${id}" class="text-xs tone-neg" style="grid-column:1 / -1; margin:0;"></p>
     </div>`;
 }
+
 function contribute(id){
   const val = parseFloat(document.getElementById('contribute-amount-'+id).value);
   const dateValue = document.getElementById('contribute-date-'+id)?.value || ymd(new Date());
@@ -9679,7 +10199,7 @@ function contribute(id){
     if(message) message.textContent=`Choose a date between ${goal.startDate||'the start'} and ${goal.deadline||'the deadline'}.`;
     return;
   }
-  goal.currentAmount += val;
+
   DB.transactions.unshift({
     id: uid(),
     date: dateValue,
@@ -9690,7 +10210,138 @@ function contribute(id){
     savingIn: savingInValue,
     amount: val
   });
-  saveDB(true); renderAllForCurrentPage();
+
+  // Dynamically update goal amount from transactions
+  goal.currentAmount = getGoalCurrentAmount(goal);
+
+  saveDB(true);
+  renderAllForCurrentPage();
+  showToast(`Added ${fmt(val)} to "${goal.name}"`);
+}
+
+/* ---------------- Goal Contributions Modal Handlers ---------------- */
+let activeGoalContribId = null;
+
+function openGoalContributionsModal(goalId){
+  const goal = (DB.savingsGoals || []).find(g => g.id === goalId);
+  if(!goal) return;
+  activeGoalContribId = goalId;
+
+  const currentSaved = getGoalCurrentAmount(goal);
+  goal.currentAmount = currentSaved;
+  const percent = goal.targetAmount > 0 ? Math.min(100, (currentSaved / goal.targetAmount) * 100) : 0;
+  const remaining = Math.max(0, goal.targetAmount - currentSaved);
+  const reached = currentSaved >= goal.targetAmount;
+
+  document.getElementById('goal-contrib-subtitle').textContent = `Manage contributions for "${goal.name}"`;
+  document.getElementById('goal-contrib-name').textContent = goal.name;
+  document.getElementById('goal-contrib-saved-figure').textContent = fmt(currentSaved);
+  document.getElementById('goal-contrib-progress-bar').style.width = `${percent}%`;
+  document.getElementById('goal-contrib-target-figure').textContent = `Target: ${fmt(goal.targetAmount)}`;
+  document.getElementById('goal-contrib-remaining-figure').textContent = reached ? '✓ Goal Achieved' : `${fmt(remaining)} remaining`;
+
+  // Fetch linked transactions
+  const txs = (DB.transactions || [])
+    .filter(t => t.type === 'savings' && t.category === goal.name)
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  document.getElementById('goal-contrib-count').textContent = `${txs.length} contribution record${txs.length === 1 ? '' : 's'}`;
+
+  const listEl = document.getElementById('goal-contrib-list');
+  if(!txs.length){
+    listEl.innerHTML = `<p class="empty-note" style="padding:16px 0; text-align:center;">No contribution transactions recorded for this goal yet.</p>`;
+  } else {
+    listEl.innerHTML = txs.map(t => `
+      <div id="goal-contrib-item-${t.id}" style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <strong style="font-size:13px; color:var(--ink);">${escapeHtml(t.date)}</strong>
+            <span class="badge" style="background:var(--surface); font-size:10.5px; border:1px solid var(--line-soft);">${escapeHtml(t.paymentMethod || 'Bank')}</span>
+            ${t.savingIn ? `<span class="badge" style="background:rgba(20,184,166,0.08); color:var(--teal); font-size:10px;">${escapeHtml(t.savingIn)}</span>` : ''}
+          </div>
+          ${t.description ? `<p class="text-xs muted" style="margin:2px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(t.description)}</p>` : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+          <span class="figure" id="goal-contrib-amt-display-${t.id}" style="font-size:14px; font-weight:700; color:var(--teal);">${fmt(t.amount)}</span>
+          <button class="icon-btn" onclick="toggleEditContributionRow('${t.id}', ${t.amount})" title="Edit amount" style="width:28px; height:28px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn" onclick="deleteContributionTransaction('${t.id}')" title="Delete contribution" style="width:28px; height:28px; color:var(--rose);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="goal-contrib-edit-row-${t.id}" class="hidden" style="margin-top:-4px; margin-bottom:8px; background:var(--surface); border:1px solid var(--primary); border-radius:8px; padding:8px 10px; display:flex; align-items:center; gap:8px;">
+        <span class="text-xs muted">New Amount:</span>
+        <input type="number" min="0" step="any" id="goal-contrib-input-${t.id}" value="${t.amount}" class="field-input figure" style="height:30px; font-size:13px; flex:1;">
+        <button type="button" class="btn-primary" style="padding:4px 10px; height:30px; font-size:11.5px;" onclick="saveEditedContributionAmount('${t.id}')">Save</button>
+        <button type="button" class="btn-ghost" style="padding:4px 8px; height:30px; font-size:11.5px;" onclick="toggleEditContributionRow('${t.id}')">Cancel</button>
+      </div>
+    `).join('');
+  }
+
+  const backdrop = document.getElementById('goal-contributions-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeGoalContributionsModal(){
+  activeGoalContribId = null;
+  const backdrop = document.getElementById('goal-contributions-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function toggleEditContributionRow(txId, currentAmt){
+  const row = document.getElementById(`goal-contrib-edit-row-${txId}`);
+  if(!row) return;
+  const isHidden = row.classList.contains('hidden');
+  row.classList.toggle('hidden', !isHidden);
+  if(isHidden){
+    const inp = document.getElementById(`goal-contrib-input-${txId}`);
+    if(inp){ inp.value = currentAmt; inp.focus(); }
+  }
+}
+
+function saveEditedContributionAmount(txId){
+  const tx = (DB.transactions || []).find(t => t.id === txId);
+  if(!tx) return;
+  const newAmount = parseFloat(document.getElementById(`goal-contrib-input-${txId}`)?.value);
+  if(isNaN(newAmount) || newAmount <= 0){
+    showToast('Please enter a valid amount greater than 0', 'error');
+    return;
+  }
+
+  const oldAmount = tx.amount;
+  tx.amount = newAmount;
+
+  // Sync affected goal
+  const goal = (DB.savingsGoals || []).find(g => g.name === tx.category);
+  if(goal){
+    goal.currentAmount = getGoalCurrentAmount(goal);
+  }
+
+  saveDB(true);
+  renderAllForCurrentPage();
+  if(activeGoalContribId) openGoalContributionsModal(activeGoalContribId);
+  showToast(`Updated contribution from ${fmt(oldAmount)} to ${fmt(newAmount)}!`);
+}
+
+function deleteContributionTransaction(txId){
+  const tx = (DB.transactions || []).find(t => t.id === txId);
+  if(!tx) return;
+  if(!confirm(`Delete this contribution of ${fmt(tx.amount)} on ${tx.date}? This will update the savings goal and cash balance.`)) return;
+
+  const goalName = tx.category;
+  DB.transactions = DB.transactions.filter(t => t.id !== txId);
+
+  const goal = (DB.savingsGoals || []).find(g => g.name === goalName);
+  if(goal){
+    goal.currentAmount = getGoalCurrentAmount(goal);
+  }
+
+  saveDB(true);
+  renderAllForCurrentPage();
+  if(activeGoalContribId) openGoalContributionsModal(activeGoalContribId);
+  showToast(`Deleted contribution of ${fmt(tx.amount)}`);
 }
 function openGoalModal(){ document.getElementById('goal-modal-backdrop').classList.remove('hidden'); }
 function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classList.add('hidden'); }
@@ -9790,6 +10441,7 @@ function handleSaveEditGoal(e){
       }
     });
   }
+  g.currentAmount = getGoalCurrentAmount(g);
 
   saveDB(true);
   closeEditGoalModal();
@@ -9807,16 +10459,31 @@ let chartInvestmentProjection = null;
 let chartAssetAllocation = null;
 
 const ASSET_CLASSES = [
+  { id: 'Provident Fund / VPS', label: 'Provident Fund / VPS', color: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE', isRecurring: true, depositLabel: 'Log Monthly Deposit', noSell: true },
   { id: 'Stocks', label: 'Stocks', color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
   { id: 'PSX Stocks', label: 'PSX Stocks', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
   { id: 'ETFs & Index Funds', label: 'ETFs & Index Funds', color: '#10B981', bg: '#ECFDF5', border: '#A7F3D0' },
   { id: 'Crypto', label: 'Crypto', color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A' },
-  { id: 'Real Estate', label: 'Real Estate', color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE' },
-  { id: 'Bonds / Fixed Income', label: 'Bonds / Fixed Income', color: '#06B6D4', bg: '#ECFEFF', border: '#A5F3FC' },
+  { id: 'Real Estate', label: 'Real Estate', color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE', depositLabel: 'Log Rental Income', noSell: true },
+  { id: 'Bonds / Fixed Income', label: 'Bonds / Fixed Income', color: '#06B6D4', bg: '#ECFEFF', border: '#A5F3FC', depositLabel: 'Log Coupon Payment' },
   { id: 'Gold & Commodities', label: 'Gold & Commodities', color: '#D97706', bg: '#FEF3C7', border: '#FDE68A' },
-  { id: 'Mutual Funds', label: 'Mutual Funds', color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8' },
+  { id: 'Mutual Funds', label: 'Mutual Funds', color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8', isRecurring: true, depositLabel: 'Log Monthly Investment' },
   { id: 'Other', label: 'Other', color: '#64748B', bg: '#F8FAFC', border: '#E2E8F0' },
 ];
+
+/* --- Returns whether this asset type should use Deposit workflow vs Sell workflow --- */
+function assetTypeIsDepositOnly(assetType){
+  const meta = getAssetClassMeta(assetType);
+  return !!(meta && meta.noSell);
+}
+function assetTypeIsRecurring(assetType){
+  const meta = getAssetClassMeta(assetType);
+  return !!(meta && meta.isRecurring);
+}
+function assetTypeDepositLabel(assetType){
+  const meta = getAssetClassMeta(assetType);
+  return (meta && meta.depositLabel) ? meta.depositLabel : 'Log Deposit / Income';
+}
 
 function getAssetClassMeta(type){
   const found = ASSET_CLASSES.find(c => c.id.toLowerCase() === (type || '').toLowerCase());
@@ -10312,17 +10979,7 @@ function renderMilestones(principal, monthly, annualRatePct){
   }).join('');
 }
 
-function renderHoldingsFilters(){
-  const container = document.getElementById('inv-category-filter-chips');
-  if(!container) return;
-  const list = DB.investments || [];
-  const categories = ['all', ...Array.from(new Set(list.map(i => i.assetType || 'Other')))];
-
-  container.innerHTML = categories.map(cat => {
-    const count = cat === 'all' ? list.length : list.filter(i => (i.assetType || 'Other') === cat).length;
-    return `<button type="button" class="btn-chip ${invCategoryFilter === cat ? 'active' : ''}" style="font-size:11.5px; padding:4px 9px;" onclick="setInvCategoryFilter('${escapeHtml(cat)}')">${cat === 'all' ? 'All' : cat} (${count})</button>`;
-  }).join('');
-}
+/* (duplicate renderHoldingsFilters removed - see definition after setInvHoldingTab) */
 
 let invHoldingTab = 'active';
 
@@ -10415,6 +11072,7 @@ function renderHoldingsTable(){
           <td style="padding:12px;">
             <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
             ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
+            ${inv.assetType === 'Provident Fund / VPS' && inv.employerMatchPct ? `<span class="text-xs" style="color:var(--teal); font-size:10.5px; font-weight:600; display:block; margin-top:2px;">Employer Match: ${inv.employerMatchPct}%</span>` : ''}
           </td>
           <td style="padding:12px;">
             <span class="asset-tag-badge" style="background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border};">
@@ -10426,6 +11084,7 @@ function renderHoldingsTable(){
           </td>
           <td style="padding:12px; text-align:right;" class="figure">
             ${fmt(invested)}
+            ${inv.assetType === 'Provident Fund / VPS' && (inv.totalEmployerMatch || 0) > 0 ? `<span style="display:block; font-size:10.5px; color:var(--teal); font-weight:600;">+${fmt(inv.totalEmployerMatch)} employer</span>` : ''}
           </td>
           <td style="padding:12px; text-align:right;" class="figure" style="font-weight:600;">
             <strong>${fmt(current)}</strong>
@@ -10439,10 +11098,15 @@ function renderHoldingsTable(){
             </span>
           </td>
           <td style="padding:12px; text-align:center;">
-            <div style="display:inline-flex; align-items:center; gap:6px;">
-              <button class="btn-small" onclick="openSellInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Sell asset & calculate realized profit">
-                Sell
-              </button>
+            <div style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;">
+              ${assetTypeIsDepositOnly(inv.assetType)
+                ? `<button class="btn-small" onclick="openDepositInvestmentModal('${inv.id}')" style="background:rgba(79,70,229,0.1); color:#4F46E5; border:1px solid rgba(79,70,229,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="${escapeHtml(assetTypeDepositLabel(inv.assetType))}">+ Deposit</button>`
+                : `<button class="btn-small" onclick="openSellInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Sell asset &amp; calculate realized profit">Sell</button>`
+              }
+              ${assetTypeIsRecurring(inv.assetType) && !assetTypeIsDepositOnly(inv.assetType)
+                ? `<button class="btn-small" onclick="openDepositInvestmentModal('${inv.id}')" style="background:rgba(79,70,229,0.1); color:#4F46E5; border:1px solid rgba(79,70,229,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="${escapeHtml(assetTypeDepositLabel(inv.assetType))}">+ Deposit</button>`
+                : ''
+              }
               <button class="icon-btn" onclick="openEditInvestmentModal('${inv.id}')" title="Edit asset" aria-label="Edit ${escapeHtml(inv.name)}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
@@ -10553,6 +11217,32 @@ function populateInvestmentCategorySelects(){
   });
 }
 
+function onInvTypeChange(val){
+  const wrap = document.getElementById('inv-vps-settings-wrap');
+  if(wrap) wrap.classList.toggle('hidden', val !== 'Provident Fund / VPS');
+}
+
+function onEditInvTypeChange(val){
+  const wrap = document.getElementById('edit-inv-vps-settings-wrap');
+  if(wrap) wrap.classList.toggle('hidden', val !== 'Provident Fund / VPS');
+}
+
+function toggleSimDrawer(){
+  const drawer = document.getElementById('inv-sim-drawer');
+  const btn = document.getElementById('btn-toggle-sim');
+  if(!drawer) return;
+  const isHidden = drawer.classList.contains('hidden');
+  drawer.classList.toggle('hidden', !isHidden);
+  if(btn){
+    btn.innerHTML = isHidden
+      ? `Hide Simulator <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 15l-6-6-6 6"/></svg>`
+      : `Expand Simulator <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>`;
+  }
+  if(isHidden && typeof chartInvestmentProjection !== 'undefined' && chartInvestmentProjection){
+    setTimeout(() => chartInvestmentProjection.resize(), 100);
+  }
+}
+
 function openInvestmentModal(){
   populateInvestmentCategorySelects();
   const initLabel = document.getElementById('inv-initial-label');
@@ -10561,6 +11251,9 @@ function openInvestmentModal(){
   if(currLabel) currLabel.textContent = `Current Market Value (${currencySymbol()}) *`;
   const dateInput = document.getElementById('inv-start-date');
   if(dateInput) dateInput.value = ymd(new Date());
+
+  const typeEl = document.getElementById('inv-type');
+  if(typeEl) onInvTypeChange(typeEl.value);
 
   const backdrop = document.getElementById('investment-modal-backdrop');
   if(backdrop) backdrop.classList.remove('hidden');
@@ -10586,6 +11279,13 @@ function handleAddInvestment(e){
     return;
   }
 
+  const vpsDeductionPct = assetType === 'Provident Fund / VPS'
+    ? (parseFloat(document.getElementById('inv-vps-deduction-pct')?.value) || 10)
+    : undefined;
+  const vpsMatchPct = assetType === 'Provident Fund / VPS'
+    ? (parseFloat(document.getElementById('inv-vps-match-pct')?.value) || 100)
+    : undefined;
+
   DB.investments = DB.investments || [];
   const newAsset = {
     id: uid(),
@@ -10600,6 +11300,12 @@ function handleAddInvestment(e){
     notes,
     createdAt: new Date().toISOString()
   };
+
+  if(vpsDeductionPct !== undefined){
+    newAsset.vpsDeductionPct = vpsDeductionPct;
+    newAsset.vpsMatchPct = vpsMatchPct;
+    newAsset.totalEmployerMatched = 0;
+  }
 
   DB.investments.push(newAsset);
   saveDB(true);
@@ -10630,6 +11336,13 @@ function openEditInvestmentModal(id){
   document.getElementById('edit-inv-current').value = inv.currentValue || 0;
   document.getElementById('edit-inv-start-date').value = inv.startDate || '';
   document.getElementById('edit-inv-notes').value = inv.notes || '';
+
+  const dedInput = document.getElementById('edit-inv-vps-deduction-pct');
+  if(dedInput) dedInput.value = inv.vpsDeductionPct ?? 10;
+  const matchInput = document.getElementById('edit-inv-vps-match-pct');
+  if(matchInput) matchInput.value = inv.vpsMatchPct ?? 100;
+
+  onEditInvTypeChange(inv.assetType);
 
   const initLabel = document.getElementById('edit-inv-initial-label');
   if(initLabel) initLabel.textContent = `Total Invested (Cost Basis, ${currencySymbol()}) *`;
@@ -10675,10 +11388,201 @@ function handleSaveEditInvestment(e){
   inv.startDate = startDate;
   inv.notes = notes;
 
+  if(assetType === 'Provident Fund / VPS'){
+    inv.vpsDeductionPct = parseFloat(document.getElementById('edit-inv-vps-deduction-pct')?.value) || 10;
+    inv.vpsMatchPct = parseFloat(document.getElementById('edit-inv-vps-match-pct')?.value) || 100;
+  }
+
   saveDB(true);
   closeEditInvestmentModal();
   renderAllForCurrentPage();
   showToast(`Updated "${name}"`);
+}
+
+/* ---------------- Deposit / Recurring Inflow Handlers ---------------- */
+function openDepositInvestmentModal(id){
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+
+  document.getElementById('deposit-inv-id').value = id;
+  const nameEl = document.getElementById('deposit-inv-name');
+  if(nameEl) nameEl.textContent = `${inv.name} (${inv.assetType})`;
+  const costEl = document.getElementById('deposit-inv-current-cost');
+  if(costEl) costEl.textContent = fmt(inv.initialInvested || 0);
+  const valEl = document.getElementById('deposit-inv-current-val');
+  if(valEl) valEl.textContent = fmt(inv.currentValue || 0);
+
+  const titleEl = document.getElementById('deposit-inv-modal-title');
+  if(titleEl){
+    titleEl.textContent = inv.assetType === 'Provident Fund / VPS'
+      ? 'Log VPS / Pension Deposit'
+      : (inv.assetType === 'Mutual Funds' ? 'Log SIP / Fund Deposit' : 'Log Capital Deposit');
+  }
+
+  const vpsBox = document.getElementById('deposit-vps-calc-box');
+  const matchWrap = document.getElementById('deposit-inv-match-wrap');
+  const isVps = inv.assetType === 'Provident Fund / VPS';
+
+  if(vpsBox) vpsBox.classList.toggle('hidden', !isVps);
+  if(matchWrap) matchWrap.style.display = isVps ? 'block' : 'none';
+
+  if(isVps){
+    const schemeBadge = document.getElementById('deposit-vps-scheme-badge');
+    if(schemeBadge){
+      schemeBadge.textContent = `${inv.vpsDeductionPct || 10}% cut + ${inv.vpsMatchPct || 100}% Match`;
+    }
+    const salaryInput = document.getElementById('deposit-vps-salary-input');
+    if(salaryInput) salaryInput.value = '';
+    calculateVpsDepositFromSalary();
+  }
+
+  const amtInput = document.getElementById('deposit-inv-amount');
+  if(amtInput) amtInput.value = '';
+  const matchInput = document.getElementById('deposit-inv-match');
+  if(matchInput) matchInput.value = '0';
+
+  const newValInput = document.getElementById('deposit-inv-new-val');
+  if(newValInput) newValInput.value = inv.currentValue || 0;
+
+  const dateInput = document.getElementById('deposit-inv-date');
+  if(dateInput) dateInput.value = ymd(new Date());
+
+  const notesInput = document.getElementById('deposit-inv-notes');
+  if(notesInput) notesInput.value = '';
+
+  const syncCheck = document.getElementById('deposit-inv-sync-tx');
+  if(syncCheck) syncCheck.checked = true;
+
+  const backdrop = document.getElementById('deposit-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeDepositInvestmentModal(){
+  const backdrop = document.getElementById('deposit-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function calculateVpsDepositFromSalary(){
+  const id = document.getElementById('deposit-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  const salary = parseFloat(document.getElementById('deposit-vps-salary-input')?.value) || 0;
+  const dedPct = inv ? (inv.vpsDeductionPct || 10) : 10;
+  const matchPct = inv ? (inv.vpsMatchPct || 100) : 100;
+
+  const employeeCut = Math.round(salary * (dedPct / 100));
+  const employerMatch = Math.round(employeeCut * (matchPct / 100));
+  const totalInflow = employeeCut + employerMatch;
+
+  const empEl = document.getElementById('deposit-vps-calc-employee');
+  if(empEl) empEl.textContent = fmt(employeeCut);
+  const matchEl = document.getElementById('deposit-vps-calc-match');
+  if(matchEl) matchEl.textContent = `+${fmt(employerMatch)}`;
+  const totalEl = document.getElementById('deposit-vps-calc-total');
+  if(totalEl) totalEl.textContent = fmt(totalInflow);
+}
+
+function applyVpsSalaryCalculation(){
+  const id = document.getElementById('deposit-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  const salary = parseFloat(document.getElementById('deposit-vps-salary-input')?.value) || 0;
+  if(salary <= 0){
+    showToast('Please enter your monthly base salary first', 'error');
+    return;
+  }
+  const dedPct = inv ? (inv.vpsDeductionPct || 10) : 10;
+  const matchPct = inv ? (inv.vpsMatchPct || 100) : 100;
+
+  const employeeCut = Math.round(salary * (dedPct / 100));
+  const employerMatch = Math.round(employeeCut * (matchPct / 100));
+
+  const amtInput = document.getElementById('deposit-inv-amount');
+  if(amtInput) amtInput.value = employeeCut;
+  const matchInput = document.getElementById('deposit-inv-match');
+  if(matchInput) matchInput.value = employerMatch;
+
+  const curVal = inv ? (inv.currentValue || 0) : 0;
+  const newValInput = document.getElementById('deposit-inv-new-val');
+  if(newValInput) newValInput.value = curVal + employeeCut + employerMatch;
+
+  showToast(`Applied deduction: ${fmt(employeeCut)} + ${fmt(employerMatch)} employer match`);
+}
+
+function updateDepositTotalPreview(){
+  const id = document.getElementById('deposit-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  const curVal = inv ? (inv.currentValue || 0) : 0;
+  const deposit = parseFloat(document.getElementById('deposit-inv-amount')?.value) || 0;
+  const match = parseFloat(document.getElementById('deposit-inv-match')?.value) || 0;
+  const newValInput = document.getElementById('deposit-inv-new-val');
+  if(newValInput){
+    newValInput.value = curVal + deposit + match;
+  }
+}
+
+function handleConfirmDepositInvestment(e){
+  e.preventDefault();
+  const id = document.getElementById('deposit-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv){
+    closeDepositInvestmentModal();
+    return;
+  }
+
+  const depositAmount = parseFloat(document.getElementById('deposit-inv-amount')?.value);
+  const employerMatch = parseFloat(document.getElementById('deposit-inv-match')?.value) || 0;
+  const newVal = parseFloat(document.getElementById('deposit-inv-new-val')?.value);
+  const depositDate = document.getElementById('deposit-inv-date')?.value || ymd(new Date());
+  const notes = document.getElementById('deposit-inv-notes')?.value.trim() || '';
+  const syncTx = document.getElementById('deposit-inv-sync-tx')?.checked;
+
+  if(isNaN(depositAmount) || depositAmount <= 0 || isNaN(newVal) || newVal < 0){
+    showToast('Please enter a valid deposit amount and valuation', 'error');
+    return;
+  }
+
+  // Update asset financial metrics
+  inv.initialInvested = (inv.initialInvested || 0) + depositAmount;
+  inv.currentValue = newVal;
+  if(employerMatch > 0){
+    inv.totalEmployerMatched = (inv.totalEmployerMatched || 0) + employerMatch;
+  }
+
+  // Record history log inside notes or deposit log
+  inv.depositHistory = Array.isArray(inv.depositHistory) ? inv.depositHistory : [];
+  inv.depositHistory.unshift({
+    id: uid(),
+    date: depositDate,
+    employeeDeposit: depositAmount,
+    employerMatch: employerMatch,
+    newValuation: newVal,
+    notes: notes,
+    recordedAt: new Date().toISOString()
+  });
+
+  // Sync to transactions as Expense under 'Investments'
+  if(syncTx){
+    DB.transactions = DB.transactions || [];
+    if(!DB.categories.expense.includes('Investments')){
+      DB.categories.expense.push('Investments');
+    }
+    DB.transactions.unshift({
+      id: uid(),
+      date: depositDate,
+      type: 'expense',
+      category: 'Investments',
+      subCategory: inv.assetType || 'Provident Fund / VPS',
+      description: notes ? `${inv.name} Deposit: ${notes}` : `Deposit to ${inv.name}${employerMatch > 0 ? ` (+${fmt(employerMatch)} match)` : ''}`,
+      amount: Math.round(depositAmount * 100) / 100,
+      paymentMethod: (DB.paymentMethods && DB.paymentMethods[0]) || 'Bank Transfer'
+    });
+  }
+
+  saveDB(true);
+  closeDepositInvestmentModal();
+  renderAllForCurrentPage();
+
+  const matchMsg = employerMatch > 0 ? ` with ${fmt(employerMatch)} employer match` : '';
+  showToast(`Recorded ${fmt(depositAmount)} deposit to "${inv.name}"${matchMsg}!`);
 }
 
 function deleteInvestment(id){
@@ -10839,6 +11743,7 @@ let catTypeTab = 'expense';
 function renderSettingsTabs(){
   const tabs = [
     {id:'categories', label:'Categories'},
+    {id:'allowances', label:'Company Benefits'},
     {id:'payment-methods', label:'Payment Methods'},
     {id:'account', label:'Account'},
     {id:'backup', label:'Backup & Data'},
@@ -10847,6 +11752,8 @@ function renderSettingsTabs(){
   ];
   document.getElementById('settings-tabs').innerHTML = tabs.map(t => `<button class="btn-chip ${settingsTab===t.id?'active':''}" onclick="setSettingsTab('${t.id}')">${t.label}</button>`).join('');
   document.getElementById('settings-categories').classList.toggle('hidden', settingsTab!=='categories');
+  const alEl = document.getElementById('settings-allowances');
+  if(alEl) alEl.classList.toggle('hidden', settingsTab!=='allowances');
   const pmEl = document.getElementById('settings-payment-methods');
   if(pmEl) pmEl.classList.toggle('hidden', settingsTab!=='payment-methods');
   document.getElementById('settings-account').classList.toggle('hidden', settingsTab!=='account');
@@ -10859,6 +11766,7 @@ function renderSettingsTabs(){
 function setSettingsTab(t){
   settingsTab = t;
   renderSettingsTabs();
+  if(t==='allowances') renderAllowancesSettings();
   if(t==='payment-methods') renderPaymentMethodsSettings();
   if(t==='backup') renderBackupSettings();
   if(t==='recycle') renderRecycleBin();
@@ -11783,6 +12691,7 @@ function renderSettings(){
   renderCategoryList();
   const topSubInput = document.getElementById('new-subcategory-name');
   if(topSubInput && subcatDrafts['__top_subcat__'] !== undefined) topSubInput.value = subcatDrafts['__top_subcat__'];
+  renderAllowancesSettings();
   renderPaymentMethodsSettings();
   populateCurrencySelect('settings-currency-select', DB.currency.code);
   renderSettingsAccount();
@@ -11838,12 +12747,20 @@ window.addEventListener('keydown', (e) => {
     if (goalEl && !goalEl.classList.contains('hidden')) closeGoalModal();
     const editGoalEl = document.getElementById('edit-goal-modal-backdrop');
     if (editGoalEl && !editGoalEl.classList.contains('hidden')) closeEditGoalModal();
+    const goalContribEl = document.getElementById('goal-contributions-modal-backdrop');
+    if (goalContribEl && !goalContribEl.classList.contains('hidden')) closeGoalContributionsModal();
     const rolloverGoalEl = document.getElementById('rollover-goal-modal-backdrop');
     if (rolloverGoalEl && !rolloverGoalEl.classList.contains('hidden')) closeRolloverGoalModal();
     const invEl = document.getElementById('investment-modal-backdrop');
     if (invEl && !invEl.classList.contains('hidden')) closeInvestmentModal();
     const editInvEl = document.getElementById('edit-investment-modal-backdrop');
     if (editInvEl && !editInvEl.classList.contains('hidden')) closeEditInvestmentModal();
+    const sellInvEl = document.getElementById('sell-investment-modal-backdrop');
+    if (sellInvEl && !sellInvEl.classList.contains('hidden')) closeSellInvestmentModal();
+    const depositInvEl = document.getElementById('deposit-investment-modal-backdrop');
+    if (depositInvEl && !depositInvEl.classList.contains('hidden')) closeDepositInvestmentModal();
+    const allwModalEl = document.getElementById('allowance-modal-backdrop');
+    if (allwModalEl && !allwModalEl.classList.contains('hidden')) closeAllowanceModal();
     const authEl = document.getElementById('auth-modal-backdrop');
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
     const deleteAccountEl = document.getElementById('delete-account-modal-backdrop');
