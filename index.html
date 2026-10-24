@@ -2007,9 +2007,7 @@
               <button type="button" class="btn-chip" id="inv-tab-sold" style="font-size:11.5px; padding:3px 9px;" onclick="setInvHoldingTab('sold')">Closed Trades</button>
             </div>
             <div style="display:flex; gap:5px; flex-wrap:wrap;" id="inv-category-filter-chips"></div>
-            <button onclick="openInvestmentModal()" class="btn-dark btn-small" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; font-size:12px;">
-              + Add Asset
-            </button>
+            
           </div>
         </div>
 
@@ -2674,78 +2672,78 @@
 <div id="investment-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeInvestmentModal()">
   <div class="modal" style="max-width:440px;">
     <button class="modal-close" onclick="closeInvestmentModal()" aria-label="Close">✕</button>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
       <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v18h18"/><path d="m19 7-7 7-4-4-5 5"/><circle cx="19" cy="7" r="2"/></svg>
       </div>
       <div>
-        <h2 style="margin:0; font-size:18px;">Add New Investment</h2>
-        <p class="text-xs muted" style="margin:2px 0 0;">Track an asset and project its future compound growth</p>
+        <h2 style="margin:0; font-size:18px;">Add Investment</h2>
       </div>
     </div>
     <form onsubmit="handleAddInvestment(event)">
       <label class="field-label" for="inv-name">Asset Name <span style="color:var(--rose);">*</span></label>
-      <input type="text" id="inv-name" placeholder="e.g. Vanguard S&P 500 ETF (VOO), Apple, Bitcoin" class="field-input mb-3" required autocomplete="off">
+      <input type="text" id="inv-name" placeholder="e.g. Company VPS, Bitcoin, Stocks" class="field-input mb-3" required autocomplete="off">
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
           <label class="field-label" for="inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
           <select id="inv-type" class="field-input" required onchange="onInvTypeChange(this.value)">
-            <option value="Stocks">Stocks / Equities</option>
-            <option value="ETFs & Index Funds" selected>ETFs &amp; Index Funds</option>
+            <option value="Stocks">Stocks</option>
+            <option value="ETFs & Index Funds" selected>ETFs &amp; Funds</option>
             <option value="Crypto">Crypto</option>
             <option value="Provident Fund / VPS">Provident Fund / VPS</option>
             <option value="Real Estate">Real Estate</option>
-            <option value="Bonds / Fixed Income">Bonds / Fixed Income</option>
-            <option value="Gold & Commodities">Gold &amp; Commodities</option>
+            <option value="Bonds / Fixed Income">Bonds</option>
+            <option value="Gold & Commodities">Gold</option>
             <option value="Mutual Funds">Mutual Funds</option>
             <option value="Other">Other</option>
           </select>
         </div>
         <div>
-          <label class="field-label" for="inv-location">Platform / Vault</label>
-          <input type="text" id="inv-location" placeholder="e.g. Fidelity, Binance, Bank" class="field-input" autocomplete="off">
+          <label class="field-label" for="inv-location">Platform</label>
+          <input type="text" id="inv-location" placeholder="e.g. Meezan Bank, Binance" class="field-input" autocomplete="off">
         </div>
       </div>
 
-      <!-- Provident Fund / VPS Specific Settings (Shown when VPS is selected) -->
+      <!-- Provident Fund / VPS Specific Settings (Clean & Visual) -->
       <div id="inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-          <strong style="font-size:12.5px; color:var(--ink);">Employer Matching Scheme</strong>
+        <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span>⚡ Employer Match</span>
         </div>
-        <p class="text-xs muted" style="margin:0 0 10px; line-height:1.4;">Automatic 1:1 or custom match when you log monthly contributions.</p>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
             <label class="field-label" for="inv-vps-deduction-pct">Your Cut (%)</label>
-            <input type="number" min="0" max="100" step="0.5" id="inv-vps-deduction-pct" value="10" placeholder="10" class="field-input figure">
+            <input type="number" min="0" max="100" step="0.5" id="inv-vps-deduction-pct" value="10" placeholder="10" class="field-input figure" oninput="updateInvVpsPreviewNote()">
           </div>
           <div>
-            <label class="field-label" for="inv-vps-match-pct">Employer Match (%)</label>
-            <input type="number" min="0" max="200" step="1" id="inv-vps-match-pct" value="100" placeholder="100" class="field-input figure">
+            <label class="field-label" for="inv-vps-match-pct">Company Match (%)</label>
+            <input type="number" min="0" max="200" step="1" id="inv-vps-match-pct" value="10" placeholder="10" class="field-input figure" oninput="updateInvVpsPreviewNote()">
           </div>
+        </div>
+        <div id="inv-vps-preview-note" style="font-size:11.5px; color:var(--primary); font-weight:600; margin-top:8px; line-height:1.4;">
+          💡 Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" id="inv-initial-label" for="inv-initial">Total Invested (Cost) <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="0" step="any" id="inv-initial" placeholder="1000" class="field-input figure" required oninput="if(!document.getElementById('inv-current').value || document.getElementById('inv-current').dataset.autofilled === 'true') { document.getElementById('inv-current').value = this.value; document.getElementById('inv-current').dataset.autofilled = 'true'; }">
+          <label class="field-label" id="inv-initial-label" for="inv-initial">Total Invested <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="inv-initial" placeholder="0" class="field-input figure" required oninput="if(!document.getElementById('inv-current').value || document.getElementById('inv-current').dataset.autofilled === 'true') { document.getElementById('inv-current').value = this.value; document.getElementById('inv-current').dataset.autofilled = 'true'; }">
         </div>
         <div>
-          <label class="field-label" id="inv-current-label" for="inv-current">Current Market Value <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="0" step="any" id="inv-current" placeholder="1000" class="field-input figure" required oninput="delete this.dataset.autofilled;">
+          <label class="field-label" id="inv-current-label" for="inv-current">Current Value <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="0" step="any" id="inv-current" placeholder="0" class="field-input figure" required oninput="delete this.dataset.autofilled;">
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
         <div>
-          <label class="field-label" for="inv-start-date">Date Acquired</label>
+          <label class="field-label" for="inv-start-date">Date</label>
           <input type="date" id="inv-start-date" class="field-input figure">
         </div>
         <div>
-          <label class="field-label" for="inv-notes">Strategy / Notes (optional)</label>
-          <input type="text" id="inv-notes" placeholder="e.g. 100 shares @ Rs. 10" class="field-input">
+          <label class="field-label" for="inv-notes">Notes</label>
+          <input type="text" id="inv-notes" placeholder="Optional notes" class="field-input">
         </div>
       </div>
 
@@ -2760,13 +2758,12 @@
 <div id="edit-investment-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditInvestmentModal()">
   <div class="modal" style="max-width:440px;">
     <button class="modal-close" onclick="closeEditInvestmentModal()" aria-label="Close">✕</button>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
       <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </div>
       <div>
         <h2 style="margin:0; font-size:18px;">Edit Investment</h2>
-        <p class="text-xs muted" style="margin:2px 0 0;">Update asset cost, valuation, and notes</p>
       </div>
     </div>
     <form onsubmit="handleSaveEditInvestment(event)">
@@ -2779,61 +2776,62 @@
         <div>
           <label class="field-label" for="edit-inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
           <select id="edit-inv-type" class="field-input" required onchange="onEditInvTypeChange(this.value)">
-            <option value="Stocks">Stocks / Equities</option>
-            <option value="ETFs & Index Funds">ETFs &amp; Index Funds</option>
+            <option value="Stocks">Stocks</option>
+            <option value="ETFs & Index Funds">ETFs &amp; Funds</option>
             <option value="Crypto">Crypto</option>
             <option value="Provident Fund / VPS">Provident Fund / VPS</option>
             <option value="Real Estate">Real Estate</option>
-            <option value="Bonds / Fixed Income">Bonds / Fixed Income</option>
-            <option value="Gold & Commodities">Gold &amp; Commodities</option>
+            <option value="Bonds / Fixed Income">Bonds</option>
+            <option value="Gold & Commodities">Gold</option>
             <option value="Mutual Funds">Mutual Funds</option>
             <option value="Other">Other</option>
           </select>
         </div>
         <div>
-          <label class="field-label" for="edit-inv-location">Platform / Vault</label>
-          <input type="text" id="edit-inv-location" class="field-input" autocomplete="off">
+          <label class="field-label" for="edit-inv-location">Platform</label>
+          <input type="text" id="edit-inv-location" placeholder="e.g. Meezan Bank, Binance" class="field-input" autocomplete="off">
         </div>
       </div>
 
-      <!-- Provident Fund / VPS Specific Settings (Shown when VPS is selected) -->
+      <!-- Provident Fund / VPS Specific Settings (Clean) -->
       <div id="edit-inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-          <strong style="font-size:12.5px; color:var(--ink);">Employer Matching Scheme</strong>
+        <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span>⚡ Employer Match</span>
         </div>
-        <p class="text-xs muted" style="margin:0 0 10px; line-height:1.4;">Automatic 1:1 or custom match when you log monthly contributions.</p>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
             <label class="field-label" for="edit-inv-vps-deduction-pct">Your Cut (%)</label>
-            <input type="number" min="0" max="100" step="0.5" id="edit-inv-vps-deduction-pct" value="10" placeholder="10" class="field-input figure">
+            <input type="number" min="0" max="100" step="0.5" id="edit-inv-vps-deduction-pct" value="10" placeholder="10" class="field-input figure" oninput="updateEditInvVpsPreviewNote()">
           </div>
           <div>
-            <label class="field-label" for="edit-inv-vps-match-pct">Employer Match (%)</label>
-            <input type="number" min="0" max="200" step="1" id="edit-inv-vps-match-pct" value="100" placeholder="100" class="field-input figure">
+            <label class="field-label" for="edit-inv-vps-match-pct">Company Match (%)</label>
+            <input type="number" min="0" max="200" step="1" id="edit-inv-vps-match-pct" value="10" placeholder="10" class="field-input figure" oninput="updateEditInvVpsPreviewNote()">
           </div>
+        </div>
+        <div id="edit-inv-vps-preview-note" style="font-size:11.5px; color:var(--primary); font-weight:600; margin-top:8px; line-height:1.4;">
+          💡 Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" id="edit-inv-initial-label" for="edit-inv-initial">Total Invested (Cost) <span style="color:var(--rose);">*</span></label>
+          <label class="field-label" id="edit-inv-initial-label" for="edit-inv-initial">Total Invested <span style="color:var(--rose);">*</span></label>
           <input type="number" min="0" step="any" id="edit-inv-initial" class="field-input figure" required>
         </div>
         <div>
-          <label class="field-label" id="edit-inv-current-label" for="edit-inv-current">Current Market Value <span style="color:var(--rose);">*</span></label>
+          <label class="field-label" id="edit-inv-current-label" for="edit-inv-current">Current Value <span style="color:var(--rose);">*</span></label>
           <input type="number" min="0" step="any" id="edit-inv-current" class="field-input figure" required>
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
         <div>
-          <label class="field-label" for="edit-inv-start-date">Date Acquired</label>
+          <label class="field-label" for="edit-inv-start-date">Date</label>
           <input type="date" id="edit-inv-start-date" class="field-input figure">
         </div>
         <div>
-          <label class="field-label" for="edit-inv-notes">Strategy / Notes (optional)</label>
-          <input type="text" id="edit-inv-notes" class="field-input">
+          <label class="field-label" for="edit-inv-notes">Notes</label>
+          <input type="text" id="edit-inv-notes" placeholder="Optional notes" class="field-input">
         </div>
       </div>
 
@@ -2904,6 +2902,88 @@
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeSellInvestmentModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary" style="background:var(--teal); border-color:var(--teal);">Confirm Sale</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Withdraw Funds / Spend from Investment Modal -->
+<div id="withdraw-investment-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeWithdrawInvestmentModal()">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" onclick="closeWithdrawInvestmentModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(124,58,237,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Withdraw Funds</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;">Cash out to your bank or make a purchase directly from fund balance</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleConfirmWithdrawInvestment(event)">
+      <input type="hidden" id="withdraw-inv-id">
+
+      <!-- Asset Valuation Card -->
+      <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="text-xs muted">Asset</span>
+          <strong id="withdraw-inv-name" style="font-size:13.5px; color:var(--ink);"></strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="text-xs muted">Available Fund Value</span>
+          <span class="figure" id="withdraw-inv-val" style="font-size:14px; font-weight:700; color:var(--teal);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="text-xs muted">Your Cost Basis</span>
+          <span class="figure" id="withdraw-inv-cost" style="font-size:12.5px; font-weight:600; color:var(--muted);"></span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div>
+          <label class="field-label" for="withdraw-inv-amount">Amount to Withdraw <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="1" step="any" id="withdraw-inv-amount" class="field-input figure" placeholder="e.g. 16000" required>
+        </div>
+        <div>
+          <label class="field-label" for="withdraw-inv-date">Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="withdraw-inv-date" class="field-input figure" required>
+        </div>
+      </div>
+
+      <!-- Destination Choice -->
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:16px;">
+        <div style="font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted-2); margin-bottom:10px;">What will you do with this money?</div>
+        
+        <!-- Choice 1: Cash Out to Bank / Cash -->
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; margin-bottom:12px; padding:8px 10px; border-radius:8px; border:1px solid var(--line-soft); background:var(--surface-2);">
+          <input type="radio" name="withdraw-dest-type" value="bank" checked onchange="toggleWithdrawDestType('bank')" style="margin-top:3px; cursor:pointer;">
+          <div style="flex:1;">
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer to Personal Bank / Cash</strong>
+            <span class="text-xs muted" style="line-height:1.4;">Adds cash into your accessible bank account as income/liquidity.</span>
+            <div id="withdraw-dest-bank-wrap" style="margin-top:8px;">
+              <select id="withdraw-dest-account" class="field-input" style="height:34px; font-size:12.5px;"></select>
+            </div>
+          </div>
+        </label>
+
+        <!-- Choice 2: Direct Purchase (e.g. Buy Mobile Phone) -->
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; margin:0; padding:8px 10px; border-radius:8px; border:1px solid var(--line-soft); background:var(--surface-2);">
+          <input type="radio" name="withdraw-dest-type" value="expense" onchange="toggleWithdrawDestType('expense')" style="margin-top:3px; cursor:pointer;">
+          <div style="flex:1;">
+            <strong style="font-size:13px; color:var(--ink); display:block;">Direct Purchase / Expense (e.g. Buy Mobile Phone)</strong>
+            <span class="text-xs muted" style="line-height:1.4;">Funded 100% by investment balance. Zero deduction from your personal bank!</span>
+            <div id="withdraw-dest-expense-wrap" class="hidden" style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
+              <input type="text" id="withdraw-expense-desc" placeholder="What are you buying? (e.g. Mobile Phone)" class="field-input" style="height:34px; font-size:12.5px;">
+              <select id="withdraw-expense-category" class="field-input" style="height:34px; font-size:12.5px;"></select>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeWithdrawInvestmentModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Confirm Withdrawal</button>
       </div>
     </form>
   </div>
@@ -11099,13 +11179,10 @@ function renderHoldingsTable(){
           </td>
           <td style="padding:12px; text-align:center;">
             <div style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;">
-              ${assetTypeIsDepositOnly(inv.assetType)
-                ? `<button class="btn-small" onclick="openDepositInvestmentModal('${inv.id}')" style="background:rgba(79,70,229,0.1); color:#4F46E5; border:1px solid rgba(79,70,229,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="${escapeHtml(assetTypeDepositLabel(inv.assetType))}">+ Deposit</button>`
+              ${assetTypeIsDepositOnly(inv.assetType) || assetTypeIsRecurring(inv.assetType)
+                ? `<button class="btn-small" onclick="openDepositInvestmentModal('${inv.id}')" style="background:rgba(79,70,229,0.1); color:#4F46E5; border:1px solid rgba(79,70,229,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="${escapeHtml(assetTypeDepositLabel(inv.assetType))}">+ Deposit</button>
+                   <button class="btn-small" onclick="openWithdrawInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Withdraw cash or spend from fund">Withdraw</button>`
                 : `<button class="btn-small" onclick="openSellInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Sell asset &amp; calculate realized profit">Sell</button>`
-              }
-              ${assetTypeIsRecurring(inv.assetType) && !assetTypeIsDepositOnly(inv.assetType)
-                ? `<button class="btn-small" onclick="openDepositInvestmentModal('${inv.id}')" style="background:rgba(79,70,229,0.1); color:#4F46E5; border:1px solid rgba(79,70,229,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="${escapeHtml(assetTypeDepositLabel(inv.assetType))}">+ Deposit</button>`
-                : ''
               }
               <button class="icon-btn" onclick="openEditInvestmentModal('${inv.id}')" title="Edit asset" aria-label="Edit ${escapeHtml(inv.name)}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -11215,6 +11292,145 @@ function populateInvestmentCategorySelects(){
       sel.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}" ${c===cur?'selected':''}>${escapeHtml(c)}</option>`).join('');
     }
   });
+}
+
+function updateInvVpsPreviewNote(){
+  const cut = parseFloat(document.getElementById('inv-vps-deduction-pct')?.value) || 10;
+  const match = parseFloat(document.getElementById('inv-vps-match-pct')?.value) || 10;
+  const noteEl = document.getElementById('inv-vps-preview-note');
+  if(!noteEl) return;
+  const sampleSalary = 80000;
+  const cutAmt = Math.round(sampleSalary * (cut / 100));
+  const matchAmt = Math.round(sampleSalary * (match / 100));
+  const total = cutAmt + matchAmt;
+  noteEl.textContent = `💡 Example: On Rs. ${sampleSalary.toLocaleString()} salary → You contribute Rs. ${cutAmt.toLocaleString()} (${cut}%), Company adds Rs. ${matchAmt.toLocaleString()} (${match}%) → Total Rs. ${total.toLocaleString()}/mo into fund.`;
+}
+
+function updateEditInvVpsPreviewNote(){
+  const cut = parseFloat(document.getElementById('edit-inv-vps-deduction-pct')?.value) || 10;
+  const match = parseFloat(document.getElementById('edit-inv-vps-match-pct')?.value) || 10;
+  const noteEl = document.getElementById('edit-inv-vps-preview-note');
+  if(!noteEl) return;
+  const sampleSalary = 80000;
+  const cutAmt = Math.round(sampleSalary * (cut / 100));
+  const matchAmt = Math.round(sampleSalary * (match / 100));
+  const total = cutAmt + matchAmt;
+  noteEl.textContent = `💡 Example: On Rs. ${sampleSalary.toLocaleString()} salary → You contribute Rs. ${cutAmt.toLocaleString()} (${cut}%), Company adds Rs. ${matchAmt.toLocaleString()} (${match}%) → Total Rs. ${total.toLocaleString()}/mo into fund.`;
+}
+
+function openWithdrawInvestmentModal(id){
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+  document.getElementById('withdraw-inv-id').value = id;
+  document.getElementById('withdraw-inv-name').textContent = inv.name;
+  document.getElementById('withdraw-inv-val').textContent = fmt(inv.currentValue || 0);
+  document.getElementById('withdraw-inv-cost').textContent = fmt(inv.initialInvested || 0);
+  const amtInp = document.getElementById('withdraw-inv-amount');
+  if(amtInp){
+    amtInp.value = '';
+    amtInp.max = inv.currentValue || 0;
+  }
+  const dateInp = document.getElementById('withdraw-inv-date');
+  if(dateInp) dateInp.value = ymd(new Date());
+
+  // Populate accounts
+  const accSel = document.getElementById('withdraw-dest-account');
+  if(accSel){
+    const methods = getPaymentMethods();
+    accSel.innerHTML = methods.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+  }
+
+  // Populate expense categories
+  const catSel = document.getElementById('withdraw-expense-category');
+  if(catSel){
+    const expCats = (DB.categories && DB.categories.expense) ? DB.categories.expense : DEFAULT_EXPENSE_CATEGORIES;
+    catSel.innerHTML = expCats.map(c => {
+      const name = typeof c === 'string' ? c : c.name;
+      return `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+    }).join('');
+  }
+
+  // Reset radio
+  const radios = document.querySelectorAll('input[name="withdraw-dest-type"]');
+  radios.forEach(r => { if(r.value === 'bank') r.checked = true; });
+  toggleWithdrawDestType('bank');
+
+  const backdrop = document.getElementById('withdraw-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeWithdrawInvestmentModal(){
+  const backdrop = document.getElementById('withdraw-investment-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function toggleWithdrawDestType(type){
+  const bankWrap = document.getElementById('withdraw-dest-bank-wrap');
+  const expWrap = document.getElementById('withdraw-dest-expense-wrap');
+  if(bankWrap) bankWrap.classList.toggle('hidden', type !== 'bank');
+  if(expWrap) expWrap.classList.toggle('hidden', type !== 'expense');
+}
+
+function handleConfirmWithdrawInvestment(e){
+  e.preventDefault();
+  const id = document.getElementById('withdraw-inv-id').value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+  const amount = parseFloat(document.getElementById('withdraw-inv-amount').value);
+  const maxAvail = inv.currentValue || 0;
+  if(isNaN(amount) || amount <= 0){
+    showToast('Please enter a valid withdrawal amount', 'error');
+    return;
+  }
+  if(amount > maxAvail){
+    showToast(`Amount exceeds available fund valuation of ${fmt(maxAvail)}`, 'error');
+    return;
+  }
+
+  const withdrawDate = document.getElementById('withdraw-inv-date').value || ymd(new Date());
+  const destType = document.querySelector('input[name="withdraw-dest-type"]:checked')?.value || 'bank';
+
+  // Reduce investment valuation & cost proportionally
+  const oldVal = inv.currentValue || 0;
+  const oldCost = inv.initialInvested || 0;
+  const ratio = oldVal > 0 ? Math.min(1, amount / oldVal) : 1;
+  inv.currentValue = Math.max(0, oldVal - amount);
+  inv.initialInvested = Math.max(0, Math.round(oldCost * (1 - ratio)));
+
+  if(destType === 'bank'){
+    const destAccount = document.getElementById('withdraw-dest-account')?.value || 'Bank Account';
+    DB.transactions.unshift({
+      id: uid(),
+      date: withdrawDate,
+      type: 'income',
+      category: 'Investments',
+      subCategory: 'Withdrawal',
+      paymentMethod: destAccount,
+      description: `Withdrawal from ${inv.name}`,
+      amount: amount
+    });
+    showToast(`Transferred ${fmt(amount)} from ${inv.name} to ${destAccount}!`);
+  } else {
+    const cat = document.getElementById('withdraw-expense-category')?.value || 'Shopping';
+    const desc = document.getElementById('withdraw-expense-desc')?.value.trim() || 'Purchase';
+    DB.transactions.unshift({
+      id: uid(),
+      date: withdrawDate,
+      type: 'expense',
+      category: cat,
+      subCategory: 'Electronics',
+      paymentMethod: `${inv.name} Withdrawal`,
+      description: `[Funded by ${inv.name}] ${desc}`,
+      amount: amount,
+      companyCovered: true, // Zero personal bank drain!
+      companyCoveredAmount: amount
+    });
+    showToast(`Purchased "${desc}" for ${fmt(amount)} funded by ${inv.name} (Rs. 0 deducted from bank)!`);
+  }
+
+  saveDB(true);
+  closeWithdrawInvestmentModal();
+  renderAllForCurrentPage();
 }
 
 function onInvTypeChange(val){
@@ -12759,6 +12975,8 @@ window.addEventListener('keydown', (e) => {
     if (sellInvEl && !sellInvEl.classList.contains('hidden')) closeSellInvestmentModal();
     const depositInvEl = document.getElementById('deposit-investment-modal-backdrop');
     if (depositInvEl && !depositInvEl.classList.contains('hidden')) closeDepositInvestmentModal();
+    const withdrawInvEl = document.getElementById('withdraw-investment-modal-backdrop');
+    if (withdrawInvEl && !withdrawInvEl.classList.contains('hidden')) closeWithdrawInvestmentModal();
     const allwModalEl = document.getElementById('allowance-modal-backdrop');
     if (allwModalEl && !allwModalEl.classList.contains('hidden')) closeAllowanceModal();
     const authEl = document.getElementById('auth-modal-backdrop');
