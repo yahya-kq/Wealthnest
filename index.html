@@ -8315,9 +8315,14 @@ function renderDashboardSavings(period, totals){
   if(!container) return;
 
   const monthlySaved = (totals && typeof totals.savings === 'number') ? totals.savings : 0;
+  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings');
+  const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const netTotalSavingsAllTime = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed) * 100) / 100);
+
   const filteredGoals = DB.savingsGoals || [];
   const totalTarget = filteredGoals.reduce((s,g)=>s+(Number(g.targetAmount)||0),0);
-  const totalCurrent = filteredGoals.reduce((s,g)=>s+(Number(g.currentAmount)||0),0);
+  const totalCurrent = filteredGoals.reduce((s,g)=>s+getGoalCurrentAmount(g),0);
   const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
 
   if(!filteredGoals.length){
@@ -8326,7 +8331,7 @@ function renderDashboardSavings(period, totals){
         <div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
             <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(monthlySaved)}</span>
-            <span class="badge badge-off" style="font-size:10.5px; font-weight:700;">No Goals</span>
+            <span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">${fmt(netTotalSavingsAllTime)} Total</span>
           </div>
           <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); margin-bottom:12px;"></div>
           <p class="muted text-xs" style="margin:24px 0; text-align:center;">No savings targets configured.</p>
@@ -8343,15 +8348,18 @@ function renderDashboardSavings(period, totals){
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-          <span class="figure" style="font-size:18px; font-weight:800; color:var(--teal);">${fmt(monthlySaved)}</span>
-          <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">${Math.round(overallPct)}% Funded</span>
+          <div>
+            <span class="figure" style="font-size:18px; font-weight:800; color:var(--teal);">${fmt(monthlySaved)}</span>
+            <span class="text-xs muted" style="margin-left:4px; font-size:11px;">This Month</span>
+          </div>
+          <span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">${fmt(netTotalSavingsAllTime)} Total</span>
         </div>
         <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:12px;">
           <div style="width:${overallPct}%; height:100%; background:var(--teal); border-radius:999px; transition:width 0.4s ease;"></div>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
           ${filteredGoals.slice(0, 3).map(g => {
-            const cur = Number(g.currentAmount) || 0;
+            const cur = getGoalCurrentAmount(g);
             const tgt = Number(g.targetAmount) || 0;
             const p = tgt > 0 ? Math.min(100, Math.round((cur / tgt) * 100)) : 0;
             return `
@@ -10813,9 +10821,11 @@ function rolloverGoal(id){
 function getGoalCurrentAmount(goal){
   if(!goal) return 0;
   const txs = Array.isArray(DB.transactions) ? DB.transactions : [];
-  const sum = txs.filter(t => t.type === 'savings' && t.category === goal.name)
-                 .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
-  return Math.round(sum * 100) / 100;
+  const deposits = txs.filter(t => t.type === 'savings' && t.category === goal.name)
+                      .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
+  const used = txs.filter(t => t.type === 'expense' && (t.description || '').includes('Funded from ' + goal.name))
+                  .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
+  return Math.max(0, Math.round((deposits - used) * 100) / 100);
 }
 
 
@@ -10827,51 +10837,55 @@ function renderSavings(){
     countLabel.textContent = `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'}`;
   }
 
-  const totalTarget = visibleGoals.reduce((s,g) => s + (Number(g.targetAmount) || 0), 0);
-  const totalCurrent = visibleGoals.reduce((s,g) => {
-    const cur = getGoalCurrentAmount(g);
-    g.currentAmount = cur;
-    return s + cur;
-  }, 0);
+  // 1. Calculate All-Time Cumulative Savings (total deposited minus any used)
+  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings');
+  const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const netTotalSavingsAllTime = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed) * 100) / 100);
 
-    const totalRemaining = Math.max(0, totalTarget - totalCurrent);
-  const overallPct = totalTarget > 0 ? Math.min(100, (totalCurrent / totalTarget) * 100) : 0;
-  const completedCount = visibleGoals.filter(g => (g.currentAmount || 0) >= g.targetAmount).length;
-
-  // Unallocated / Remaining Balance calculation for selected period
+  // 2. Selected Period Savings & Remaining Balance
   const now = new Date();
   const curM = savingsFilterMonth || (now.getMonth() + 1);
   const curY = savingsFilterYear || now.getFullYear();
-  const monthIncome = (DB.transactions||[]).filter(t => t.type==='income' && inMonth(t,curM,curY)).reduce((s,t)=>s+(t.amount||0),0);
-  const monthExpense = (DB.transactions||[]).filter(t => t.type==='expense' && inMonth(t,curM,curY)).reduce((s,t)=>s+(t.amount||0),0);
-  const monthSaved = (DB.transactions||[]).filter(t => t.type==='savings' && inMonth(t,curM,curY)).reduce((s,t)=>s+(t.amount||0),0);
+  const monthSaved = (DB.transactions || []).filter(t => t.type === 'savings' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const monthIncome = (DB.transactions || []).filter(t => t.type === 'income' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const monthExpense = (DB.transactions || []).filter(t => t.type === 'expense' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthRemaining = monthIncome - monthExpense - monthSaved;
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const curMonthName = SHORT_MONTHS[curM-1];
+  const curMonthName = SHORT_MONTHS[curM - 1];
 
-  // 1. Render 4-card Summary KPI Grid (Directly matching Budget Summary Grid)
+  // 3. Goals Achieved
+  const allGoals = DB.savingsGoals || [];
+  const completedGoalsCount = allGoals.filter(g => (getGoalCurrentAmount(g) >= (Number(g.targetAmount) || 0))).length;
+
+  // 4. Update goal currentAmounts
+  visibleGoals.forEach(g => {
+    g.currentAmount = getGoalCurrentAmount(g);
+  });
+
+  // 5. Render 4-card Summary KPI Grid with Real, Meaningful Financial Numbers
   const summaryGrid = document.getElementById('savings-summary-grid');
   if(summaryGrid){
     summaryGrid.innerHTML = `
       <div class="budget-summary-item">
-        <span class="label-eyebrow">Combined Target</span>
-        <strong>${fmt(totalTarget)}</strong>
-        <span class="text-xs muted">${visibleGoals.length} configured target${visibleGoals.length===1?'':'s'}</span>
+        <span class="label-eyebrow">Total Savings</span>
+        <strong style="color:var(--teal); font-size:22px;">${fmt(netTotalSavingsAllTime)}</strong>
+        <span class="text-xs muted">All-time accumulated savings</span>
       </div>
       <div class="budget-summary-item">
-        <span class="label-eyebrow">Funded So Far</span>
-        <strong style="color:var(--teal);">${fmt(totalCurrent)}</strong>
-        <span class="text-xs muted">${Math.round(overallPct)}% of total target</span>
+        <span class="label-eyebrow">Saved This Month</span>
+        <strong style="color:var(--ink); font-size:22px;">${fmt(monthSaved)}</strong>
+        <span class="text-xs muted">${curMonthName} ${curY} contributions</span>
       </div>
       <div class="budget-summary-item">
-        <span class="label-eyebrow">Unallocated Balance</span>
-        <strong style="color:${monthRemaining>=0?'var(--teal)':'var(--rose)'};">${fmt(Math.abs(monthRemaining))}</strong>
-        <span class="text-xs muted">${monthRemaining>=0 ? curMonthName+' remaining balance' : curMonthName+' over budget'}</span>
+        <span class="label-eyebrow">Remaining Balance</span>
+        <strong style="color:${monthRemaining >= 0 ? 'var(--teal)' : 'var(--rose)'}; font-size:22px;">${fmt(Math.abs(monthRemaining))}</strong>
+        <span class="text-xs muted">${monthRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget'}</span>
       </div>
       <div class="budget-summary-item">
-        <span class="label-eyebrow">Milestones</span>
-        <strong style="color:var(--teal);">${completedCount} Reached</strong>
-        <span class="text-xs muted">${visibleGoals.length - completedCount} in progress</span>
+        <span class="label-eyebrow">Goals Achieved</span>
+        <strong style="color:var(--primary); font-size:22px;">${completedGoalsCount} of ${allGoals.length}</strong>
+        <span class="text-xs muted">${allGoals.length - completedGoalsCount} active in progress</span>
       </div>
     `;
   }
