@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,7 +7,102 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338CA' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12V7H5a2 2 0 0 1 0-4h14v4'/><path d='M3 5v14a2 2 0 0 0 2 2h16v-5'/><path d='M18 12a2 2 0 0 0 0 4h4v-4Z'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js">
+/* ============================================================
+   CARRY-FORWARD BALANCE WORKFLOW
+   ============================================================ */
+let _carryForwardAmount = 0;
+let _carryForwardFromMonth = 0;
+let _carryForwardFromYear = 0;
+
+function openCarryForwardModal(amount, fromMonth, fromYear){
+  _carryForwardAmount = amount;
+  _carryForwardFromMonth = fromMonth;
+  _carryForwardFromYear = fromYear;
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const subtitle = document.getElementById('carry-forward-subtitle');
+  const amtEl = document.getElementById('carry-forward-amount');
+  if(subtitle) subtitle.textContent = 'Carry forward from ' + SHORT_MONTHS[fromMonth-1] + ' ' + fromYear;
+  if(amtEl) amtEl.textContent = fmt(amount);
+  
+  const goalSelect = document.getElementById('carry-forward-goal-select');
+  if(goalSelect){
+    goalSelect.innerHTML = (DB.savingsGoals||[]).map(g => '<option value="' + escapeHtml(g.id) + '">' + escapeHtml(g.name) + '</option>').join('');
+  }
+  
+  const incomeRadio = document.querySelector('input[name="carry-forward-dest"][value="income"]');
+  if(incomeRadio) incomeRadio.checked = true;
+  const row = document.getElementById('carry-forward-savings-goal-row');
+  if(row) row.classList.add('hidden');
+  
+  const backdrop = document.getElementById('carry-forward-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function onCarryForwardDestChange(dest){
+  const row = document.getElementById('carry-forward-savings-goal-row');
+  if(row){
+    if(dest === 'savings') row.classList.remove('hidden');
+    else row.classList.add('hidden');
+  }
+}
+
+function closeCarryForwardModal(){
+  const backdrop = document.getElementById('carry-forward-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function executeCarryForward(){
+  if(!_carryForwardAmount || _carryForwardAmount <= 0){
+    showToast('No balance to carry forward', 'info');
+    return;
+  }
+  const dest = document.querySelector('input[name="carry-forward-dest"]:checked')?.value || 'income';
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fromLabel = SHORT_MONTHS[_carryForwardFromMonth-1] + ' ' + _carryForwardFromYear;
+  
+  if(dest === 'income'){
+    let nextM = _carryForwardFromMonth + 1;
+    let nextY = _carryForwardFromYear;
+    if(nextM > 12){ nextM = 1; nextY++; }
+    const dateStr = nextY + '-' + String(nextM).padStart(2,'0') + '-01';
+    const newTx = {
+      id: uid(),
+      date: dateStr,
+      type: 'income',
+      category: 'Carry-Forward Balance',
+      description: 'Rolled over from ' + fromLabel,
+      amount: _carryForwardAmount,
+      paymentMethod: 'Bank Transfer'
+    };
+    DB.transactions.unshift(newTx);
+    saveDB();
+    renderAll();
+    showToast(fmt(_carryForwardAmount) + ' added to ' + SHORT_MONTHS[nextM-1] + ' ' + nextY + ' income', 'success');
+  } else {
+    const goalId = document.getElementById('carry-forward-goal-select')?.value;
+    const goal = (DB.savingsGoals||[]).find(g => g.id === goalId);
+    if(!goal){ showToast('Please select a savings goal', 'error'); return; }
+    const today = ymd(new Date());
+    const newTx = {
+      id: uid(),
+      date: today,
+      type: 'savings',
+      category: goal.name,
+      savingIn: goal.savingIn || 'Bank Account',
+      description: 'Carry-forward from ' + fromLabel,
+      amount: _carryForwardAmount,
+      paymentMethod: 'Bank Transfer'
+    };
+    DB.transactions.unshift(newTx);
+    saveDB();
+    renderAll();
+    showToast(fmt(_carryForwardAmount) + ' allocated to ' + goal.name, 'success');
+  }
+  closeCarryForwardModal();
+}
+
+</script>
 <script>if(typeof Chart==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -1147,8 +1242,8 @@
     .transaction-toolbar-row-top .chip-row{display:flex; width:100%; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:3px;}
     .transaction-toolbar-row-top .chip-row .btn-chip{flex:1; min-width:0; padding:7px 6px; font-size:12px; text-align:center; justify-content:center; white-space:nowrap;}
     .transaction-top-actions{display:flex; flex-direction:column; align-items:stretch; gap:10px; width:100%; margin-left:0;}
-    .transaction-top-actions #tx-search{width:100% !important; max-width:none !important; min-width:0 !important;}
-    .transaction-top-actions .btn-primary{width:100% !important; margin-left:0 !important;}
+    #tx-month-label { min-width:80px !important; }
+    .transaction-top-actions .btn-primary, .transaction-top-actions .btn-ghost{width:100% !important; margin-left:0 !important; justify-content:center !important;}
     .transaction-toolbar-row-bottom{display:flex; flex-direction:column; align-items:stretch; gap:10px; width:100%;}
     .transaction-dropdowns-row{display:grid !important; grid-template-columns:1fr 1fr !important; gap:8px !important; width:100% !important; flex-direction:row !important;}
     .transaction-dropdown-wrap, .transaction-dropdowns-row .excel-filter-dropdown-wrap{width:100% !important; min-width:0 !important; max-width:none !important;}
@@ -1848,7 +1943,7 @@
         <div class="transaction-toolbar-row-top">
           <div class="chip-row" id="tx-filter-chips"></div>
           <div class="transaction-top-actions">
-            <input type="text" id="tx-search" placeholder="Search category or note..." class="field-input" style="width:210px; max-width:240px; height:36px;" oninput="renderTransactions()">
+
             <button onclick="downloadTransactionsExcel()" class="btn-ghost" id="btn-export-excel" style="height:36px; padding:0 14px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-size:13px; border:1px solid var(--line);" title="Export filtered transactions as Excel-compatible CSV">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               Export Excel
@@ -1912,15 +2007,15 @@
                 <span id="tx-unassigned-subcat-text">0 Needs Subcategory</span>
               </button>
             </div>
-            <div class="transaction-date-nav">
-              <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(-1)" title="Previous day">
+            <div class="transaction-date-nav" id="tx-month-nav">
+              <button type="button" class="icon-circle-btn" onclick="stepTxMonth(-1)" title="Previous month">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
-              <input type="date" id="tx-date-filter" class="field-input" style="padding:6px 8px; font-size:12.5px; width:130px; height:36px;" onchange="setTxDateFilter(this.value)" title="Filter by date">
-              <button type="button" class="icon-circle-btn" onclick="stepTxDateFilter(1)" title="Next day">
+              <span id="tx-month-label" style="font-size:13px; font-weight:600; color:var(--ink); min-width:120px; text-align:center; display:inline-block;"></span>
+              <button type="button" class="icon-circle-btn" onclick="stepTxMonth(1)" title="Next month">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
-              <button type="button" class="excel-filter-text-btn hidden" id="tx-date-clear-btn" onclick="clearTxDateFilter()" style="font-size:12px; margin-left:2px;">All Dates</button>
+              <button type="button" class="excel-filter-text-btn" id="tx-view-all-btn" onclick="setTxViewAll()" style="font-size:12px; margin-left:4px;">View All</button>
             </div>
           </div>
         </div>
@@ -2013,6 +2108,7 @@
       <div class="card" style="padding:14px 20px; margin-bottom:16px;"><div class="dashboard-filter"><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-month">Month</label><select id="savings-filter-month" class="field-input" onchange="onSavingsFilterChange()"></select></div><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-year">Year</label><select id="savings-filter-year" class="field-input" onchange="onSavingsFilterChange()"></select></div><p class="dashboard-filter-note" id="savings-filter-note"></p></div></div>
       <!-- 4-Card Summary KPI Grid (Directly matching Budgets page) -->
       <div class="budget-summary-grid mb-4" id="savings-summary-grid"></div>
+      <div id="savings-carry-forward-btn-wrap"></div>
 
       <!-- Active Savings Targets Section Header -->
       <div class="card" style="padding:18px 22px; margin-bottom:16px;">
@@ -2507,6 +2603,59 @@
       </div>
       <button type="submit" id="tx-modal-submit" class="btn-primary" style="width:100%;">Save Transaction</button>
     </form>
+  </div>
+</div>
+
+<!-- Carry-Forward Balance Modal -->
+<div id="carry-forward-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeCarryForwardModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeCarryForwardModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Carry Forward Balance</h2>
+        <p class="text-xs muted" id="carry-forward-subtitle" style="margin:2px 0 0;"></p>
+      </div>
+    </div>
+    
+    <div id="carry-forward-summary-card" style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin:14px 0 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <span class="text-xs muted">Unallocated Balance</span>
+        <span id="carry-forward-amount" class="figure" style="font-weight:700; font-size:18px; color:var(--teal);"></span>
+      </div>
+    </div>
+    
+    <p class="text-xs muted" style="margin:0 0 12px;">Where would you like to move this balance?</p>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+      <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
+        <input type="radio" name="carry-forward-dest" value="income" checked style="margin-top:3px;" onchange="onCarryForwardDestChange(this.value)">
+        <div>
+          <div style="font-size:13.5px; font-weight:600; color:var(--ink);">Add to Income</div>
+          <div class="text-xs muted">Creates a new income entry in the next month</div>
+        </div>
+      </label>
+      <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
+        <input type="radio" name="carry-forward-dest" value="savings" style="margin-top:3px;" onchange="onCarryForwardDestChange(this.value)">
+        <div>
+          <div style="font-size:13.5px; font-weight:600; color:var(--ink);">Add to Savings Goal</div>
+          <div class="text-xs muted">Contributes directly into a savings goal vault</div>
+        </div>
+      </label>
+    </div>
+    
+    <div id="carry-forward-savings-goal-row" class="hidden" style="margin-bottom:16px;">
+      <label class="field-label" for="carry-forward-goal-select">Select Savings Goal</label>
+      <select id="carry-forward-goal-select" class="field-input"></select>
+    </div>
+    
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button type="button" onclick="closeCarryForwardModal()" class="btn-ghost">Cancel</button>
+      <button type="button" onclick="executeCarryForward()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+        Confirm Transfer
+      </button>
+    </div>
   </div>
 </div>
 
@@ -5181,7 +5330,12 @@ function exportTransactionsCSV(){
    ============================================================ */
 function downloadTransactionsExcel(){
   try {
-    var txs = Array.isArray(DB.transactions) ? DB.transactions.slice() : [];
+    var txs = Array.isArray(DB.transactions) ? DB.transactions.filter(function(t){
+      if(!txMonthFilter || txMonthFilter.viewAll) return true;
+      var parts = (t.date||'').split('-');
+      if(parts.length < 3) return true;
+      return parseInt(parts[0],10) === txMonthFilter.year && parseInt(parts[1],10) === txMonthFilter.month;
+    }).slice() : [];
     if (!txs.length) { showToast('No transactions to export', 'info'); return; }
     txs.sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
     function csvEsc(v) {
@@ -5210,11 +5364,17 @@ function downloadTransactionsExcel(){
     var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
-    var dateStr = ymd(new Date());
-    a.href = url; a.download = 'WealthNest_Transactions_'+dateStr+'.csv';
+    var MONTH_NAMES_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var fileName;
+    if(!txMonthFilter || txMonthFilter.viewAll){
+      fileName = 'WealthNest_All_Transactions.csv';
+    } else {
+      fileName = 'WealthNest_' + MONTH_NAMES_SHORT[txMonthFilter.month-1] + '_' + txMonthFilter.year + '.csv';
+    }
+    a.href = url; a.download = fileName;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
-    showToast('Exported '+txs.length+' transactions to Excel!');
+    showToast('Exported '+txs.length+' transactions'+(txMonthFilter&&!txMonthFilter.viewAll?' for '+MONTH_NAMES_SHORT[txMonthFilter.month-1]+' '+txMonthFilter.year:'')+' to Excel!');
   } catch(e) { showToast('Export failed: '+e.message, 'error'); }
 }
 
@@ -8174,28 +8334,45 @@ function renderDashboardBudgetSummary(period, totals){
         <div style="width:${Math.min(100, percent)}%; height:100%; background:${isOver ? 'var(--rose)' : (percent >= 85 ? '#D97706' : 'var(--teal)')}; border-radius:999px; transition:width 0.4s ease;"></div>
       </div>
       <div style="display:flex; flex-direction:column; gap:6px;">
-        ${categoryRows.slice(0, 2).map(r => {
+        ${categoryRows.slice(0, 3).map(r => {
           const catPct = r.budgetAmount > 0 ? Math.round((r.spent / r.budgetAmount) * 100) : 0;
           const catOver = r.spent > r.budgetAmount;
+          const catWarn = !catOver && catPct >= 75;
+          const barColor = catOver ? 'var(--rose)' : catWarn ? '#D97706' : 'var(--teal)';
+          const statusLabel = catOver ? 'Over' : catWarn ? 'Warning' : 'OK';
+          const statusColor = catOver ? 'var(--rose)' : catWarn ? '#D97706' : 'var(--teal)';
           return `
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; padding:3px 0; border-top:1px solid var(--line-soft);">
-              <span style="font-weight:600; color:var(--ink); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${titleCase(r.category)}</span>
-              <span class="figure ${catOver ? 'tone-neg' : 'tone-neu'}" style="font-size:11px; font-weight:600;">${fmt(r.spent)} / ${fmt(r.budgetAmount)}</span>
+            <div style="padding:8px 0; border-top:1px solid var(--line-soft);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:13px; font-weight:600; color:var(--ink); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${titleCase(r.category)}</span>
+                <span style="font-size:11px; font-weight:700; color:${statusColor};">${statusLabel} · ${catPct}%</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="flex:1; height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
+                  <div style="width:${Math.min(100,catPct)}%; height:100%; background:${barColor}; border-radius:999px;"></div>
+                </div>
+                <span style="font-size:11px; color:var(--muted); white-space:nowrap;">${fmt(r.spent)} / ${fmt(r.budgetAmount)}</span>
+              </div>
             </div>
           `;
         }).join('')}
+      </div>
+      <div style="text-align:center; margin-top:8px;">
+        <button type="button" onclick="goToApp('budgets')" class="excel-filter-text-btn" style="font-size:12px; padding:2px 8px;">View All Budgets</button>
       </div>
     </div>
   `;
 }
 
 function renderDashboardSavings(period, totals){
+  const container = document.getElementById('dash-savings-body');
+  if(!container) return;
+
+  const monthlySaved = (totals && typeof totals.savings === 'number') ? totals.savings : 0;
   const filteredGoals = DB.savingsGoals || [];
   const totalTarget = filteredGoals.reduce((s,g)=>s+(Number(g.targetAmount)||0),0);
   const totalCurrent = filteredGoals.reduce((s,g)=>s+(Number(g.currentAmount)||0),0);
   const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
-  const container = document.getElementById('dash-savings-body');
-  if(!container) return;
 
   if(!filteredGoals.length){
     container.innerHTML = `
@@ -8210,14 +8387,17 @@ function renderDashboardSavings(period, totals){
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-        <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(totalCurrent)}</span>
-        <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">${Math.round(overallPct)}% Funded</span>
+        <div>
+          <span class="text-xs muted" style="display:block; font-size:11px; margin-bottom:2px;">Saved This Month</span>
+          <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(monthlySaved)}</span>
+        </div>
+        <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">${Math.round(overallPct)}% Target</span>
       </div>
       <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:10px;">
         <div style="width:${overallPct}%; height:100%; background:var(--teal); border-radius:999px; transition:width 0.4s ease;"></div>
       </div>
       <div style="display:flex; flex-direction:column; gap:6px;">
-        ${filteredGoals.slice(0, 2).map(g => {
+        ${filteredGoals.slice(0, 3).map(g => {
           const cur = Number(g.currentAmount) || 0;
           const tgt = Number(g.targetAmount) || 0;
           const p = tgt > 0 ? Math.min(100, (cur / tgt) * 100) : 0;
@@ -8228,6 +8408,9 @@ function renderDashboardSavings(period, totals){
             </div>
           `;
         }).join('')}
+      </div>
+      <div style="text-align:center; margin-top:8px;">
+        <button type="button" onclick="goToApp('savings')" class="excel-filter-text-btn" style="font-size:12px; padding:2px 8px;">View Savings Details</button>
       </div>
     </div>
   `;
@@ -8968,6 +9151,7 @@ let txFilter = 'all';
 let txCategoryFilter = 'all';
 let txSubCategoryFilter = 'all';
 let txDateFilter = '';
+let txMonthFilter = { year: new Date().getFullYear(), month: new Date().getMonth() + 1, viewAll: false };
 
 function formatTxDateDisplay(dateStr){
   if(!dateStr) return '';
@@ -9010,6 +9194,38 @@ function stepTxDateFilter(delta){
 
 function clearTxDateFilter(){
   setTxDateFilter('');
+}
+
+function updateTxMonthLabel(){
+  const labelEl = document.getElementById('tx-month-label');
+  const viewAllBtn = document.getElementById('tx-view-all-btn');
+  if(!labelEl) return;
+  if(txMonthFilter.viewAll){
+    labelEl.textContent = 'All Transactions';
+    if(viewAllBtn) viewAllBtn.style.fontWeight = '700';
+  } else {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    labelEl.textContent = monthNames[txMonthFilter.month-1] + ' ' + txMonthFilter.year;
+    if(viewAllBtn) viewAllBtn.style.fontWeight = '400';
+  }
+}
+
+function stepTxMonth(delta){
+  txMonthFilter.viewAll = false;
+  let m = txMonthFilter.month + delta;
+  let y = txMonthFilter.year;
+  if(m > 12){ m = 1; y++; }
+  if(m < 1){ m = 12; y--; }
+  txMonthFilter.month = m;
+  txMonthFilter.year = y;
+  updateTxMonthLabel();
+  renderTransactions();
+}
+
+function setTxViewAll(){
+  txMonthFilter.viewAll = true;
+  updateTxMonthLabel();
+  renderTransactions();
 }
 
 function renderTxFilterChips(){
@@ -9118,8 +9334,8 @@ function toggleTxDateSort(){
 }
 
 function renderTransactions(){
+  updateTxMonthLabel();
   document.getElementById('tx-count-label').textContent = `${DB.transactions.length} logged`;
-  const query = (document.getElementById('tx-search').value || '').toLowerCase();
   
   // Dynamic Subcategory column visibility:
   // Tab All: show
@@ -9198,8 +9414,11 @@ function renderTransactions(){
       }
       return true;
     })
-    .filter(t => txDateFilter ? t.date === txDateFilter : true)
-    .filter(t => query ? `${t.category} ${t.description||''} ${t.subCategory||''} ${t.paymentMethod||''}`.toLowerCase().includes(query) : true)
+    .filter(t => {
+      if(txMonthFilter.viewAll) return true;
+      const pd = parseTxDate(t.date);
+      return pd.year === txMonthFilter.year && pd.month === txMonthFilter.month;
+    })
     .sort((a,b)=> {
       if(a.date !== b.date){
         return txDateSortOrder === 'desc'
@@ -9789,11 +10008,6 @@ function handleSaveTransaction(e){
       txSelectedSubcategories = [];
       renderTxSubCategoryFilter();
     }
-    const searchEl = document.getElementById('tx-search');
-    if(searchEl && searchEl.value) {
-      searchEl.value = '';
-    }
-
     showToast('Transaction added successfully', 'success');
   }
 
@@ -10542,9 +10756,20 @@ function renderSavings(){
     return s + cur;
   }, 0);
 
-  const totalRemaining = Math.max(0, totalTarget - totalCurrent);
+    const totalRemaining = Math.max(0, totalTarget - totalCurrent);
   const overallPct = totalTarget > 0 ? Math.min(100, (totalCurrent / totalTarget) * 100) : 0;
   const completedCount = visibleGoals.filter(g => (g.currentAmount || 0) >= g.targetAmount).length;
+
+  // Unallocated / Remaining Balance calculation for selected period
+  const now = new Date();
+  const curM = savingsFilterMonth || (now.getMonth() + 1);
+  const curY = savingsFilterYear || now.getFullYear();
+  const monthIncome = (DB.transactions||[]).filter(t => t.type==='income' && inMonth(t,curM,curY)).reduce((s,t)=>s+(t.amount||0),0);
+  const monthExpense = (DB.transactions||[]).filter(t => t.type==='expense' && inMonth(t,curM,curY)).reduce((s,t)=>s+(t.amount||0),0);
+  const monthSaved = (DB.transactions||[]).filter(t => t.type==='savings' && inMonth(t,curM,curY)).reduce((s,t)=>s+(t.amount||0),0);
+  const monthRemaining = monthIncome - monthExpense - monthSaved;
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const curMonthName = SHORT_MONTHS[curM-1];
 
   // 1. Render 4-card Summary KPI Grid (Directly matching Budget Summary Grid)
   const summaryGrid = document.getElementById('savings-summary-grid');
@@ -10561,9 +10786,9 @@ function renderSavings(){
         <span class="text-xs muted">${Math.round(overallPct)}% of total target</span>
       </div>
       <div class="budget-summary-item">
-        <span class="label-eyebrow">Remaining Balance</span>
-        <strong class="${totalRemaining>0?'tone-neu':'tone-pos'}">${fmt(totalRemaining)}</strong>
-        <span class="text-xs muted">${totalRemaining>0?'To reach all goals':'All targets funded'}</span>
+        <span class="label-eyebrow">Unallocated Balance</span>
+        <strong style="color:${monthRemaining>=0?'var(--teal)':'var(--rose)'};">${fmt(Math.abs(monthRemaining))}</strong>
+        <span class="text-xs muted">${monthRemaining>=0 ? curMonthName+' remaining balance' : curMonthName+' over budget'}</span>
       </div>
       <div class="budget-summary-item">
         <span class="label-eyebrow">Milestones</span>
@@ -10571,6 +10796,26 @@ function renderSavings(){
         <span class="text-xs muted">${visibleGoals.length - completedCount} in progress</span>
       </div>
     `;
+  }
+
+  // Render Carry-Forward Action Banner if unallocated balance > 0
+  const cfBtnContainer = document.getElementById('savings-carry-forward-btn-wrap');
+  if(cfBtnContainer){
+    if(monthRemaining > 0){
+      cfBtnContainer.innerHTML = `
+        <div style="margin-bottom:16px; padding:14px 18px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-size:14px; font-weight:700; color:var(--ink);">Unallocated Balance for ${curMonthName} ${curY}</div>
+            <div class="text-xs muted" style="margin-top:2px;">You have <strong style="color:var(--teal);">${fmt(monthRemaining)}</strong> unspent and unallocated for this period. Carry it forward to next month's income or allocate to a savings goal.</div>
+          </div>
+          <button type="button" onclick="openCarryForwardModal(${monthRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:6px 16px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+            Carry Forward Balance
+          </button>
+        </div>
+      `;
+    } else {
+      cfBtnContainer.innerHTML = '';
+    }
   }
 
   // 2. Render Clean Goal Cards (NO ugly pen icons, NO dashes, NO double pluses, ZERO emojis)
