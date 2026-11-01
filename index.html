@@ -8417,15 +8417,21 @@ function renderDashboardSavings(period, totals){
   if(!container) return;
 
   const monthlySaved = (totals && typeof totals.savings === 'number') ? totals.savings : 0;
-  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings');
-  const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-  const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-  const netTotalSavingsAllTime = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed) * 100) / 100);
 
-  const filteredGoals = DB.savingsGoals || [];
-  const totalTarget = filteredGoals.reduce((s,g)=>s+(Number(g.targetAmount)||0),0);
-  const totalCurrent = filteredGoals.reduce((s,g)=>s+getGoalCurrentAmount(g),0);
-  const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
+  // Filter goals strictly by the active dashboard period
+  let filteredGoals = DB.savingsGoals || [];
+  if (period && !period.all) {
+    if (period.months && period.months.length === 1 && period.year) {
+      filteredGoals = filteredGoals.filter(g => goalActiveInPeriod(g, period.months[0], period.year));
+    } else if (period.year) {
+      const mList = (period.months && period.months.length) ? period.months : [1,2,3,4,5,6,7,8,9,10,11,12];
+      filteredGoals = filteredGoals.filter(g => mList.some(m => goalActiveInPeriod(g, m, period.year)));
+    }
+  }
+
+  const totalTarget = filteredGoals.reduce((s, g) => s + (Number(g.targetAmount) || 0), 0);
+  const totalCurrent = filteredGoals.reduce((s, g) => s + getGoalCurrentAmount(g), 0);
+  const overallPct = totalTarget > 0 ? Math.min(100, Math.round((totalCurrent / totalTarget) * 100)) : 0;
 
   if(!filteredGoals.length){
     container.innerHTML = `
@@ -8433,10 +8439,10 @@ function renderDashboardSavings(period, totals){
         <div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
             <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(monthlySaved)}</span>
-            <span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">${fmt(netTotalSavingsAllTime)} Total</span>
+            <span class="badge badge-off" style="font-size:10.5px; font-weight:700;">No Goals</span>
           </div>
           <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); margin-bottom:12px;"></div>
-          <p class="muted text-xs" style="margin:24px 0; text-align:center;">No savings targets configured.</p>
+          <p class="muted text-xs" style="margin:24px 0; text-align:center;">No savings targets active for this period.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
           <button type="button" onclick="goToApp('savings')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Create Goal</button>
@@ -8450,11 +8456,8 @@ function renderDashboardSavings(period, totals){
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-          <div>
-            <span class="figure" style="font-size:18px; font-weight:800; color:var(--teal);">${fmt(monthlySaved)}</span>
-            <span class="text-xs muted" style="margin-left:4px; font-size:11px;">This Month</span>
-          </div>
-          <span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">${fmt(netTotalSavingsAllTime)} Total</span>
+          <span class="figure" style="font-size:18px; font-weight:800; color:var(--teal);">${fmt(monthlySaved)}</span>
+          <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">${overallPct}% Target</span>
         </div>
         <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:12px;">
           <div style="width:${overallPct}%; height:100%; background:var(--teal); border-radius:999px; transition:width 0.4s ease;"></div>
