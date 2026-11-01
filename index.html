@@ -2271,24 +2271,8 @@
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
         </div></div>
 
-      <!-- Settings 3-Domain Grouped Navigation Bar -->
-      <div class="settings-domain-bar" id="settings-domain-bar">
-        <button type="button" class="settings-domain-btn active" id="sdom-structure" onclick="setSettingsDomain('structure')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          Financial Structure
-        </button>
-        <button type="button" class="settings-domain-btn" id="sdom-preferences" onclick="setSettingsDomain('preferences')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Preferences &amp; Alerts
-        </button>
-        <button type="button" class="settings-domain-btn" id="sdom-data" onclick="setSettingsDomain('data')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Data &amp; Audit
-        </button>
-      </div>
-
-      <div class="settings-subtabs-bar" id="settings-subtabs-bar"></div>
-      <div class="settings-tabs hidden" id="settings-tabs"></div>
+      <!-- Clean & Simple Settings Tabs (Single-Tier, Professional & Uncluttered) -->
+      <div class="settings-tabs" id="settings-tabs" style="margin-bottom:20px; display:flex; flex-wrap:wrap; gap:8px;"></div>
 
       <div id="settings-categories">
         <div class="card" style="padding:22px; margin-bottom:18px;">
@@ -8033,6 +8017,60 @@ function dashboardBudgetRows(period){
 let chartDashboardTopExpenses = null;
 let chartDashboardBudget = null;
 
+function renderDashboard(){
+  initDashboardSelectors();
+  updateDashFilterNavUI();
+  const period = selectedDashboardPeriod();
+  let periodTxs = periodTransactions(period);
+  let priorPeriod = getPriorDashboardPeriod();
+  let priorTxs = periodTransactions(priorPeriod);
+
+  if(dashTypeFilter){
+    periodTxs = filterTransactionsByDashboardNav(periodTxs);
+    priorTxs = filterTransactionsByDashboardNav(priorTxs);
+  }
+
+  const totals = {income:sumByType(periodTxs,'income'),expense:sumByType(periodTxs,'expense'),savings:sumByType(periodTxs,'savings')};
+  totals.net = totals.income - totals.expense;
+
+  const priorTotals = {income:sumByType(priorTxs,'income'),expense:sumByType(priorTxs,'expense'),savings:sumByType(priorTxs,'savings')};
+  priorTotals.net = priorTotals.income - priorTotals.expense;
+
+  const incomeTrend = calcPctChange(totals.income, priorTotals.income, false);
+  const expenseTrend = calcPctChange(totals.expense, priorTotals.expense, true);
+  const savingsTrend = calcPctChange(totals.savings, priorTotals.savings, false);
+  const netTrend = calcNetBalanceTrend(totals.net, priorTotals.net);
+
+  const dashDate = document.getElementById('dash-date');
+  if(dashDate){
+    const filterTag = dashTypeFilter ? ` · Filtered: ${dashTypeFilter === 'expense' ? 'Expenses' : (dashTypeFilter === 'savings' ? 'Savings Goals' : 'Income')}` : '';
+    dashDate.textContent = period.label + filterTag;
+  }
+
+  const cards = [
+    {label:"Total Income", amount:fmt(totals.income), change:incomeTrend.text, tone:incomeTrend.tone, accent:'teal', icon:'wallet'},
+    {label:"Total Expenses", amount:fmt(totals.expense), change:expenseTrend.text, tone:expenseTrend.tone, accent:'rose', icon:'down'},
+    {label:"Total Saved", amount:fmt(totals.savings), change:savingsTrend.text, tone:savingsTrend.tone, accent:'amber', icon:'piggy'},
+    {label:"Net Balance", amount:(totals.net>=0?'':'-')+fmt(Math.abs(totals.net)), change:netTrend.text, tone:netTrend.tone, accent:'primary', icon:'scale'},
+  ];
+  const ovCards = document.getElementById('overview-cards');
+  if(ovCards) {
+    ovCards.innerHTML = cards.map(c => `
+      <div class="card ov-card">
+        <div class="ov-top"><span class="label-eyebrow">${c.label}</span><div class="ov-icon accent-${c.accent}">${miniIcon(c.icon)}</div></div>
+        <p class="ov-amount">${c.amount}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${c.tone}">${c.change}</span></div>
+      </div>`).join('');
+  }
+
+  renderDashboardTopExpenses(periodTxs, totals);
+  renderDashboardBudgetSummary(period, totals);
+  renderDashboardSavings(period, totals);
+  renderDashboardInvestments();
+  renderAllowanceTrackerWidget();
+  renderDashboardTrendChart(period);
+}
+
 function renderDashboardTopExpenses(periodTxs, totals){
   const container = document.getElementById('dashboard-top-expenses');
   const wrapEl = document.getElementById('wrap-chart-top-expenses');
@@ -8738,8 +8776,10 @@ function renderDashboardTrendChart(period){
     const centerPos = (targetIdx + 0.5) * actualColW;
     const targetScroll = Math.max(0, centerPos - (scrollContainer.clientWidth / 2));
     setTimeout(() => {
-      if (scrollContainer) {
+      if (scrollContainer && typeof scrollContainer.scrollTo === 'function') {
         scrollContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      } else if (scrollContainer) {
+        scrollContainer.scrollLeft = targetScroll;
       }
     }, 60);
   }
@@ -12425,52 +12465,20 @@ function setSettingsDomainAndTab(dom, tabId){
 }
 
 function renderSettingsTabs(){
-  const domains = {
-    'structure': {
-      label: 'Financial Structure',
-      tabs: [
-        {id:'categories', label:'Categories & Subcategories'},
-        {id:'payment-methods', label:'Payment Methods'},
-        {id:'allowances', label:'Company Benefits'}
-      ]
-    },
-    'preferences': {
-      label: 'Preferences & Alerts',
-      tabs: [
-        {id:'account', label:'Account Profile & Currency'},
-        {id:'notifications', label:'Notifications & Email Alerts'}
-      ]
-    },
-    'data': {
-      label: 'Data & Audit',
-      tabs: [
-        {id:'backup', label:'Backup & Data'},
-        {id:'activity', label:'Recent Changes'},
-        {id:'recycle', label:'Recycle Bin'}
-      ]
-    }
-  };
+  const tabs = [
+    {id:'categories', label:'Categories'},
+    {id:'allowances', label:'Company Benefits'},
+    {id:'payment-methods', label:'Payment Methods'},
+    {id:'account', label:'Account'},
+    {id:'notifications', label:'Notifications'},
+    {id:'backup', label:'Backup & Data'},
+    {id:'recycle', label:'Recycle Bin'}
+  ];
 
-  for(const [dKey, dVal] of Object.entries(domains)){
-    if(dVal.tabs.some(t => t.id === settingsTab)){
-      settingsDomain = dKey;
-      break;
-    }
-  }
-
-  const domBar = document.getElementById('settings-domain-bar');
-  if(domBar){
-    ['structure', 'preferences', 'data'].forEach(d => {
-      const btn = document.getElementById('sdom-' + d);
-      if(btn) btn.classList.toggle('active', settingsDomain === d);
-    });
-  }
-
-  const subBar = document.getElementById('settings-subtabs-bar');
-  if(subBar){
-    const curTabs = domains[settingsDomain] ? domains[settingsDomain].tabs : [];
-    subBar.innerHTML = curTabs.map(t =>
-      `<button type="button" class="settings-subtab-btn ${settingsTab===t.id?'active':''}" onclick="setSettingsTab('${t.id}')">${t.label}</button>`
+  const container = document.getElementById('settings-tabs');
+  if(container){
+    container.innerHTML = tabs.map(t =>
+      `<button type="button" class="btn-chip ${settingsTab===t.id?'active':''}" onclick="setSettingsTab('${t.id}')">${t.label}</button>`
     ).join('');
   }
 
@@ -12485,8 +12493,9 @@ function renderSettingsTabs(){
   document.getElementById('settings-account')?.classList.toggle('hidden', settingsTab!=='account');
   document.getElementById('settings-notifications')?.classList.toggle('hidden', settingsTab!=='notifications');
   document.getElementById('settings-backup')?.classList.toggle('hidden', settingsTab!=='backup');
-  document.getElementById('settings-activity')?.classList.toggle('hidden', settingsTab!=='activity');
   document.getElementById('settings-recycle')?.classList.toggle('hidden', settingsTab!=='recycle');
+  const actEl = document.getElementById('settings-activity');
+  if(actEl) actEl.classList.toggle('hidden', settingsTab!=='activity');
 }
 
 function triggerSettingsTabAction(t){
