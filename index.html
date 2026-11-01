@@ -1231,6 +1231,49 @@
     .recycle-item{padding:14px 0;}
     .recycle-actions button{min-height:38px;}
   }
+
+  /* --- Notifications Slide-over Drawer --- */
+  .notification-drawer-backdrop { position:fixed; inset:0; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); z-index:9990; transition:opacity .25s ease; }
+  .notification-drawer { position:fixed; top:0; right:0; bottom:0; width:100%; max-width:420px; background:var(--surface); border-left:1px solid var(--line); z-index:9995; display:flex; flex-direction:column; box-shadow:var(--shadow-xl, -8px 0 24px rgba(0,0,0,0.12)); transform:translateX(100%); transition:transform .28s cubic-bezier(0.16,1,0.3,1); }
+  .notification-drawer.open { transform:translateX(0); }
+  .notification-drawer-head { padding:18px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .notification-drawer-title { font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--ink); margin:0; display:flex; align-items:center; gap:8px; }
+  .notification-drawer-body { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:12px; }
+  .notification-card { background:var(--surface-2); border:1px solid var(--line-soft); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; transition:border-color .15s ease; }
+  .notification-card.unread { border-left:3px solid var(--primary); background:var(--surface); }
+  .notification-card.priority-danger { border-left:3px solid var(--rose); }
+  .notification-card.priority-teal { border-left:3px solid var(--teal); }
+  .notification-card.priority-amber { border-left:3px solid var(--amber); }
+  .notification-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .notification-card-title { font-size:13.5px; font-weight:600; color:var(--ink); margin:0; }
+  .notification-card-desc { font-size:12.5px; color:var(--muted); line-height:1.45; margin:0; }
+  .notification-card-actions { display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap; }
+  .notification-badge { position:absolute; top:-3px; right:-3px; background:var(--rose); color:#fff; font-size:10px; font-weight:700; min-width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--surface); padding:0 3px; }
+
+  /* --- Settings 3-Domain Clean Navigation --- */
+  .settings-domain-bar { display:flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:5px; margin-bottom:12px; flex-wrap:wrap; }
+  .settings-domain-btn { padding:7px 14px; font-size:12.5px; font-weight:600; color:var(--muted); background:none; border:none; border-radius:8px; cursor:pointer; transition:all .15s ease; display:inline-flex; align-items:center; gap:6px; }
+  .settings-domain-btn:hover { color:var(--ink); background:var(--surface); }
+  .settings-domain-btn.active { color:var(--primary); background:var(--surface); box-shadow:var(--shadow-sm); font-weight:700; }
+  .settings-subtabs-bar { display:flex; align-items:center; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+  .settings-subtab-btn { padding:6px 13px; font-size:12px; font-weight:500; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:8px; cursor:pointer; transition:all .15s ease; }
+  .settings-subtab-btn:hover { color:var(--ink); border-color:var(--line-strong, #94A3B8); }
+  .settings-subtab-btn.active { background:var(--primary); color:#ffffff; border-color:var(--primary); font-weight:600; }
+
+  /* --- Savings Goals 4-stat KPI Grid (Matching Budgets) --- */
+  .savings-summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+  @media(max-width:960px){.savings-summary-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:540px){.savings-summary-grid{grid-template-columns:1fr;}}
+
+  /* --- Table Variance / Difference Columns --- */
+  .diff-pos { color:var(--teal) !important; font-weight:600; }
+  .diff-neg { color:var(--rose) !important; font-weight:600; }
+  .diff-zero { color:var(--muted) !important; font-weight:500; }
+
+  /* --- Topbar Bell Action Button --- */
+  .topbar-bell-btn { position:relative; width:36px; height:36px; border-radius:10px; border:1px solid var(--line); background:var(--surface); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink); transition:all .15s ease; flex-shrink:0; }
+  .topbar-bell-btn:hover { background:var(--surface-2); border-color:var(--primary); color:var(--primary); }
+
 </style>
 </head>
 <body>
@@ -1434,7 +1477,13 @@
     <section id="page-dashboard" class="page">
       <div class="topbar">
         <div><h1 id="dash-greeting">Overview</h1><p id="dash-date"></p></div>
-        <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
       </div>
 
       <div class="card" style="padding:14px 20px; margin-bottom:16px;">
@@ -1677,7 +1726,13 @@
     <section id="page-reports" class="page hidden">
       <div class="topbar">
         <div><h1>Reports</h1><p>Analytics, trends, and monthly comparisons.</p></div>
-        <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
       </div>
 
       <div class="card" style="padding:16px 20px; margin-bottom:16px;">
@@ -1781,7 +1836,13 @@
 
     <!-- ---- TRANSACTIONS ---- -->
     <section id="page-transactions" class="page hidden">
-      <div class="topbar"><div><h1>Transactions</h1><p id="tx-count-label"></p></div><div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div></div>
+      <div class="topbar"><div><h1>Transactions</h1><p id="tx-count-label"></p></div><div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div></div>
       <div class="transaction-toolbar">
         <!-- Row 1: Type Filter Chips on left, Search & Add button on right -->
         <div class="transaction-toolbar-row-top">
@@ -1876,7 +1937,13 @@
     <section id="page-budgets" class="page hidden">
       <div class="topbar">
         <div><h1>Budgets</h1><p>Independent monthly spending targets.</p></div>
-        <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
       </div>
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
         <div class="month-nav">
@@ -1936,20 +2003,28 @@
 
     <!-- ---- SAVINGS ---- -->
     <section id="page-savings" class="page hidden">
-      <div class="topbar"><div><h1>Savings Goals</h1><p id="savings-count-label"></p></div><div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div></div>
+      <div class="topbar"><div><h1>Savings Goals</h1><p id="savings-count-label"></p></div><div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div></div>
       <div class="card" style="padding:14px 20px; margin-bottom:16px;"><div class="dashboard-filter"><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-month">Month</label><select id="savings-filter-month" class="field-input" onchange="onSavingsFilterChange()"></select></div><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-year">Year</label><select id="savings-filter-year" class="field-input" onchange="onSavingsFilterChange()"></select></div><p class="dashboard-filter-note" id="savings-filter-note"></p></div></div>
-      <div class="grid grid-3lg mb-4">
-        <div class="card" style="padding:22px;">
-          <h2 class="section-title" style="margin-bottom:14px;">Overall Savings Progress</h2>
-          <div id="savings-overall-body"></div>
+      <!-- 4-Card Summary KPI Grid (Directly matching Budgets page) -->
+      <div class="budget-summary-grid mb-4" id="savings-summary-grid"></div>
+
+      <!-- Active Savings Targets Section Header -->
+      <div class="card" style="padding:18px 22px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h2 class="section-title" style="margin:0 0 2px;">Active Savings Targets</h2>
+            <p class="text-xs muted" style="margin:0;">Target milestones, emergency reserves, and accumulated balances.</p>
+          </div>
+          <button onclick="openGoalModal()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+            + Create Goal
+          </button>
         </div>
-        <div class="card" style="padding:22px;">
-          <h2 class="section-title" style="margin-bottom:14px;">This Month</h2>
-          <div id="savings-month-body"></div>
-        </div>
-      </div>
-      <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
-        <button onclick="openGoalModal()" class="btn-primary">+ New Goal</button>
       </div>
       <div class="grid grid-2" id="savings-grid"></div>
     </section>
@@ -1966,7 +2041,13 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Investment
           </button>
+          <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
         </div>
       </div>
 
@@ -2182,9 +2263,32 @@
 
     <!-- ---- SETTINGS ---- -->
     <section id="page-settings" class="page hidden">
-      <div class="topbar"><div><h1>Settings</h1><p>Manage categories, currency, and preferences.</p></div><div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div></div>
+      <div class="topbar"><div><h1>Settings</h1><p>Manage categories, currency, and preferences.</p></div><div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div></div>
 
-      <div class="settings-tabs" id="settings-tabs"></div>
+      <!-- Settings 3-Domain Grouped Navigation Bar -->
+      <div class="settings-domain-bar" id="settings-domain-bar">
+        <button type="button" class="settings-domain-btn active" id="sdom-structure" onclick="setSettingsDomain('structure')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Financial Structure
+        </button>
+        <button type="button" class="settings-domain-btn" id="sdom-preferences" onclick="setSettingsDomain('preferences')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Preferences &amp; Alerts
+        </button>
+        <button type="button" class="settings-domain-btn" id="sdom-data" onclick="setSettingsDomain('data')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Data &amp; Audit
+        </button>
+      </div>
+
+      <div class="settings-subtabs-bar" id="settings-subtabs-bar"></div>
+      <div class="settings-tabs hidden" id="settings-tabs"></div>
 
       <div id="settings-categories">
         <div class="card" style="padding:22px; margin-bottom:18px;">
@@ -2272,7 +2376,12 @@
         </div>
       </div>
 
-      <div id="settings-account" class="hidden">
+      
+      <div id="settings-notifications" class="hidden">
+        <div id="settings-notifications-container"></div>
+      </div>
+  
+<div id="settings-account" class="hidden">
         <div class="grid grid-2">
           <div class="card" style="padding:22px;">
             <h2 class="section-title" style="margin-bottom:14px;">Currency</h2>
@@ -2709,14 +2818,14 @@
         </div>
         <div>
           <label class="field-label" for="inv-location">Platform</label>
-          <input type="text" id="inv-location" placeholder="e.g. Meezan Bank, Binance" class="field-input" autocomplete="off">
+          <input type="text" id="inv-location" placeholder="e.g. Meezan Bank, CDC, Broker" class="field-input" autocomplete="off">
         </div>
       </div>
 
       <!-- Provident Fund / VPS Specific Settings (Clean & Visual) -->
       <div id="inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
         <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <span>⚡ Employer Match</span>
+          <span>Employer Match</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
@@ -2729,7 +2838,7 @@
           </div>
         </div>
         <div id="inv-vps-preview-note" style="font-size:11.5px; color:var(--primary); font-weight:600; margin-top:8px; line-height:1.4;">
-          💡 Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
+          Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
         </div>
       </div>
 
@@ -2797,14 +2906,14 @@
         </div>
         <div>
           <label class="field-label" for="edit-inv-location">Platform</label>
-          <input type="text" id="edit-inv-location" placeholder="e.g. Meezan Bank, Binance" class="field-input" autocomplete="off">
+          <input type="text" id="edit-inv-location" placeholder="e.g. Meezan Bank, CDC, Broker" class="field-input" autocomplete="off">
         </div>
       </div>
 
       <!-- Provident Fund / VPS Specific Settings (Clean) -->
       <div id="edit-inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
         <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <span>⚡ Employer Match</span>
+          <span>Employer Match</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
@@ -2817,7 +2926,7 @@
           </div>
         </div>
         <div id="edit-inv-vps-preview-note" style="font-size:11.5px; color:var(--primary); font-weight:600; margin-top:8px; line-height:1.4;">
-          💡 Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
+          Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
         </div>
       </div>
 
@@ -2975,6 +3084,18 @@
           </div>
         </label>
 
+        <!-- Choice 3: Transfer to Savings Goal -->
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; margin-bottom:12px; padding:8px 10px; border-radius:8px; border:1px solid var(--line-soft); background:var(--surface-2);">
+          <input type="radio" name="withdraw-dest-type" value="savings" onchange="toggleWithdrawDestType('savings')" style="margin-top:3px; cursor:pointer;">
+          <div style="flex:1;">
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer to Savings Goal</strong>
+            <span class="text-xs muted" style="line-height:1.4;">Directly contribute fund balance into a savings target.</span>
+            <div id="withdraw-dest-savings-wrap" class="hidden" style="margin-top:8px;">
+              <select id="withdraw-dest-goal" class="field-input" style="height:34px; font-size:12.5px;"></select>
+            </div>
+          </div>
+        </label>
+
         <!-- Choice 2: Direct Purchase (e.g. Buy Mobile Phone) -->
         <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; margin:0; padding:8px 10px; border-radius:8px; border:1px solid var(--line-soft); background:var(--surface-2);">
           <input type="radio" name="withdraw-dest-type" value="expense" onchange="toggleWithdrawDestType('expense')" style="margin-top:3px; cursor:pointer;">
@@ -3031,7 +3152,7 @@
     <div id="deposit-vps-calc-box" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:14px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <span style="font-size:12.5px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px;">
-          ⚡ 1-Click Salary Deduction
+           1-Click Salary Deduction
         </span>
         <span class="badge" style="background:rgba(99,102,241,0.15); color:var(--primary); font-size:10.5px;" id="deposit-vps-scheme-badge">10% + 100% Match</span>
       </div>
@@ -3233,6 +3354,16 @@
             <option value="month">Monthly Quota</option>
             <option value="year">Annual Quota</option>
           </select>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="allowance-start-date">Cycle Start Date <span class="text-xs muted">(Optional)</span></label>
+          <input type="date" id="allowance-start-date" class="field-input figure">
+        </div>
+        <div>
+          <label class="field-label" for="allowance-end-date">Cycle End Date <span class="text-xs muted">(Optional)</span></label>
+          <input type="date" id="allowance-end-date" class="field-input figure">
         </div>
       </div>
 
@@ -4068,9 +4199,9 @@ function buildSeed(){
   };
   const currency = DEFAULT_CURRENCY;
   const allowanceAccounts = [
-    { id: 'fuel-card', name: 'Company Fuel Card', limit: 20000, period: 'month', icon: '⛽', active: true, color: '#F59E0B' },
-    { id: 'health-ins', name: 'Health Insurance', limit: 50000, period: 'year', icon: '🏥', active: true, color: '#10B981' },
-    { id: 'mobile-allow', name: 'Mobile / Internet Allowance', limit: 5000, period: 'month', icon: '📱', active: true, color: '#6366F1' }
+    { id: 'fuel-card', name: 'Company Fuel Card', limit: 20000, period: 'month', active: true, color: '#F59E0B' },
+    { id: 'health-ins', name: 'Health Insurance', limit: 50000, period: 'year', active: true, color: '#10B981' },
+    { id: 'mobile-allow', name: 'Mobile / Internet Allowance', limit: 5000, period: 'month', active: true, color: '#6366F1' }
   ];
   return { transactions, budgets, yearlyBudget, savingsGoals, investments, soldInvestments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[], allowanceAccounts };
 }
@@ -4122,6 +4253,28 @@ function mergeDefaultCategories(cats){
 
 let DB = loadDB();
 function ensureDemoBudgetData(){
+  if (!DB.notificationSettings || typeof DB.notificationSettings !== 'object') {
+    DB.notificationSettings = {
+      email: '',
+      emailAlerts: { budget: true, benefits: true, goals: true },
+      desktopPush: false,
+      inAppAlerts: true,
+      rolloverMode: 'prompt'
+    };
+  }
+  if (!DB.vpsSettings || typeof DB.vpsSettings !== 'object') {
+    DB.vpsSettings = {
+      active: true,
+      baseSalary: 80000,
+      employeePct: 10,
+      employerPct: 100,
+      salaryDay: 1,
+      lastCreditedMonth: ''
+    };
+  }
+  if (!Array.isArray(DB.notifications)) DB.notifications = [];
+  if (!Array.isArray(DB.savingsRolloverHistory)) DB.savingsRolloverHistory = [];
+
   DB.categories = mergeDefaultCategories(DB.categories || {});
   DB.budgets = DB.budgets || [];
   DB.investments = Array.isArray(DB.investments) ? DB.investments : [];
@@ -4132,9 +4285,9 @@ function ensureDemoBudgetData(){
   // Ensure allowance accounts exist (backward-compat migration)
   if(!Array.isArray(DB.allowanceAccounts)){
     DB.allowanceAccounts = [
-      { id: 'fuel-card', name: 'Company Fuel Card', limit: 20000, period: 'month', icon: '⛽', active: true, color: '#F59E0B' },
-      { id: 'health-ins', name: 'Health Insurance', limit: 50000, period: 'year', icon: '🏥', active: true, color: '#10B981' },
-      { id: 'mobile-allow', name: 'Mobile / Internet Allowance', limit: 5000, period: 'month', icon: '📱', active: true, color: '#6366F1' }
+      { id: 'fuel-card', name: 'Company Fuel Card', limit: 20000, period: 'month', active: true, color: '#F59E0B' },
+      { id: 'health-ins', name: 'Health Insurance', limit: 50000, period: 'year', active: true, color: '#10B981' },
+      { id: 'mobile-allow', name: 'Mobile / Internet Allowance', limit: 5000, period: 'month', active: true, color: '#6366F1' }
     ];
   }
   // Migrate: add color if missing
@@ -5109,13 +5262,22 @@ function getAllowanceYearUsed(acc, year){
   return (DB.transactions||[]).filter(function(t){ return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
                               .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
 }
-function computeAllowanceAvailable(acc){
-  var now = new Date();
-  var used = acc.period==='year' ? getAllowanceYearUsed(acc,now.getFullYear()) : getAllowanceMonthUsed(acc,now.getMonth()+1,now.getFullYear());
+function computeAllowanceAvailable(acc, refDate){
+  if(!acc) return 0;
+  var d = refDate ? new Date(refDate) : new Date();
+  if(isNaN(d.getTime())) d = new Date();
+  if(acc.startDate && acc.endDate){
+    var txs = (DB.transactions||[]).filter(function(t){
+      return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && t.date >= acc.startDate && t.date <= acc.endDate;
+    });
+    var used = txs.reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
+    return Math.max(0, (acc.limit||0)-used);
+  }
+  var used = acc.period==='year' ? getAllowanceYearUsed(acc, d.getFullYear()) : getAllowanceMonthUsed(acc, d.getMonth()+1, d.getFullYear());
   return Math.max(0, (acc.limit||0)-used);
 }
-function calculateAllowanceSplit(acc, amount){
-  var available = computeAllowanceAvailable(acc);
+function calculateAllowanceSplit(acc, amount, refDate){
+  var available = computeAllowanceAvailable(acc, refDate);
   var covered = Math.min(available, amount);
   return { coveredAmount: covered, overflowAmount: amount-covered };
 }
@@ -5133,7 +5295,7 @@ function processAllowanceForTransaction(txData){
     return txData;
   }
   var amount = txData.amount || 0;
-  var split = calculateAllowanceSplit(acc, amount);
+  var split = calculateAllowanceSplit(acc, amount, txData.date);
   if(split.coveredAmount <= 0){
     showToast('Allowance quota for "' + acc.name + '" is exhausted! Entire ' + fmt(amount) + ' marked as personal expense.', 'warning');
     txData.companyCovered = false;
@@ -5332,15 +5494,17 @@ function handleSaveAllowance(e){
   var limit = parseFloat(document.getElementById('allowance-limit').value) || 0;
   var period = document.getElementById('allowance-period').value;
   var active = document.getElementById('allowance-active').checked;
+  var startDate = document.getElementById('allowance-start-date')?.value || null;
+  var endDate = document.getElementById('allowance-end-date')?.value || null;
   if(!name){ showToast('Please enter a benefit name', 'error'); return; }
   if(limit <= 0){ showToast('Please enter a valid quota limit', 'error'); return; }
   if(!Array.isArray(DB.allowanceAccounts)) DB.allowanceAccounts = [];
   if(_editAllowanceId){
     var accE = DB.allowanceAccounts.find(function(a){ return a.id===_editAllowanceId; });
-    if(accE){ accE.name=name; accE.limit=limit; accE.period=period; accE.active=active; }
+    if(accE){ accE.name=name; accE.limit=limit; accE.period=period; accE.active=active; accE.startDate=startDate; accE.endDate=endDate; }
   } else {
     var newId = 'allw-'+Date.now().toString(36);
-    DB.allowanceAccounts.push({ id:newId, name:name, limit:limit, period:period, active:active });
+    DB.allowanceAccounts.push({ id:newId, name:name, limit:limit, period:period, active:active, startDate:startDate, endDate:endDate });
   }
   sanitizePaymentMethods();
   saveDB();
@@ -6036,6 +6200,50 @@ function renderComparison(){
         </tbody>
       </table>
     </div>
+
+    <!-- Category-by-Category Comparative Analysis -->
+    <div style="margin-top:22px;">
+      <h3 style="font-size:15px; font-weight:700; color:var(--ink); margin:0 0 4px;">Category Spending Comparison</h3>
+      <p class="text-xs muted" style="margin:0 0 12px;">Month-over-month category variance and percentage changes.</p>
+      <div class="report-table-wrap">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Expense Category</th>
+              ${months.map(m => `<th>${MONTH_NAMES[m-1]} ${year}</th>`).join('')}
+              ${months.length >= 2 ? '<th>Difference (M2 vs M1)</th><th>% Change</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            ${(() => {
+              const allCats = DB.categories?.expense ? DB.categories.expense.map(c => typeof c==='string'?c:c.name) : [];
+              return allCats.map(cat => {
+                const spends = months.map(m => spentFor(DB.transactions, m, year, cat, null));
+                const totalInRow = spends.reduce((a, b) => a + b, 0);
+                if(totalInRow === 0) return '';
+                let diffCell = '';
+                let pctCell = '';
+                if(months.length >= 2){
+                  const diff = spends[1] - spends[0];
+                  const pct = spends[0] > 0 ? Math.round((diff / spends[0]) * 100) : (spends[1] > 0 ? 100 : 0);
+                  const isUp = diff > 0;
+                  diffCell = `<td class="figure" style="font-weight:600; color:${isUp ? 'var(--rose)' : 'var(--teal)'};">${isUp ? '+' : '-'}${fmt(Math.abs(diff))}</td>`;
+                  pctCell = `<td class="figure" style="font-weight:600; color:${isUp ? 'var(--rose)' : 'var(--teal)'};">${isUp ? '+' : ''}${pct}%</td>`;
+                }
+                return `
+                  <tr>
+                    <td><strong>${titleCase(cat)}</strong></td>
+                    ${spends.map(s => `<td class="figure">${fmt(s)}</td>`).join('')}
+                    ${diffCell}
+                    ${pctCell}
+                  </tr>
+                `;
+              }).join('');
+            })()}
+          </tbody>
+        </table>
+      </div>
+    </div>
   `;
 }
 function toggleReportCategory(category){ reportOpenCategory=reportOpenCategory===category?null:category; renderReports(); }
@@ -6046,7 +6254,7 @@ function renderReportBudgetBreakdown(month,year){
   if(!groups.length) return '<p class="empty-note" style="padding:16px;">No subcategory budgets set for this month.</p>';
   return groups.map(group=>{
     const open=reportOpenBudgetCategory===group.category;
-    return `<div class="report-budget-group"><button class="report-budget-group-head" onclick="toggleReportBudgetCategory('${group.category.replace(/'/g,"\\'")}')"><strong>${titleCase(group.category)}</strong><span>${group.subcategories.length} ${group.subcategories.length===1?'subcategory':'subcategories'} <span class="report-category-toggle ${open?'open':''}">›</span></span></button><div class="report-budget-details ${open?'open':''}">${group.subcategories.map(row=>`<div class="report-budget-row is-sub"><span>${titleCase(row.subCategory)}</span><span class="figure">${fmt(row.budget)}</span><span class="figure">${fmt(row.actual)}</span><span class="figure ${row.difference<0?'tone-neg':'tone-pos'}">${row.difference<0?'-':''}${fmt(Math.abs(row.difference))}</span><span><span class="badge ${row.overspent?'badge-over':'badge-ok'}">${row.overspent?'Over Budget':'On Track'}</span></span></div>`).join('')}</div></div>`;
+    return `<div class="report-budget-group"><button class="report-budget-group-head" onclick="toggleReportBudgetCategory('${group.category.replace(/'/g,"\\'")}')"><strong>${titleCase(group.category)}</strong><span>${group.subcategories.length} ${group.subcategories.length===1?'subcategory':'subcategories'} <span class="report-category-toggle ${open?'open':''}">›</span></span></button><div class="report-budget-details ${open?'open':''}">${group.subcategories.map(row=>`<div class="report-budget-row is-sub"><span>${titleCase(row.subCategory)}</span><span class="figure">${fmt(row.budget)}</span><span class="figure">${fmt(row.actual)}</span><span class="figure ${row.difference<0?'tone-neg':'tone-pos'}" style="font-weight:600;">${row.difference<0 ? 'Over: ' : 'Saved: '}${fmt(Math.abs(row.difference))}</span><span><span class="badge ${row.overspent?'badge-over':'badge-ok'}">${row.overspent?'Over Budget':'On Track'}</span></span></div>`).join('')}</div></div>`;
   }).join('');
 }
 function renderReports(){
@@ -6133,7 +6341,7 @@ function renderReports(){
             ${isPlannedOver ? 'Over budget' : 'On track'}
           </span>
           <span class="${overReportCats.length ? 'tone-neg' : 'tone-pos'}" style="font-weight:500;">
-            ${overReportCats.length ? `⚠️ ${overReportCats.length} category exceeded limit` : '✓ Categories on track'}
+            ${overReportCats.length ? `⚠️ ${overReportCats.length} category exceeded limit` : '✓Categories on track'}
           </span>
         </div>
       `;
@@ -7301,7 +7509,38 @@ function openPrintReportView(month, year) {
           }, 400);
         };
       <\/script>
-    </body>
+    
+<!-- ============ NOTIFICATIONS SLIDE-OVER DRAWER ============ -->
+<div id="notification-drawer-backdrop" class="notification-drawer-backdrop hidden" onclick="closeNotificationDrawer()"></div>
+<div id="notification-drawer" class="notification-drawer" aria-labelledby="notification-drawer-title" role="dialog" aria-modal="true">
+  <div class="notification-drawer-head">
+    <div>
+      <h3 class="notification-drawer-title" id="notification-drawer-title">
+        Notifications &amp; Alerts
+        <span class="badge badge-ok" id="notification-drawer-count" style="font-size:11px; padding:2px 7px;">0</span>
+      </h3>
+      <p class="text-xs muted" style="margin:2px 0 0;">Budgets, allowances, goals, and reminders</p>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <button type="button" class="btn-ghost" onclick="markAllNotificationsRead()" style="padding:4px 8px; font-size:11.5px; height:28px;" title="Mark all as read">Mark Read</button>
+      <button type="button" class="modal-close" onclick="closeNotificationDrawer()" aria-label="Close" style="width:28px; height:28px; font-size:16px;">✕</button>
+    </div>
+  </div>
+  <div style="padding:10px 20px; border-bottom:1px solid var(--line-soft); background:var(--surface-2); display:flex; gap:6px;">
+    <button type="button" class="btn-chip active" id="notif-filter-all" onclick="filterNotifications('all')" style="font-size:11px; padding:3px 10px;">All</button>
+    <button type="button" class="btn-chip" id="notif-filter-alerts" onclick="filterNotifications('alerts')" style="font-size:11px; padding:3px 10px;">Alerts</button>
+    <button type="button" class="btn-chip" id="notif-filter-reminders" onclick="filterNotifications('reminders')" style="font-size:11px; padding:3px 10px;">Reminders</button>
+  </div>
+  <div class="notification-drawer-body" id="notification-list">
+    <!-- Actionable notification cards dynamically rendered here -->
+  </div>
+  <div style="padding:12px 20px; border-top:1px solid var(--line); background:var(--surface-2); display:flex; justify-content:space-between; align-items:center;">
+    <button type="button" onclick="goToApp('settings'); setSettingsDomainAndTab('preferences','notifications'); closeNotificationDrawer();" class="link-sm" style="font-size:12px; color:var(--primary); font-weight:600;">Alert Settings</button>
+    <button type="button" onclick="clearAllNotifications()" class="link-sm" style="font-size:12px; color:var(--muted); background:none; border:none; cursor:pointer;">Clear All</button>
+  </div>
+</div>
+
+</body>
     </html>
   `);
   printWindow.document.close();
@@ -7797,83 +8036,49 @@ let chartDashboardBudget = null;
 function renderDashboardTopExpenses(periodTxs, totals){
   const container = document.getElementById('dashboard-top-expenses');
   const wrapEl = document.getElementById('wrap-chart-top-expenses');
-  const canvas = document.getElementById('dashboard-chart-top-expenses');
   if(!container) return;
 
   if(chartDashboardTopExpenses){
     chartDashboardTopExpenses.destroy();
     chartDashboardTopExpenses = null;
   }
+  // Ensure cramped doughnut chart is completely hidden for a neat, spacious card
+  if(wrapEl) wrapEl.style.display = 'none';
 
   if(dashTypeFilter === 'income'){
-    if(wrapEl) wrapEl.style.display = 'none';
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Income filter active.</p>';
     return;
   }
   if(dashTypeFilter === 'savings'){
-    if(wrapEl) wrapEl.style.display = 'none';
-    container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Savings Goals filter active.</p>';
+    container.innerHTML = '<p class="empty-note" style="padding:16px 0;">Savings filter active.</p>';
     return;
   }
   const categories = expenseByCategory(periodTxs).slice(0, 3);
   if(!categories.length || totals.expense === 0){
-    if(wrapEl) wrapEl.style.display = 'none';
     container.innerHTML = '<p class="empty-note" style="padding:16px 0;">No expenses logged for this period.</p>';
     return;
   }
 
-  if(wrapEl && canvas && typeof Chart !== 'undefined'){
-    wrapEl.style.display = 'block';
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.classList.contains('dark'));
-    const sliceColors = ['#F43F5E', '#F59E0B', '#8B5CF6'];
-
-    chartDashboardTopExpenses = new Chart(canvas, {
-      type: 'doughnut',
-      data: {
-        labels: categories.map(c => titleCase(c.category)),
-        datasets: [{
-          data: categories.map(c => c.amount),
-          backgroundColor: sliceColors.slice(0, categories.length),
-          borderWidth: 2,
-          borderColor: isDark ? '#1E293B' : '#FFFFFF',
-          hoverOffset: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            displayColors: false,
-            backgroundColor: '#0F172A',
-            padding: 8,
-            cornerRadius: 6,
-            callbacks: {
-              label: ctx => ` ${ctx.label}: ${fmt(ctx.parsed)}`
-            }
-          }
-        }
-      }
-    });
-  }
-
   const palette = ['#F43F5E', '#F59E0B', '#8B5CF6'];
   container.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:4px;">
+    <div style="display:flex; flex-direction:column; gap:10px; padding-top:4px;">
       ${categories.map((cat, idx) => {
         const pct = totals.expense > 0 ? Math.round((cat.amount / totals.expense) * 100) : 0;
         const color = palette[idx % palette.length];
         return `
-          <div style="display:flex; align-items:center; justify-content:space-between; font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--line-soft); gap:10px;">
-            <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-              <span style="width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
-              <span style="font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${titleCase(cat.category)}">${titleCase(cat.category)}</span>
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:12.5px; margin-bottom:4px; gap:8px;">
+              <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
+                <span style="width:7px; height:7px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
+                <span style="font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${titleCase(cat.category)}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                <span class="figure" style="font-weight:700; color:var(--ink); font-size:12.5px;">${fmt(cat.amount)}</span>
+                <span class="badge" style="font-size:10px; font-weight:700; padding:1px 6px; background:var(--surface-2); border:1px solid var(--line-soft); color:var(--muted); min-width:32px; text-align:center;">${pct}%</span>
+              </div>
             </div>
-            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; text-align:right;">
-              <span class="figure" style="font-weight:700; color:var(--ink); font-size:12px; font-variant-numeric:tabular-nums;">${fmt(cat.amount)}</span>
-              <span class="badge" style="font-size:10px; font-weight:700; min-width:34px; text-align:center; padding:2px 5px; background:var(--surface-2); border:1px solid var(--line); border-radius:6px; color:var(--muted);">${pct}%</span>
+            <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
+              <div style="width:${pct}%; height:100%; background:${color}; border-radius:999px; transition:width 0.4s ease;"></div>
             </div>
           </div>
         `;
@@ -7891,242 +8096,103 @@ function renderDashboardBudgetSummary(period, totals){
   const isOver = spent > budgeted;
   const overCats = categoryRows.filter(r=>r.spent > r.budgetAmount);
 
-  let pTxs = periodTransactions(period);
-  if(dashTypeFilter) pTxs = filterTransactionsByDashboardNav(pTxs);
-  const totalExpense = sumByType(pTxs, 'expense');
-  const unbudgetedSpent = Math.max(0, totalExpense - spent);
-
   const subEl = document.getElementById('budget-perf-sub');
   if(subEl){
-    subEl.textContent = budgeted > 0
-      ? `${fmt(spent)} of ${fmt(budgeted)} limit`
-      : (dashTypeFilter === 'income' ? 'Income filter active' : (dashTypeFilter === 'savings' ? 'Savings filter active' : 'No category budgets configured'));
+    subEl.textContent = budgeted > 0 ? `${fmt(spent)} of ${fmt(budgeted)} limit` : 'Monthly spending caps';
   }
 
   const container = document.getElementById('dashboard-budget-summary');
   const wrapEl = document.getElementById('wrap-chart-budget');
-  const canvas = document.getElementById('dashboard-chart-budget');
   if(!container) return;
 
   if(chartDashboardBudget){
     chartDashboardBudget.destroy();
     chartDashboardBudget = null;
   }
+  // Ensure cramped half-doughnut chart is hidden for a neat, spacious card
+  if(wrapEl) wrapEl.style.display = 'none';
 
   if(categoryRows.length === 0 || budgeted === 0){
-    if(wrapEl) wrapEl.style.display = 'none';
-    const noneMsg = dashTypeFilter === 'income' ? 'Budget limits apply to expenses.' : (dashTypeFilter === 'savings' ? 'Budget limits apply to expenses.' : 'No budget categories set yet.');
     container.innerHTML = `
-      <div style="padding:8px 0;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--surface-2); border-radius:10px; border:1px dashed var(--line); margin-bottom:10px;">
-          <div>
-            <span class="text-xs muted">Budget Category</span>
-            <div style="font-size:13.5px; font-weight:700; color:var(--muted); margin-top:2px;">None</div>
-          </div>
-          <span class="badge badge-off">${dashTypeFilter ? 'Filtered' : 'None configured'}</span>
-        </div>
-        <p class="empty-note" style="margin:0; padding:4px 0;">${noneMsg} <a href="#" onclick="goToApp('budgets'); return false;" class="link-sm">Manage budgets</a></p>
+      <div style="padding:10px 0; text-align:center;">
+        <p class="muted text-xs" style="margin:0 0 10px;">No category budgets configured for this month.</p>
+        <button type="button" onclick="goToApp('budgets')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Set Budget</button>
       </div>
     `;
     return;
   }
 
-  if(wrapEl && canvas && typeof Chart !== 'undefined'){
-    wrapEl.style.display = 'block';
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.body && document.body.classList.contains('dark'));
-    const spentSlice = Math.min(spent, budgeted);
-    const remSlice = Math.max(0, budgeted - spent);
-    const mainColor = isOver ? '#F43F5E' : (percent >= 85 ? '#F59E0B' : '#0D9488');
-    const trackColor = isDark ? '#334155' : '#E2E8F0';
-
-    chartDashboardBudget = new Chart(canvas, {
-      type: 'doughnut',
-      data: {
-        labels: ['Spent', 'Remaining'],
-        datasets: [{
-          data: isOver ? [budgeted, 0] : [spentSlice, remSlice],
-          backgroundColor: isOver ? ['#F43F5E'] : [mainColor, trackColor],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        circumference: 180,
-        rotation: 270,
-        cutout: '76%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            displayColors: false,
-            callbacks: {
-              label: ctx => ` ${ctx.label}: ${fmt(ctx.parsed)}`
-            }
-          }
-        }
-      }
-    });
-  }
-
-  const statusBadgeHtml = isOver
-    ? '<span class="badge badge-over">Over budget</span>'
-    : '<span class="badge badge-ok">On track</span>';
+  const statusBadge = isOver
+    ? `<span class="badge badge-over" style="font-size:10.5px; font-weight:700;">Over by ${fmt(spent - budgeted)}</span>`
+    : `<span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">${fmt(remaining)} Left (${percent}%)</span>`;
 
   container.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:9px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:8px;">
-      <div>
-        <span class="text-xs muted">${isOver ? 'Over budget by' : 'Remaining budget'}</span>
-        <div class="figure" style="font-size:15px; font-weight:700; color:${isOver ? 'var(--rose)' : 'var(--teal)'};">${fmt(Math.abs(remaining))}</div>
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+        <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(spent)}</span>
+        ${statusBadge}
       </div>
-      <div style="text-align:right;">
-        <span class="text-xs muted" style="display:block;">${percent}% used</span>
-        ${statusBadgeHtml}
+      <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:10px;">
+        <div style="width:${Math.min(100, percent)}%; height:100%; background:${isOver ? 'var(--rose)' : (percent >= 85 ? '#D97706' : 'var(--teal)')}; border-radius:999px; transition:width 0.4s ease;"></div>
       </div>
-    </div>
-    <div style="font-size:11.5px; color:var(--muted);">
-      ${overCats.length ? `<span class="tone-neg" style="font-weight:600;">⚠️ ${overCats.length} planned categor${overCats.length===1?'y':'ies'} exceeded</span>` : '<span class="tone-pos">✓ All planned categories within limits</span>'}
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        ${categoryRows.slice(0, 2).map(r => {
+          const catPct = r.budgetAmount > 0 ? Math.round((r.spent / r.budgetAmount) * 100) : 0;
+          const catOver = r.spent > r.budgetAmount;
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; padding:3px 0; border-top:1px solid var(--line-soft);">
+              <span style="font-weight:600; color:var(--ink); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${titleCase(r.category)}</span>
+              <span class="figure ${catOver ? 'tone-neg' : 'tone-neu'}" style="font-size:11px; font-weight:600;">${fmt(r.spent)} / ${fmt(r.budgetAmount)}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
     </div>
   `;
 }
 
 function renderDashboardSavings(period, totals){
-  const isSavingsMode = dashTypeFilter === 'savings';
-  const filteredGoals = isSavingsMode
-    ? DB.savingsGoals.filter(g => (dashSelectedGoals || []).includes(g.name))
-    : (DB.savingsGoals || []);
+  const filteredGoals = DB.savingsGoals || [];
   const totalTarget = filteredGoals.reduce((s,g)=>s+(Number(g.targetAmount)||0),0);
   const totalCurrent = filteredGoals.reduce((s,g)=>s+(Number(g.currentAmount)||0),0);
   const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
   const container = document.getElementById('dash-savings-body');
   if(!container) return;
 
-  if(filteredGoals.length === 0){
+  if(!filteredGoals.length){
     container.innerHTML = `
-      <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:28px 12px; height:100%;">
-        <div style="width:44px; height:44px; border-radius:12px; background:var(--amber-light); color:var(--amber); display:flex; align-items:center; justify-content:center; margin-bottom:10px;">
-          ${miniIcon('piggy')}
-        </div>
-        <div style="font-weight:700; font-size:14px; color:var(--ink); margin-bottom:4px;">No Savings Goals Yet</div>
-        <p class="text-xs muted" style="margin:0 0 14px; max-width:200px; line-height:1.4;">Set targets for an emergency fund, travel, or big purchases.</p>
-        <button type="button" onclick="goToApp('savings')" class="btn-primary btn-small" style="font-size:12px; padding:6px 14px;">+ Create Goal</button>
+      <div style="padding:10px 0; text-align:center;">
+        <p class="muted text-xs" style="margin:0 0 10px;">No savings targets configured.</p>
+        <button type="button" onclick="goToApp('savings')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Create Goal</button>
       </div>
     `;
     return;
   }
 
-  // Top overall progress summary block with generous padding & clean aesthetic
-  const overallBlock = `
-    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <span class="text-xs muted" style="font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Total Accumulated</span>
-        <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:11px; padding:2px 7px; font-weight:700;">${overallPct.toFixed(0)}%</span>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-        <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(totalCurrent)}</span>
-        <span class="text-xs muted" style="font-weight:600;">Target: ${fmt(totalTarget)}</span>
-      </div>
-      <div class="progress-track" style="height:7px; border-radius:4px; margin-bottom:6px;">
-        <div class="progress-fill fill-amber" style="width:${overallPct}%; border-radius:4px;"></div>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted); margin-top:4px;">
-        <span>Added this period:</span>
-        <span class="figure tone-pos" style="font-weight:700; font-size:11.5px;">+${fmt(totals.savings)}</span>
-      </div>
-    </div>
-  `;
-
-  // Top 3 individual goals, spaced neatly with both current/target and percent
-  const goalsList = filteredGoals.slice(0, 3).map(g => {
-    const cur = Number(g.currentAmount) || 0;
-    const tgt = Number(g.targetAmount) || 0;
-    const p = tgt > 0 ? Math.min(100, (cur / tgt) * 100) : 0;
-    const isDone = p >= 100;
-    return `
-      <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <span style="font-weight:600; font-size:12.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${escapeHtml(g.name)}</span>
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span class="figure text-xs" style="font-weight:700; color:var(--ink);">${fmt(cur)}</span>
-            <span class="badge ${isDone ? 'badge-ok' : ''}" style="font-size:10px; font-weight:700; padding:1px 5px; min-width:32px; text-align:center;">${Math.round(p)}%</span>
-          </div>
-        </div>
-        <div class="progress-track" style="height:5px; border-radius:3px;">
-          <div class="progress-fill ${isDone ? 'fill-teal' : 'fill-primary'}" style="width:${p}%; border-radius:3px;"></div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  const footer = filteredGoals.length > 3 ? `
-    <div style="margin-top:10px; text-align:right;">
-      <a href="#" onclick="goToApp('savings'); return false;" class="link-sm" style="font-size:11.5px; font-weight:600;">+${filteredGoals.length - 3} more goal${filteredGoals.length - 3 === 1 ? '' : 's'} →</a>
-    </div>
-  ` : '';
-
   container.innerHTML = `
-    <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
-      ${overallBlock}
-      <div style="display:flex; flex-direction:column; gap:4px;">
-        ${goalsList}
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+        <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(totalCurrent)}</span>
+        <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">${Math.round(overallPct)}% Funded</span>
       </div>
-      ${footer}
+      <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:10px;">
+        <div style="width:${overallPct}%; height:100%; background:var(--teal); border-radius:999px; transition:width 0.4s ease;"></div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        ${filteredGoals.slice(0, 2).map(g => {
+          const cur = Number(g.currentAmount) || 0;
+          const tgt = Number(g.targetAmount) || 0;
+          const p = tgt > 0 ? Math.min(100, (cur / tgt) * 100) : 0;
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; padding:3px 0; border-top:1px solid var(--line-soft);">
+              <span style="font-weight:600; color:var(--ink); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(g.name)}</span>
+              <span class="figure tone-neu" style="font-size:11px; font-weight:600;">${fmt(cur)} / ${fmt(tgt)}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
     </div>
   `;
-}
-
-
-function renderDashboard(){
-  initDashboardSelectors();
-  updateDashFilterNavUI();
-  const period = selectedDashboardPeriod();
-  let periodTxs = periodTransactions(period);
-  let priorPeriod = getPriorDashboardPeriod();
-  let priorTxs = periodTransactions(priorPeriod);
-
-  if(dashTypeFilter){
-    periodTxs = filterTransactionsByDashboardNav(periodTxs);
-    priorTxs = filterTransactionsByDashboardNav(priorTxs);
-  }
-
-  const totals = {income:sumByType(periodTxs,'income'),expense:sumByType(periodTxs,'expense'),savings:sumByType(periodTxs,'savings')};
-  totals.net = totals.income - totals.expense;
-
-  const priorTotals = {income:sumByType(priorTxs,'income'),expense:sumByType(priorTxs,'expense'),savings:sumByType(priorTxs,'savings')};
-  priorTotals.net = priorTotals.income - priorTotals.expense;
-
-  const incomeTrend = calcPctChange(totals.income, priorTotals.income, false);
-  const expenseTrend = calcPctChange(totals.expense, priorTotals.expense, true);
-  const savingsTrend = calcPctChange(totals.savings, priorTotals.savings, false);
-  const netTrend = calcNetBalanceTrend(totals.net, priorTotals.net);
-
-  const dashDate = document.getElementById('dash-date');
-  if(dashDate){
-    const filterTag = dashTypeFilter ? ` · Filtered: ${dashTypeFilter === 'expense' ? 'Expenses' : (dashTypeFilter === 'savings' ? 'Savings Goals' : 'Income')}` : '';
-    dashDate.textContent = period.label + filterTag;
-  }
-
-  const cards = [
-    {label:"Total Income", amount:fmt(totals.income), change:incomeTrend.text, tone:incomeTrend.tone, accent:'teal', icon:'wallet'},
-    {label:"Total Expenses", amount:fmt(totals.expense), change:expenseTrend.text, tone:expenseTrend.tone, accent:'rose', icon:'down'},
-    {label:"Total Saved", amount:fmt(totals.savings), change:savingsTrend.text, tone:savingsTrend.tone, accent:'amber', icon:'piggy'},
-    {label:"Net Balance", amount:(totals.net>=0?'':'-')+fmt(Math.abs(totals.net)), change:netTrend.text, tone:netTrend.tone, accent:'primary', icon:'scale'},
-  ];
-  const ovCards = document.getElementById('overview-cards');
-  if(ovCards) {
-    ovCards.innerHTML = cards.map(c => `
-      <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">${c.label}</span><div class="ov-icon accent-${c.accent}">${miniIcon(c.icon)}</div></div>
-        <p class="ov-amount">${c.amount}</p>
-        <div class="ov-change"><span class="kpi-trend-badge trend-${c.tone}">${c.change}</span></div>
-      </div>`).join('');
-  }
-
-  renderDashboardTopExpenses(periodTxs, totals);
-  renderDashboardBudgetSummary(period, totals);
-  renderDashboardSavings(period, totals);
-  renderDashboardInvestments();
-  renderAllowanceTrackerWidget();
-  renderDashboardTrendChart(period);
 }
 
 function renderDashboardInvestments(){
@@ -8135,10 +8201,11 @@ function renderDashboardInvestments(){
   const list = DB.investments || [];
   if(!list.length){
     body.innerHTML = `
-      <div style="padding:12px 0; text-align:center;">
-        <p class="muted text-xs" style="margin:0 0 10px; line-height:1.4;">Track stocks, ETFs, crypto, and real estate with outcome projections.</p>
-        <button type="button" onclick="goToApp('investments')" class="btn-small" style="font-size:12px; padding:5px 12px;">+ Track Assets</button>
-      </div>`;
+      <div style="padding:10px 0; text-align:center;">
+        <p class="muted text-xs" style="margin:0 0 10px;">Track stocks, mutual funds, and VPS assets.</p>
+        <button type="button" onclick="goToApp('investments')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Add Asset</button>
+      </div>
+    `;
     return;
   }
   const totalCost = list.reduce((s, i) => s + (Number(i.initialInvested) || 0), 0);
@@ -8149,25 +8216,26 @@ function renderDashboardInvestments(){
 
   body.innerHTML = `
     <div>
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
-        <span class="muted text-xs" style="font-weight:600;">Portfolio Value</span>
-        <span class="badge ${totalGain >= 0 ? 'badge-ok' : 'badge-over'}" style="font-size:11px; padding:1px 6px;">${roiSign}${roi.toFixed(1)}%</span>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+        <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(totalVal)}</span>
+        <span class="badge ${totalGain >= 0 ? 'badge-ok' : 'badge-over'}" style="font-size:10.5px; font-weight:700;">${roiSign}${roi.toFixed(1)}%</span>
       </div>
-      <div class="figure" style="font-size:20px; font-weight:700; color:var(--ink); line-height:1.2; margin-bottom:8px;">${fmt(totalVal)}</div>
-      <div style="display:flex; flex-direction:column; gap:5px;">
+      <div style="margin-bottom:8px; font-size:11px; color:var(--muted);">
+        VPS Engine: <strong style="color:${DB.vpsSettings && DB.vpsSettings.active ? 'var(--teal)' : 'var(--muted)'}; font-weight:600;">${DB.vpsSettings && DB.vpsSettings.active ? 'Active' : 'Paused'}</strong>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
         ${list.slice(0, 2).map(inv => {
-          const invCost = Number(inv.initialInvested) || 0;
           const invVal = Number(inv.currentValue) || 0;
-          const invGain = invVal - invCost;
           return `
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:3px 0; border-top:1px solid var(--line-soft);">
-              <span style="font-weight:600; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${inv.name}</span>
-              <span class="figure ${invGain>=0?'tone-pos':'tone-neg'}" style="font-weight:600;">${fmt(invVal)}</span>
-            </div>`;
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; padding:3px 0; border-top:1px solid var(--line-soft);">
+              <span style="font-weight:600; color:var(--ink); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(inv.name)}</span>
+              <span class="figure" style="font-weight:600; font-size:11px; color:var(--ink);">${fmt(invVal)}</span>
+            </div>
+          `;
         }).join('')}
       </div>
-      ${list.length > 2 ? `<div class="text-xs muted" style="margin-top:6px; text-align:right;">+${list.length - 2} more asset${list.length - 2 === 1 ? '' : 's'}</div>` : ''}
-    </div>`;
+    </div>
+  `;
 }
 
 let chartDashboardTrend = null;
@@ -9435,6 +9503,27 @@ function renderModalPaymentMethods(selectedValues = ['Cash']){
   updateExcelFilterUI('tx-modal-payment');
 }
 
+
+function populateTxSavingsGoalSelect(selectedGoalName){
+  const sel = document.getElementById('tx-savings-goal');
+  if(!sel) return;
+  const goals = (DB.savingsGoals || []).filter(g => (g.currentAmount || 0) > 0);
+  let html = '<option value="">None (Personal / Wallet Expense)</option>';
+  goals.forEach(g => {
+    html += `<option value="${escapeHtml(g.name)}" ${g.name === selectedGoalName ? 'selected' : ''}>${escapeHtml(g.name)} (${fmt(g.currentAmount)} available)</option>`;
+  });
+  sel.innerHTML = html;
+  if(selectedGoalName) sel.value = selectedGoalName;
+}
+
+function onTxSavingsGoalSelectChange(){
+  const val = document.getElementById('tx-savings-goal')?.value;
+  if(val){
+    const descEl = document.getElementById('tx-description');
+    if(descEl && !descEl.value) descEl.value = 'Funded from ' + val;
+  }
+}
+
 function openTxModal(editId = null){
   editingTxId = editId || null;
   const modalTitle = document.getElementById('tx-modal-title');
@@ -10012,6 +10101,7 @@ function renderBudgetHistory(){
                       <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700;">Subcategory</th>
                       <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Budget</th>
                       <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Spent</th>
+                      <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Difference</th>
                       <th style="padding:8px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:center;">Status</th>
                     </tr>
                   </thead>
@@ -10022,6 +10112,9 @@ function renderBudgetHistory(){
                         <td style="padding:9px 12px; color:var(--muted); font-size:12px;">${it.subCategory ? it.subCategory : '<span style="color:var(--muted-2); font-style:italic;">All</span>'}</td>
                         <td class="figure" style="padding:9px 12px; text-align:right; font-weight:500;">${fmt(it.budgetAmount)}</td>
                         <td class="figure" style="padding:9px 12px; text-align:right; font-weight:600; color:${it.overspent ? 'var(--rose)' : 'var(--ink)'};">${fmt(it.spent)}</td>
+                        <td class="figure" style="padding:9px 12px; text-align:right; font-weight:600; color:${it.budgetAmount >= it.spent ? 'var(--teal)' : 'var(--rose)'};">
+                          ${it.budgetAmount >= it.spent ? '+' : '-'}${fmt(Math.abs(it.budgetAmount - it.spent))}
+                        </td>
                         <td style="padding:9px 12px; text-align:center;">
                           ${it.overspent ? '<span class="badge badge-over">Over Budget</span>' : '<span class="badge badge-ok">On Track</span>'}
                         </td>
@@ -10393,145 +10486,158 @@ function getGoalCurrentAmount(goal){
   return Math.round(sum * 100) / 100;
 }
 
+
 function renderSavings(){
   initSavingsFilters();
-  document.getElementById('savings-count-label').textContent = `${DB.savingsGoals.length} active goal${DB.savingsGoals.length===1?'':'s'}`;
-  const now = new Date(); const month = now.getMonth()+1, year = now.getFullYear();
-  const totalTarget = DB.savingsGoals.reduce((s,g)=>s+g.targetAmount,0);
-  
-  // Calculate totalCurrent dynamically from transactions
-  const totalCurrent = DB.savingsGoals.reduce((s,g) => {
-    const current = getGoalCurrentAmount(g);
-    g.currentAmount = current;
-    return s + current;
+  const visibleGoals = (DB.savingsGoals || []).filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
+  const countLabel = document.getElementById('savings-count-label');
+  if(countLabel){
+    countLabel.textContent = `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'}`;
+  }
+
+  const totalTarget = visibleGoals.reduce((s,g) => s + (Number(g.targetAmount) || 0), 0);
+  const totalCurrent = visibleGoals.reduce((s,g) => {
+    const cur = getGoalCurrentAmount(g);
+    g.currentAmount = cur;
+    return s + cur;
   }, 0);
-  
-  const overallPct = totalTarget>0 ? Math.min(100,(totalCurrent/totalTarget)*100) : 0;
-  document.getElementById('savings-overall-body').innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
-      <span class="figure" style="font-size:26px; font-weight:600;">${fmt(totalCurrent)}</span>
-      <span class="text-sm muted">of ${fmt(totalTarget)} target</span>
-    </div>
-    <div class="progress-track" style="height:10px;"><div class="progress-fill fill-amber" style="width:${overallPct}%;"></div></div>
-    <p class="text-xs ${overallPct<50?'tone-neg':'tone-pos'}" style="margin:8px 0 0; font-weight:600;">${Math.round(overallPct)}% of your combined goals reached</p>
-  `;
-  const m = monthTotals(DB.transactions, month, year);
-  const trend = monthlyTrend(DB.transactions, 4);
-  document.getElementById('savings-month-body').innerHTML = `
-    <p class="figure" style="font-size:26px; font-weight:600; color:var(--teal); margin:0 0 10px;">${fmt(m.savings)}</p>
-    <p class="text-xs muted" style="margin:0 0 12px;">Saved in ${MONTH_NAMES[month-1]}</p>
-    <div style="display:flex; gap:6px; align-items:flex-end; height:40px;">
-      ${trend.map(t => `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;"><div style="width:100%; background:var(--amber-light); border-radius:4px; height:${Math.max(4, Math.min(36, t.savings/20))}px;"></div><span class="text-xs muted">${t.label}</span></div>`).join('')}
-    </div>
-  `;
 
-  const visibleGoals = DB.savingsGoals.filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
+  const totalRemaining = Math.max(0, totalTarget - totalCurrent);
+  const overallPct = totalTarget > 0 ? Math.min(100, (totalCurrent / totalTarget) * 100) : 0;
+  const completedCount = visibleGoals.filter(g => (g.currentAmount || 0) >= g.targetAmount).length;
+
+  // 1. Render 4-card Summary KPI Grid (Directly matching Budget Summary Grid)
+  const summaryGrid = document.getElementById('savings-summary-grid');
+  if(summaryGrid){
+    summaryGrid.innerHTML = `
+      <div class="budget-summary-item">
+        <span class="label-eyebrow">Combined Target</span>
+        <strong>${fmt(totalTarget)}</strong>
+        <span class="text-xs muted">${visibleGoals.length} configured target${visibleGoals.length===1?'':'s'}</span>
+      </div>
+      <div class="budget-summary-item">
+        <span class="label-eyebrow">Funded So Far</span>
+        <strong style="color:var(--teal);">${fmt(totalCurrent)}</strong>
+        <span class="text-xs muted">${Math.round(overallPct)}% of total target</span>
+      </div>
+      <div class="budget-summary-item">
+        <span class="label-eyebrow">Remaining Balance</span>
+        <strong class="${totalRemaining>0?'tone-neu':'tone-pos'}">${fmt(totalRemaining)}</strong>
+        <span class="text-xs muted">${totalRemaining>0?'To reach all goals':'All targets funded'}</span>
+      </div>
+      <div class="budget-summary-item">
+        <span class="label-eyebrow">Milestones</span>
+        <strong style="color:var(--teal);">${completedCount} Reached</strong>
+        <span class="text-xs muted">${visibleGoals.length - completedCount} in progress</span>
+      </div>
+    `;
+  }
+
+  // 2. Render Clean Goal Cards (NO ugly pen icons, NO dashes, NO double pluses, ZERO emojis)
   const todayStr = ymd(new Date());
+  const grid = document.getElementById('savings-grid');
+  if(!grid) return;
 
-  document.getElementById('savings-grid').innerHTML = visibleGoals.map(g => {
-    const currentSaved = getGoalCurrentAmount(g);
-    g.currentAmount = currentSaved;
-    const percent = g.targetAmount > 0 ? Math.min(100, (currentSaved / g.targetAmount) * 100) : 0;
-    const reached = currentSaved >= g.targetAmount;
+  if(!visibleGoals.length){
+    grid.innerHTML = `
+      <div class="card" style="grid-column:1/-1; padding:36px 20px; text-align:center;">
+        <h3 style="margin:0 0 6px; font-size:16px;">No Savings Goals Configured</h3>
+        <p class="text-xs muted" style="margin:0 0 16px;">Set up a savings goal for an emergency fund, major purchase, or vacation.</p>
+        <button type="button" onclick="openGoalModal()" class="btn-primary">+ Create New Goal</button>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = visibleGoals.map(g => {
+    const cur = g.currentAmount || 0;
+    const reached = cur >= g.targetAmount;
     const isExpired = Boolean(g.deadline && g.deadline < todayStr && !reached);
-    const remaining = Math.max(0, g.targetAmount - currentSaved);
-
-    let statusBadge = '';
-    if(reached){
-      statusBadge = `<span class="badge badge-ok" style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-weight:700; font-size:11px; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px;"><span>🎉</span> Goal Achieved!</span>`;
-    } else if(isExpired){
-      statusBadge = `<span class="badge" style="background:#FEF2F2; color:#B91C1C; border:1px solid #FECACA; font-weight:600; font-size:11px; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Deadline Passed</span>`;
-    }
-
+    const pct = g.targetAmount > 0 ? Math.min(100, (cur / g.targetAmount) * 100) : 0;
+    const rem = Math.max(0, g.targetAmount - cur);
     const savingInLabel = g.savingIn || 'Bank Account';
 
-    return `<div class="card" style="padding:22px; ${reached ? 'border-color:#86EFAC;' : isExpired ? 'border-color:#FECACA;' : ''}">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
-        <div>
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <h3 class="section-title" style="margin:0;">${escapeHtml(g.name)}</h3>
-            ${statusBadge}
+    return `
+      <div class="card" style="padding:22px; ${reached ? 'border-color:var(--teal);' : (isExpired ? 'border-color:var(--rose);' : '')}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
+              ${reached ? '<span class="badge badge-ok" style="font-weight:700;">Completed</span>' : (isExpired ? '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>' : '<span class="badge badge-off">In Progress</span>')}
+            </div>
+            ${g.deadline ? `<p class="text-xs muted" style="margin:4px 0 0;">Target Date: <strong>${escapeHtml(g.deadline)}</strong></p>` : ''}
+            <div style="margin-top:6px; display:inline-flex; align-items:center; gap:5px; background:var(--surface-2); border:1px solid var(--line-soft); padding:3px 8px; border-radius:6px; font-size:11.5px; color:var(--muted);">
+              <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
+            </div>
           </div>
-          ${(!reached && g.deadline) ? `<p class="text-xs muted" style="margin:4px 0 0;">Deadline: <strong>${escapeHtml(g.deadline)}</strong>${isExpired ? ' <span style="color:var(--rose); font-weight:600;">(Passed)</span>' : ''}</p>` : ''}
-          <div style="margin-top:6px; display:inline-flex; align-items:center; gap:5px; background:var(--surface-2, #F8FAFC); border:1px solid var(--border-subtle, #E2E8F0); padding:2px 8px; border-radius:6px; font-size:11.5px; color:var(--ink-light, #475569);">
-            <span>Saving in: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+            <span class="figure" style="font-size:18px; font-weight:700; color:${reached ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
+            <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
+            <button type="button" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" title="Delete goal">Delete</button>
           </div>
         </div>
-        <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-          <span class="figure" style="font-size:17px; font-weight:700; color:${reached ? 'var(--teal)' : 'var(--amber)'};">${Math.round(percent)}%</span>
-          ${!reached ? `
-            <button class="icon-btn" onclick="openRolloverGoalModal('${g.id}')" title="Move / Extend goal to next month" aria-label="Move ${escapeHtml(g.name)} to next month">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+
+        <div class="progress-track" style="height:8px; border-radius:999px; overflow:hidden;">
+          <div class="progress-fill ${reached ? 'fill-teal' : 'fill-primary'}" style="width:${pct}%; transition:width 0.4s ease;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px;">
+          <span class="figure"><strong>${fmt(cur)}</strong> <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
+          <span class="text-xs muted">${reached ? 'Fully Funded' : fmt(rem) + ' remaining'}</span>
+        </div>
+
+        <!-- Clean Action Buttons (NO ugly pen icons, NO double pluses, NO dashes) -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${!reached ? `
+              <button type="button" onclick="showContributeRow('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px;">
+                Contribute
+              </button>
+            ` : ''}
+            <button type="button" onclick="openGoalContributionsModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px;">
+              History
+            </button>
+            ${cur > 0 ? `
+              <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use funds from this goal for an expense">
+                Use Funds
+              </button>
+            ` : ''}
+          </div>
+          ${(!reached && g.deadline) ? `
+            <button type="button" onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="font-size:11.5px; color:var(--muted); background:none; border:none; cursor:pointer;">
+              Extend Date
             </button>
           ` : ''}
-          <button class="icon-btn" onclick="openEditGoalModal('${g.id}')" title="Edit savings goal" aria-label="Edit ${escapeHtml(g.name)}">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="icon-btn" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" title="Delete savings goal" aria-label="Delete savings goal">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="progress-track" style="height:10px; border-radius:999px; overflow:hidden;"><div class="progress-fill ${reached ? 'fill-teal' : 'fill-amber'}" style="width:${percent}%; transition:width 0.4s ease;"></div></div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13.5px;">
-        <span class="figure"><strong>${fmt(currentSaved)}</strong> <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
-        ${reached ? '<span class="badge badge-ok" style="font-weight:600;">✓ Complete</span>' : `<span class="text-xs muted">${fmt(remaining)} remaining</span>`}
-      </div>
-      
-      <!-- Actions Toolbar on Card -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          ${!reached ? `
-            <button onclick="showContributeRow('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; font-weight:600; color:var(--primary); font-size:12.5px; display:inline-flex; align-items:center; gap:4px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              + Contribute
-            </button>
-          ` : ''}
-          <button onclick="openGoalContributionsModal('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; font-weight:600; font-size:12.5px; color:var(--teal); display:inline-flex; align-items:center; gap:4px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            History / Edit
-          </button>
         </div>
 
-        ${!reached ? `
-          <button onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="background:none; border:none; padding:0; color:var(--muted); font-size:12px; display:inline-flex; align-items:center; gap:4px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-            Extend Deadline
-          </button>
-        ` : ''}
+        <div id="contribute-row-${g.id}" style="margin-top:10px;"></div>
       </div>
-
-      <div id="contribute-row-${g.id}" style="margin-top:10px;"></div>
-
-      ${reached ? `
-        <div style="margin-top:12px; padding:10px 14px; background:#F0FDF4; border-radius:var(--radius-sm); border:1px solid #BBF7D0; display:flex; align-items:center; gap:8px;">
-          <span style="font-size:18px;">🏆</span>
-          <span class="text-xs" style="color:#15803D; font-weight:600;">Congratulations! You achieved your target savings goal.</span>
-        </div>
-      ` : ''}
-    </div>`;
-  }).join('') || '<p class="empty-note">No savings goals yet.</p>';
+    `;
+  }).join('');
 }
 
 function showContributeRow(id){
-  const goal=DB.savingsGoals.find(item=>item.id===id);
-  const today=ymd(new Date());
-  const defaultDate=goal&&goal.startDate&&goal.startDate>today?goal.startDate:today;
+  const goal = DB.savingsGoals.find(item => item.id === id);
+  const today = ymd(new Date());
+  const defaultDate = goal && goal.startDate && goal.startDate > today ? goal.startDate : today;
   const savingInDefault = goal?.savingIn || 'Bank Account';
-  document.getElementById('contribute-row-'+id).innerHTML = `
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:var(--surface-2); padding:10px; border-radius:8px; border:1px solid var(--line-soft);">
+  const container = document.getElementById('contribute-row-' + id);
+  if(!container) return;
+
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:var(--surface-2); padding:12px; border-radius:8px; border:1px solid var(--line-soft);">
       <div>
-        <label class="field-label" style="font-size:11px; margin-bottom:5px;">Date</label>
+        <label class="field-label" style="font-size:11px; margin-bottom:4px;">Date</label>
         <input type="date" id="contribute-date-${id}" value="${defaultDate}" min="${goal?.startDate||''}" max="${goal?.deadline||''}" class="field-input figure" style="min-width:0;">
       </div>
       <div>
-        <label class="field-label" style="font-size:11px; margin-bottom:5px;">Payment Method</label>
+        <label class="field-label" style="font-size:11px; margin-bottom:4px;">Payment Method</label>
         <select id="contribute-payment-${id}" class="field-input">
           ${getPaymentMethods().map(p => `<option value="${p}">${p}</option>`).join('')}
         </select>
       </div>
       <div style="grid-column:1 / -1;">
-        <label class="field-label" style="font-size:11px; margin-bottom:5px;">Saving In (Holding Location / Vault)</label>
+        <label class="field-label" style="font-size:11px; margin-bottom:4px;">Holding Location / Vault</label>
         <select id="contribute-saving-in-${id}" class="field-input">
           <option value="Bank Account" ${savingInDefault === 'Bank Account' ? 'selected' : ''}>Bank Account</option>
           <option value="Personal Safe / Cash" ${savingInDefault === 'Personal Safe / Cash' ? 'selected' : ''}>Personal Safe / Cash</option>
@@ -10540,9 +10646,9 @@ function showContributeRow(id){
         </select>
       </div>
       <div style="grid-column:1 / -1; display:flex; align-items:center; gap:8px;">
-        <input type="number" min="0" step="any" id="contribute-amount-${id}" placeholder="Amount" class="field-input figure" style="flex:1;">
-        <button onclick="contribute('${id}')" class="btn-dark" style="padding:8px 14px;">Add</button>
-        <button onclick="document.getElementById('contribute-row-${id}').innerHTML=''" style="background:none; border:none; color:var(--muted-2); cursor:pointer;">✕</button>
+        <input type="number" min="0" step="any" id="contribute-amount-${id}" placeholder="Contribution Amount" class="field-input figure" style="flex:1;">
+        <button onclick="contribute('${id}')" class="btn-dark" style="padding:7px 16px; height:34px;">Add</button>
+        <button onclick="document.getElementById('contribute-row-${id}').innerHTML=''" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px;">✕</button>
       </div>
       <p id="contribute-message-${id}" class="text-xs tone-neg" style="grid-column:1 / -1; margin:0;"></p>
     </div>`;
@@ -10928,7 +11034,49 @@ function calculateMilestones(principal, monthly, annualRatePct){
   });
 }
 
+
+function toggleVPSEngine(active){
+  if(!DB.vpsSettings) DB.vpsSettings = {};
+  DB.vpsSettings.active = (active !== undefined) ? active : !DB.vpsSettings.active;
+  saveDB(true);
+  renderInvestments();
+  showToast(DB.vpsSettings.active ? 'Automated VPS Engine Activated' : 'Automated VPS Engine Paused');
+}
+
+function checkAutomatedVPSInflow(){
+  if(!DB.vpsSettings || !DB.vpsSettings.active) return;
+  const now = new Date();
+  const currentMonthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  if(DB.vpsSettings.lastCreditedMonth === currentMonthKey) return;
+  if(now.getDate() < (DB.vpsSettings.salaryDay || 1)) return;
+
+  // Find or create VPS fund in investments
+  let vps = (DB.investments || []).find(i => i.assetType === 'Provident Fund / VPS');
+  if(!vps) return; // Only automate if VPS asset is created
+
+  const salary = DB.vpsSettings.baseSalary || 80000;
+  const empCut = Math.round(salary * ((DB.vpsSettings.employeePct || 10) / 100));
+  const compMatch = Math.round(empCut * ((DB.vpsSettings.employerPct || 100) / 100));
+  const totalInflow = empCut + compMatch;
+
+  vps.currentValue = (vps.currentValue || 0) + totalInflow;
+  vps.initialInvested = (vps.initialInvested || 0) + empCut;
+  vps.deposits = vps.deposits || [];
+  vps.deposits.push({
+    id: uid(),
+    date: ymd(now),
+    amount: empCut,
+    employerMatch: compMatch,
+    notes: 'Automated monthly salary VPS contribution',
+    recordedAt: now.toISOString()
+  });
+
+  DB.vpsSettings.lastCreditedMonth = currentMonthKey;
+  saveDB(true);
+}
+
 function renderInvestments(){
+  checkAutomatedVPSInflow();
   const list = DB.investments || [];
   const totalInvested = list.reduce((s, i) => s + (i.initialInvested || 0), 0);
   const totalValue = list.reduce((s, i) => s + (i.currentValue || 0), 0);
@@ -11585,7 +11733,7 @@ function updateInvVpsPreviewNote(){
   const cutAmt = Math.round(sampleSalary * (cut / 100));
   const matchAmt = Math.round(sampleSalary * (match / 100));
   const total = cutAmt + matchAmt;
-  noteEl.textContent = `💡 Example: On Rs. ${sampleSalary.toLocaleString()} salary → You contribute Rs. ${cutAmt.toLocaleString()} (${cut}%), Company adds Rs. ${matchAmt.toLocaleString()} (${match}%) → Total Rs. ${total.toLocaleString()}/mo into fund.`;
+  noteEl.textContent = `Example: On Rs. ${sampleSalary.toLocaleString()} salary → You contribute Rs. ${cutAmt.toLocaleString()} (${cut}%), Company adds Rs. ${matchAmt.toLocaleString()} (${match}%) → Total Rs. ${total.toLocaleString()}/mo into fund.`;
 }
 
 function updateEditInvVpsPreviewNote(){
@@ -11597,7 +11745,7 @@ function updateEditInvVpsPreviewNote(){
   const cutAmt = Math.round(sampleSalary * (cut / 100));
   const matchAmt = Math.round(sampleSalary * (match / 100));
   const total = cutAmt + matchAmt;
-  noteEl.textContent = `💡 Example: On Rs. ${sampleSalary.toLocaleString()} salary → You contribute Rs. ${cutAmt.toLocaleString()} (${cut}%), Company adds Rs. ${matchAmt.toLocaleString()} (${match}%) → Total Rs. ${total.toLocaleString()}/mo into fund.`;
+  noteEl.textContent = `Example: On Rs. ${sampleSalary.toLocaleString()} salary → You contribute Rs. ${cutAmt.toLocaleString()} (${cut}%), Company adds Rs. ${matchAmt.toLocaleString()} (${match}%) → Total Rs. ${total.toLocaleString()}/mo into fund.`;
 }
 
 function openWithdrawInvestmentModal(id){
@@ -12095,6 +12243,14 @@ function deleteInvestment(id){
 }
 
 /* ---------------- Selling / Realized Profit Handlers ---------------- */
+
+function toggleSellDestChoice(choice){
+  const bankWrap = document.getElementById('sell-dest-bank-wrap');
+  const savWrap = document.getElementById('sell-dest-savings-wrap');
+  if(bankWrap) bankWrap.classList.toggle('hidden', choice !== 'bank');
+  if(savWrap) savWrap.classList.toggle('hidden', choice !== 'savings');
+}
+
 function openSellInvestmentModal(id){
   const inv = (DB.investments || []).find(i => i.id === id);
   if(!inv) return;
@@ -12238,38 +12394,258 @@ function deleteSoldInvestment(id){
 /* ---------------- render: settings ---------------- */
 let settingsTab = 'categories';
 let catTypeTab = 'expense';
-function renderSettingsTabs(){
-  const tabs = [
-    {id:'categories', label:'Categories'},
-    {id:'allowances', label:'Company Benefits'},
-    {id:'payment-methods', label:'Payment Methods'},
-    {id:'account', label:'Account'},
-    {id:'backup', label:'Backup & Data'},
-    {id:'activity', label:'Recent Changes'},
-    {id:'recycle', label:'Recycle Bin'}
-  ];
-  document.getElementById('settings-tabs').innerHTML = tabs.map(t => `<button class="btn-chip ${settingsTab===t.id?'active':''}" onclick="setSettingsTab('${t.id}')">${t.label}</button>`).join('');
-  document.getElementById('settings-categories').classList.toggle('hidden', settingsTab!=='categories');
-  const alEl = document.getElementById('settings-allowances');
-  if(alEl) alEl.classList.toggle('hidden', settingsTab!=='allowances');
-  const pmEl = document.getElementById('settings-payment-methods');
-  if(pmEl) pmEl.classList.toggle('hidden', settingsTab!=='payment-methods');
-  document.getElementById('settings-account').classList.toggle('hidden', settingsTab!=='account');
-  const bkEl = document.getElementById('settings-backup');
-  if(bkEl) bkEl.classList.toggle('hidden', settingsTab!=='backup');
-  const actEl = document.getElementById('settings-activity');
-  if(actEl) actEl.classList.toggle('hidden', settingsTab!=='activity');
-  document.getElementById('settings-recycle').classList.toggle('hidden', settingsTab!=='recycle');
-}
-function setSettingsTab(t){
-  settingsTab = t;
+
+const SETTINGS_SUBTITLES = {
+  'categories': 'Organize your income, expense, and savings categories and subcategories.',
+  'allowances': 'Configure corporate allowances, monthly limits, and calendar tracking cycles.',
+  'payment-methods': 'Manage bank accounts, debit/credit cards, and cash wallets.',
+  'account': 'Manage your profile details, base salary, display currency, and cloud synchronization.',
+  'notifications': 'Configure alert email, desktop push notifications, and reminder preferences.',
+  'backup': 'Download complete offline snapshots, export CSV spreadsheets, or restore data.',
+  'activity': 'Audit log of recently deleted records and system changes.',
+  'recycle': 'Review, restore, or permanently purge soft-deleted transactions and items.'
+};
+
+let settingsDomain = 'structure';
+
+function setSettingsDomain(dom){
+  settingsDomain = dom;
+  if(dom === 'structure') settingsTab = 'categories';
+  else if(dom === 'preferences') settingsTab = 'account';
+  else if(dom === 'data') settingsTab = 'backup';
   renderSettingsTabs();
+  triggerSettingsTabAction(settingsTab);
+}
+
+function setSettingsDomainAndTab(dom, tabId){
+  settingsDomain = dom;
+  settingsTab = tabId;
+  renderSettingsTabs();
+  triggerSettingsTabAction(tabId);
+}
+
+function renderSettingsTabs(){
+  const domains = {
+    'structure': {
+      label: 'Financial Structure',
+      tabs: [
+        {id:'categories', label:'Categories & Subcategories'},
+        {id:'payment-methods', label:'Payment Methods'},
+        {id:'allowances', label:'Company Benefits'}
+      ]
+    },
+    'preferences': {
+      label: 'Preferences & Alerts',
+      tabs: [
+        {id:'account', label:'Account Profile & Currency'},
+        {id:'notifications', label:'Notifications & Email Alerts'}
+      ]
+    },
+    'data': {
+      label: 'Data & Audit',
+      tabs: [
+        {id:'backup', label:'Backup & Data'},
+        {id:'activity', label:'Recent Changes'},
+        {id:'recycle', label:'Recycle Bin'}
+      ]
+    }
+  };
+
+  for(const [dKey, dVal] of Object.entries(domains)){
+    if(dVal.tabs.some(t => t.id === settingsTab)){
+      settingsDomain = dKey;
+      break;
+    }
+  }
+
+  const domBar = document.getElementById('settings-domain-bar');
+  if(domBar){
+    ['structure', 'preferences', 'data'].forEach(d => {
+      const btn = document.getElementById('sdom-' + d);
+      if(btn) btn.classList.toggle('active', settingsDomain === d);
+    });
+  }
+
+  const subBar = document.getElementById('settings-subtabs-bar');
+  if(subBar){
+    const curTabs = domains[settingsDomain] ? domains[settingsDomain].tabs : [];
+    subBar.innerHTML = curTabs.map(t =>
+      `<button type="button" class="settings-subtab-btn ${settingsTab===t.id?'active':''}" onclick="setSettingsTab('${t.id}')">${t.label}</button>`
+    ).join('');
+  }
+
+  const topbarSub = document.querySelector('#page-settings .topbar p');
+  if(topbarSub && SETTINGS_SUBTITLES[settingsTab]){
+    topbarSub.textContent = SETTINGS_SUBTITLES[settingsTab];
+  }
+
+  document.getElementById('settings-categories')?.classList.toggle('hidden', settingsTab!=='categories');
+  document.getElementById('settings-allowances')?.classList.toggle('hidden', settingsTab!=='allowances');
+  document.getElementById('settings-payment-methods')?.classList.toggle('hidden', settingsTab!=='payment-methods');
+  document.getElementById('settings-account')?.classList.toggle('hidden', settingsTab!=='account');
+  document.getElementById('settings-notifications')?.classList.toggle('hidden', settingsTab!=='notifications');
+  document.getElementById('settings-backup')?.classList.toggle('hidden', settingsTab!=='backup');
+  document.getElementById('settings-activity')?.classList.toggle('hidden', settingsTab!=='activity');
+  document.getElementById('settings-recycle')?.classList.toggle('hidden', settingsTab!=='recycle');
+}
+
+function triggerSettingsTabAction(t){
   if(t==='allowances') renderAllowancesSettings();
   if(t==='payment-methods') renderPaymentMethodsSettings();
+  if(t==='notifications') renderNotificationSettings();
   if(t==='backup') renderBackupSettings();
   if(t==='recycle') renderRecycleBin();
   if(t==='activity') renderActivityLog();
 }
+
+function setSettingsTab(t){
+  settingsTab = t;
+  renderSettingsTabs();
+  triggerSettingsTabAction(t);
+}
+
+function renderNotificationSettings(){
+  const container = document.getElementById('settings-notifications-container');
+  if(!container) return;
+
+  const cfg = DB.notificationSettings || { email: '', emailAlerts: { budget: true, benefits: true, goals: true }, desktopPush: false, inAppAlerts: true, rolloverMode: 'prompt' };
+  const fallbackEmail = (currentUser && currentUser.email) ? currentUser.email : ((DB.profile && DB.profile.email) ? DB.profile.email : '');
+  const activeEmail = cfg.email || fallbackEmail;
+  const hasDesktopPerm = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+
+  container.innerHTML = `
+    <div class="card" style="padding:22px; margin-bottom:18px;">
+      <h2 class="section-title" style="margin:0 0 4px;">Alert Notification Email</h2>
+      <p class="text-xs muted" style="margin:0 0 16px;">Specify the email address where WealthNest delivers instant financial alerts.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; max-width:540px;">
+        <div style="flex:1; min-width:240px;">
+          <label class="field-label" for="notif-email-input">Recipient Email Address</label>
+          <input type="email" id="notif-email-input" class="field-input" value="${escapeHtml(activeEmail)}" placeholder="you@example.com">
+        </div>
+        <button type="button" class="btn-primary" onclick="saveNotificationEmail()" style="height:38px;">Save Email</button>
+      </div>
+      <p class="text-xs muted" style="margin:8px 0 0;">Pre-filled from your active account (${escapeHtml(fallbackEmail || 'Local Demo')}).</p>
+    </div>
+
+    <div class="card" style="padding:22px; margin-bottom:18px;">
+      <h2 class="section-title" style="margin:0 0 4px;">Automated Alert Triggers</h2>
+      <p class="text-xs muted" style="margin:0 0 16px;">Choose which events dispatch instant email and in-app alerts.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:14px; max-width:620px;">
+        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
+          <input type="checkbox" id="notif-trig-budget" ${cfg.emailAlerts?.budget ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
+          <div>
+            <strong style="font-size:13.5px; color:var(--ink); display:block;">Critical Budget Over-Limit Warning</strong>
+            <span class="text-xs muted">Alert immediately when category spending reaches 100% of budgeted threshold.</span>
+          </div>
+        </label>
+
+        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
+          <input type="checkbox" id="notif-trig-benefits" ${cfg.emailAlerts?.benefits ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
+          <div>
+            <strong style="font-size:13.5px; color:var(--ink); display:block;">Company Allowance Surplus &amp; Cycle Expiry</strong>
+            <span class="text-xs muted">Alert when an allowance cycle ends with unspent quota available to transfer to Income or Savings.</span>
+          </div>
+        </label>
+
+        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
+          <input type="checkbox" id="notif-trig-goals" ${cfg.emailAlerts?.goals ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
+          <div>
+            <strong style="font-size:13.5px; color:var(--ink); display:block;">Savings Goal Milestones &amp; 7-Day Deadlines</strong>
+            <span class="text-xs muted">Notice 7 days before target date and upon successfully reaching 100% completion.</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="card" style="padding:22px; margin-bottom:18px;">
+      <h2 class="section-title" style="margin:0 0 4px;">Monthly Savings Rollover Preference</h2>
+      <p class="text-xs muted" style="margin:0 0 16px;">Automatically roll over unspent previous month savings into the next month as income.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:10px; max-width:620px;">
+        <label style="display:flex; align-items:center; gap:10px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="notif-rollover-mode" value="auto" ${cfg.rolloverMode==='auto'?'checked':''} onchange="saveRolloverMode('auto')">
+          <span><strong>Automatic Rollover</strong> - Automatically create an Income transaction on the 1st of each month for leftover savings.</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:10px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="notif-rollover-mode" value="prompt" ${cfg.rolloverMode==='prompt'?'checked':''} onchange="saveRolloverMode('prompt')">
+          <span><strong>Ask Me / Notification Prompt</strong> (Recommended) - Display an actionable card in Notifications to review before transferring.</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:10px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="notif-rollover-mode" value="off" ${cfg.rolloverMode==='off'?'checked':''} onchange="saveRolloverMode('off')">
+          <span><strong>Off</strong> - Do not roll over unspent savings.</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card" style="padding:22px;">
+      <h2 class="section-title" style="margin:0 0 4px;">Browser Desktop Push Notifications</h2>
+      <p class="text-xs muted" style="margin:0 0 16px;">Receive native Windows notifications even when WealthNest is running in the background.</p>
+      
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:14px 16px;">
+        <div>
+          <div style="font-weight:600; font-size:13.5px; color:var(--ink);">Desktop Toast Status</div>
+          <span class="badge ${hasDesktopPerm ? 'badge-ok' : 'badge-off'}" style="margin-top:4px;">${hasDesktopPerm ? 'Permission Granted' : 'Permission Not Enabled'}</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          ${!hasDesktopPerm ? `<button type="button" class="btn-primary" onclick="requestDesktopNotificationPermission()" style="font-size:12px; padding:8px 14px;">Enable Desktop Notifications</button>` : ''}
+          <button type="button" class="btn-ghost" onclick="sendTestNotification()" style="font-size:12px; padding:8px 14px;">Send Test Alert</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function saveNotificationEmail(){
+  const val = document.getElementById('notif-email-input')?.value.trim();
+  if(!val){ showToast('Please enter an email address', 'error'); return; }
+  if(!DB.notificationSettings) DB.notificationSettings = {};
+  DB.notificationSettings.email = val;
+  saveDB(true);
+  showToast('Alert notification email saved to ' + val, 'success');
+}
+
+function saveNotificationToggles(){
+  if(!DB.notificationSettings) DB.notificationSettings = {};
+  if(!DB.notificationSettings.emailAlerts) DB.notificationSettings.emailAlerts = {};
+  DB.notificationSettings.emailAlerts.budget = document.getElementById('notif-trig-budget')?.checked ?? true;
+  DB.notificationSettings.emailAlerts.benefits = document.getElementById('notif-trig-benefits')?.checked ?? true;
+  DB.notificationSettings.emailAlerts.goals = document.getElementById('notif-trig-goals')?.checked ?? true;
+  saveDB(true);
+  showToast('Notification preferences updated');
+}
+
+function saveRolloverMode(mode){
+  if(!DB.notificationSettings) DB.notificationSettings = {};
+  DB.notificationSettings.rolloverMode = mode;
+  saveDB(true);
+  showToast('Savings rollover mode set to: ' + mode);
+}
+
+function requestDesktopNotificationPermission(){
+  if(typeof Notification === 'undefined'){
+    showToast('Browser notifications are not supported on this browser', 'info');
+    return;
+  }
+  Notification.requestPermission().then(function(perm){
+    renderNotificationSettings();
+    if(perm === 'granted'){
+      showToast('Desktop push notifications enabled!', 'success');
+      new Notification('WealthNest', { body: 'Desktop notifications are active.', icon: '/favicon.ico' });
+    } else {
+      showToast('Notification permission was denied', 'info');
+    }
+  });
+}
+
+function sendTestNotification(){
+  showToast('Test alert dispatched! Check your notification drawer & desktop.', 'success');
+  if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+    new Notification('WealthNest Alert', { body: 'This is a test notification from WealthNest.', icon: '/favicon.ico' });
+  }
+  openNotificationDrawer();
+}
+
 
 function renderPaymentMethodsSettings(){
   const listEl = document.getElementById('payment-methods-list');
@@ -13220,7 +13596,252 @@ function renderPage(page){
   else if(page==='investments') renderInvestments();
   else if(page==='settings') renderSettings();
 }
-function renderAllForCurrentPage(){ renderPage(currentPage); }
+
+/* ---------------- Notification Center Engine ---------------- */
+let notificationFilter = 'all';
+
+function toggleNotificationDrawer(){
+  const drawer = document.getElementById('notification-drawer');
+  const backdrop = document.getElementById('notification-drawer-backdrop');
+  if(!drawer) return;
+  const isOpen = drawer.classList.contains('open');
+  if(isOpen){
+    closeNotificationDrawer();
+  } else {
+    openNotificationDrawer();
+  }
+}
+
+function openNotificationDrawer(){
+  const drawer = document.getElementById('notification-drawer');
+  const backdrop = document.getElementById('notification-drawer-backdrop');
+  if(!drawer) return;
+  renderNotifications();
+  drawer.classList.add('open');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeNotificationDrawer(){
+  const drawer = document.getElementById('notification-drawer');
+  const backdrop = document.getElementById('notification-drawer-backdrop');
+  if(drawer) drawer.classList.remove('open');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function filterNotifications(filter){
+  notificationFilter = filter;
+  ['all', 'alerts', 'reminders'].forEach(f => {
+    const btn = document.getElementById('notif-filter-' + f);
+    if(btn) btn.classList.toggle('active', f === filter);
+  });
+  renderNotifications();
+}
+
+function getSystemNotifications(){
+  const list = [];
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const todayStr = ymd(now);
+
+  // 1. Budget Over-Limit Alerts
+  const currentBudgets = (DB.budgets || []).filter(b => b.month === currentMonth && b.year === currentYear);
+  const chartTxs = (DB.transactions || []).filter(t => inMonth(t, currentMonth, currentYear) && t.type === 'expense');
+  const catNames = [...new Set(currentBudgets.map(b => b.category))];
+  catNames.forEach(cat => {
+    const main = currentBudgets.find(b => b.category === cat && !b.subCategory);
+    const subs = currentBudgets.filter(b => b.category === cat && b.subCategory);
+    const budgetAmt = main ? main.budgetAmount : subs.reduce((s, r) => s + r.budgetAmount, 0);
+    const spent = chartTxs.filter(t => t.category === cat).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+    if(budgetAmt > 0 && spent > budgetAmt){
+      const overBy = spent - budgetAmt;
+      list.push({
+        id: 'notif-budget-' + cat,
+        type: 'alert',
+        priority: 'danger',
+        title: 'Budget Exceeded: ' + cat,
+        desc: 'Spending (' + fmt(spent) + ') has exceeded your ' + fmt(budgetAmt) + ' limit by ' + fmt(overBy) + '.',
+        actionLabel: 'View Budgets',
+        actionFn: "goToApp('budgets'); closeNotificationDrawer();"
+      });
+    }
+  });
+
+  // 2. Company Benefits Surplus Alerts (End of cycle with leftover quota)
+  (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
+    const avail = computeAllowanceAvailable(acc);
+    const cycleEnded = acc.endDate ? (acc.endDate <= todayStr) : (now.getDate() >= 25);
+    if(avail > 0 && cycleEnded){
+      list.push({
+        id: 'notif-benefit-surplus-' + acc.id,
+        type: 'alert',
+        priority: 'teal',
+        title: 'Surplus Allowance: ' + acc.name,
+        desc: 'You have ' + fmt(avail) + ' unspent quota available. Transfer it to your personal Income or Savings Goal!',
+        actionLabel: 'Transfer Quota',
+        actionFn: "openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
+      });
+    }
+  });
+
+  // 3. Savings Goal Milestones & Deadlines
+  (DB.savingsGoals || []).forEach(g => {
+    const cur = getGoalCurrentAmount(g);
+    const reached = cur >= g.targetAmount;
+    if(reached){
+      list.push({
+        id: 'notif-goal-reached-' + g.id,
+        type: 'reminder',
+        priority: 'teal',
+        title: 'Goal Achieved: ' + g.name,
+        desc: 'Congratulations! You reached your savings target of ' + fmt(g.targetAmount) + '.',
+        actionLabel: 'View Goals',
+        actionFn: "goToApp('savings'); closeNotificationDrawer();"
+      });
+    } else if(g.deadline){
+      const dDate = new Date(g.deadline + 'T00:00:00');
+      const diffDays = Math.ceil((dDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      if(diffDays >= 0 && diffDays <= 7){
+        list.push({
+          id: 'notif-goal-deadline-' + g.id,
+          type: 'alert',
+          priority: 'amber',
+          title: 'Goal Deadline Approaching: ' + g.name,
+          desc: 'Target date is in ' + diffDays + ' day' + (diffDays === 1 ? '' : 's') + '. You have ' + fmt(Math.max(0, g.targetAmount - cur)) + ' remaining.',
+          actionLabel: 'Contribute',
+          actionFn: "goToApp('savings'); closeNotificationDrawer();"
+        });
+      }
+    }
+  });
+
+  // 4. Monthly Savings Rollover Prompt
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0);
+  const prevM = prevMonthDate.getMonth() + 1;
+  const prevY = prevMonthDate.getFullYear();
+  const prevMonthKey = prevY + '-' + String(prevM).padStart(2, '0');
+  if(!DB.savingsRolloverHistory) DB.savingsRolloverHistory = [];
+  if(!DB.savingsRolloverHistory.includes(prevMonthKey)){
+    const prevTotals = monthTotals(DB.transactions, prevM, prevY);
+    const netSaved = prevTotals.income - prevTotals.expense;
+    if(netSaved > 0){
+      list.push({
+        id: 'notif-rollover-' + prevMonthKey,
+        type: 'reminder',
+        priority: 'teal',
+        title: 'Unspent Savings Rollover Available',
+        desc: 'You saved ' + fmt(netSaved) + ' in ' + MONTH_NAMES[prevM - 1] + '. Roll it over into this month\'s income!',
+        actionLabel: 'Roll Over to Income',
+        actionFn: "executeSavingsRollover(" + netSaved + ", '" + prevMonthKey + "'); closeNotificationDrawer();"
+      });
+    }
+  }
+
+  return list;
+}
+
+function renderNotifications(){
+  const container = document.getElementById('notification-list');
+  const countBadge = document.getElementById('notification-drawer-count');
+  const topbarBadge = document.getElementById('topbar-bell-badge');
+
+  const allNotifs = getSystemNotifications();
+  const filtered = allNotifs.filter(n => {
+    if(notificationFilter === 'alerts') return n.type === 'alert';
+    if(notificationFilter === 'reminders') return n.type === 'reminder';
+    return true;
+  });
+
+  const count = allNotifs.length;
+  if(countBadge) countBadge.textContent = count;
+  if(topbarBadge){
+    topbarBadge.textContent = count;
+    topbarBadge.classList.toggle('hidden', count === 0);
+  }
+
+  if(!container) return;
+
+  if(!filtered.length){
+    container.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 16px; color:var(--muted);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="opacity:0.5; margin-bottom:10px;"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        <strong style="font-size:14px; color:var(--ink);">All Caught Up!</strong>
+        <p class="text-xs muted" style="margin:4px 0 0;">No active alerts or pending reminders.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(n => `
+    <div class="notification-card unread priority-${n.priority}">
+      <div class="notification-card-header">
+        <h4 class="notification-card-title">${escapeHtml(n.title)}</h4>
+        <span class="badge ${n.priority==='danger'?'badge-over':'badge-ok'}" style="font-size:10.5px;">${n.type}</span>
+      </div>
+      <p class="notification-card-desc">${escapeHtml(n.desc)}</p>
+      <div class="notification-card-actions">
+        ${n.actionLabel ? `<button type="button" class="btn-primary" style="padding:4px 12px; font-size:11.5px; height:28px;" onclick="${n.actionFn}">${escapeHtml(n.actionLabel)}</button>` : ''}
+        <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:11.5px; height:28px;" onclick="dismissNotification('${n.id}')">Dismiss</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function dismissNotification(id){
+  // Add to dismissed list in DB
+  if(!DB.dismissedNotifications) DB.dismissedNotifications = [];
+  DB.dismissedNotifications.push(id);
+  renderNotifications();
+}
+
+function markAllNotificationsRead(){
+  showToast('All notifications marked as read', 'success');
+  closeNotificationDrawer();
+}
+
+function clearAllNotifications(){
+  showToast('Notifications cleared');
+  closeNotificationDrawer();
+}
+
+
+function executeSavingsRollover(amount, monthKey){
+  if(!amount || amount <= 0) return;
+  const now = new Date();
+  DB.transactions = DB.transactions || [];
+  if(!DB.categories.income.includes('Savings Rollover')){
+    DB.categories.income.push('Savings Rollover');
+  }
+  DB.transactions.unshift({
+    id: uid(),
+    date: ymd(now),
+    type: 'income',
+    category: 'Savings Rollover',
+    amount: Math.round(amount * 100) / 100,
+    paymentMethod: (DB.paymentMethods && DB.paymentMethods[0]) || 'Cash',
+    description: 'Previous month unspent savings rolled over to income'
+  });
+
+  if(!DB.savingsRolloverHistory) DB.savingsRolloverHistory = [];
+  if(monthKey && !DB.savingsRolloverHistory.includes(monthKey)){
+    DB.savingsRolloverHistory.push(monthKey);
+  }
+
+  saveDB(true);
+  renderAllForCurrentPage();
+  showToast('Rolled over ' + fmt(amount) + ' into current month income!', 'success');
+}
+
+function openTxModalWithGoal(goalName){
+  openTxModal();
+  setTxType('expense');
+  const descEl = document.getElementById('tx-description');
+  if(descEl) descEl.value = 'Funded from ' + goalName;
+  showToast('Logging expense funded by ' + goalName);
+}
+
+function renderAllForCurrentPage(){
+  if(typeof renderNotifications === "function") renderNotifications(); renderPage(currentPage); }
 
 /* ---------------- init ---------------- */
 window.addEventListener('keydown', (e) => {
