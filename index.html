@@ -3580,9 +3580,9 @@
       </h3>
       <p class="text-xs muted" style="margin:2px 0 0;">Budgets, allowances, goals, and reminders</p>
     </div>
-    <div style="display:flex; align-items:center; gap:6px;">
-      <button type="button" class="btn-ghost" onclick="markAllNotificationsRead()" style="padding:4px 8px; font-size:11.5px; height:28px;" title="Mark all as read">Mark Read</button>
-      <button type="button" class="modal-close" onclick="closeNotificationDrawer()" aria-label="Close" style="width:28px; height:28px; font-size:16px;">✕</button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button type="button" class="btn-ghost" onclick="markAllNotificationsRead()" style="padding:4px 10px; font-size:12px; height:28px; border-radius:6px;" title="Mark all as read">Mark Read</button>
+      <button type="button" onclick="closeNotificationDrawer()" aria-label="Close" style="background:none; border:none; color:var(--muted); font-size:18px; line-height:1; cursor:pointer; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; transition:all .15s ease;" onmouseover="this.style.color='var(--ink)'; this.style.background='var(--surface-2)';" onmouseout="this.style.color='var(--muted)'; this.style.background='none';">✕</button>
     </div>
   </div>
   <div style="padding:10px 20px; border-bottom:1px solid var(--line-soft); background:var(--surface-2); display:flex; gap:6px;">
