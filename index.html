@@ -7,102 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338CA' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12V7H5a2 2 0 0 1 0-4h14v4'/><path d='M3 5v14a2 2 0 0 0 2 2h16v-5'/><path d='M18 12a2 2 0 0 0 0 4h4v-4Z'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js">
-/* ============================================================
-   CARRY-FORWARD BALANCE WORKFLOW
-   ============================================================ */
-let _carryForwardAmount = 0;
-let _carryForwardFromMonth = 0;
-let _carryForwardFromYear = 0;
-
-function openCarryForwardModal(amount, fromMonth, fromYear){
-  _carryForwardAmount = amount;
-  _carryForwardFromMonth = fromMonth;
-  _carryForwardFromYear = fromYear;
-  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const subtitle = document.getElementById('carry-forward-subtitle');
-  const amtEl = document.getElementById('carry-forward-amount');
-  if(subtitle) subtitle.textContent = 'Carry forward from ' + SHORT_MONTHS[fromMonth-1] + ' ' + fromYear;
-  if(amtEl) amtEl.textContent = fmt(amount);
-  
-  const goalSelect = document.getElementById('carry-forward-goal-select');
-  if(goalSelect){
-    goalSelect.innerHTML = (DB.savingsGoals||[]).map(g => '<option value="' + escapeHtml(g.id) + '">' + escapeHtml(g.name) + '</option>').join('');
-  }
-  
-  const incomeRadio = document.querySelector('input[name="carry-forward-dest"][value="income"]');
-  if(incomeRadio) incomeRadio.checked = true;
-  const row = document.getElementById('carry-forward-savings-goal-row');
-  if(row) row.classList.add('hidden');
-  
-  const backdrop = document.getElementById('carry-forward-modal-backdrop');
-  if(backdrop) backdrop.classList.remove('hidden');
-}
-
-function onCarryForwardDestChange(dest){
-  const row = document.getElementById('carry-forward-savings-goal-row');
-  if(row){
-    if(dest === 'savings') row.classList.remove('hidden');
-    else row.classList.add('hidden');
-  }
-}
-
-function closeCarryForwardModal(){
-  const backdrop = document.getElementById('carry-forward-modal-backdrop');
-  if(backdrop) backdrop.classList.add('hidden');
-}
-
-function executeCarryForward(){
-  if(!_carryForwardAmount || _carryForwardAmount <= 0){
-    showToast('No balance to carry forward', 'info');
-    return;
-  }
-  const dest = document.querySelector('input[name="carry-forward-dest"]:checked')?.value || 'income';
-  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const fromLabel = SHORT_MONTHS[_carryForwardFromMonth-1] + ' ' + _carryForwardFromYear;
-  
-  if(dest === 'income'){
-    let nextM = _carryForwardFromMonth + 1;
-    let nextY = _carryForwardFromYear;
-    if(nextM > 12){ nextM = 1; nextY++; }
-    const dateStr = nextY + '-' + String(nextM).padStart(2,'0') + '-01';
-    const newTx = {
-      id: uid(),
-      date: dateStr,
-      type: 'income',
-      category: 'Carry-Forward Balance',
-      description: 'Rolled over from ' + fromLabel,
-      amount: _carryForwardAmount,
-      paymentMethod: 'Bank Transfer'
-    };
-    DB.transactions.unshift(newTx);
-    saveDB();
-    renderAll();
-    showToast(fmt(_carryForwardAmount) + ' added to ' + SHORT_MONTHS[nextM-1] + ' ' + nextY + ' income', 'success');
-  } else {
-    const goalId = document.getElementById('carry-forward-goal-select')?.value;
-    const goal = (DB.savingsGoals||[]).find(g => g.id === goalId);
-    if(!goal){ showToast('Please select a savings goal', 'error'); return; }
-    const today = ymd(new Date());
-    const newTx = {
-      id: uid(),
-      date: today,
-      type: 'savings',
-      category: goal.name,
-      savingIn: goal.savingIn || 'Bank Account',
-      description: 'Carry-forward from ' + fromLabel,
-      amount: _carryForwardAmount,
-      paymentMethod: 'Bank Transfer'
-    };
-    DB.transactions.unshift(newTx);
-    saveDB();
-    renderAll();
-    showToast(fmt(_carryForwardAmount) + ' allocated to ' + goal.name, 'success');
-  }
-  closeCarryForwardModal();
-}
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>if(typeof Chart==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -3660,6 +3565,37 @@ function executeCarryForward(){
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       <span>Sign Out</span>
     </a>
+  </div>
+</div>
+
+
+<!-- ============ NOTIFICATIONS SLIDE-OVER DRAWER ============ -->
+<div id="notification-drawer-backdrop" class="notification-drawer-backdrop hidden" onclick="closeNotificationDrawer()"></div>
+<div id="notification-drawer" class="notification-drawer" aria-labelledby="notification-drawer-title" role="dialog" aria-modal="true">
+  <div class="notification-drawer-head">
+    <div>
+      <h3 class="notification-drawer-title" id="notification-drawer-title">
+        Notifications &amp; Alerts
+        <span class="badge badge-ok" id="notification-drawer-count" style="font-size:11px; padding:2px 7px;">0</span>
+      </h3>
+      <p class="text-xs muted" style="margin:2px 0 0;">Budgets, allowances, goals, and reminders</p>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <button type="button" class="btn-ghost" onclick="markAllNotificationsRead()" style="padding:4px 8px; font-size:11.5px; height:28px;" title="Mark all as read">Mark Read</button>
+      <button type="button" class="modal-close" onclick="closeNotificationDrawer()" aria-label="Close" style="width:28px; height:28px; font-size:16px;">✕</button>
+    </div>
+  </div>
+  <div style="padding:10px 20px; border-bottom:1px solid var(--line-soft); background:var(--surface-2); display:flex; gap:6px;">
+    <button type="button" class="btn-chip active" id="notif-filter-all" onclick="filterNotifications('all')" style="font-size:11px; padding:3px 10px;">All</button>
+    <button type="button" class="btn-chip" id="notif-filter-alerts" onclick="filterNotifications('alerts')" style="font-size:11px; padding:3px 10px;">Alerts</button>
+    <button type="button" class="btn-chip" id="notif-filter-reminders" onclick="filterNotifications('reminders')" style="font-size:11px; padding:3px 10px;">Reminders</button>
+  </div>
+  <div class="notification-drawer-body" id="notification-list">
+    <!-- Actionable notification cards dynamically rendered here -->
+  </div>
+  <div style="padding:12px 20px; border-top:1px solid var(--line); background:var(--surface-2); display:flex; justify-content:space-between; align-items:center;">
+    <button type="button" onclick="goToApp('settings'); setSettingsTab('notifications'); closeNotificationDrawer();" class="link-sm" style="font-size:12px; color:var(--primary); font-weight:600;">Alert Settings</button>
+    <button type="button" onclick="clearAllNotifications()" class="link-sm" style="font-size:12px; color:var(--muted); background:none; border:none; cursor:pointer;">Clear All</button>
   </div>
 </div>
 
@@ -7694,36 +7630,6 @@ function openPrintReportView(month, year) {
         };
       <\/script>
     
-<!-- ============ NOTIFICATIONS SLIDE-OVER DRAWER ============ -->
-<div id="notification-drawer-backdrop" class="notification-drawer-backdrop hidden" onclick="closeNotificationDrawer()"></div>
-<div id="notification-drawer" class="notification-drawer" aria-labelledby="notification-drawer-title" role="dialog" aria-modal="true">
-  <div class="notification-drawer-head">
-    <div>
-      <h3 class="notification-drawer-title" id="notification-drawer-title">
-        Notifications &amp; Alerts
-        <span class="badge badge-ok" id="notification-drawer-count" style="font-size:11px; padding:2px 7px;">0</span>
-      </h3>
-      <p class="text-xs muted" style="margin:2px 0 0;">Budgets, allowances, goals, and reminders</p>
-    </div>
-    <div style="display:flex; align-items:center; gap:6px;">
-      <button type="button" class="btn-ghost" onclick="markAllNotificationsRead()" style="padding:4px 8px; font-size:11.5px; height:28px;" title="Mark all as read">Mark Read</button>
-      <button type="button" class="modal-close" onclick="closeNotificationDrawer()" aria-label="Close" style="width:28px; height:28px; font-size:16px;">✕</button>
-    </div>
-  </div>
-  <div style="padding:10px 20px; border-bottom:1px solid var(--line-soft); background:var(--surface-2); display:flex; gap:6px;">
-    <button type="button" class="btn-chip active" id="notif-filter-all" onclick="filterNotifications('all')" style="font-size:11px; padding:3px 10px;">All</button>
-    <button type="button" class="btn-chip" id="notif-filter-alerts" onclick="filterNotifications('alerts')" style="font-size:11px; padding:3px 10px;">Alerts</button>
-    <button type="button" class="btn-chip" id="notif-filter-reminders" onclick="filterNotifications('reminders')" style="font-size:11px; padding:3px 10px;">Reminders</button>
-  </div>
-  <div class="notification-drawer-body" id="notification-list">
-    <!-- Actionable notification cards dynamically rendered here -->
-  </div>
-  <div style="padding:12px 20px; border-top:1px solid var(--line); background:var(--surface-2); display:flex; justify-content:space-between; align-items:center;">
-    <button type="button" onclick="goToApp('settings'); setSettingsDomainAndTab('preferences','notifications'); closeNotificationDrawer();" class="link-sm" style="font-size:12px; color:var(--primary); font-weight:600;">Alert Settings</button>
-    <button type="button" onclick="clearAllNotifications()" class="link-sm" style="font-size:12px; color:var(--muted); background:none; border:none; cursor:pointer;">Clear All</button>
-  </div>
-</div>
-
 </body>
     </html>
   `);
@@ -12957,79 +12863,68 @@ function renderNotificationSettings(){
   const container = document.getElementById('settings-notifications-container');
   if(!container) return;
 
-  const cfg = DB.notificationSettings || { email: '', emailAlerts: { budget: true, benefits: true, goals: true }, desktopPush: false, inAppAlerts: true, rolloverMode: 'prompt' };
-  const fallbackEmail = (currentUser && currentUser.email) ? currentUser.email : ((DB.profile && DB.profile.email) ? DB.profile.email : '');
-  const activeEmail = cfg.email || fallbackEmail;
+  const cfg = DB.notificationSettings || { inAppAlerts: true, rolloverMode: 'prompt', budgetAlerts: true, benefitsAlerts: true, goalsAlerts: true };
+  if(cfg.rolloverMode === 'auto') cfg.rolloverMode = 'prompt';
   const hasDesktopPerm = typeof Notification !== 'undefined' && Notification.permission === 'granted';
 
   container.innerHTML = `
     <div class="card" style="padding:22px; margin-bottom:18px;">
-      <h2 class="section-title" style="margin:0 0 4px;">Alert Notification Email</h2>
-      <p class="text-xs muted" style="margin:0 0 16px;">Specify the email address where WealthNest delivers instant financial alerts.</p>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; max-width:540px;">
-        <div style="flex:1; min-width:240px;">
-          <label class="field-label" for="notif-email-input">Recipient Email Address</label>
-          <input type="email" id="notif-email-input" class="field-input" value="${escapeHtml(activeEmail)}" placeholder="you@example.com">
-        </div>
-        <button type="button" class="btn-primary" onclick="saveNotificationEmail()" style="height:38px;">Save Email</button>
-      </div>
-      <p class="text-xs muted" style="margin:8px 0 0;">Pre-filled from your active account (${escapeHtml(fallbackEmail || 'Local Demo')}).</p>
-    </div>
-
-    <div class="card" style="padding:22px; margin-bottom:18px;">
-      <h2 class="section-title" style="margin:0 0 4px;">Automated Alert Triggers</h2>
-      <p class="text-xs muted" style="margin:0 0 16px;">Choose which events dispatch instant email and in-app alerts.</p>
+      <h2 class="section-title" style="margin:0 0 4px;">In-App Alert Triggers</h2>
+      <p class="text-xs muted" style="margin:0 0 16px;">Configure which automated financial alerts appear in your Notifications drawer.</p>
       
       <div style="display:flex; flex-direction:column; gap:14px; max-width:620px;">
         <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
-          <input type="checkbox" id="notif-trig-budget" ${cfg.emailAlerts?.budget ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
+          <input type="checkbox" id="notif-trig-budget" ${cfg.budgetAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
           <div>
-            <strong style="font-size:13.5px; color:var(--ink); display:block;">Critical Budget Over-Limit Warning</strong>
-            <span class="text-xs muted">Alert immediately when category spending reaches 100% of budgeted threshold.</span>
+            <strong style="font-size:13.5px; color:var(--ink); display:block;">Budget Over-Limit &amp; 85% Warnings</strong>
+            <span class="text-xs muted">Alert when category spending exceeds or approaches 85% of your budgeted threshold.</span>
           </div>
         </label>
 
         <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
-          <input type="checkbox" id="notif-trig-benefits" ${cfg.emailAlerts?.benefits ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
+          <input type="checkbox" id="notif-trig-benefits" ${cfg.benefitsAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
           <div>
             <strong style="font-size:13.5px; color:var(--ink); display:block;">Company Allowance Surplus &amp; Cycle Expiry</strong>
-            <span class="text-xs muted">Alert when an allowance cycle ends with unspent quota available to transfer to Income or Savings.</span>
+            <span class="text-xs muted">Alert when an allowance cycle ends with unspent quota available to transfer to personal Income or Savings.</span>
           </div>
         </label>
 
         <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
-          <input type="checkbox" id="notif-trig-goals" ${cfg.emailAlerts?.goals ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
+          <input type="checkbox" id="notif-trig-goals" ${cfg.goalsAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
           <div>
             <strong style="font-size:13.5px; color:var(--ink); display:block;">Savings Goal Milestones &amp; 7-Day Deadlines</strong>
-            <span class="text-xs muted">Notice 7 days before target date and upon successfully reaching 100% completion.</span>
+            <span class="text-xs muted">Notice 7 days before a savings target deadline and upon reaching 100% completion.</span>
           </div>
         </label>
       </div>
     </div>
 
     <div class="card" style="padding:22px; margin-bottom:18px;">
-      <h2 class="section-title" style="margin:0 0 4px;">Monthly Savings Rollover Preference</h2>
-      <p class="text-xs muted" style="margin:0 0 16px;">Automatically roll over unspent previous month savings into the next month as income.</p>
+      <h2 class="section-title" style="margin:0 0 4px;">Monthly Savings Carry-Forward Preference</h2>
+      <p class="text-xs muted" style="margin:0 0 16px;">Choose how unspent previous month savings and surplus are handled.</p>
       
-      <div style="display:flex; flex-direction:column; gap:10px; max-width:620px;">
-        <label style="display:flex; align-items:center; gap:10px; font-size:13px; cursor:pointer;">
-          <input type="radio" name="notif-rollover-mode" value="auto" ${cfg.rolloverMode==='auto'?'checked':''} onchange="saveRolloverMode('auto')">
-          <span><strong>Automatic Rollover</strong> - Automatically create an Income transaction on the 1st of each month for leftover savings.</span>
+      <div style="display:flex; flex-direction:column; gap:12px; max-width:620px;">
+        <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1px solid ${cfg.rolloverMode==='prompt'?'var(--primary)':'var(--line)'}; border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="notif-rollover-mode" value="prompt" ${cfg.rolloverMode==='prompt'?'checked':''} onchange="saveRolloverMode('prompt')" style="margin-top:3px;">
+          <div>
+            <strong style="font-size:13.5px; color:var(--ink); display:block;">Always Ask Me (Recommended)</strong>
+            <span class="text-xs muted">Displays an actionable prompt in Notifications and Savings allowing you to decide whether to carry forward unspent balance to next month's Income or allocate it to a Savings Goal.</span>
+          </div>
         </label>
-        <label style="display:flex; align-items:center; gap:10px; font-size:13px; cursor:pointer;">
-          <input type="radio" name="notif-rollover-mode" value="prompt" ${cfg.rolloverMode==='prompt'?'checked':''} onchange="saveRolloverMode('prompt')">
-          <span><strong>Ask Me / Notification Prompt</strong> (Recommended) - Display an actionable card in Notifications to review before transferring.</span>
-        </label>
-        <label style="display:flex; align-items:center; gap:10px; font-size:13px; cursor:pointer;">
-          <input type="radio" name="notif-rollover-mode" value="off" ${cfg.rolloverMode==='off'?'checked':''} onchange="saveRolloverMode('off')">
-          <span><strong>Off</strong> - Do not roll over unspent savings.</span>
+        
+        <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1px solid ${cfg.rolloverMode==='off'?'var(--primary)':'var(--line)'}; border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="notif-rollover-mode" value="off" ${cfg.rolloverMode==='off'?'checked':''} onchange="saveRolloverMode('off')" style="margin-top:3px;">
+          <div>
+            <strong style="font-size:13.5px; color:var(--ink); display:block;">Off (Do Not Carry Forward)</strong>
+            <span class="text-xs muted">Do not prompt or carry forward unspent monthly balances.</span>
+          </div>
         </label>
       </div>
     </div>
 
     <div class="card" style="padding:22px;">
       <h2 class="section-title" style="margin:0 0 4px;">Browser Desktop Push Notifications</h2>
-      <p class="text-xs muted" style="margin:0 0 16px;">Receive native Windows notifications even when WealthNest is running in the background.</p>
+      <p class="text-xs muted" style="margin:0 0 16px;">Receive native desktop alerts even when WealthNest is running in the background.</p>
       
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:14px 16px;">
         <div>
@@ -13045,22 +12940,13 @@ function renderNotificationSettings(){
   `;
 }
 
-function saveNotificationEmail(){
-  const val = document.getElementById('notif-email-input')?.value.trim();
-  if(!val){ showToast('Please enter an email address', 'error'); return; }
-  if(!DB.notificationSettings) DB.notificationSettings = {};
-  DB.notificationSettings.email = val;
-  saveDB(true);
-  showToast('Alert notification email saved to ' + val, 'success');
-}
-
 function saveNotificationToggles(){
   if(!DB.notificationSettings) DB.notificationSettings = {};
-  if(!DB.notificationSettings.emailAlerts) DB.notificationSettings.emailAlerts = {};
-  DB.notificationSettings.emailAlerts.budget = document.getElementById('notif-trig-budget')?.checked ?? true;
-  DB.notificationSettings.emailAlerts.benefits = document.getElementById('notif-trig-benefits')?.checked ?? true;
-  DB.notificationSettings.emailAlerts.goals = document.getElementById('notif-trig-goals')?.checked ?? true;
+  DB.notificationSettings.budgetAlerts = document.getElementById('notif-trig-budget')?.checked ?? true;
+  DB.notificationSettings.benefitsAlerts = document.getElementById('notif-trig-benefits')?.checked ?? true;
+  DB.notificationSettings.goalsAlerts = document.getElementById('notif-trig-goals')?.checked ?? true;
   saveDB(true);
+  renderNotifications();
   showToast('Notification preferences updated');
 }
 
@@ -13068,7 +12954,9 @@ function saveRolloverMode(mode){
   if(!DB.notificationSettings) DB.notificationSettings = {};
   DB.notificationSettings.rolloverMode = mode;
   saveDB(true);
-  showToast('Savings rollover mode set to: ' + mode);
+  renderNotificationSettings();
+  renderNotifications();
+  showToast(mode === 'prompt' ? 'Savings rollover set to Always Ask Me' : 'Savings rollover disabled');
 }
 
 function requestDesktopNotificationPermission(){
@@ -14092,97 +13980,139 @@ function getSystemNotifications(){
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   const todayStr = ymd(now);
+  const cfg = DB.notificationSettings || {};
+  const dismissed = new Set(DB.dismissedNotifications || []);
 
-  // 1. Budget Over-Limit Alerts
-  const currentBudgets = (DB.budgets || []).filter(b => b.month === currentMonth && b.year === currentYear);
-  const chartTxs = (DB.transactions || []).filter(t => inMonth(t, currentMonth, currentYear) && t.type === 'expense');
-  const catNames = [...new Set(currentBudgets.map(b => b.category))];
-  catNames.forEach(cat => {
-    const main = currentBudgets.find(b => b.category === cat && !b.subCategory);
-    const subs = currentBudgets.filter(b => b.category === cat && b.subCategory);
-    const budgetAmt = main ? main.budgetAmount : subs.reduce((s, r) => s + r.budgetAmount, 0);
-    const spent = chartTxs.filter(t => t.category === cat).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-    if(budgetAmt > 0 && spent > budgetAmt){
-      const overBy = spent - budgetAmt;
-      list.push({
-        id: 'notif-budget-' + cat,
-        type: 'alert',
-        priority: 'danger',
-        title: 'Budget Exceeded: ' + cat,
-        desc: 'Spending (' + fmt(spent) + ') has exceeded your ' + fmt(budgetAmt) + ' limit by ' + fmt(overBy) + '.',
-        actionLabel: 'View Budgets',
-        actionFn: "goToApp('budgets'); closeNotificationDrawer();"
-      });
-    }
-  });
+  // 1. Budget Alerts
+  if(cfg.budgetAlerts !== false){
+    const currentBudgets = (DB.budgets || []).filter(b => b.month === currentMonth && b.year === currentYear);
+    const chartTxs = (DB.transactions || []).filter(t => inMonth(t, currentMonth, currentYear) && t.type === 'expense');
+    const catNames = [...new Set(currentBudgets.map(b => b.category))];
+    catNames.forEach(cat => {
+      const main = currentBudgets.find(b => b.category === cat && !b.subCategory);
+      const subs = currentBudgets.filter(b => b.category === cat && b.subCategory);
+      const budgetAmt = main ? main.budgetAmount : subs.reduce((s, r) => s + r.budgetAmount, 0);
+      const spent = chartTxs.filter(t => t.category === cat).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+      if(budgetAmt > 0 && spent > budgetAmt){
+        const overBy = spent - budgetAmt;
+        const id = 'notif-budget-' + cat;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id,
+            type: 'alert',
+            priority: 'danger',
+            title: 'Budget Exceeded: ' + cat,
+            desc: 'Spending (' + fmt(spent) + ') has exceeded your ' + fmt(budgetAmt) + ' limit by ' + fmt(overBy) + '.',
+            actionLabel: 'View Budgets',
+            actionFn: "goToApp('budgets'); closeNotificationDrawer();"
+          });
+        }
+      } else if(budgetAmt > 0 && spent >= budgetAmt * 0.85){
+        const id = 'notif-budget-warn-' + cat;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id,
+            type: 'alert',
+            priority: 'amber',
+            title: 'Budget Warning: ' + cat,
+            desc: 'Spending (' + fmt(spent) + ') is at ' + Math.round((spent/budgetAmt)*100) + '% of your ' + fmt(budgetAmt) + ' limit.',
+            actionLabel: 'View Budgets',
+            actionFn: "goToApp('budgets'); closeNotificationDrawer();"
+          });
+        }
+      }
+    });
+  }
 
-  // 2. Company Benefits Surplus Alerts (End of cycle with leftover quota)
-  (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
-    const avail = computeAllowanceAvailable(acc);
-    const cycleEnded = acc.endDate ? (acc.endDate <= todayStr) : (now.getDate() >= 25);
-    if(avail > 0 && cycleEnded){
-      list.push({
-        id: 'notif-benefit-surplus-' + acc.id,
-        type: 'alert',
-        priority: 'teal',
-        title: 'Surplus Allowance: ' + acc.name,
-        desc: 'You have ' + fmt(avail) + ' unspent quota available. Transfer it to your personal Income or Savings Goal!',
-        actionLabel: 'Transfer Quota',
-        actionFn: "openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
-      });
-    }
-  });
+  // 2. Company Benefits Surplus Alerts
+  if(cfg.benefitsAlerts !== false){
+    (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
+      const avail = computeAllowanceAvailable(acc);
+      const cycleEnded = acc.endDate ? (acc.endDate <= todayStr) : (now.getDate() >= 25);
+      if(avail > 0 && cycleEnded){
+        const id = 'notif-benefit-surplus-' + acc.id;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id,
+            type: 'alert',
+            priority: 'teal',
+            title: 'Surplus Allowance: ' + acc.name,
+            desc: 'You have ' + fmt(avail) + ' unspent quota available. Transfer it to your personal Income or Savings Goal!',
+            actionLabel: 'Transfer Quota',
+            actionFn: "openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
+          });
+        }
+      }
+    });
+  }
 
   // 3. Savings Goal Milestones & Deadlines
-  (DB.savingsGoals || []).forEach(g => {
-    const cur = getGoalCurrentAmount(g);
-    const reached = cur >= g.targetAmount;
-    if(reached){
-      list.push({
-        id: 'notif-goal-reached-' + g.id,
-        type: 'reminder',
-        priority: 'teal',
-        title: 'Goal Achieved: ' + g.name,
-        desc: 'Congratulations! You reached your savings target of ' + fmt(g.targetAmount) + '.',
-        actionLabel: 'View Goals',
-        actionFn: "goToApp('savings'); closeNotificationDrawer();"
-      });
-    } else if(g.deadline){
-      const dDate = new Date(g.deadline + 'T00:00:00');
-      const diffDays = Math.ceil((dDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      if(diffDays >= 0 && diffDays <= 7){
-        list.push({
-          id: 'notif-goal-deadline-' + g.id,
-          type: 'alert',
-          priority: 'amber',
-          title: 'Goal Deadline Approaching: ' + g.name,
-          desc: 'Target date is in ' + diffDays + ' day' + (diffDays === 1 ? '' : 's') + '. You have ' + fmt(Math.max(0, g.targetAmount - cur)) + ' remaining.',
-          actionLabel: 'Contribute',
-          actionFn: "goToApp('savings'); closeNotificationDrawer();"
-        });
+  if(cfg.goalsAlerts !== false){
+    (DB.savingsGoals || []).forEach(g => {
+      const cur = getGoalCurrentAmount(g);
+      const reached = cur >= g.targetAmount;
+      if(reached){
+        const id = 'notif-goal-reached-' + g.id;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id,
+            type: 'reminder',
+            priority: 'teal',
+            title: 'Goal Achieved: ' + g.name,
+            desc: 'Congratulations! You reached your savings target of ' + fmt(g.targetAmount) + '.',
+            actionLabel: 'View Goals',
+            actionFn: "goToApp('savings'); closeNotificationDrawer();"
+          });
+        }
+      } else if(g.deadline){
+        const dDate = new Date(g.deadline + 'T00:00:00');
+        const diffDays = Math.ceil((dDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        if(diffDays >= 0 && diffDays <= 7){
+          const id = 'notif-goal-deadline-' + g.id;
+          if(!dismissed.has(id)){
+            list.push({
+              id: id,
+              type: 'alert',
+              priority: 'amber',
+              title: 'Goal Deadline Approaching: ' + g.name,
+              desc: 'Target date is in ' + diffDays + ' day' + (diffDays === 1 ? '' : 's') + '. You have ' + fmt(Math.max(0, g.targetAmount - cur)) + ' remaining.',
+              actionLabel: 'Contribute',
+              actionFn: "goToApp('savings'); closeNotificationDrawer();"
+            });
+          }
+        }
       }
-    }
-  });
+    });
+  }
 
-  // 4. Monthly Savings Rollover Prompt
-  const prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0);
-  const prevM = prevMonthDate.getMonth() + 1;
-  const prevY = prevMonthDate.getFullYear();
-  const prevMonthKey = prevY + '-' + String(prevM).padStart(2, '0');
-  if(!DB.savingsRolloverHistory) DB.savingsRolloverHistory = [];
-  if(!DB.savingsRolloverHistory.includes(prevMonthKey)){
-    const prevTotals = monthTotals(DB.transactions, prevM, prevY);
-    const netSaved = prevTotals.income - prevTotals.expense;
-    if(netSaved > 0){
-      list.push({
-        id: 'notif-rollover-' + prevMonthKey,
-        type: 'reminder',
-        priority: 'teal',
-        title: 'Unspent Savings Rollover Available',
-        desc: 'You saved ' + fmt(netSaved) + ' in ' + MONTH_NAMES[prevM - 1] + '. Roll it over into this month\'s income!',
-        actionLabel: 'Roll Over to Income',
-        actionFn: "executeSavingsRollover(" + netSaved + ", '" + prevMonthKey + "'); closeNotificationDrawer();"
-      });
+  // 4. Monthly Savings Carry-Forward Prompt (Always Ask Me)
+  const rolloverMode = cfg.rolloverMode ?? 'prompt';
+  if(rolloverMode !== 'off'){
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0);
+    const prevM = prevMonthDate.getMonth() + 1;
+    const prevY = prevMonthDate.getFullYear();
+    const prevMonthKey = prevY + '-' + String(prevM).padStart(2, '0');
+    if(!DB.savingsRolloverHistory) DB.savingsRolloverHistory = [];
+    if(!DB.savingsRolloverHistory.includes(prevMonthKey)){
+      const prevTotals = monthTotals(DB.transactions, prevM, prevY);
+      const prevIncome = prevTotals.income || 0;
+      const prevExpense = prevTotals.expense || 0;
+      const prevSavings = prevTotals.savings || 0;
+      const unallocated = prevIncome - prevExpense - prevSavings;
+      if(unallocated > 0){
+        const id = 'notif-rollover-' + prevMonthKey;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id,
+            type: 'reminder',
+            priority: 'teal',
+            title: 'Unallocated Surplus from ' + MONTH_NAMES[prevM - 1],
+            desc: "You have " + fmt(unallocated) + " remaining from " + MONTH_NAMES[prevM - 1] + ". Carry it forward to this month's income or allocate to a savings goal!",
+            actionLabel: 'Carry Forward',
+            actionFn: "openCarryForwardModal(" + unallocated + ", " + prevM + ", " + prevY + "); closeNotificationDrawer();"
+          });
+        }
+      }
     }
   }
 
@@ -14192,7 +14122,6 @@ function getSystemNotifications(){
 function renderNotifications(){
   const container = document.getElementById('notification-list');
   const countBadge = document.getElementById('notification-drawer-count');
-  const topbarBadge = document.getElementById('topbar-bell-badge');
 
   const allNotifs = getSystemNotifications();
   const filtered = allNotifs.filter(n => {
@@ -14203,10 +14132,12 @@ function renderNotifications(){
 
   const count = allNotifs.length;
   if(countBadge) countBadge.textContent = count;
-  if(topbarBadge){
-    topbarBadge.textContent = count;
-    topbarBadge.classList.toggle('hidden', count === 0);
-  }
+  
+  // Update ALL bell badges across all pages
+  document.querySelectorAll('.notification-badge, [id="topbar-bell-badge"]').forEach(badge => {
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+  });
 
   if(!container) return;
 
@@ -14225,7 +14156,7 @@ function renderNotifications(){
     <div class="notification-card unread priority-${n.priority}">
       <div class="notification-card-header">
         <h4 class="notification-card-title">${escapeHtml(n.title)}</h4>
-        <span class="badge ${n.priority==='danger'?'badge-over':'badge-ok'}" style="font-size:10.5px;">${n.type}</span>
+        <span class="badge ${n.priority==='danger'?'badge-over':(n.priority==='amber'?'badge-off':'badge-ok')}" style="font-size:10.5px; font-weight:700;">${n.type.toUpperCase()}</span>
       </div>
       <p class="notification-card-desc">${escapeHtml(n.desc)}</p>
       <div class="notification-card-actions">
@@ -14237,20 +14168,32 @@ function renderNotifications(){
 }
 
 function dismissNotification(id){
-  // Add to dismissed list in DB
   if(!DB.dismissedNotifications) DB.dismissedNotifications = [];
-  DB.dismissedNotifications.push(id);
+  if(!DB.dismissedNotifications.includes(id)) DB.dismissedNotifications.push(id);
+  saveDB(true);
   renderNotifications();
 }
 
 function markAllNotificationsRead(){
+  const allNotifs = getSystemNotifications();
+  if(!DB.dismissedNotifications) DB.dismissedNotifications = [];
+  allNotifs.forEach(n => {
+    if(!DB.dismissedNotifications.includes(n.id)) DB.dismissedNotifications.push(n.id);
+  });
+  saveDB(true);
+  renderNotifications();
   showToast('All notifications marked as read', 'success');
-  closeNotificationDrawer();
 }
 
 function clearAllNotifications(){
+  const allNotifs = getSystemNotifications();
+  if(!DB.dismissedNotifications) DB.dismissedNotifications = [];
+  allNotifs.forEach(n => {
+    if(!DB.dismissedNotifications.includes(n.id)) DB.dismissedNotifications.push(n.id);
+  });
+  saveDB(true);
+  renderNotifications();
   showToast('Notifications cleared');
-  closeNotificationDrawer();
 }
 
 
@@ -14291,6 +14234,102 @@ function openTxModalWithGoal(goalName){
 
 function renderAllForCurrentPage(){
   if(typeof renderNotifications === "function") renderNotifications(); renderPage(currentPage); }
+
+
+/* ============================================================
+   CARRY-FORWARD BALANCE WORKFLOW
+   ============================================================ */
+let _carryForwardAmount = 0;
+let _carryForwardFromMonth = 0;
+let _carryForwardFromYear = 0;
+
+function openCarryForwardModal(amount, fromMonth, fromYear){
+  _carryForwardAmount = amount;
+  _carryForwardFromMonth = fromMonth;
+  _carryForwardFromYear = fromYear;
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const subtitle = document.getElementById('carry-forward-subtitle');
+  const amtEl = document.getElementById('carry-forward-amount');
+  if(subtitle) subtitle.textContent = 'Carry forward from ' + SHORT_MONTHS[fromMonth-1] + ' ' + fromYear;
+  if(amtEl) amtEl.textContent = fmt(amount);
+  
+  const goalSelect = document.getElementById('carry-forward-goal-select');
+  if(goalSelect){
+    goalSelect.innerHTML = (DB.savingsGoals||[]).map(g => '<option value="' + escapeHtml(g.id) + '">' + escapeHtml(g.name) + '</option>').join('');
+  }
+  
+  const incomeRadio = document.querySelector('input[name="carry-forward-dest"][value="income"]');
+  if(incomeRadio) incomeRadio.checked = true;
+  const row = document.getElementById('carry-forward-savings-goal-row');
+  if(row) row.classList.add('hidden');
+  
+  const backdrop = document.getElementById('carry-forward-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function onCarryForwardDestChange(dest){
+  const row = document.getElementById('carry-forward-savings-goal-row');
+  if(row){
+    if(dest === 'savings') row.classList.remove('hidden');
+    else row.classList.add('hidden');
+  }
+}
+
+function closeCarryForwardModal(){
+  const backdrop = document.getElementById('carry-forward-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function executeCarryForward(){
+  if(!_carryForwardAmount || _carryForwardAmount <= 0){
+    showToast('No balance to carry forward', 'info');
+    return;
+  }
+  const dest = document.querySelector('input[name="carry-forward-dest"]:checked')?.value || 'income';
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fromLabel = SHORT_MONTHS[_carryForwardFromMonth-1] + ' ' + _carryForwardFromYear;
+  
+  if(dest === 'income'){
+    let nextM = _carryForwardFromMonth + 1;
+    let nextY = _carryForwardFromYear;
+    if(nextM > 12){ nextM = 1; nextY++; }
+    const dateStr = nextY + '-' + String(nextM).padStart(2,'0') + '-01';
+    const newTx = {
+      id: uid(),
+      date: dateStr,
+      type: 'income',
+      category: 'Carry-Forward Balance',
+      description: 'Rolled over from ' + fromLabel,
+      amount: _carryForwardAmount,
+      paymentMethod: 'Bank Transfer'
+    };
+    DB.transactions.unshift(newTx);
+    saveDB(true);
+    renderAll();
+    showToast(fmt(_carryForwardAmount) + ' added to ' + SHORT_MONTHS[nextM-1] + ' ' + nextY + ' income', 'success');
+  } else {
+    const goalId = document.getElementById('carry-forward-goal-select')?.value;
+    const goal = (DB.savingsGoals||[]).find(g => g.id === goalId);
+    if(!goal){ showToast('Please select a savings goal', 'error'); return; }
+    const today = ymd(new Date());
+    const newTx = {
+      id: uid(),
+      date: today,
+      type: 'savings',
+      category: goal.name,
+      savingIn: goal.savingIn || 'Bank Account',
+      description: 'Carry-forward from ' + fromLabel,
+      amount: _carryForwardAmount,
+      paymentMethod: 'Bank Transfer'
+    };
+    DB.transactions.unshift(newTx);
+    saveDB(true);
+    renderAll();
+    showToast(fmt(_carryForwardAmount) + ' allocated to ' + goal.name, 'success');
+  }
+  closeCarryForwardModal();
+}
+
 
 /* ---------------- init ---------------- */
 window.addEventListener('keydown', (e) => {
@@ -14335,6 +14374,10 @@ window.addEventListener('keydown', (e) => {
     if (allwModalEl && !allwModalEl.classList.contains('hidden')) closeAllowanceModal();
     const authEl = document.getElementById('auth-modal-backdrop');
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
+    const cfEl = document.getElementById('carry-forward-modal-backdrop');
+    if (cfEl && !cfEl.classList.contains('hidden')) closeCarryForwardModal();
+    const notifEl = document.getElementById('notification-drawer');
+    if (notifEl && notifEl.classList.contains('open')) closeNotificationDrawer();
     const deleteAccountEl = document.getElementById('delete-account-modal-backdrop');
     if (deleteAccountEl && !deleteAccountEl.classList.contains('hidden')) closeDeleteAccountModal();
   }
