@@ -2546,7 +2546,7 @@
 
 <!-- Carry-Forward Balance Modal -->
 <div id="carry-forward-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeCarryForwardModal()">
-  <div class="modal" style="max-width:440px;">
+  <div class="modal" style="max-width:460px;">
     <button class="modal-close" onclick="closeCarryForwardModal()" aria-label="Close">✕</button>
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
       <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
@@ -2560,37 +2560,92 @@
     
     <div id="carry-forward-summary-card" style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin:14px 0 16px;">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
-        <span class="text-xs muted">Unallocated Balance</span>
+        <span class="text-xs muted">Unallocated Surplus</span>
         <span id="carry-forward-amount" class="figure" style="font-weight:700; font-size:18px; color:var(--teal);"></span>
       </div>
     </div>
     
-    <p class="text-xs muted" style="margin:0 0 12px;">Where would you like to move this balance?</p>
+    <p class="text-xs muted" style="margin:0 0 10px; font-weight:600;">Where would you like to move this balance?</p>
     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
       <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
         <input type="radio" name="carry-forward-dest" value="income" checked style="margin-top:3px;" onchange="onCarryForwardDestChange(this.value)">
         <div>
-          <div style="font-size:13.5px; font-weight:600; color:var(--ink);">Add to Income</div>
-          <div class="text-xs muted">Creates a new income entry in the next month</div>
+          <div style="font-size:13.5px; font-weight:600; color:var(--ink);">Add to Next Month's Income</div>
+          <div class="text-xs muted">Rolls over this surplus as starting income in the following month</div>
         </div>
       </label>
       <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
         <input type="radio" name="carry-forward-dest" value="savings" style="margin-top:3px;" onchange="onCarryForwardDestChange(this.value)">
         <div>
           <div style="font-size:13.5px; font-weight:600; color:var(--ink);">Add to Savings Goal</div>
-          <div class="text-xs muted">Contributes directly into a savings goal vault</div>
+          <div class="text-xs muted">Contributes directly into your selected savings goal vault</div>
         </div>
       </label>
     </div>
     
     <div id="carry-forward-savings-goal-row" class="hidden" style="margin-bottom:16px;">
       <label class="field-label" for="carry-forward-goal-select">Select Savings Goal</label>
-      <select id="carry-forward-goal-select" class="field-input"></select>
+      <select id="carry-forward-goal-select" class="field-input" onchange="updateCarryForwardImpactText('savings')"></select>
+    </div>
+
+    <!-- Concise Action & Impact Summary Box -->
+    <div id="carry-forward-impact-card" style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:12px 14px; margin-bottom:16px;">
+      <div style="font-size:12.5px; font-weight:700; color:var(--teal); margin-bottom:4px;">Transfer Confirmation & Impact</div>
+      <p id="carry-forward-impact-msg" class="text-xs muted" style="margin:0; line-height:1.5;"></p>
     </div>
     
     <div style="display:flex; justify-content:flex-end; gap:10px;">
       <button type="button" onclick="closeCarryForwardModal()" class="btn-ghost">Cancel</button>
       <button type="button" onclick="executeCarryForward()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+        Confirm Transfer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Roll Savings Goal to Next Month Income Modal -->
+<div id="roll-goal-income-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeRollGoalIncomeModal()">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" onclick="closeRollGoalIncomeModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Move Savings to Next Month Income</h2>
+        <p class="text-xs muted" id="roll-goal-subtitle" style="margin:2px 0 0;"></p>
+      </div>
+    </div>
+
+    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin:14px 0 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+        <span class="text-xs muted">Goal Current Balance</span>
+        <span id="roll-goal-current-amount" class="figure" style="font-weight:700; font-size:18px; color:var(--teal);"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="text-xs muted">Transfer Destination</span>
+        <strong id="roll-goal-next-month-label" style="font-size:13px; color:var(--ink);"></strong>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <label class="field-label" for="roll-goal-amount-input" style="margin:0;">Amount to Transfer</label>
+        <button type="button" onclick="setRollGoalWholeAmount()" class="link-sm" style="font-size:11.5px; color:var(--teal); background:none; border:none; cursor:pointer; font-weight:600;">
+          Use Whole Saving
+        </button>
+      </div>
+      <input type="number" id="roll-goal-amount-input" min="1" step="any" class="field-input figure" style="font-size:16px; font-weight:700;">
+    </div>
+
+    <div style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:12px 14px; margin-bottom:16px;">
+      <div style="font-size:12.5px; font-weight:700; color:var(--teal); margin-bottom:4px;">Transfer Details & Impact</div>
+      <p id="roll-goal-impact-msg" class="text-xs muted" style="margin:0; line-height:1.5;"></p>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button type="button" onclick="closeRollGoalIncomeModal()" class="btn-ghost">Cancel</button>
+      <button type="button" onclick="executeRollGoalToIncome()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
         Confirm Transfer
       </button>
     </div>
@@ -10850,13 +10905,17 @@ function renderSavings(){
   const monthSaved = (DB.transactions || []).filter(t => t.type === 'savings' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthIncome = (DB.transactions || []).filter(t => t.type === 'income' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthExpense = (DB.transactions || []).filter(t => t.type === 'expense' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-  const monthRemaining = monthIncome - monthExpense - monthSaved;
+  const rawRemaining = monthIncome - monthExpense - monthSaved;
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const curMonthName = SHORT_MONTHS[curM - 1];
 
-  // 3. Goals Achieved
-  const allGoals = DB.savingsGoals || [];
-  const completedGoalsCount = allGoals.filter(g => (getGoalCurrentAmount(g) >= (Number(g.targetAmount) || 0))).length;
+  // Check if carry-forward is already active for this month
+  const activeCf = (DB.carryForwards || []).find(cf => cf.fromMonth === curM && cf.fromYear === curY && (DB.transactions || []).some(t => t.id === cf.txId));
+  const monthRemaining = activeCf ? 0 : rawRemaining;
+
+  // 3. Goals Achieved (strictly based on the selected month!)
+  const monthGoalsCount = visibleGoals.length;
+  const monthGoalsAchieved = visibleGoals.filter(g => (getGoalCurrentAmount(g) >= (Number(g.targetAmount) || 0))).length;
 
   // 4. Update goal currentAmounts
   visibleGoals.forEach(g => {
@@ -10879,28 +10938,47 @@ function renderSavings(){
       </div>
       <div class="budget-summary-item">
         <span class="label-eyebrow">Remaining Balance</span>
-        <strong style="color:${monthRemaining >= 0 ? 'var(--teal)' : 'var(--rose)'}; font-size:22px;">${fmt(Math.abs(monthRemaining))}</strong>
-        <span class="text-xs muted">${monthRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget'}</span>
+        <strong style="color:${activeCf ? 'var(--teal)' : (rawRemaining >= 0 ? 'var(--teal)' : 'var(--rose)')}; font-size:22px;">${fmt(Math.abs(activeCf ? activeCf.amount : rawRemaining))}</strong>
+        <span class="text-xs muted">${activeCf ? curMonthName + ' carried forward to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget')}</span>
       </div>
       <div class="budget-summary-item">
         <span class="label-eyebrow">Goals Achieved</span>
-        <strong style="color:var(--primary); font-size:22px;">${completedGoalsCount} of ${allGoals.length}</strong>
-        <span class="text-xs muted">${allGoals.length - completedGoalsCount} active in progress</span>
+        <strong style="color:var(--primary); font-size:22px;">${monthGoalsAchieved} of ${monthGoalsCount}</strong>
+        <span class="text-xs muted">${monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName}</span>
       </div>
     `;
   }
 
-  // Render Carry-Forward Action Banner if unallocated balance > 0
+  // Render Carry-Forward Action Banner / Reverse Option
   const cfBtnContainer = document.getElementById('savings-carry-forward-btn-wrap');
   if(cfBtnContainer){
-    if(monthRemaining > 0){
+    if(activeCf){
+      cfBtnContainer.innerHTML = `
+        <div style="margin-bottom:16px; padding:14px 18px; background:rgba(13,148,136,0.08); border:1px solid rgba(13,148,136,0.25); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-size:14px; font-weight:700; color:var(--teal); display:flex; align-items:center; gap:8px;">
+              <span>Carry-Forward Active for ${curMonthName} ${curY}</span>
+              <span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">Applied</span>
+            </div>
+            <div class="text-xs muted" style="margin-top:3px;">
+              <strong style="color:var(--ink);">${fmt(activeCf.amount)}</strong> was carried forward into ${activeCf.dest === 'income' ? 'next month income' : (activeCf.goalName || 'savings goal')}. You can reverse this transfer anytime to restore funds to ${curMonthName}.
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" onclick="reverseCarryForward('${activeCf.id}')" class="btn-ghost" style="color:var(--rose); border-color:var(--rose); padding:6px 14px; font-size:12.5px; height:32px;">
+              Reverse Carry Forward
+            </button>
+          </div>
+        </div>
+      `;
+    } else if(rawRemaining > 0){
       cfBtnContainer.innerHTML = `
         <div style="margin-bottom:16px; padding:14px 18px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
             <div style="font-size:14px; font-weight:700; color:var(--ink);">Unallocated Balance for ${curMonthName} ${curY}</div>
-            <div class="text-xs muted" style="margin-top:2px;">You have <strong style="color:var(--teal);">${fmt(monthRemaining)}</strong> unspent and unallocated for this period. Carry it forward to next month's income or allocate to a savings goal.</div>
+            <div class="text-xs muted" style="margin-top:2px;">You have <strong style="color:var(--teal);">${fmt(rawRemaining)}</strong> unspent and unallocated for this period. Carry it forward to next month's income or allocate to a savings goal.</div>
           </div>
-          <button type="button" onclick="openCarryForwardModal(${monthRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:6px 16px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+          <button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:6px 16px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
             Carry Forward Balance
           </button>
         </div>
@@ -10910,7 +10988,7 @@ function renderSavings(){
     }
   }
 
-  // 2. Render Clean Goal Cards (NO ugly pen icons, NO dashes, NO double pluses, ZERO emojis)
+  // 2. Render Clean Goal Cards
   const todayStr = ymd(new Date());
   const grid = document.getElementById('savings-grid');
   if(!grid) return;
@@ -10963,9 +11041,9 @@ function renderSavings(){
           <span class="text-xs muted">${reached ? 'Fully Funded' : fmt(rem) + ' remaining'}</span>
         </div>
 
-        <!-- Clean Action Buttons (NO ugly pen icons, NO double pluses, NO dashes) -->
+        <!-- Clean Action Buttons with Move to Next Month Income Option -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             ${!reached ? `
               <button type="button" onclick="showContributeRow('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px;">
                 Contribute
@@ -10977,6 +11055,9 @@ function renderSavings(){
             ${cur > 0 ? `
               <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use funds from this goal for an expense">
                 Use Funds
+              </button>
+              <button type="button" onclick="openRollGoalToIncomeModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Contribute this whole saving or partial amount into next month income">
+                Move to Next Month Income
               </button>
             ` : ''}
           </div>
@@ -14228,32 +14309,65 @@ function renderAllForCurrentPage(){
 
 
 /* ============================================================
-   CARRY-FORWARD BALANCE WORKFLOW
+   CARRY-FORWARD BALANCE & GOAL-TO-INCOME ROLLOVER WORKFLOW
    ============================================================ */
 let _carryForwardAmount = 0;
 let _carryForwardFromMonth = 0;
 let _carryForwardFromYear = 0;
+
+function updateCarryForwardImpactText(dest){
+  const msgEl = document.getElementById('carry-forward-impact-msg');
+  if(!msgEl) return;
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fromMonthName = SHORT_MONTHS[_carryForwardFromMonth - 1] || 'this month';
+  let nextM = _carryForwardFromMonth + 1;
+  let nextY = _carryForwardFromYear;
+  if(nextM > 12){ nextM = 1; nextY++; }
+  const nextMonthName = SHORT_MONTHS[nextM - 1];
+
+  if(dest === 'income'){
+    msgEl.innerHTML = 'Are you sure you want to carry forward <strong>' + fmt(_carryForwardAmount) + '</strong> to next month?<br>' +
+      '• Adds <strong>' + fmt(_carryForwardAmount) + '</strong> to <strong>' + nextMonthName + ' ' + nextY + '</strong> income as "Carry-Forward Balance".<br>' +
+      '• Increases your available spending budget in ' + nextMonthName + '.<br>' +
+      '• You can reverse this transfer at any time.';
+  } else {
+    const goalSelect = document.getElementById('carry-forward-goal-select');
+    const selectedGoalName = goalSelect && goalSelect.selectedOptions && goalSelect.selectedOptions[0] ? goalSelect.selectedOptions[0].textContent : 'selected goal';
+    msgEl.innerHTML = 'Are you sure you want to allocate <strong>' + fmt(_carryForwardAmount) + '</strong> to savings?<br>' +
+      '• Contributes <strong>' + fmt(_carryForwardAmount) + '</strong> directly into your <strong>' + escapeHtml(selectedGoalName) + '</strong> vault.<br>' +
+      '• Helps you reach your savings target faster.<br>' +
+      '• You can reverse this transfer at any time.';
+  }
+}
 
 function openCarryForwardModal(amount, fromMonth, fromYear){
   _carryForwardAmount = amount;
   _carryForwardFromMonth = fromMonth;
   _carryForwardFromYear = fromYear;
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fromMonthName = SHORT_MONTHS[fromMonth - 1] || 'Current Month';
+  let nextM = fromMonth + 1;
+  let nextY = fromYear;
+  if(nextM > 12){ nextM = 1; nextY++; }
+  const nextMonthName = SHORT_MONTHS[nextM - 1];
+
   const subtitle = document.getElementById('carry-forward-subtitle');
   const amtEl = document.getElementById('carry-forward-amount');
-  if(subtitle) subtitle.textContent = 'Carry forward from ' + SHORT_MONTHS[fromMonth-1] + ' ' + fromYear;
+  if(subtitle) subtitle.textContent = 'Carry forward surplus from ' + fromMonthName + ' ' + fromYear;
   if(amtEl) amtEl.textContent = fmt(amount);
-  
+
   const goalSelect = document.getElementById('carry-forward-goal-select');
   if(goalSelect){
-    goalSelect.innerHTML = (DB.savingsGoals||[]).map(g => '<option value="' + escapeHtml(g.id) + '">' + escapeHtml(g.name) + '</option>').join('');
+    goalSelect.innerHTML = (DB.savingsGoals || []).map(g => '<option value="' + escapeHtml(g.id) + '">' + escapeHtml(g.name) + '</option>').join('');
   }
-  
+
   const incomeRadio = document.querySelector('input[name="carry-forward-dest"][value="income"]');
   if(incomeRadio) incomeRadio.checked = true;
   const row = document.getElementById('carry-forward-savings-goal-row');
   if(row) row.classList.add('hidden');
-  
+
+  updateCarryForwardImpactText('income');
+
   const backdrop = document.getElementById('carry-forward-modal-backdrop');
   if(backdrop) backdrop.classList.remove('hidden');
 }
@@ -14264,6 +14378,7 @@ function onCarryForwardDestChange(dest){
     if(dest === 'savings') row.classList.remove('hidden');
     else row.classList.add('hidden');
   }
+  updateCarryForwardImpactText(dest);
 }
 
 function closeCarryForwardModal(){
@@ -14280,30 +14395,50 @@ function executeCarryForward(){
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const fromLabel = SHORT_MONTHS[_carryForwardFromMonth-1] + ' ' + _carryForwardFromYear;
   
+  let newTx = null;
+  let cfRecord = null;
+
   if(dest === 'income'){
     let nextM = _carryForwardFromMonth + 1;
     let nextY = _carryForwardFromYear;
     if(nextM > 12){ nextM = 1; nextY++; }
     const dateStr = nextY + '-' + String(nextM).padStart(2,'0') + '-01';
-    const newTx = {
+    newTx = {
       id: uid(),
       date: dateStr,
       type: 'income',
       category: 'Carry-Forward Balance',
       description: 'Rolled over from ' + fromLabel,
       amount: _carryForwardAmount,
-      paymentMethod: 'Bank Transfer'
+      paymentMethod: 'Bank Transfer',
+      isCarryForward: true,
+      carryForwardSourceMonth: _carryForwardFromMonth,
+      carryForwardSourceYear: _carryForwardFromYear
     };
+    DB.transactions = DB.transactions || [];
     DB.transactions.unshift(newTx);
+
+    cfRecord = {
+      id: uid(),
+      fromMonth: _carryForwardFromMonth,
+      fromYear: _carryForwardFromYear,
+      dest: 'income',
+      amount: _carryForwardAmount,
+      txId: newTx.id,
+      createdDate: new Date().toISOString()
+    };
+    DB.carryForwards = DB.carryForwards || [];
+    DB.carryForwards.push(cfRecord);
+
     saveDB(true);
     renderAll();
-    showToast(fmt(_carryForwardAmount) + ' added to ' + SHORT_MONTHS[nextM-1] + ' ' + nextY + ' income', 'success');
+    showToast(fmt(_carryForwardAmount) + ' carried forward to ' + SHORT_MONTHS[nextM-1] + ' ' + nextY + ' income', 'success');
   } else {
     const goalId = document.getElementById('carry-forward-goal-select')?.value;
     const goal = (DB.savingsGoals||[]).find(g => g.id === goalId);
     if(!goal){ showToast('Please select a savings goal', 'error'); return; }
     const today = ymd(new Date());
-    const newTx = {
+    newTx = {
       id: uid(),
       date: today,
       type: 'savings',
@@ -14311,14 +14446,203 @@ function executeCarryForward(){
       savingIn: goal.savingIn || 'Bank Account',
       description: 'Carry-forward from ' + fromLabel,
       amount: _carryForwardAmount,
-      paymentMethod: 'Bank Transfer'
+      paymentMethod: 'Bank Transfer',
+      isCarryForward: true,
+      carryForwardSourceMonth: _carryForwardFromMonth,
+      carryForwardSourceYear: _carryForwardFromYear
     };
+    DB.transactions = DB.transactions || [];
     DB.transactions.unshift(newTx);
+
+    cfRecord = {
+      id: uid(),
+      fromMonth: _carryForwardFromMonth,
+      fromYear: _carryForwardFromYear,
+      dest: 'savings',
+      goalId: goal.id,
+      goalName: goal.name,
+      amount: _carryForwardAmount,
+      txId: newTx.id,
+      createdDate: new Date().toISOString()
+    };
+    DB.carryForwards = DB.carryForwards || [];
+    DB.carryForwards.push(cfRecord);
+
     saveDB(true);
     renderAll();
     showToast(fmt(_carryForwardAmount) + ' allocated to ' + goal.name, 'success');
   }
   closeCarryForwardModal();
+}
+
+function reverseCarryForward(cfId){
+  let cf = (DB.carryForwards || []).find(c => c.id === cfId);
+  if(!cf){
+    const tx = (DB.transactions || []).find(t => t.id === cfId || (t.category === 'Carry-Forward Balance' && t.isCarryForward));
+    if(tx){
+      cf = { id: uid(), txId: tx.id, amount: tx.amount, fromMonth: tx.carryForwardSourceMonth, fromYear: tx.carryForwardSourceYear };
+    }
+  }
+  if(!cf){
+    showToast('Carry-forward transaction not found', 'error');
+    return;
+  }
+
+  const confirmed = confirm('Are you sure you want to reverse this carry-forward transfer of ' + fmt(cf.amount) + '? The transfer will be removed and funds restored to unallocated surplus.');
+  if(!confirmed) return;
+
+  DB.transactions = (DB.transactions || []).filter(t => t.id !== cf.txId);
+  DB.carryForwards = (DB.carryForwards || []).filter(c => c.id !== cf.id && c.txId !== cf.txId);
+  saveDB(true);
+  renderAll();
+  showToast('Carry-forward of ' + fmt(cf.amount) + ' reversed successfully', 'success');
+}
+
+/* ============================================================
+   MOVE SAVINGS GOAL TO NEXT MONTH INCOME WORKFLOW
+   ============================================================ */
+let _rollGoalId = null;
+let _rollGoalCurAmount = 0;
+let _rollGoalNextM = 0;
+let _rollGoalNextY = 0;
+
+function openRollGoalToIncomeModal(goalId){
+  const goal = (DB.savingsGoals || []).find(g => g.id === goalId);
+  if(!goal) return;
+  _rollGoalId = goalId;
+  _rollGoalCurAmount = getGoalCurrentAmount(goal);
+  if(_rollGoalCurAmount <= 0){
+    showToast('This goal has no saved funds to transfer', 'info');
+    return;
+  }
+
+  const now = new Date();
+  const curM = savingsFilterMonth || (now.getMonth() + 1);
+  const curY = savingsFilterYear || now.getFullYear();
+  let nextM = curM + 1;
+  let nextY = curY;
+  if(nextM > 12){ nextM = 1; nextY++; }
+  _rollGoalNextM = nextM;
+  _rollGoalNextY = nextY;
+
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const curMonthName = SHORT_MONTHS[curM - 1];
+  const nextMonthName = SHORT_MONTHS[nextM - 1];
+
+  const sub = document.getElementById('roll-goal-subtitle');
+  if(sub) sub.textContent = 'Transfer from ' + goal.name + ' to ' + nextMonthName + ' ' + nextY;
+  const curEl = document.getElementById('roll-goal-current-amount');
+  if(curEl) curEl.textContent = fmt(_rollGoalCurAmount);
+  const destEl = document.getElementById('roll-goal-next-month-label');
+  if(destEl) destEl.textContent = nextMonthName + ' ' + nextY + ' Income';
+  
+  const inputEl = document.getElementById('roll-goal-amount-input');
+  if(inputEl){
+    inputEl.value = _rollGoalCurAmount;
+    inputEl.max = _rollGoalCurAmount;
+  }
+
+  const msgEl = document.getElementById('roll-goal-impact-msg');
+  if(msgEl){
+    msgEl.innerHTML = 'Are you sure you want to contribute these savings to next month\'s income?<br>' +
+      '• Deducts the amount from <strong>' + escapeHtml(goal.name) + '</strong>.<br>' +
+      '• Credits it as income on 1st of <strong>' + nextMonthName + ' ' + nextY + '</strong>.<br>' +
+      '• Increases next month\'s spending and budget capacity.<br>' +
+      '• Can be reversed at any time.';
+  }
+
+  const backdrop = document.getElementById('roll-goal-income-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function setRollGoalWholeAmount(){
+  const inputEl = document.getElementById('roll-goal-amount-input');
+  if(inputEl) inputEl.value = _rollGoalCurAmount;
+}
+
+function closeRollGoalIncomeModal(){
+  const backdrop = document.getElementById('roll-goal-income-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function executeRollGoalToIncome(){
+  const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
+  if(!goal){ showToast('Goal not found', 'error'); return; }
+  const inputEl = document.getElementById('roll-goal-amount-input');
+  const amt = parseFloat(inputEl?.value);
+  if(!amt || amt <= 0 || amt > _rollGoalCurAmount){
+    showToast('Please enter a valid amount up to ' + fmt(_rollGoalCurAmount), 'error');
+    return;
+  }
+
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const nextMonthName = SHORT_MONTHS[_rollGoalNextM - 1];
+  const dateStr = _rollGoalNextY + '-' + String(_rollGoalNextM).padStart(2, '0') + '-01';
+
+  // 1. Expense transaction from goal
+  const outTx = {
+    id: uid(),
+    date: ymd(new Date()),
+    type: 'expense',
+    category: 'Savings Transfer',
+    description: 'Funded from ' + goal.name + ': Contributed to ' + nextMonthName + ' ' + _rollGoalNextY + ' income',
+    amount: amt,
+    paymentMethod: 'Bank Transfer',
+    isGoalRolloverOut: true,
+    goalId: goal.id,
+    relatedGoalName: goal.name
+  };
+
+  // 2. Income transaction into next month
+  const inTx = {
+    id: uid(),
+    date: dateStr,
+    type: 'income',
+    category: 'Savings Rollover',
+    description: 'Transferred from ' + goal.name + ' savings',
+    amount: amt,
+    paymentMethod: 'Bank Transfer',
+    isGoalRolloverIn: true,
+    goalId: goal.id,
+    relatedTxId: outTx.id
+  };
+  outTx.relatedTxId = inTx.id;
+
+  DB.transactions = DB.transactions || [];
+  DB.transactions.unshift(outTx);
+  DB.transactions.unshift(inTx);
+
+  if(!DB.goalRollovers) DB.goalRollovers = [];
+  DB.goalRollovers.push({
+    id: uid(),
+    goalId: goal.id,
+    goalName: goal.name,
+    amount: amt,
+    fromMonth: savingsFilterMonth || (new Date().getMonth() + 1),
+    fromYear: savingsFilterYear || new Date().getFullYear(),
+    toMonth: _rollGoalNextM,
+    toYear: _rollGoalNextY,
+    outTxId: outTx.id,
+    inTxId: inTx.id,
+    date: new Date().toISOString()
+  });
+
+  saveDB(true);
+  renderAll();
+  closeRollGoalIncomeModal();
+  showToast('Contributed ' + fmt(amt) + ' from ' + goal.name + ' to ' + nextMonthName + ' income!', 'success');
+}
+
+function reverseGoalRollover(rolloverId){
+  const record = (DB.goalRollovers || []).find(r => r.id === rolloverId);
+  if(!record) return;
+  const confirmed = confirm('Reverse savings transfer of ' + fmt(record.amount) + ' from ' + record.goalName + '? This will return the funds to the goal.');
+  if(!confirmed) return;
+  DB.transactions = (DB.transactions || []).filter(t => t.id !== record.outTxId && t.id !== record.inTxId);
+  DB.goalRollovers = (DB.goalRollovers || []).filter(r => r.id !== rolloverId);
+  saveDB(true);
+  renderAll();
+  showToast('Savings transfer reversed successfully', 'success');
 }
 
 
@@ -14367,6 +14691,8 @@ window.addEventListener('keydown', (e) => {
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
     const cfEl = document.getElementById('carry-forward-modal-backdrop');
     if (cfEl && !cfEl.classList.contains('hidden')) closeCarryForwardModal();
+    const rollGoalEl = document.getElementById('roll-goal-income-modal-backdrop');
+    if (rollGoalEl && !rollGoalEl.classList.contains('hidden')) closeRollGoalIncomeModal();
     const notifEl = document.getElementById('notification-drawer');
     if (notifEl && notifEl.classList.contains('open')) closeNotificationDrawer();
     const deleteAccountEl = document.getElementById('delete-account-modal-backdrop');
