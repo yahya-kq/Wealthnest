@@ -1991,7 +1991,7 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><button class="btn-small" onclick="copyPreviousBudget()">Copy previous month</button><span id="budgets-total-label" class="figure text-sm muted"></span></div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span id="budgets-total-label" class="figure text-sm muted"></span></div>
       </div>
 
       <div class="budget-summary-grid" id="budget-summary-grid"></div>
@@ -2044,21 +2044,18 @@
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
         </div></div>
       <div class="card" style="padding:14px 20px; margin-bottom:16px;"><div class="dashboard-filter"><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-month">Month</label><select id="savings-filter-month" class="field-input" onchange="onSavingsFilterChange()"></select></div><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-year">Year</label><select id="savings-filter-year" class="field-input" onchange="onSavingsFilterChange()"></select></div><p class="dashboard-filter-note" id="savings-filter-note"></p></div></div>
-      <!-- 4-Card Summary KPI Grid (Directly matching Budgets page) -->
+      <!-- 4-Card Summary KPI Grid with Embedded Carry Forward & Roll All Actions -->
       <div class="budget-summary-grid mb-4" id="savings-summary-grid"></div>
-      <div id="savings-carry-forward-btn-wrap"></div>
 
-      <!-- Active Savings Targets Section Header -->
-      <div class="card" style="padding:18px 22px; margin-bottom:16px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 class="section-title" style="margin:0 0 2px;">Active Savings Targets</h2>
-            <p class="text-xs muted" style="margin:0;">Target milestones, emergency reserves, and accumulated balances.</p>
-          </div>
-          <button onclick="openGoalModal()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
-            + Create Goal
-          </button>
+      <!-- Clean Section Header (No giant empty card) -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin:22px 0 14px; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h2 class="section-title" style="margin:0; font-size:16.5px;">Active Savings Targets</h2>
+          <p class="text-xs muted" id="savings-count-label" style="margin:2px 0 0;">Target milestones and accumulated balances.</p>
         </div>
+        <button onclick="openGoalModal()" class="btn-primary" style="padding:6px 16px; font-size:12.5px; display:inline-flex; align-items:center; gap:6px;">
+          + Create Goal
+        </button>
       </div>
       <div class="grid grid-2" id="savings-grid"></div>
     </section>
@@ -2603,6 +2600,55 @@
   </div>
 </div>
 
+<!-- Roll ALL Savings to Next Month Income Modal -->
+<div id="roll-all-savings-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeRollAllSavingsModal()">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" onclick="closeRollAllSavingsModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Roll All Savings to Next Month</h2>
+        <p class="text-xs muted" id="roll-all-subtitle" style="margin:2px 0 0;"></p>
+      </div>
+    </div>
+
+    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin:14px 0 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+        <span class="text-xs muted">Total Accumulated Savings</span>
+        <span id="roll-all-current-amount" class="figure" style="font-weight:700; font-size:18px; color:var(--teal);"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="text-xs muted">Transfer Destination</span>
+        <strong id="roll-all-next-month-label" style="font-size:13px; color:var(--ink);"></strong>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <label class="field-label" for="roll-all-amount-input" style="margin:0;">Amount to Transfer</label>
+        <button type="button" onclick="setRollAllWholeAmount()" class="link-sm" style="font-size:11.5px; color:var(--teal); background:none; border:none; cursor:pointer; font-weight:600;">
+          Use All Savings
+        </button>
+      </div>
+      <input type="number" id="roll-all-amount-input" min="1" step="any" class="field-input figure" style="font-size:16px; font-weight:700;">
+    </div>
+
+    <div style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:12px 14px; margin-bottom:16px;">
+      <div style="font-size:12.5px; font-weight:700; color:var(--teal); margin-bottom:4px;">Transfer Details & Impact</div>
+      <p id="roll-all-impact-msg" class="text-xs muted" style="margin:0; line-height:1.5;"></p>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button type="button" onclick="closeRollAllSavingsModal()" class="btn-ghost">Cancel</button>
+      <button type="button" onclick="executeRollAllSavings()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+        Confirm Roll All
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Roll Savings Goal to Next Month Income Modal -->
 <div id="roll-goal-income-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeRollGoalIncomeModal()">
   <div class="modal" style="max-width:460px;">
@@ -2690,13 +2736,13 @@
 </div>
 
 <div id="budget-subcat-modal-backdrop" class="modal-backdrop hidden">
-  <div class="modal" style="max-width:400px;">
+  <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeBudgetSubcatModal()">✕</button>
     <h2>Subcategory Budget <span id="budget-subcat-modal-parent" class="breadcrumb-tag"></span></h2>
-    <label class="field-label">Subcategory</label>
-    <select id="budget-subcat-select" class="field-input mb-3"></select>
+    <label class="field-label" style="margin-bottom:6px;">Select Subcategories <span class="text-xs muted">(Select one or more)</span></label>
+    <div id="budget-subcat-checkbox-group" style="max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:14px; background:var(--surface);"></div>
     <label class="field-label">Monthly Limit</label>
-    <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="100" class="field-input figure mb-4">
+    <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="e.g. 5000" class="field-input figure mb-4">
     <button onclick="handleAddSubcatBudget()" class="btn-primary" style="width:100%;">Save Budget</button>
   </div>
 </div>
@@ -6194,11 +6240,12 @@ function spentFor(txs, month, year, category, subCategory){
     if(t.category!==category) return false;
     if(subCategory){
       if(!t.subCategory) return false;
-      const subs = t.subCategory.split(',').map(s => s.trim());
-      return subs.includes(subCategory);
+      const subs = t.subCategory.split(',').map(s => s.trim().toLowerCase());
+      const budgetedSubs = subCategory.split(',').map(s => s.trim().toLowerCase());
+      return budgetedSubs.some(bs => subs.includes(bs));
     }
     return true;
-  }).reduce((s,t)=>s+t.amount,0);
+  }).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
 }
 function budgetProgress(txs, budgets, month, year){
   return budgets.filter(b=>b.month===month && b.year===year).map(b=>{
@@ -8625,7 +8672,7 @@ function renderDashboardTrendChart(period){
   savingsGrad.addColorStop(0, '#FBBF24');
   savingsGrad.addColorStop(1, '#D97706');
 
-  const maxBarThickness = isMobile ? 20 : 26;
+  const maxBarThickness = isMobile ? 18 : 22;
 
   const datasets = [];
 
@@ -8746,7 +8793,6 @@ function renderDashboardTrendChart(period){
       const dsCount = chart.data.datasets.length;
       if (!dsCount) return;
 
-      // Full proper formatted figure with commas (matching Reports Income vs Expense)
       const formatVal = (v) => {
         if (!v || v <= 0) return '';
         return Math.round(v).toLocaleString();
@@ -8758,7 +8804,7 @@ function renderDashboardTrendChart(period){
 
       const labelsCount = chart.data.labels ? chart.data.labels.length : 0;
       ctx.save();
-      const fontSize = isMobile ? 9.5 : 11;
+      const fontSize = isMobile ? 9.5 : 10.5;
       ctx.font = `700 ${fontSize}px Plus Jakarta Sans, Manrope, sans-serif`;
 
       const allBars = [];
@@ -8787,7 +8833,7 @@ function renderDashboardTrendChart(period){
               barHeight,
               color: labelColors[dIdx] || (isDark ? '#F1F5F9' : '#0F172A'),
               x: el.x,
-              y: el.y - 6,
+              y: el.y - 7,
               tw,
               th: fontSize
             });
@@ -8800,24 +8846,26 @@ function renderDashboardTrendChart(period){
         return;
       }
 
-      // Step 1: Ensure no label touches any adjacent bar
-      // If a label at (x, y) overlaps horizontally with any neighbor bar that is taller than y,
-      // shift x away from that taller bar so it maintains a clean 5px margin.
+      // Step 1: Prevent labels from colliding with taller adjacent bars in the same month
       allBars.forEach(b => {
-        allBars.forEach(other => {
-          if (b === other || b.mIdx !== other.mIdx) return;
-          // Check if 'other' bar extends vertically across b's position
-          if (b.y >= other.barTop - 2 && (b.y - b.th) <= other.barBase) {
-            const pad = 5;
+        const neighborBars = allBars.filter(o => o.mIdx === b.mIdx && o !== b);
+        neighborBars.forEach(other => {
+          // If the neighbor bar is taller than b's label position
+          if (other.barTop <= b.y) {
+            const minClearance = 7;
             const labelLeft = b.x - b.tw / 2;
             const labelRight = b.x + b.tw / 2;
-            if (labelLeft < other.barRight + pad && labelRight > other.barLeft - pad) {
-              if (b.el.x >= other.el.x) {
-                // b is to the right of 'other': push b.x completely clear of other bar's right edge
-                b.x = other.barRight + pad + b.tw / 2;
+            const otherLeft = other.el.x - other.barW / 2;
+            const otherRight = other.el.x + other.barW / 2;
+
+            // Check if label horizontally overlaps or is too close to neighbor bar
+            if (labelLeft < otherRight + minClearance && labelRight > otherLeft - minClearance) {
+              if (b.el.x > other.el.x) {
+                // b is to the right of neighbor: push right clear of neighbor bar's right edge
+                b.x = Math.max(b.x, otherRight + minClearance + b.tw / 2);
               } else {
-                // b is to the left of 'other': push b.x completely clear of other bar's left edge
-                b.x = other.barLeft - pad - b.tw / 2;
+                // b is to the left of neighbor: push left clear of neighbor bar's left edge
+                b.x = Math.min(b.x, otherLeft - minClearance - b.tw / 2);
               }
             }
           }
@@ -8827,7 +8875,7 @@ function renderDashboardTrendChart(period){
       // Step 2: Multi-pass collision resolver between adjacent labels
       allBars.sort((a, b) => a.x - b.x);
       const minPaddingX = 4;
-      const minSeparationY = fontSize + 8; // ~19px clear vertical separation
+      const minSeparationY = fontSize + 7;
 
       for (let pass = 0; pass < 8; pass++) {
         let collided = false;
@@ -8856,8 +8904,8 @@ function renderDashboardTrendChart(period){
 
       // Step 3: Ensure no label goes above top of chartArea
       allBars.forEach(b => {
-        if (b.y < chartArea.top + fontSize + 2) {
-          b.y = chartArea.top + fontSize + 2;
+        if (b.y < chartArea.top + fontSize + 4) {
+          b.y = chartArea.top + fontSize + 4;
         }
       });
 
@@ -8948,28 +8996,17 @@ function renderDashboardTrendChart(period){
           bottom: 10
         }
       },
-      categoryPercentage: 0.72,
-      barPercentage: 0.84,
+      categoryPercentage: 0.68,
+        barPercentage: 0.78,
       events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
       interaction: {
         mode: 'nearest',
         intersect: true
       },
       plugins: {
-        legend: {
-          position: 'top',
-          align: 'end',
-          labels: {
-            color: legendColor,
-            font: { family: 'Plus Jakarta Sans', size: 12.5, weight: '700' },
-            boxWidth: 12,
-            boxHeight: 12,
-            borderRadius: 3,
-            usePointStyle: true,
-            pointStyle: 'rectRounded',
-            padding: 14
-          }
-        },
+          legend: {
+            display: false
+          },
         tooltip: {
           enabled: false
         }
@@ -10234,7 +10271,7 @@ function renderBudgets(){
       spent = mainRow.spent;
     } else {
       budgetAmount = subRows.reduce((s, r) => s + r.budgetAmount, 0);
-      spent = spentFor(DB.transactions, budgetSelMonth, budgetSelYear, catName, null);
+      spent = subRows.reduce((s, r) => s + r.spent, 0);
     }
     const percent = budgetAmount > 0 ? Math.min(100, (spent / budgetAmount) * 100) : 0;
     const overspent = spent > budgetAmount;
@@ -10596,33 +10633,60 @@ function openBudgetSubcatModal(category){
   const parentEl = document.getElementById('budget-subcat-modal-parent');
   if(parentEl) parentEl.textContent = category;
   const catObj = findExpenseCategory(category);
-  const usedSubs = new Set(DB.budgets.filter(b=>b.month===budgetSelMonth&&b.year===budgetSelYear&&b.category===category&&b.subCategory).map(b=>b.subCategory));
+  const existingSubBudgets = DB.budgets.filter(b=>b.month===budgetSelMonth && b.year===budgetSelYear && b.category===category && b.subCategory);
+  const usedSubs = new Set();
+  existingSubBudgets.forEach(b => {
+    (b.subCategory || '').split(',').forEach(s => usedSubs.add(s.trim()));
+  });
   const available = (catObj ? catObj.subcategories : []).filter(s=>!usedSubs.has(s));
-  document.getElementById('budget-subcat-select').innerHTML = available.map(s=>`<option value="${s}">${s}</option>`).join('');
+
+  const container = document.getElementById('budget-subcat-checkbox-group');
+  if(container){
+    if(available.length === 0){
+      container.innerHTML = '<p class="text-xs muted" style="margin:4px 0;">All subcategories in this category are already budgeted.</p>';
+    } else {
+      container.innerHTML = available.map((s, idx) => `
+        <label style="display:flex; align-items:center; gap:8px; padding:5px 0; cursor:pointer; font-size:13px; color:var(--ink);">
+          <input type="checkbox" name="budget-subcat-item" value="${escapeHtml(s)}" ${idx===0?'checked':''}>
+          <span>${escapeHtml(s)}</span>
+        </label>
+      `).join('');
+    }
+  }
   document.getElementById('budget-subcat-amount').value = '';
   document.getElementById('budget-subcat-modal-backdrop').classList.remove('hidden');
 }
-function closeBudgetSubcatModal(){ document.getElementById('budget-subcat-modal-backdrop').classList.add('hidden'); }
+
 function handleAddSubcatBudget(){
-  const sub = document.getElementById('budget-subcat-select').value;
+  const checkedBoxes = Array.from(document.querySelectorAll('input[name="budget-subcat-item"]:checked'));
+  const selectedSubs = checkedBoxes.map(cb => cb.value.trim()).filter(Boolean);
   const amtInput = document.getElementById('budget-subcat-amount');
   const amount = evaluateTxAmountInput(amtInput);
-  if(!sub || !amount || amount<=0){
+
+  if(!selectedSubs.length){
+    showToast('Please select at least one subcategory', 'error');
+    return;
+  }
+  if(!amount || amount <= 0){
     showToast('Please enter a valid amount greater than 0', 'error');
     return;
   }
-  const duplicate = DB.budgets.some(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === budgetSubcatModalCategory && b.subCategory === sub);
-  if(duplicate){
-    showToast(`Budget for "${sub}" already exists for this month. You can edit it above.`, 'warning');
-    closeBudgetSubcatModal();
-    return;
-  }
-  DB.budgets.push({ id:uid(), month:budgetSelMonth, year:budgetSelYear, category:budgetSubcatModalCategory, subCategory:sub, budgetAmount:amount });
+
+  const combinedSubString = selectedSubs.join(', ');
+  DB.budgets.push({
+    id: uid(),
+    month: budgetSelMonth,
+    year: budgetSelYear,
+    category: budgetSubcatModalCategory,
+    subCategory: combinedSubString,
+    budgetAmount: amount
+  });
+
   openBudgetCategory = budgetSubcatModalCategory;
   saveDB(true);
   closeBudgetSubcatModal();
   renderAllForCurrentPage();
-  showToast(`Added ${sub} budget: ${fmt(amount)}`);
+  showToast(`Added ${combinedSubString} budget: ${fmt(amount)}`, 'success');
 }
 
 function populateEditBudgetSubcategories(category, selectedSub, currentBudgetId, month, year){
@@ -10889,7 +10953,7 @@ function renderSavings(){
   const visibleGoals = (DB.savingsGoals || []).filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
   const countLabel = document.getElementById('savings-count-label');
   if(countLabel){
-    countLabel.textContent = `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'}`;
+    countLabel.textContent = `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'} for this period`;
   }
 
   // 1. Calculate All-Time Cumulative Savings (total deposited minus any used)
@@ -10911,7 +10975,6 @@ function renderSavings(){
 
   // Check if carry-forward is already active for this month
   const activeCf = (DB.carryForwards || []).find(cf => cf.fromMonth === curM && cf.fromYear === curY && (DB.transactions || []).some(t => t.id === cf.txId));
-  const monthRemaining = activeCf ? 0 : rawRemaining;
 
   // 3. Goals Achieved (strictly based on the selected month!)
   const monthGoalsCount = visibleGoals.length;
@@ -10922,24 +10985,41 @@ function renderSavings(){
     g.currentAmount = getGoalCurrentAmount(g);
   });
 
-  // 5. Render 4-card Summary KPI Grid with Real, Meaningful Financial Numbers
+  // 5. Render 4-card Summary KPI Grid with Embedded Actions (NO clunky separate banners)
   const summaryGrid = document.getElementById('savings-summary-grid');
   if(summaryGrid){
     summaryGrid.innerHTML = `
-      <div class="budget-summary-item">
+      <div class="budget-summary-item" style="position:relative;">
         <span class="label-eyebrow">Total Savings</span>
         <strong style="color:var(--teal); font-size:22px;">${fmt(netTotalSavingsAllTime)}</strong>
         <span class="text-xs muted">All-time accumulated savings</span>
+        ${netTotalSavingsAllTime > 0 ? `
+          <div style="margin-top:6px;">
+            <button type="button" onclick="openRollAllSavingsModal()" class="link-sm" style="font-size:11.5px; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">
+              Roll All to Next Month →
+            </button>
+          </div>
+        ` : ''}
       </div>
       <div class="budget-summary-item">
         <span class="label-eyebrow">Saved This Month</span>
         <strong style="color:var(--ink); font-size:22px;">${fmt(monthSaved)}</strong>
         <span class="text-xs muted">${curMonthName} ${curY} contributions</span>
       </div>
-      <div class="budget-summary-item">
+      <div class="budget-summary-item" style="position:relative;">
         <span class="label-eyebrow">Remaining Balance</span>
         <strong style="color:${activeCf ? 'var(--teal)' : (rawRemaining >= 0 ? 'var(--teal)' : 'var(--rose)')}; font-size:22px;">${fmt(Math.abs(activeCf ? activeCf.amount : rawRemaining))}</strong>
-        <span class="text-xs muted">${activeCf ? curMonthName + ' carried forward to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget')}</span>
+        <span class="text-xs muted">${activeCf ? 'Rolled over to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget')}</span>
+        <div style="margin-top:6px;">
+          ${activeCf ? `
+            <span class="badge badge-ok" style="font-size:10.5px; padding:2px 6px;">Applied</span>
+            <button type="button" onclick="reverseCarryForward('${activeCf.id}')" class="link-sm" style="font-size:11px; color:var(--rose); background:none; border:none; cursor:pointer; margin-left:6px; font-weight:600;">Reverse</button>
+          ` : (rawRemaining > 0 ? `
+            <button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:2px 10px; font-size:11px; height:24px; border-radius:6px; font-weight:600;">
+              Carry Forward
+            </button>
+          ` : '')}
+        </div>
       </div>
       <div class="budget-summary-item">
         <span class="label-eyebrow">Goals Achieved</span>
@@ -10949,44 +11029,9 @@ function renderSavings(){
     `;
   }
 
-  // Render Carry-Forward Action Banner / Reverse Option
+  // Clear separate banner container if present in DOM
   const cfBtnContainer = document.getElementById('savings-carry-forward-btn-wrap');
-  if(cfBtnContainer){
-    if(activeCf){
-      cfBtnContainer.innerHTML = `
-        <div style="margin-bottom:16px; padding:14px 18px; background:rgba(13,148,136,0.08); border:1px solid rgba(13,148,136,0.25); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <div>
-            <div style="font-size:14px; font-weight:700; color:var(--teal); display:flex; align-items:center; gap:8px;">
-              <span>Carry-Forward Active for ${curMonthName} ${curY}</span>
-              <span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">Applied</span>
-            </div>
-            <div class="text-xs muted" style="margin-top:3px;">
-              <strong style="color:var(--ink);">${fmt(activeCf.amount)}</strong> was carried forward into ${activeCf.dest === 'income' ? 'next month income' : (activeCf.goalName || 'savings goal')}. You can reverse this transfer anytime to restore funds to ${curMonthName}.
-            </div>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" onclick="reverseCarryForward('${activeCf.id}')" class="btn-ghost" style="color:var(--rose); border-color:var(--rose); padding:6px 14px; font-size:12.5px; height:32px;">
-              Reverse Carry Forward
-            </button>
-          </div>
-        </div>
-      `;
-    } else if(rawRemaining > 0){
-      cfBtnContainer.innerHTML = `
-        <div style="margin-bottom:16px; padding:14px 18px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <div>
-            <div style="font-size:14px; font-weight:700; color:var(--ink);">Unallocated Balance for ${curMonthName} ${curY}</div>
-            <div class="text-xs muted" style="margin-top:2px;">You have <strong style="color:var(--teal);">${fmt(rawRemaining)}</strong> unspent and unallocated for this period. Carry it forward to next month's income or allocate to a savings goal.</div>
-          </div>
-          <button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:6px 16px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
-            Carry Forward Balance
-          </button>
-        </div>
-      `;
-    } else {
-      cfBtnContainer.innerHTML = '';
-    }
-  }
+  if(cfBtnContainer) cfBtnContainer.innerHTML = '';
 
   // 2. Render Clean Goal Cards
   const todayStr = ymd(new Date());
@@ -11770,17 +11815,9 @@ function renderInvestmentProjectionChart(res){
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: {
-          position: 'top',
-          align: 'end',
-          labels: {
-            boxWidth: 12,
-            boxHeight: 12,
-            font: { family: 'Plus Jakarta Sans', size: 12.5, weight: '700' },
-            color: legendColor,
-            padding: 14
-          }
-        },
+          legend: {
+            display: false
+          },
         tooltip: {
           backgroundColor: '#0F172A',
           titleColor: '#F8FAFC',
@@ -14498,6 +14535,161 @@ function reverseCarryForward(cfId){
   showToast('Carry-forward of ' + fmt(cf.amount) + ' reversed successfully', 'success');
 }
 
+
+/* ============================================================
+   ROLL ALL SAVINGS TO NEXT MONTH WORKFLOW
+   ============================================================ */
+let _rollAllTotalAmount = 0;
+let _rollAllNextM = 0;
+let _rollAllNextY = 0;
+
+function openRollAllSavingsModal(){
+  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings');
+  const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  _rollAllTotalAmount = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed) * 100) / 100);
+
+  if(_rollAllTotalAmount <= 0){
+    showToast('No accumulated savings available to transfer', 'info');
+    return;
+  }
+
+  const now = new Date();
+  const curM = savingsFilterMonth || (now.getMonth() + 1);
+  const curY = savingsFilterYear || now.getFullYear();
+  let nextM = curM + 1;
+  let nextY = curY;
+  if(nextM > 12){ nextM = 1; nextY++; }
+  _rollAllNextM = nextM;
+  _rollAllNextY = nextY;
+
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const curMonthName = SHORT_MONTHS[curM - 1];
+  const nextMonthName = SHORT_MONTHS[nextM - 1];
+
+  const sub = document.getElementById('roll-all-subtitle');
+  if(sub) sub.textContent = 'Transfer accumulated savings into ' + nextMonthName + ' ' + nextY + ' Income';
+  const curEl = document.getElementById('roll-all-current-amount');
+  if(curEl) curEl.textContent = fmt(_rollAllTotalAmount);
+  const destEl = document.getElementById('roll-all-next-month-label');
+  if(destEl) destEl.textContent = nextMonthName + ' ' + nextY + ' Income';
+
+  const inputEl = document.getElementById('roll-all-amount-input');
+  if(inputEl){
+    inputEl.value = _rollAllTotalAmount;
+    inputEl.max = _rollAllTotalAmount;
+  }
+
+  const msgEl = document.getElementById('roll-all-impact-msg');
+  if(msgEl){
+    msgEl.innerHTML = 'Are you sure you want to contribute all savings to next month\'s income?<br>' +
+      '• Deducts <strong>' + fmt(_rollAllTotalAmount) + '</strong> from your total savings balance.<br>' +
+      '• Adds it as a lump-sum income entry on 1st of <strong>' + nextMonthName + ' ' + nextY + '</strong>.<br>' +
+      '• Makes all saved funds immediately available in next month\'s spending budget.<br>' +
+      '• Can be reversed at any time.';
+  }
+
+  const backdrop = document.getElementById('roll-all-savings-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function setRollAllWholeAmount(){
+  const inputEl = document.getElementById('roll-all-amount-input');
+  if(inputEl) inputEl.value = _rollAllTotalAmount;
+}
+
+function closeRollAllSavingsModal(){
+  const backdrop = document.getElementById('roll-all-savings-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function executeRollAllSavings(){
+  const inputEl = document.getElementById('roll-all-amount-input');
+  const amt = parseFloat(inputEl?.value);
+  if(!amt || amt <= 0 || amt > _rollAllTotalAmount){
+    showToast('Please enter a valid amount up to ' + fmt(_rollAllTotalAmount), 'error');
+    return;
+  }
+
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const nextMonthName = SHORT_MONTHS[_rollAllNextM - 1];
+  const dateStr = _rollAllNextY + '-' + String(_rollAllNextM).padStart(2, '0') + '-01';
+
+  // Find active goals with balances to deduct from proportionally or sequentially
+  const activeGoals = (DB.savingsGoals || []).map(g => ({
+    id: g.id,
+    name: g.name,
+    cur: getGoalCurrentAmount(g)
+  })).filter(g => g.cur > 0);
+
+  let remainingToDeduct = amt;
+  const outTxs = [];
+
+  for(const g of activeGoals){
+    if(remainingToDeduct <= 0) break;
+    const deductAmt = Math.min(g.cur, remainingToDeduct);
+    remainingToDeduct -= deductAmt;
+    outTxs.push({
+      id: uid(),
+      date: ymd(new Date()),
+      type: 'expense',
+      category: 'Savings Transfer',
+      description: 'Funded from ' + g.name + ': Rolled all savings into ' + nextMonthName + ' ' + _rollAllNextY + ' income',
+      amount: deductAmt,
+      paymentMethod: 'Bank Transfer',
+      isGoalRolloverOut: true,
+      goalId: g.id,
+      relatedGoalName: g.name
+    });
+  }
+
+  // If there's any remaining that wasn't in active goals (e.g. general savings transactions)
+  if(remainingToDeduct > 0){
+    outTxs.push({
+      id: uid(),
+      date: ymd(new Date()),
+      type: 'expense',
+      category: 'Savings Transfer',
+      description: 'Funded from Total Savings: Rolled into ' + nextMonthName + ' ' + _rollAllNextY + ' income',
+      amount: remainingToDeduct,
+      paymentMethod: 'Bank Transfer'
+    });
+  }
+
+  // Income entry in next month
+  const inTx = {
+    id: uid(),
+    date: dateStr,
+    type: 'income',
+    category: 'Savings Rollover',
+    description: 'All-time savings rolled over into income',
+    amount: amt,
+    paymentMethod: 'Bank Transfer',
+    isAllSavingsRolloverIn: true,
+    relatedTxIds: outTxs.map(t => t.id)
+  };
+
+  DB.transactions = DB.transactions || [];
+  outTxs.forEach(t => DB.transactions.unshift(t));
+  DB.transactions.unshift(inTx);
+
+  if(!DB.allSavingsRollovers) DB.allSavingsRollovers = [];
+  DB.allSavingsRollovers.push({
+    id: uid(),
+    amount: amt,
+    outTxIds: outTxs.map(t => t.id),
+    inTxId: inTx.id,
+    toMonth: _rollAllNextM,
+    toYear: _rollAllNextY,
+    date: new Date().toISOString()
+  });
+
+  saveDB(true);
+  renderAll();
+  closeRollAllSavingsModal();
+  showToast('Rolled ' + fmt(amt) + ' of total savings into ' + nextMonthName + ' ' + _rollAllNextY + ' income!', 'success');
+}
+
 /* ============================================================
    MOVE SAVINGS GOAL TO NEXT MONTH INCOME WORKFLOW
    ============================================================ */
@@ -14693,6 +14885,8 @@ window.addEventListener('keydown', (e) => {
     if (cfEl && !cfEl.classList.contains('hidden')) closeCarryForwardModal();
     const rollGoalEl = document.getElementById('roll-goal-income-modal-backdrop');
     if (rollGoalEl && !rollGoalEl.classList.contains('hidden')) closeRollGoalIncomeModal();
+    const rollAllEl = document.getElementById('roll-all-savings-modal-backdrop');
+    if (rollAllEl && !rollAllEl.classList.contains('hidden')) closeRollAllSavingsModal();
     const notifEl = document.getElementById('notification-drawer');
     if (notifEl && notifEl.classList.contains('open')) closeNotificationDrawer();
     const deleteAccountEl = document.getElementById('delete-account-modal-backdrop');
