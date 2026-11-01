@@ -6201,19 +6201,10 @@ function periodSelectOptions(selected){ return MONTH_NAMES.map((name,i)=>`<optio
 function yearSelectOptions(selected){ return reportYearOptions().map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}</option>`).join(''); }
 function initReportSelectors(){
   const now = new Date();
-  let defaultYear = now.getFullYear();
-  let defaultMonth = now.getMonth() + 1;
-  if(DB.transactions && DB.transactions.length){
-    const years = DB.transactions.map(t => parseTxDate(t.date).year).filter(Boolean);
-    if(years.length){
-      defaultYear = Math.max(...years);
-      const txsInYear = DB.transactions.filter(t => parseTxDate(t.date).year === defaultYear);
-      const months = txsInYear.map(t => parseTxDate(t.date).month).filter(Boolean);
-      if(months.length) defaultMonth = Math.max(...months);
-    }
-  }
-  if(reportSelYear===undefined){ reportSelYear = defaultYear; }
-  if(reportSelMonth===undefined){ reportSelMonth = defaultMonth; }
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  if(reportSelYear === undefined){ reportSelYear = currentYear; }
+  if(reportSelMonth === undefined){ reportSelMonth = currentMonth; }
   document.getElementById('report-month-select').innerHTML = periodSelectOptions(reportSelMonth);
   document.getElementById('report-year-select').innerHTML = yearSelectOptions(reportSelYear);
 }
@@ -7715,19 +7706,10 @@ function clearDashboardDateFilter(){
 
 function initDashboardSelectors(){
   const now = new Date();
-  let defaultYear = now.getFullYear();
-  let defaultMonth = now.getMonth() + 1;
-  if(DB.transactions && DB.transactions.length){
-    const years = DB.transactions.map(t => parseTxDate(t.date).year).filter(Boolean);
-    if(years.length){
-      defaultYear = Math.max(...years);
-      const txsInYear = DB.transactions.filter(t => parseTxDate(t.date).year === defaultYear);
-      const months = txsInYear.map(t => parseTxDate(t.date).month).filter(Boolean);
-      if(months.length) defaultMonth = Math.max(...months);
-    }
-  }
-  if(dashboardSelYear===undefined){ dashboardSelYear = defaultYear; }
-  if(dashboardSelMonth===undefined){ dashboardSelMonth = defaultMonth; }
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  if(dashboardSelYear === undefined){ dashboardSelYear = currentYear; }
+  if(dashboardSelMonth === undefined){ dashboardSelMonth = currentMonth; }
   if(!dashboardSelectedMonths || !dashboardSelectedMonths.length){
     dashboardSelectedMonths = [dashboardSelMonth];
   }
@@ -10112,14 +10094,7 @@ function handleSaveTransaction(e){
     showToast('Transaction added successfully', 'success');
   }
 
-  const txDateParts = parseTxDate(dateVal);
-  if(txDateParts.year && txDateParts.month){
-    dashboardSelYear = txDateParts.year;
-    dashboardSelMonth = txDateParts.month;
-    dashboardSelectedMonths = [txDateParts.month];
-    reportSelYear = txDateParts.year;
-    reportSelMonth = txDateParts.month;
-  }
+  // Transaction saved without changing global viewing month
 
   saveDB(true);
   closeTxModal();
@@ -10138,7 +10113,9 @@ let openBudgetCategory = null;
 function initBudgetSelectors(){
   const now = new Date();
   const currentYear = now.getFullYear();
-  if(budgetSelMonth===undefined){ budgetSelMonth = now.getMonth()+1; budgetSelYear = currentYear; }
+  const currentMonth = now.getMonth() + 1;
+  if(budgetSelMonth === undefined){ budgetSelMonth = currentMonth; }
+  if(budgetSelYear === undefined){ budgetSelYear = currentYear; }
   if(budgetSelYear > currentYear) budgetSelYear = currentYear;
   const monthSel = document.getElementById('budget-month-select');
   const yearSel = document.getElementById('budget-year-select');
