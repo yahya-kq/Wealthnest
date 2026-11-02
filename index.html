@@ -2043,7 +2043,20 @@
           </button>
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
         </div></div>
-      <div class="card" style="padding:14px 20px; margin-bottom:16px;"><div class="dashboard-filter"><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-month">Month</label><select id="savings-filter-month" class="field-input" onchange="onSavingsFilterChange()"></select></div><div class="dashboard-filter-field"><label class="field-label" for="savings-filter-year">Year</label><select id="savings-filter-year" class="field-input" onchange="onSavingsFilterChange()"></select></div><p class="dashboard-filter-note" id="savings-filter-note"></p></div></div>
+      <div class="card" style="padding:14px 20px; margin-bottom:16px;">
+        <div class="dashboard-filter" style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+            <div class="dashboard-filter-field"><label class="field-label" for="savings-filter-month">Month</label><select id="savings-filter-month" class="field-input" onchange="onSavingsFilterChange()"></select></div>
+            <div class="dashboard-filter-field"><label class="field-label" for="savings-filter-year">Year</label><select id="savings-filter-year" class="field-input" onchange="onSavingsFilterChange()"></select></div>
+            <p class="dashboard-filter-note" id="savings-filter-note"></p>
+          </div>
+          <div>
+            <button type="button" id="btn-savings-all-goals" onclick="toggleSavingsAllGoals()" class="btn-ghost" style="padding:7px 14px; font-size:12px; font-weight:600; border-radius:8px;">
+              All Goals
+            </button>
+          </div>
+        </div>
+      </div>
       <!-- 4-Card Summary KPI Grid with Embedded Carry Forward & Roll All Actions -->
       <div class="budget-summary-grid mb-4" id="savings-summary-grid"></div>
 
@@ -2650,27 +2663,44 @@
 </div>
 
 <!-- Roll Savings Goal to Next Month Income Modal -->
-<div id="roll-goal-income-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeRollGoalIncomeModal()">
-  <div class="modal" style="max-width:460px;">
-    <button class="modal-close" onclick="closeRollGoalIncomeModal()" aria-label="Close">✕</button>
+<div id="roll-goal-income-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSavingsTransferModal()">
+  <div class="modal" style="max-width:480px;">
+    <button class="modal-close" onclick="closeSavingsTransferModal()" aria-label="Close">✕</button>
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
       <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       </div>
       <div>
-        <h2 style="margin:0; font-size:18px;">Move Savings to Next Month Income</h2>
+        <h2 style="margin:0; font-size:18px;">Transfer Savings</h2>
         <p class="text-xs muted" id="roll-goal-subtitle" style="margin:2px 0 0;"></p>
       </div>
     </div>
 
-    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin:14px 0 16px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; margin:14px 0 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <span class="text-xs muted">Goal Current Balance</span>
-        <span id="roll-goal-current-amount" class="figure" style="font-weight:700; font-size:18px; color:var(--teal);"></span>
+        <span id="roll-goal-current-amount" class="figure" style="font-weight:700; font-size:17px; color:var(--teal);"></span>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="text-xs muted">Transfer Destination</span>
-        <strong id="roll-goal-next-month-label" style="font-size:13px; color:var(--ink);"></strong>
+    </div>
+
+    <!-- Transfer Destination Radio Choices -->
+    <div style="margin-bottom:14px;">
+      <label class="field-label" style="margin-bottom:6px;">Select Transfer Destination</label>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="savings-transfer-dest" value="savings" checked onchange="onSavingsTransferDestChange()" style="margin-top:2px;">
+          <div style="flex:1;">
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer to Next Month's Savings</strong>
+            <span class="text-xs muted" style="display:block; margin-top:2px;" id="transfer-dest-savings-sub"></span>
+          </div>
+        </label>
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="savings-transfer-dest" value="income" onchange="onSavingsTransferDestChange()" style="margin-top:2px;">
+          <div style="flex:1;">
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer Directly into Income</strong>
+            <span class="text-xs muted" style="display:block; margin-top:2px;" id="transfer-dest-income-sub"></span>
+          </div>
+        </label>
       </div>
     </div>
 
@@ -2681,17 +2711,17 @@
           Use Whole Saving
         </button>
       </div>
-      <input type="number" id="roll-goal-amount-input" min="1" step="any" class="field-input figure" style="font-size:16px; font-weight:700;">
+      <input type="number" id="roll-goal-amount-input" min="1" step="any" class="field-input figure" style="font-size:16px; font-weight:700;" oninput="updateSavingsTransferImpactMsg()">
     </div>
 
-    <div style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:12px 14px; margin-bottom:16px;">
-      <div style="font-size:12.5px; font-weight:700; color:var(--teal); margin-bottom:4px;">Transfer Details & Impact</div>
-      <p id="roll-goal-impact-msg" class="text-xs muted" style="margin:0; line-height:1.5;"></p>
+    <div style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:10px 12px; margin-bottom:16px;">
+      <div style="font-size:12px; font-weight:700; color:var(--teal); margin-bottom:3px;">Transfer Details & Impact</div>
+      <p id="roll-goal-impact-msg" class="text-xs muted" style="margin:0; line-height:1.45;"></p>
     </div>
 
     <div style="display:flex; justify-content:flex-end; gap:10px;">
-      <button type="button" onclick="closeRollGoalIncomeModal()" class="btn-ghost">Cancel</button>
-      <button type="button" onclick="executeRollGoalToIncome()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+      <button type="button" onclick="closeSavingsTransferModal()" class="btn-ghost">Cancel</button>
+      <button type="button" onclick="executeSavingsTransfer()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
         Confirm Transfer
       </button>
     </div>
@@ -2739,7 +2769,14 @@
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeBudgetSubcatModal()">✕</button>
     <h2>Subcategory Budget <span id="budget-subcat-modal-parent" class="breadcrumb-tag"></span></h2>
-    <label class="field-label" style="margin-bottom:6px;">Select Subcategories <span class="text-xs muted">(Select one or more)</span></label>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <label class="field-label" style="margin:0;">Select Subcategories <span class="text-xs muted">(Select one or more)</span></label>
+      <div style="display:flex; gap:8px;">
+        <button type="button" onclick="selectAllBudgetSubcats(true)" class="link-sm" style="font-size:11px; color:var(--primary); background:none; border:none; cursor:pointer; font-weight:600;">Select All</button>
+        <span class="muted" style="font-size:11px;">|</span>
+        <button type="button" onclick="selectAllBudgetSubcats(false)" class="link-sm" style="font-size:11px; color:var(--muted); background:none; border:none; cursor:pointer; font-weight:600;">Clear</button>
+      </div>
+    </div>
     <div id="budget-subcat-checkbox-group" style="max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:14px; background:var(--surface);"></div>
     <label class="field-label">Monthly Limit</label>
     <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="e.g. 5000" class="field-input figure mb-4">
@@ -3229,14 +3266,34 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" for="withdraw-inv-amount">Amount to Withdraw <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="1" step="any" id="withdraw-inv-amount" class="field-input figure" placeholder="e.g. 16000" required>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label class="field-label" for="withdraw-inv-amount" style="margin:0;">Amount to Withdraw <span style="color:var(--rose);">*</span></label>
+            <button type="button" onclick="setWithdrawWholeAmount()" class="link-sm" style="font-size:11.5px; color:var(--teal); background:none; border:none; cursor:pointer; font-weight:600;">Withdraw All</button>
+          </div>
+          <input type="number" min="1" step="any" id="withdraw-inv-amount" class="field-input figure" placeholder="e.g. 16000" required oninput="updateWithdrawPreview()">
         </div>
         <div>
-          <label class="field-label" for="withdraw-inv-date">Date <span style="color:var(--rose);">*</span></label>
+          <label class="field-label" for="withdraw-inv-date" style="margin-bottom:4px;">Date <span style="color:var(--rose);">*</span></label>
           <input type="date" id="withdraw-inv-date" class="field-input figure" required>
+        </div>
+      </div>
+
+      <!-- Live Principal vs Profit Accounting Breakdown -->
+      <div id="withdraw-inv-preview" style="background:rgba(20,184,166,0.06); border:1px solid rgba(20,184,166,0.22); border-radius:8px; padding:10px 14px; margin-bottom:14px;">
+        <div style="font-size:11.5px; font-weight:700; color:var(--teal); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;">Withdrawal Accounting Breakdown</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:12px;">
+          <span class="muted">Original Investment (Principal):</span>
+          <span id="withdraw-prev-principal" class="figure" style="font-weight:700; color:var(--ink);">PKR 0</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:12px;">
+          <span class="muted">Investment Profit / Return:</span>
+          <span id="withdraw-prev-profit" class="figure" style="font-weight:700; color:var(--teal);">+PKR 0</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; border-top:1px dashed var(--line); padding-top:4px; margin-top:4px;">
+          <span class="muted">Remaining Portfolio Value:</span>
+          <span id="withdraw-prev-remaining" class="figure" style="font-weight:600; color:var(--muted);">PKR 0</span>
         </div>
       </div>
 
@@ -10686,6 +10743,13 @@ function openBudgetSubcatModal(category){
   document.getElementById('budget-subcat-modal-backdrop').classList.remove('hidden');
 }
 
+function selectAllBudgetSubcats(select){
+  const cbs = document.querySelectorAll('input[name="budget-subcat-item"]');
+  cbs.forEach(cb => {
+    if(!cb.disabled) cb.checked = !!select;
+  });
+}
+
 function handleAddSubcatBudget(){
   const checkedBoxes = Array.from(document.querySelectorAll('input[name="budget-subcat-item"]:checked'));
   const selectedSubs = checkedBoxes.map(cb => cb.value.trim()).filter(Boolean);
@@ -10980,12 +11044,44 @@ function getGoalCurrentAmount(goal){
 }
 
 
+let savingsViewMode = 'monthly'; // 'monthly' | 'all'
+
+function toggleSavingsAllGoals(forceState){
+  if(forceState === true) savingsViewMode = 'all';
+  else if(forceState === false) savingsViewMode = 'monthly';
+  else savingsViewMode = (savingsViewMode === 'monthly') ? 'all' : 'monthly';
+  renderSavings();
+}
+
 function renderSavings(){
   initSavingsFilters();
-  const visibleGoals = (DB.savingsGoals || []).filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
+  const allGoalsMode = (savingsViewMode === 'all');
+  const allGoalsList = DB.savingsGoals || [];
+  const visibleGoals = allGoalsMode
+    ? [...allGoalsList].sort((a,b) => (b.currentAmount || 0) - (a.currentAmount || 0))
+    : allGoalsList.filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
+
+  const allGoalsBtn = document.getElementById('btn-savings-all-goals');
+  if(allGoalsBtn){
+    if(allGoalsMode){
+      allGoalsBtn.className = 'btn-primary';
+      allGoalsBtn.textContent = 'Showing All Goals';
+    } else {
+      allGoalsBtn.className = 'btn-ghost';
+      allGoalsBtn.textContent = 'All Goals';
+    }
+  }
+
+  const noteEl = document.getElementById('savings-filter-note');
+  if(noteEl && allGoalsMode){
+    noteEl.textContent = 'Showing all lifetime savings goals (completed & ongoing).';
+  }
+
   const countLabel = document.getElementById('savings-count-label');
   if(countLabel){
-    countLabel.textContent = `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'} for this period`;
+    countLabel.textContent = allGoalsMode
+      ? `${visibleGoals.length} total goal${visibleGoals.length===1?'':'s'} on record`
+      : `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'} for this period`;
   }
 
   // 1. Calculate All-Time Cumulative Savings (total deposited minus any used)
@@ -11017,7 +11113,7 @@ function renderSavings(){
     g.currentAmount = getGoalCurrentAmount(g);
   });
 
-  // 5. Render 4-card Summary KPI Grid with Embedded Actions (NO clunky separate banners)
+  // 5. Render 4-card Summary KPI Grid with Embedded Actions
   const summaryGrid = document.getElementById('savings-summary-grid');
   if(summaryGrid){
     summaryGrid.innerHTML = `
@@ -11056,7 +11152,12 @@ function renderSavings(){
       <div class="budget-summary-item">
         <span class="label-eyebrow">Goals Achieved</span>
         <strong style="color:var(--primary); font-size:22px;">${monthGoalsAchieved} of ${monthGoalsCount}</strong>
-        <span class="text-xs muted">${monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName}</span>
+        <span class="text-xs muted">${allGoalsMode ? 'All-time reached' : (monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName)}</span>
+        <div style="margin-top:6px;">
+          <button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11.5px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">
+            ${allGoalsMode ? '← Show Monthly' : 'All Goals →'}
+          </button>
+        </div>
       </div>
     `;
   }
@@ -11115,10 +11216,10 @@ function renderSavings(){
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px;">
           <span class="figure"><strong>${fmt(cur)}</strong> <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
-          <span class="text-xs muted">${reached ? 'Fully Funded' : fmt(rem) + ' remaining'}</span>
+          <span class="text-xs muted">${reached ? '' : fmt(rem) + ' remaining'}</span>
         </div>
 
-        <!-- Clean Action Buttons with Move to Next Month Income Option -->
+        <!-- Clean Action Buttons with Transfer & Use Savings Options -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             ${!reached ? `
@@ -11130,11 +11231,11 @@ function renderSavings(){
               History
             </button>
             ${cur > 0 ? `
-              <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use funds from this goal for an expense">
-                Use Funds
+              <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use savings from this goal for expenses.">
+                Use Savings
               </button>
-              <button type="button" onclick="openRollGoalToIncomeModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Contribute this whole saving or partial amount into next month income">
-                Move to Next Month Income
+              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Transfer savings to next month's savings or directly into income (current balance: ${fmt(cur)})">
+                Transfer
               </button>
             ` : ''}
           </div>
@@ -11150,7 +11251,6 @@ function renderSavings(){
     `;
   }).join('');
 }
-
 function showContributeRow(id){
   const goal = DB.savingsGoals.find(item => item.id === id);
   const today = ymd(new Date());
@@ -12139,7 +12239,7 @@ function renderHoldingsTable(){
               ${assetTypeIsDepositOnly(inv.assetType) || assetTypeIsRecurring(inv.assetType)
                 ? `<button class="btn-small" onclick="openDepositInvestmentModal('${inv.id}')" style="background:rgba(79,70,229,0.1); color:#4F46E5; border:1px solid rgba(79,70,229,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="${escapeHtml(assetTypeDepositLabel(inv.assetType))}">+ Deposit</button>
                    <button class="btn-small" onclick="openWithdrawInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Withdraw cash or spend from fund">Withdraw</button>`
-                : `<button class="btn-small" onclick="openSellInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Sell asset &amp; calculate realized profit">Sell</button>`
+                : `<button class="btn-small" onclick="openWithdrawInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Withdraw proceeds or sell asset">Withdraw / Sell</button>`
               }
               <button class="icon-btn" onclick="openEditInvestmentModal('${inv.id}')" title="Edit asset" aria-label="Edit ${escapeHtml(inv.name)}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -12297,6 +12397,15 @@ function openWithdrawInvestmentModal(id){
     accSel.innerHTML = methods.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
   }
 
+  // Populate savings goals
+  const goalSel = document.getElementById('withdraw-dest-goal');
+  if(goalSel){
+    const goals = DB.savingsGoals || [];
+    goalSel.innerHTML = goals.length 
+      ? goals.map(g => `<option value="${g.id}">${escapeHtml(g.name)} (Current: ${fmt(getGoalCurrentAmount(g))})</option>`).join('')
+      : '<option value="" disabled selected>No savings goals configured</option>';
+  }
+
   // Populate expense categories
   const catSel = document.getElementById('withdraw-expense-category');
   if(catSel){
@@ -12312,8 +12421,44 @@ function openWithdrawInvestmentModal(id){
   radios.forEach(r => { if(r.value === 'bank') r.checked = true; });
   toggleWithdrawDestType('bank');
 
+  updateWithdrawPreview();
+
   const backdrop = document.getElementById('withdraw-investment-modal-backdrop');
   if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function updateWithdrawPreview(){
+  const id = document.getElementById('withdraw-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+  const amount = parseFloat(document.getElementById('withdraw-inv-amount')?.value) || 0;
+  const oldVal = inv.currentValue || 0;
+  const oldCost = inv.initialInvested || 0;
+  const ratio = oldVal > 0 ? Math.min(1, amount / oldVal) : 1;
+  const principalPortion = Math.round(oldCost * ratio);
+  const profitPortion = Math.max(0, Math.round(amount - principalPortion));
+  const remVal = Math.max(0, oldVal - amount);
+
+  const prevP = document.getElementById('withdraw-prev-principal');
+  if(prevP) prevP.textContent = fmt(principalPortion);
+  const prevGain = document.getElementById('withdraw-prev-profit');
+  if(prevGain){
+    prevGain.textContent = `${profitPortion >= 0 ? '+' : ''}${fmt(profitPortion)}`;
+    prevGain.style.color = profitPortion > 0 ? 'var(--teal)' : 'var(--muted)';
+  }
+  const prevRem = document.getElementById('withdraw-prev-remaining');
+  if(prevRem) prevRem.textContent = fmt(remVal);
+}
+
+function setWithdrawWholeAmount(){
+  const id = document.getElementById('withdraw-inv-id')?.value;
+  const inv = (DB.investments || []).find(i => i.id === id);
+  if(!inv) return;
+  const amtInp = document.getElementById('withdraw-inv-amount');
+  if(amtInp){
+    amtInp.value = inv.currentValue || 0;
+    updateWithdrawPreview();
+  }
 }
 
 function closeWithdrawInvestmentModal(){
@@ -12324,8 +12469,10 @@ function closeWithdrawInvestmentModal(){
 function toggleWithdrawDestType(type){
   const bankWrap = document.getElementById('withdraw-dest-bank-wrap');
   const expWrap = document.getElementById('withdraw-dest-expense-wrap');
+  const savWrap = document.getElementById('withdraw-dest-savings-wrap');
   if(bankWrap) bankWrap.classList.toggle('hidden', type !== 'bank');
   if(expWrap) expWrap.classList.toggle('hidden', type !== 'expense');
+  if(savWrap) savWrap.classList.toggle('hidden', type !== 'savings');
 }
 
 function handleConfirmWithdrawInvestment(e){
@@ -12347,27 +12494,90 @@ function handleConfirmWithdrawInvestment(e){
   const withdrawDate = document.getElementById('withdraw-inv-date').value || ymd(new Date());
   const destType = document.querySelector('input[name="withdraw-dest-type"]:checked')?.value || 'bank';
 
-  // Reduce investment valuation & cost proportionally
+  // Strict Accounting: Pro-rate principal cost vs profit return
   const oldVal = inv.currentValue || 0;
   const oldCost = inv.initialInvested || 0;
   const ratio = oldVal > 0 ? Math.min(1, amount / oldVal) : 1;
+  const principalPortion = Math.round(oldCost * ratio);
+  const profitPortion = Math.max(0, Math.round(amount - principalPortion));
+
   inv.currentValue = Math.max(0, oldVal - amount);
-  inv.initialInvested = Math.max(0, Math.round(oldCost * (1 - ratio)));
+  inv.initialInvested = Math.max(0, oldCost - principalPortion);
+
+  // Record withdrawal event in asset history
+  inv.withdrawals = inv.withdrawals || [];
+  inv.withdrawals.push({
+    id: uid(),
+    date: withdrawDate,
+    amount: amount,
+    principalPortion: principalPortion,
+    profitPortion: profitPortion,
+    destination: destType,
+    recordedAt: new Date().toISOString()
+  });
+
+  // Record realized gain in DB.soldInvestments so Profit Realized KPI dynamically updates
+  if(profitPortion > 0){
+    DB.soldInvestments = DB.soldInvestments || [];
+    DB.soldInvestments.push({
+      id: uid(),
+      name: `${inv.name} (${amount < oldVal ? 'Partial Withdrawal' : 'Full Withdrawal'})`,
+      assetType: inv.assetType || 'Investment',
+      cost: principalPortion,
+      salePrice: amount,
+      realizedGain: profitPortion,
+      date: withdrawDate
+    });
+  }
+
+  DB.transactions = DB.transactions || [];
 
   if(destType === 'bank'){
     const destAccount = document.getElementById('withdraw-dest-account')?.value || 'Bank Account';
+    // Only the profit portion is recognized as taxable/earned investment income!
+    if(profitPortion > 0){
+      DB.transactions.unshift({
+        id: uid(),
+        date: withdrawDate,
+        type: 'income',
+        category: 'Investment Income',
+        subCategory: 'Realized Return',
+        paymentMethod: destAccount,
+        description: `${inv.name}: Investment Profit/Return`,
+        amount: profitPortion
+      });
+    }
+    if(principalPortion > 0){
+      DB.transactions.unshift({
+        id: uid(),
+        date: withdrawDate,
+        type: 'transfer',
+        category: 'Capital Drawdown',
+        subCategory: 'Principal Recovery',
+        paymentMethod: destAccount,
+        description: `${inv.name}: Capital Recovery (Principal)`,
+        amount: principalPortion,
+        isCapitalRecovery: true
+      });
+    }
+    showToast(`Withdrew ${fmt(amount)} (${fmt(principalPortion)} principal + ${fmt(profitPortion)} profit) to ${destAccount}!`, 'success');
+  } else if(destType === 'savings'){
+    const goalId = document.getElementById('withdraw-dest-goal')?.value;
+    const goal = (DB.savingsGoals || []).find(g => g.id === goalId);
+    const goalName = goal ? goal.name : 'Savings';
     DB.transactions.unshift({
       id: uid(),
       date: withdrawDate,
-      type: 'income',
-      category: 'Investments',
-      subCategory: 'Withdrawal',
-      paymentMethod: destAccount,
-      description: `Withdrawal from ${inv.name}`,
-      amount: amount
+      type: 'savings',
+      category: 'Savings',
+      description: `Deposit from ${inv.name} withdrawal`,
+      amount: amount,
+      paymentMethod: 'Investment Balance',
+      goalId: goalId || null
     });
-    showToast(`Transferred ${fmt(amount)} from ${inv.name} to ${destAccount}!`);
+    showToast(`Transferred ${fmt(amount)} from ${inv.name} into ${goalName}!`, 'success');
   } else {
+    // Direct purchase / Expense
     const cat = document.getElementById('withdraw-expense-category')?.value || 'Shopping';
     const desc = document.getElementById('withdraw-expense-desc')?.value.trim() || 'Purchase';
     DB.transactions.unshift({
@@ -12375,19 +12585,19 @@ function handleConfirmWithdrawInvestment(e){
       date: withdrawDate,
       type: 'expense',
       category: cat,
-      subCategory: 'Electronics',
-      paymentMethod: `${inv.name} Withdrawal`,
+      subCategory: 'Direct Purchase',
+      paymentMethod: `${inv.name} Balance`,
       description: `[Funded by ${inv.name}] ${desc}`,
       amount: amount,
-      companyCovered: true, // Zero personal bank drain!
+      companyCovered: true,
       companyCoveredAmount: amount
     });
-    showToast(`Purchased "${desc}" for ${fmt(amount)} funded by ${inv.name} (Rs. 0 deducted from bank)!`);
+    showToast(`Purchased "${desc}" for ${fmt(amount)} funded by ${inv.name}!`, 'success');
   }
 
   saveDB(true);
   closeWithdrawInvestmentModal();
-  renderAllForCurrentPage();
+  renderAll();
 }
 
 function onInvTypeChange(val){
@@ -14723,14 +14933,14 @@ function executeRollAllSavings(){
 }
 
 /* ============================================================
-   MOVE SAVINGS GOAL TO NEXT MONTH INCOME WORKFLOW
+   SAVINGS GOAL TRANSFER WORKFLOW (TO NEXT MONTH SAVINGS OR INCOME)
    ============================================================ */
 let _rollGoalId = null;
 let _rollGoalCurAmount = 0;
 let _rollGoalNextM = 0;
 let _rollGoalNextY = 0;
 
-function openRollGoalToIncomeModal(goalId){
+function openSavingsTransferModal(goalId){
   const goal = (DB.savingsGoals || []).find(g => g.id === goalId);
   if(!goal) return;
   _rollGoalId = goalId;
@@ -14750,46 +14960,81 @@ function openRollGoalToIncomeModal(goalId){
   _rollGoalNextY = nextY;
 
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const curMonthName = SHORT_MONTHS[curM - 1];
   const nextMonthName = SHORT_MONTHS[nextM - 1];
 
   const sub = document.getElementById('roll-goal-subtitle');
   if(sub) sub.textContent = 'Transfer from ' + goal.name + ' to ' + nextMonthName + ' ' + nextY;
   const curEl = document.getElementById('roll-goal-current-amount');
   if(curEl) curEl.textContent = fmt(_rollGoalCurAmount);
-  const destEl = document.getElementById('roll-goal-next-month-label');
-  if(destEl) destEl.textContent = nextMonthName + ' ' + nextY + ' Income';
   
+  const destSavSub = document.getElementById('transfer-dest-savings-sub');
+  if(destSavSub) destSavSub.textContent = 'Allocates funds to ' + nextMonthName + ' ' + nextY + ' savings pool.';
+  const destIncSub = document.getElementById('transfer-dest-income-sub');
+  if(destIncSub) destIncSub.textContent = 'Credits as income on 1st of ' + nextMonthName + ' ' + nextY + ' to increase spending capacity.';
+
   const inputEl = document.getElementById('roll-goal-amount-input');
   if(inputEl){
     inputEl.value = _rollGoalCurAmount;
     inputEl.max = _rollGoalCurAmount;
   }
 
-  const msgEl = document.getElementById('roll-goal-impact-msg');
-  if(msgEl){
-    msgEl.innerHTML = 'Are you sure you want to contribute these savings to next month\'s income?<br>' +
-      '• Deducts the amount from <strong>' + escapeHtml(goal.name) + '</strong>.<br>' +
-      '• Credits it as income on 1st of <strong>' + nextMonthName + ' ' + nextY + '</strong>.<br>' +
-      '• Increases next month\'s spending and budget capacity.<br>' +
-      '• Can be reversed at any time.';
-  }
+  const radioSavings = document.querySelector('input[name="savings-transfer-dest"][value="savings"]');
+  if(radioSavings) radioSavings.checked = true;
+
+  updateSavingsTransferImpactMsg();
 
   const backdrop = document.getElementById('roll-goal-income-modal-backdrop');
   if(backdrop) backdrop.classList.remove('hidden');
 }
 
+function openRollGoalToIncomeModal(goalId){
+  // Backward compatibility alias
+  openSavingsTransferModal(goalId);
+}
+
+function onSavingsTransferDestChange(){
+  updateSavingsTransferImpactMsg();
+}
+
+function updateSavingsTransferImpactMsg(){
+  const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
+  const goalName = goal ? goal.name : 'Goal';
+  const dest = document.querySelector('input[name="savings-transfer-dest"]:checked')?.value || 'savings';
+  const amtInput = document.getElementById('roll-goal-amount-input');
+  const amt = parseFloat(amtInput?.value) || _rollGoalCurAmount;
+
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const nextMonthName = SHORT_MONTHS[_rollGoalNextM - 1];
+
+  const msgEl = document.getElementById('roll-goal-impact-msg');
+  if(!msgEl) return;
+
+  if(dest === 'savings'){
+    msgEl.innerHTML = '• Deducts <strong>' + fmt(amt) + '</strong> from <strong>' + escapeHtml(goalName) + '</strong>.<br>' +
+      '• Deposits it directly into the <strong>' + nextMonthName + ' ' + _rollGoalNextY + '</strong> savings pool.<br>' +
+      '• Keeps the funds safely within your accumulated savings reserves.';
+  } else {
+    msgEl.innerHTML = '• Deducts <strong>' + fmt(amt) + '</strong> from <strong>' + escapeHtml(goalName) + '</strong>.<br>' +
+      '• Credits it as income on 1st of <strong>' + nextMonthName + ' ' + _rollGoalNextY + '</strong>.<br>' +
+      '• Increases next month\'s spending capacity and available cash flow.';
+  }
+}
+
 function setRollGoalWholeAmount(){
   const inputEl = document.getElementById('roll-goal-amount-input');
   if(inputEl) inputEl.value = _rollGoalCurAmount;
+  updateSavingsTransferImpactMsg();
 }
 
-function closeRollGoalIncomeModal(){
+function closeSavingsTransferModal(){
   const backdrop = document.getElementById('roll-goal-income-modal-backdrop');
   if(backdrop) backdrop.classList.add('hidden');
 }
+function closeRollGoalIncomeModal(){
+  closeSavingsTransferModal();
+}
 
-function executeRollGoalToIncome(){
+function executeSavingsTransfer(){
   const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
   if(!goal){ showToast('Goal not found', 'error'); return; }
   const inputEl = document.getElementById('roll-goal-amount-input');
@@ -14799,17 +15044,18 @@ function executeRollGoalToIncome(){
     return;
   }
 
+  const dest = document.querySelector('input[name="savings-transfer-dest"]:checked')?.value || 'savings';
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const nextMonthName = SHORT_MONTHS[_rollGoalNextM - 1];
   const dateStr = _rollGoalNextY + '-' + String(_rollGoalNextM).padStart(2, '0') + '-01';
 
-  // 1. Expense transaction from goal
+  // 1. Outflow transaction from current goal
   const outTx = {
     id: uid(),
     date: ymd(new Date()),
     type: 'expense',
     category: 'Savings Transfer',
-    description: 'Funded from ' + goal.name + ': Contributed to ' + nextMonthName + ' ' + _rollGoalNextY + ' income',
+    description: 'Funded from ' + goal.name + ': Transferred to ' + nextMonthName + ' ' + _rollGoalNextY + ' ' + (dest === 'savings' ? 'savings' : 'income'),
     amount: amt,
     paymentMethod: 'Bank Transfer',
     isGoalRolloverOut: true,
@@ -14817,28 +15063,46 @@ function executeRollGoalToIncome(){
     relatedGoalName: goal.name
   };
 
-  // 2. Income transaction into next month
-  const inTx = {
-    id: uid(),
-    date: dateStr,
-    type: 'income',
-    category: 'Savings Rollover',
-    description: 'Transferred from ' + goal.name + ' savings',
-    amount: amt,
-    paymentMethod: 'Bank Transfer',
-    isGoalRolloverIn: true,
-    goalId: goal.id,
-    relatedTxId: outTx.id
-  };
+  // 2. Inflow transaction to target
+  let inTx;
+  if(dest === 'savings'){
+    inTx = {
+      id: uid(),
+      date: dateStr,
+      type: 'savings',
+      category: 'Savings',
+      description: 'Rolled over savings from ' + goal.name,
+      amount: amt,
+      paymentMethod: 'Bank Transfer',
+      isGoalRolloverIn: true,
+      goalId: goal.id
+    };
+  } else {
+    inTx = {
+      id: uid(),
+      date: dateStr,
+      type: 'income',
+      category: 'Savings Transfer',
+      subCategory: 'Drawdown',
+      description: 'Transferred from ' + goal.name + ' savings',
+      amount: amt,
+      paymentMethod: 'Bank Transfer',
+      isGoalRolloverIn: true,
+      goalId: goal.id
+    };
+  }
   outTx.relatedTxId = inTx.id;
+  inTx.relatedTxId = outTx.id;
 
   DB.transactions = DB.transactions || [];
   DB.transactions.unshift(outTx);
   DB.transactions.unshift(inTx);
 
+  // 3. Record in goalRollovers & savingsRolloverHistory
   if(!DB.goalRollovers) DB.goalRollovers = [];
-  DB.goalRollovers.push({
+  const rollRecord = {
     id: uid(),
+    type: dest === 'savings' ? 'goal_to_savings' : 'goal_to_income',
     goalId: goal.id,
     goalName: goal.name,
     amount: amt,
@@ -14849,12 +15113,20 @@ function executeRollGoalToIncome(){
     outTxId: outTx.id,
     inTxId: inTx.id,
     date: new Date().toISOString()
-  });
+  };
+  DB.goalRollovers.push(rollRecord);
+
+  DB.savingsRolloverHistory = DB.savingsRolloverHistory || [];
+  DB.savingsRolloverHistory.push(rollRecord);
 
   saveDB(true);
   renderAll();
-  closeRollGoalIncomeModal();
-  showToast('Contributed ' + fmt(amt) + ' from ' + goal.name + ' to ' + nextMonthName + ' income!', 'success');
+  closeSavingsTransferModal();
+  showToast('Transferred ' + fmt(amt) + ' from ' + goal.name + ' to ' + nextMonthName + ' ' + (dest === 'savings' ? 'Savings' : 'Income') + '!', 'success');
+}
+
+function executeRollGoalToIncome(){
+  executeSavingsTransfer();
 }
 
 function reverseGoalRollover(rolloverId){
@@ -14864,6 +15136,7 @@ function reverseGoalRollover(rolloverId){
   if(!confirmed) return;
   DB.transactions = (DB.transactions || []).filter(t => t.id !== record.outTxId && t.id !== record.inTxId);
   DB.goalRollovers = (DB.goalRollovers || []).filter(r => r.id !== rolloverId);
+  DB.savingsRolloverHistory = (DB.savingsRolloverHistory || []).filter(r => r.id !== rolloverId);
   saveDB(true);
   renderAll();
   showToast('Savings transfer reversed successfully', 'success');
