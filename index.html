@@ -6318,7 +6318,7 @@ function reportCategoryRows(month,year){
   const names=new Set([...expenses.map(t=>t.category),...monthBudgets.map(b=>b.category)]);
   return [...names].map(category=>{
     const budget=monthBudgets.filter(b=>b.category===category&&!b.subCategory).reduce((s,b)=>s+b.budgetAmount,0); const actual=spentFor(DB.transactions,month,year,category,null);
-    const subNames=new Set([...expenses.filter(t=>t.category===category&&t.subCategory).flatMap(t=>t.subCategory.split(',').map(s=>s.trim())),...monthBudgets.filter(b=>b.category===category&&b.subCategory).map(b=>b.subCategory)]);
+    const subNames=new Set([...expenses.filter(t=>t.category===category&&t.subCategory).flatMap(t=>t.subCategory.split(',').map(s=>s.trim())),...monthBudgets.filter(b=>b.category===category&&b.subCategory).flatMap(b=>b.subCategory.split(',').map(s=>s.trim()))]);
     const subs=[...subNames].map(subCategory=>{const subBudget=monthBudgets.filter(b=>b.category===category&&b.subCategory===subCategory).reduce((s,b)=>s+b.budgetAmount,0); const spent=spentFor(DB.transactions,month,year,category,subCategory); return {subCategory,budget:subBudget,spent,remaining:subBudget-spent,hasBudget:subBudget>0};}).sort((a,b)=>b.spent-a.spent);
     return {category,budget,actual,remaining:budget-actual,hasBudget:budget>0,subs};
   }).sort((a,b)=>b.actual-a.actual||b.budget-a.budget);
@@ -8199,7 +8199,14 @@ function dashboardBudgetRows(period){
     const main = pBudgets.find(b => b.category === cat && !b.subCategory);
     const subs = pBudgets.filter(b => b.category === cat && b.subCategory);
     const budgetAmount = main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
-    const spent = period.months.reduce((sum, m) => sum + spentFor(chartTxs, m, period.year, cat, null), 0);
+    let spent = 0;
+    if(main){
+      spent = period.months.reduce((sum, m) => sum + spentFor(chartTxs, m, period.year, cat, null), 0);
+    } else {
+      spent = period.months.reduce((sum, m) => {
+        return sum + subs.reduce((subSum, s) => subSum + spentFor(chartTxs, m, period.year, cat, s.subCategory), 0);
+      }, 0);
+    }
     return { category: cat, spent, budgetAmount };
   });
 }
@@ -10266,6 +10273,7 @@ function renderBudgets(){
     const mainRow = rows.find(r => r.category === catName && !r.subCategory);
     const subRows = rows.filter(r => r.category === catName && r.subCategory);
     const hasMainBudget = !!mainRow;
+    const totalCategorySpent = spentFor(DB.transactions, budgetSelMonth, budgetSelYear, catName, null);
 
     let budgetAmount = 0;
     let spent = 0;
@@ -10279,6 +10287,7 @@ function renderBudgets(){
     const percent = budgetAmount > 0 ? Math.min(100, (spent / budgetAmount) * 100) : 0;
     const overspent = spent > budgetAmount;
     const remaining = budgetAmount - spent;
+    const unbudgetedSpent = !hasMainBudget ? Math.max(0, totalCategorySpent - spent) : 0;
 
     return {
       category: catName,
@@ -10286,6 +10295,8 @@ function renderBudgets(){
       id: mainRow ? mainRow.id : null,
       budgetAmount,
       spent,
+      totalCategorySpent,
+      unbudgetedSpent,
       percent,
       overspent,
       remaining,
@@ -10356,7 +10367,10 @@ function renderBudgets(){
     const isOpen = openBudgetCategory === b.category;
     const catObj = findExpenseCategory(b.category);
     const allSubs = catObj ? catObj.subcategories : [];
-    const usedSubs = new Set(b.subRows.map(s=>s.subCategory));
+    const usedSubs = new Set();
+    b.subRows.forEach(s => {
+      (s.subCategory || '').split(',').forEach(sub => usedSubs.add(sub.trim()));
+    });
     const availableSubs = allSubs.filter(s=>!usedSubs.has(s));
     return `
     <div class="cat-block">
@@ -10369,13 +10383,13 @@ function renderBudgets(){
               ${b.overspent ? '<span class="badge badge-over">Over budget</span>' : '<span class="badge badge-ok">On track</span>'}
               ${b.hasMainBudget ? `
                 <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
+                <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
               ` : ''}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .15s; color:var(--muted-2);"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
           <div class="progress-track"><div class="progress-fill ${b.overspent?'fill-rose':'fill-primary'}" style="width:${Math.min(100,b.percent)}%;"></div></div>
-          ${b.overspent?`<p class="text-xs" style="color:var(--rose); margin:5px 0 0; font-weight:500;">Over by ${fmt(b.spent-b.budgetAmount)}</p>`:`<p class="text-xs muted" style="margin:5px 0 0;">${fmt(b.remaining)} remaining${b.subRows.length?` · ${b.subRows.length} sub-category budget${b.subRows.length===1?'':'s'}`:''}</p>`}
+          ${b.overspent?`<p class="text-xs" style="color:var(--rose); margin:5px 0 0; font-weight:500;">Over by ${fmt(b.spent-b.budgetAmount)}</p>`:`<p class="text-xs muted" style="margin:5px 0 0;">${fmt(b.remaining)} remaining${b.subRows.length?` · ${b.subRows.length} sub-category budget${b.subRows.length===1?'':'s'}`:''}${!b.hasMainBudget && b.unbudgetedSpent > 0 ? ` · ${fmt(b.totalCategorySpent)} total category spent` : ''}</p>`}
         </div>
       </div>
       <div class="cat-block-body ${isOpen?'open':''}">
@@ -10394,6 +10408,12 @@ function renderBudgets(){
               <div class="progress-track" style="height:5px; margin-top:6px;"><div class="progress-fill ${s.overspent?'fill-rose':'fill-primary'}" style="width:${Math.min(100,s.percent)}%;"></div></div>
             </div>
           </div>`).join('')}
+        ${!b.hasMainBudget && b.unbudgetedSpent > 0 ? `
+          <div style="margin-top:10px; padding:8px 12px; border-radius:8px; background:var(--surface-2); border:1px dashed var(--line); font-size:11.5px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;">
+            <span>Unbudgeted ${b.category} spending (not counted against limits):</span>
+            <span class="figure" style="font-weight:600; color:var(--ink);">${fmt(b.unbudgetedSpent)}</span>
+          </div>
+        ` : ''}
         ${availableSubs.length ? `<button class="btn-small" style="margin-top:10px;" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\'")}')">+ Add sub-category budget</button>` : (allSubs.length===0 ? `<p class="text-xs muted" style="margin-top:10px;">This category has no sub-categories yet. Add some in Settings.</p>` : '')}
       </div>
     </div>`;
@@ -10411,7 +10431,10 @@ function renderBudgets(){
   (DB.categories.expense||[]).forEach(category => {
     const hasMain = DB.budgets.some(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category.name && !b.subCategory);
     const allSubs = category.subcategories || [];
-    const budgetedSubs = new Set(DB.budgets.filter(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category.name && b.subCategory).map(b => b.subCategory));
+    const budgetedSubs = new Set();
+    DB.budgets.filter(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category.name && b.subCategory).forEach(b => {
+      (b.subCategory || '').split(',').forEach(s => budgetedSubs.add(s.trim()));
+    });
     const hasUnbudgetedSub = allSubs.some(s => !budgetedSubs.has(s));
     if(hasMain && !hasUnbudgetedSub){
       fullyBudgetedCats.add(category.name);
@@ -10609,7 +10632,10 @@ function onBudgetCategoryChoice(){
   const categoryObj=findExpenseCategory(category);
   const existing=DB.budgets.filter(budget=>budget.month===budgetSelMonth&&budget.year===budgetSelYear&&budget.category===category);
   const hasCategoryBudget=existing.some(budget=>!budget.subCategory);
-  const usedSubs=new Set(existing.filter(budget=>budget.subCategory).map(budget=>budget.subCategory));
+  const usedSubs=new Set();
+  existing.filter(budget=>budget.subCategory).forEach(budget => {
+    (budget.subCategory || '').split(',').forEach(s => usedSubs.add(s.trim()));
+  });
   const subcategorySelect=document.getElementById('budget-new-subcategory');
   if(!subcategorySelect) return;
   const availableSubs=(categoryObj?.subcategories||[]).filter(subCategory=>!usedSubs.has(subCategory));
@@ -10699,7 +10725,10 @@ function populateEditBudgetSubcategories(category, selectedSub, currentBudgetId,
   const allSubs = (catObj && Array.isArray(catObj.subcategories)) ? catObj.subcategories : [];
   
   const otherBudgets = (DB.budgets || []).filter(item => item.id !== currentBudgetId && item.month === month && item.year === year && item.category === category);
-  const usedSubs = new Set(otherBudgets.filter(item => item.subCategory).map(item => item.subCategory));
+  const usedSubs = new Set();
+  otherBudgets.filter(item => item.subCategory).forEach(item => {
+    (item.subCategory || '').split(',').forEach(s => usedSubs.add(s.trim()));
+  });
   const hasWholeCatBudget = otherBudgets.some(item => !item.subCategory);
 
   let optionsHtml = '';
