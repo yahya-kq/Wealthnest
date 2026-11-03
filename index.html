@@ -829,7 +829,9 @@
   .month-select-row select{border:none; background:none; font-size:13px; font-weight:600; padding:6px 6px;}
   .month-select-row select:focus{outline:none;}
   /* Budget Category Box-type Cards Grid */
-  #budgets-rows{display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:16px; align-items:start;}
+  #budgets-rows{display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:16px; align-items:start;}
+  .subcat-card{padding:9px 11px; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface-2); margin-top:6px; transition:border-color .15s ease;}
+  .subcat-card:hover{border-color:var(--line);}
   @media(max-width:600px){ #budgets-rows{grid-template-columns:1fr;} }
 
   .budget-box-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color .15s ease, box-shadow .15s ease; display:flex; flex-direction:column;}
@@ -2762,7 +2764,7 @@
 <div id="budget-subcat-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeBudgetSubcatModal()">✕</button>
-    <h2>Subcategory Budget <span id="budget-subcat-modal-parent" class="breadcrumb-tag"></span></h2>
+    <h2>Add Subcategory Budget <span id="budget-subcat-modal-parent" class="breadcrumb-tag"></span></h2>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
       <label class="field-label" style="margin:0;">Select Subcategories <span class="text-xs muted">(Select one or more)</span></label>
       <div style="display:flex; gap:8px;">
@@ -2774,7 +2776,7 @@
     <div id="budget-subcat-checkbox-group" style="max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:14px; background:var(--surface);"></div>
     <label class="field-label">Monthly Limit</label>
     <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="e.g. 5000" class="field-input figure mb-4">
-    <button onclick="handleAddSubcatBudget()" class="btn-primary" style="width:100%;">Save Budget</button>
+    <button onclick="handleAddSubcatBudget()" class="btn-primary" style="width:100%;">+ Add Subcategory Budget</button>
   </div>
 </div>
 
@@ -9137,6 +9139,13 @@ function miniIcon(name){
     piggy:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M8 12h8"/></svg>',
     scale:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l-3 6a4 4 0 008 0zM19 8l3 6a4 4 0 01-8 0z"/></svg>',
     info:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    target:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    card:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+    vault:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="8" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="16"/><line x1="8" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="16" y2="12"/></svg>',
+    balanceSheet:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    calendarCheck:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M12 14v4M10 16h4"/></svg>',
+    coins:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>',
+    trophy:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M4 3h16v6a8 8 0 0 1-16 0V3z"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>',
   };
   return map[name]||'';
 }
@@ -10274,6 +10283,7 @@ function handleAddTransaction(e){
 
 /* ---------------- render: budgets ---------------- */
 let budgetSelMonth, budgetSelYear;
+let openBudgetCategories = new Set();
 let openBudgetCategory = null;
 function initBudgetSelectors(){
   const now = new Date();
@@ -10315,7 +10325,8 @@ function jumpBudgetsToMonth(month, year){
   goToApp('budgets');
 }
 function toggleCatBlock(catName){
-  openBudgetCategory = (openBudgetCategory === catName) ? null : catName;
+  if(openBudgetCategories.has(catName)){ openBudgetCategories.delete(catName); } else { openBudgetCategories.add(catName); }
+  openBudgetCategory = catName;
   renderBudgets();
 }
 function renderBudgets(){
@@ -10375,10 +10386,10 @@ function renderBudgets(){
 
   const spentPct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
   const budgetKpis = [
-    {label:'Total Budget', amount:fmt(totalBudget), change:catCards.length + ' categor' + (catCards.length===1?'y':'ies'), tone:'neu', accent:'primary', icon:'wallet'},
-    {label:'Spent (Budgeted)', amount:fmt(totalSpent), change:spentPct + '% of total', tone:totalSpent > totalBudget ? 'neg' : 'neu', accent:'rose', icon:'down'},
-    {label:'Remaining', amount:fmt(Math.abs(remaining)), change:remaining < 0 ? 'Over budget' : 'Available', tone:remaining < 0 ? 'neg' : 'pos', accent:'teal', icon:'piggy'},
-    {label:'Net Balance', amount:netSign + fmt(Math.abs(netBalance)), change:netSub, tone:netBalance < 0 ? 'neg' : (netBalance > 0 ? 'pos' : 'neu'), accent:'amber', icon:'scale'},
+    {label:'Total Budget', amount:fmt(totalBudget), change:catCards.length + ' categor' + (catCards.length===1?'y':'ies'), tone:'neu', accent:'primary', icon:'target'},
+    {label:'Spent (Budgeted)', amount:fmt(totalSpent), change:spentPct + '% of total', tone:totalSpent > totalBudget ? 'neg' : 'neu', accent:'rose', icon:'card'},
+    {label:'Remaining', amount:fmt(Math.abs(remaining)), change:remaining < 0 ? 'Over budget' : 'Available', tone:remaining < 0 ? 'neg' : 'pos', accent:'teal', icon:'vault'},
+    {label:'Net Balance', amount:netSign + fmt(Math.abs(netBalance)), change:netSub, tone:netBalance < 0 ? 'neg' : (netBalance > 0 ? 'pos' : 'neu'), accent:'amber', icon:'balanceSheet'},
   ];
   const summaryGrid = document.getElementById('budget-summary-grid');
   if(summaryGrid){
@@ -10394,7 +10405,7 @@ function renderBudgets(){
   const rowsContainer = document.getElementById('budgets-rows');
   if(rowsContainer){
     rowsContainer.innerHTML = catCards.length ? catCards.map((b, idx) => {
-      const isOpen = openBudgetCategory === b.category;
+      const isOpen = openBudgetCategories.has(b.category) || openBudgetCategory === b.category;
       const catObj = findExpenseCategory(b.category);
       const allSubs = catObj ? catObj.subcategories : [];
       const usedSubs = new Set();
@@ -10407,22 +10418,22 @@ function renderBudgets(){
 
       return `
       <div class="budget-box-card draggable-item" draggable="true" data-reorder-group="budgets-cat" data-reorder-key="${escapeHtml(b.category)}" style="border-top:3.5px solid ${catColor};">
-        <!-- Card Header -->
+        <!-- Card Header (Clean title without dot icon) -->
         <div class="bbc-head">
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             ${dragHandleHtml()}
-            <span style="width:9px; height:9px; border-radius:50%; background:${catColor}; display:inline-block; flex-shrink:0;"></span>
             <span class="bbc-title" title="${escapeHtml(b.category)}">${escapeHtml(b.category)}</span>
             ${b.overspent ? '<span class="badge badge-over">Over</span>' : '<span class="badge badge-ok">On track</span>'}
           </div>
           <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
             ${reorderArrowsHtml('budgets-cat', b.category, idx === 0, idx === catCards.length - 1)}
             ${b.hasMainBudget ? `
-              <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
-            ` : `
-              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.subRows[0].id}','${b.category.replace(/'/g,"\\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
-            `}
+              <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit category budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\\\\'")} category budget')" title="Delete category budget" aria-label="Delete ${b.category} budget">✕</button>
+            ` : (b.subRows.length === 1 ? `
+              <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.subRows[0].id}')" title="Edit subcategory budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.subRows[0].id}','${b.category.replace(/'/g,"\\\\\'")} / ${b.subRows[0].subCategory} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
+            ` : '')}
           </div>
         </div>
 
@@ -10439,49 +10450,60 @@ function renderBudgets(){
           <div class="progress-track" style="height:6px; margin-bottom:6px;"><div class="progress-fill ${barClass}" style="width:${Math.min(100, b.percent)}%;"></div></div>
         </div>
 
-        <!-- Footer: Subcategories Dropdown Toggle & Add Button -->
+        <!-- Footer: Subcategories Dropdown Toggle & Action Buttons -->
         <div class="bbc-footer">
           ${b.subRows.length ? `
-            <button type="button" class="bbc-subcat-btn" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\\'")}')">
+            <button type="button" class="bbc-subcat-btn" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\\\\'")}');">
               <span>${b.subRows.length} Subcategor${b.subRows.length === 1 ? 'y' : 'ies'}</span>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?180:0}deg); transition:transform .2s ease;"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
           ` : '<span></span>'}
-          ${availableSubs.length ? `
-            <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\\'")}')" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; margin-left:auto;">+ Sub-limit</button>
-          ` : ''}
+          <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
+            ${!b.hasMainBudget ? `
+              <button class="btn-small" onclick="openSetCategoryLimitModal('${b.category.replace(/'/g,"\\\\\'")}');" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; font-weight:600;">+ Category Limit</button>
+            ` : ''}
+            ${availableSubs.length ? `
+              <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\\\\'")}');" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; font-weight:600;">+ Add Subcategory</button>
+            ` : ''}
+          </div>
         </div>
 
-        <!-- Dropdown Content: ONLY budgeted subcategories! -->
+        <!-- Dropdown Content: Clean, Spacious Subcategory Cards (No collisions) -->
         ${isOpen && b.subRows.length ? `
           <div class="bbc-subcat-list">
             ${b.subRows.map((s, sIdx) => {
               const sRem = s.budgetAmount - s.spent;
               const sBar = s.overspent ? 'fill-rose' : (s.percent >= 80 ? 'fill-amber' : 'fill-teal');
               return `
-              <div class="subcat-row draggable-item" draggable="true" data-reorder-group="budgets-subcat" data-reorder-parent="${escapeHtml(b.category)}" data-reorder-key="${escapeHtml(s.id)}">
-                <div style="flex:1;">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="display:inline-flex; align-items:center; gap:6px; font-weight:600; flex:1; color:var(--ink); font-size:12.5px;">${dragHandleHtml()}${s.subCategory}</span>
-                    <span class="figure" style="margin-right:6px; font-weight:700; font-size:12px; color:var(--ink);">${fmt(s.spent)} <span class="muted" style="font-weight:500;">/ ${fmt(s.budgetAmount)}</span></span>
-                    ${s.overspent ? '<span class="badge badge-over" style="font-size:9.5px; padding:1px 5px;">Over</span>' : '<span class="badge badge-ok" style="font-size:9.5px; padding:1px 5px;">OK</span>'}
-                    <div style="display:flex; align-items:center; gap:2px; margin-left:4px;">
-                      ${reorderArrowsHtml('budgets-subcat', s.id, sIdx === 0, sIdx === b.subRows.length - 1, b.category)}
-                      <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${s.id}')" title="Edit subcategory budget" style="padding:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                      <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" style="padding:2px;">✕</button>
-                    </div>
+              <div class="subcat-card draggable-item" draggable="true" data-reorder-group="budgets-subcat" data-reorder-parent="${escapeHtml(b.category)}" data-reorder-key="${escapeHtml(s.id)}">
+                <!-- Subcat Top: Title + Status Badge & Actions -->
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px;">
+                  <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
+                    ${dragHandleHtml()}
+                    <span style="font-weight:600; font-size:12.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(s.subCategory)}">${escapeHtml(s.subCategory)}</span>
                   </div>
-                  <div class="progress-track" style="height:4px; margin-top:5px;"><div class="progress-fill ${sBar}" style="width:${Math.min(100, s.percent)}%;"></div></div>
-                  ${s.overspent ? `<p class="text-xs" style="color:var(--rose); margin:3px 0 0; font-weight:500; font-size:11px !important;">Over by ${fmt(s.spent - s.budgetAmount)}</p>` : `<p class="text-xs muted" style="margin:3px 0 0; font-size:11px !important;">${fmt(sRem)} remaining</p>`}
+                  <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                    ${s.overspent ? '<span class="badge badge-over" style="font-size:9.5px; padding:1px 5px;">Over</span>' : '<span class="badge badge-ok" style="font-size:9.5px; padding:1px 5px;">On track</span>'}
+                    ${reorderArrowsHtml('budgets-subcat', s.id, sIdx === 0, sIdx === b.subRows.length - 1, b.category)}
+                    <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${s.id}')" title="Edit subcategory budget" style="padding:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" style="padding:2px;">✕</button>
+                  </div>
                 </div>
+
+                <!-- Subcat Numbers: Left Spent/Limit, Right Remaining -->
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                  <span class="figure" style="font-size:12px; font-weight:700; color:var(--ink);">
+                    ${fmt(s.spent)} <span class="muted" style="font-size:11px; font-weight:500;">/ ${fmt(s.budgetAmount)}</span>
+                  </span>
+                  <span style="font-size:11px; font-weight:600;">
+                    ${s.overspent ? `<span style="color:var(--rose);">Over by ${fmt(s.spent - s.budgetAmount)}</span>` : `<span class="muted figure">${fmt(sRem)} remaining</span>`}
+                  </span>
+                </div>
+
+                <!-- Subcat Progress Bar -->
+                <div class="progress-track" style="height:4px;"><div class="progress-fill ${sBar}" style="width:${Math.min(100, s.percent)}%;"></div></div>
               </div>`;
             }).join('')}
-            ${!b.hasMainBudget && b.unbudgetedSpent > 0 ? `
-              <div style="background:var(--surface-2); border-radius:7px; padding:7px 10px; margin-top:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-                <span style="color:var(--muted); font-weight:500;">Other Spending</span>
-                <span class="figure" style="font-weight:700; color:var(--ink);">${fmt(b.unbudgetedSpent)}</span>
-              </div>
-            ` : ''}
           </div>
         ` : ''}
       </div>`;
@@ -10725,6 +10747,21 @@ function copyPreviousBudget(){
   saveDB(true); renderAllForCurrentPage();
 }
 let budgetSubcatModalCategory = null;
+function openSetCategoryLimitModal(category){
+  const catSelect = document.getElementById('budget-new-category');
+  if(catSelect){
+    catSelect.value = category;
+    onBudgetCategoryChoice();
+    const subSelect = document.getElementById('budget-new-subcategory');
+    if(subSelect) subSelect.value = '';
+    const amtInput = document.getElementById('budget-new-amount');
+    if(amtInput){
+      amtInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      amtInput.focus();
+    }
+  }
+}
+
 function openBudgetSubcatModal(category){
   budgetSubcatModalCategory = category;
   const parentEl = document.getElementById('budget-subcat-modal-parent');
@@ -10776,21 +10813,23 @@ function handleAddSubcatBudget(){
     return;
   }
 
-  const combinedSubString = selectedSubs.join(', ');
-  DB.budgets.push({
-    id: uid(),
-    month: budgetSelMonth,
-    year: budgetSelYear,
-    category: budgetSubcatModalCategory,
-    subCategory: combinedSubString,
-    budgetAmount: amount
+  selectedSubs.forEach(sub => {
+    DB.budgets.push({
+      id: uid(),
+      month: budgetSelMonth,
+      year: budgetSelYear,
+      category: budgetSubcatModalCategory,
+      subCategory: sub,
+      budgetAmount: amount
+    });
   });
 
+  openBudgetCategories.add(budgetSubcatModalCategory);
   openBudgetCategory = budgetSubcatModalCategory;
   saveDB(true);
   closeBudgetSubcatModal();
   renderAllForCurrentPage();
-  showToast(`Added ${combinedSubString} budget: ${fmt(amount)}`, 'success');
+  showToast(`Added budget for ${selectedSubs.join(', ')}: ${fmt(amount)}`, 'success');
 }
 
 function populateEditBudgetSubcategories(category, selectedSub, currentBudgetId, month, year){
@@ -11133,18 +11172,18 @@ function renderSavings(){
     const goalsLabel = allGoalsMode ? 'All-time reached' : (monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName);
     summaryGrid.innerHTML = `
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">Total Savings</span><div class="ov-icon accent-teal">${miniIcon('piggy')}</div></div>
+        <div class="ov-top"><span class="label-eyebrow">Total Savings</span><div class="ov-icon accent-teal">${miniIcon('vault')}</div></div>
         <p class="ov-amount">${fmt(netTotalSavingsAllTime)}</p>
         <div class="ov-change"><span class="kpi-trend-badge trend-pos">All-time accumulated</span></div>
         ${netTotalSavingsAllTime > 0 ? `<div style="margin-top:6px;"><button type="button" onclick="openRollAllSavingsModal()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">Roll All to Next Month</button></div>` : ''}
       </div>
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">Saved This Month</span><div class="ov-icon accent-primary">${miniIcon('wallet')}</div></div>
+        <div class="ov-top"><span class="label-eyebrow">Saved This Month</span><div class="ov-icon accent-primary">${miniIcon('calendarCheck')}</div></div>
         <p class="ov-amount">${fmt(monthSaved)}</p>
         <div class="ov-change"><span class="kpi-trend-badge trend-neu">${curMonthName} ${curY} contributions</span></div>
       </div>
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">Remaining Balance</span><div class="ov-icon accent-amber">${miniIcon('scale')}</div></div>
+        <div class="ov-top"><span class="label-eyebrow">Remaining Balance</span><div class="ov-icon accent-amber">${miniIcon('coins')}</div></div>
         <p class="ov-amount">${fmt(Math.abs(activeCf ? activeCf.amount : rawRemaining))}</p>
         <div class="ov-change"><span class="kpi-trend-badge trend-${remainTone}">${remainLabel}</span></div>
         <div style="margin-top:6px;">
@@ -11157,7 +11196,7 @@ function renderSavings(){
         </div>
       </div>
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">Goals Achieved</span><div class="ov-icon accent-rose">${miniIcon('up')}</div></div>
+        <div class="ov-top"><span class="label-eyebrow">Goals Achieved</span><div class="ov-icon accent-rose">${miniIcon('trophy')}</div></div>
         <p class="ov-amount">${monthGoalsAchieved} of ${monthGoalsCount}</p>
         <div class="ov-change"><span class="kpi-trend-badge trend-${goalsTone}">${goalsLabel}</span></div>
         <div style="margin-top:6px;"><button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">${allGoalsMode ? 'Show Monthly' : 'All Goals'}</button></div>
