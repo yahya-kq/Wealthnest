@@ -719,6 +719,97 @@
   .nav-icon{width:18px; height:18px; flex-shrink:0; color:var(--sidebar-muted);}
   .nav-link:hover .nav-icon{color:#FFFFFF;}
 
+  /* Distinct Navigation Tab Colors (Preserving Dashboard Styling) */
+  .nav-link[data-nav-id="dashboard"]{color:#C4B5FD;}
+  .nav-link[data-nav-id="dashboard"] .nav-icon{color:#A78BFA;}
+  .nav-link[data-nav-id="dashboard"]:hover{color:#FFFFFF; background:rgba(124, 58, 237, 0.15);}
+  .nav-link[data-nav-id="dashboard"]:hover .nav-icon{color:#C4B5FD;}
+  .nav-link[data-nav-id="dashboard"].active{background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color:#FFFFFF; box-shadow:0 3px 12px rgba(124, 58, 237, 0.4);}
+  .nav-link[data-nav-id="dashboard"].active .nav-icon{color:#FFFFFF;}
+
+  .nav-link[data-nav-id="transactions"]{color:#7DD3FC;}
+  .nav-link[data-nav-id="transactions"] .nav-icon{color:#38BDF8;}
+  .nav-link[data-nav-id="transactions"]:hover{color:#FFFFFF; background:rgba(2, 132, 199, 0.15);}
+  .nav-link[data-nav-id="transactions"]:hover .nav-icon{color:#BAE6FD;}
+  .nav-link[data-nav-id="transactions"].active{background:linear-gradient(135deg, #0284C7 0%, #0369A1 100%); color:#FFFFFF; box-shadow:0 3px 12px rgba(2, 132, 199, 0.4);}
+  .nav-link[data-nav-id="transactions"].active .nav-icon{color:#FFFFFF;}
+
+  .nav-link[data-nav-id="reports"]{color:#C7D2FE;}
+  .nav-link[data-nav-id="reports"] .nav-icon{color:#818CF8;}
+  .nav-link[data-nav-id="reports"]:hover{color:#FFFFFF; background:rgba(99, 102, 241, 0.15);}
+  .nav-link[data-nav-id="reports"]:hover .nav-icon{color:#E0E7FF;}
+  .nav-link[data-nav-id="reports"].active{background:linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); color:#FFFFFF; box-shadow:0 3px 12px rgba(99, 102, 241, 0.4);}
+  .nav-link[data-nav-id="reports"].active .nav-icon{color:#FFFFFF;}
+
+  .nav-link[data-nav-id="budgets"]{color:#FCD34D;}
+  .nav-link[data-nav-id="budgets"] .nav-icon{color:#F59E0B;}
+  .nav-link[data-nav-id="budgets"]:hover{color:#FFFFFF; background:rgba(217, 119, 6, 0.18);}
+  .nav-link[data-nav-id="budgets"]:hover .nav-icon{color:#FDE68A;}
+  .nav-link[data-nav-id="budgets"].active{background:linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color:#FFFFFF; box-shadow:0 3px 12px rgba(217, 119, 6, 0.4);}
+  .nav-link[data-nav-id="budgets"].active .nav-icon{color:#FFFFFF;}
+
+  .nav-link[data-nav-id="savings"]{color:#5EEAD4;}
+  .nav-link[data-nav-id="savings"] .nav-icon{color:#14B8A6;}
+  .nav-link[data-nav-id="savings"]:hover{color:#FFFFFF; background:rgba(13, 148, 136, 0.18);}
+  .nav-link[data-nav-id="savings"]:hover .nav-icon{color:#99F6E4;}
+  .nav-link[data-nav-id="savings"].active{background:linear-gradient(135deg, #0D9488 0%, #0F766E 100%); color:#FFFFFF; box-shadow:0 3px 12px rgba(13, 148, 136, 0.4);}
+  .nav-link[data-nav-id="savings"].active .nav-icon{color:#FFFFFF;}
+
+  .nav-link[data-nav-id="investments"]{color:#FDA4AF;}
+  .nav-link[data-nav-id="investments"] .nav-icon{color:#F43F5E;}
+  .nav-link[data-nav-id="investments"]:hover{color:#FFFFFF; background:rgba(225, 29, 72, 0.18);}
+  .nav-link[data-nav-id="investments"]:hover .nav-icon{color:#FECDD3;}
+  .nav-link[data-nav-id="investments"].active{background:linear-gradient(135deg, #E11D48 0%, #BE123C 100%); color:#FFFFFF; box-shadow:0 3px 12px rgba(225, 29, 72, 0.4);}
+  .nav-link[data-nav-id="investments"].active .nav-icon{color:#FFFFFF;}
+
+  .nav-link[data-nav-id="settings"]{color:#CBD5E1;}
+  .nav-link[data-nav-id="settings"] .nav-icon{color:#94A3B8;}
+  .nav-link[data-nav-id="settings"]:hover{color:#FFFFFF; background:rgba(71, 85, 105, 0.2);}
+  .nav-link[data-nav-id="settings"]:hover .nav-icon{color:#F1F5F9;}
+  .nav-link[data-nav-id="settings"].active{background:linear-gradient(135deg, #475569 0%, #334155 100%); color:#FFFFFF; box-shadow:0 3px 12px rgba(71, 85, 105, 0.4);}
+  .nav-link[data-nav-id="settings"].active .nav-icon{color:#FFFFFF;}
+
+  /* Vertical Cards Grid for Active Category Budgets */
+  #budgets-rows{display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px; align-items:start;}
+  @media(max-width:640px){ #budgets-rows{grid-template-columns:1fr;} }
+
+  .bvc-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; gap:14px; position:relative; transition:box-shadow .15s ease, border-color .15s ease, opacity .15s ease; box-shadow:0 1px 3px rgba(0,0,0,0.03);}
+  .bvc-card:hover{border-color:var(--primary-light, #CBD5E1); box-shadow:0 4px 16px rgba(0,0,0,0.06);}
+  .bvc-card.is-inactive{opacity:0.62; background:var(--surface-2);}
+
+  .bvc-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .bvc-title-area{display:flex; align-items:center; gap:9px; min-width:0; flex:1;}
+  .bvc-cat-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+  .bvc-cat-name{font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bvc-controls{display:flex; align-items:center; gap:6px; flex-shrink:0;}
+
+  /* Toggle Switch */
+  .budget-switch{position:relative; display:inline-block; width:34px; height:19px; flex-shrink:0; cursor:pointer;}
+  .budget-switch input{opacity:0; width:0; height:0; position:absolute;}
+  .budget-switch-slider{position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#CBD5E1; transition:.2s; border-radius:20px;}
+  .budget-switch-slider:before{position:absolute; content:""; height:13px; width:13px; left:3px; bottom:3px; background-color:white; transition:.2s; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.25);}
+  .budget-switch input:checked + .budget-switch-slider{background-color:#10B981;}
+  .budget-switch input:checked + .budget-switch-slider:before{transform:translateX(15px);}
+
+  /* 4-Stat Box */
+  .bvc-stats-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:9px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:11px 13px;}
+  .bvc-stat-box{display:flex; flex-direction:column; gap:2px;}
+  .bvc-stat-label{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);}
+  .bvc-stat-val{font-family:var(--font-mono); font-size:14px; font-weight:700; color:var(--ink);}
+  .bvc-stat-val.val-teal{color:var(--teal);}
+  .bvc-stat-val.val-rose{color:var(--rose);}
+
+  /* Subcategories section */
+  .bvc-subcats{border-top:1px solid var(--line-soft); padding-top:12px; display:flex; flex-direction:column; gap:8px;}
+  .bvc-subcats-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;}
+  .bvc-subcats-title{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted);}
+  .bvc-subcat-item{background:var(--surface-2); border:1px solid var(--line-soft); border-radius:9px; padding:8px 11px; display:flex; flex-direction:column; gap:5px; transition:border-color .15s;}
+  .bvc-subcat-item:hover{border-color:var(--line);}
+  .bvc-subcat-main{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .bvc-subcat-left{display:flex; align-items:center; gap:6px; min-width:0; flex:1;}
+  .bvc-subcat-name{font-size:12.5px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bvc-subcat-nums{display:flex; align-items:center; gap:8px;}
+
   #sidebar-footer{margin-top:auto; padding:14px 2px 0; border-top:1px solid var(--sidebar-line);}
   .user-sidebar-profile{display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.06); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.1); border-radius:11px; color:#FFFFFF;}
   .user-sidebar-info{min-width:0; flex:1;}
@@ -1997,7 +2088,7 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span id="budgets-total-label" class="figure text-sm muted"></span></div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"></div>
       </div>
 
       <div class="grid grid-4 mb-4" id="budget-summary-grid"></div>
@@ -3793,8 +3884,8 @@ const ICONS = {
   dashboard: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
   reports: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
   transactions: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>',
-  budgets: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h4M7 16h8"/></svg>',
-  savings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  budgets: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
+  savings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.2-3 2.7-.8-.4-1.8-.7-3-.7-4.4 0-8 3.6-8 8 0 1.5.4 2.9 1.1 4.1L5 21h4l1.2-1.2c.9.1 1.8.2 2.8.2 4.4 0 8-3.6 8-8 0-1.2-.3-2.3-.8-3.3 1.2-.3 1.8-1.5 1.8-2.9 0-.6-.4-1.8-1-2.1z"/><circle cx="8" cy="13" r="1"/><path d="M12 9v3"/></svg>',
   investments: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 7-7 7-4-4-5 5"/><circle cx="19" cy="7" r="2"/></svg>',
   settings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
 };
@@ -6224,19 +6315,19 @@ function renderSidebar(){
   const navSettings = document.getElementById('sidebar-nav-settings');
   if(navTop) {
     navTop.innerHTML = NAV_TOP.map(item => `
-      <a href="#" onclick="goToApp('${item.id}'); return false;" class="nav-link ${currentPage===item.id?'active':''}" title="${item.label}">
+      <a href="#" onclick="goToApp('${item.id}'); return false;" class="nav-link ${currentPage===item.id?'active':''}" data-nav-id="${item.id}" title="${item.label}">
         ${ICONS[item.id]} <span>${item.label}</span>
       </a>`).join('');
   }
   if(navBottom) {
     navBottom.innerHTML = NAV_BOTTOM.map(item => `
-      <a href="#" onclick="goToApp('${item.id}'); return false;" class="nav-link ${currentPage===item.id?'active':''}" title="${item.label}">
+      <a href="#" onclick="goToApp('${item.id}'); return false;" class="nav-link ${currentPage===item.id?'active':''}" data-nav-id="${item.id}" title="${item.label}">
         ${ICONS[item.id]} <span>${item.label}</span>
       </a>`).join('');
   }
   if(navSettings) {
     navSettings.innerHTML = NAV_SETTINGS.map(item => `
-      <a href="#" onclick="goToApp('${item.id}'); return false;" class="nav-link ${currentPage===item.id?'active':''}" title="${item.label}">
+      <a href="#" onclick="goToApp('${item.id}'); return false;" class="nav-link ${currentPage===item.id?'active':''}" data-nav-id="${item.id}" title="${item.label}">
         ${ICONS[item.id]} <span>${item.label}</span>
       </a>`).join('');
   }
@@ -9765,6 +9856,7 @@ function requestDelete(type, value, label){
     category: `Delete category "${label}"? Its subcategories, budgets, and transactions will also be moved to the Recycle Bin and can be restored within 30 days.`,
     subcategory: `Delete subcategory "${label}"? Existing transactions will NOT be deleted — their subcategory will be set to "None" so you can reassign them. Subcategory budgets will be moved to the Recycle Bin.`,
     budget: `Delete "${label}"? It will be moved to the Recycle Bin and can be restored within 30 days.`,
+    'category-budget': `Delete all budget limits for "${label}" in this month? They will be moved to the Recycle Bin and can be restored within 30 days.`,
     goal: `Delete savings goal "${label}"? Its goal details and contributions will be moved to the Recycle Bin and can be restored within 30 days.`,
     'recycle-permanent': `Permanently delete "${label}"? This action cannot be undone and cannot be recovered from the Recycle Bin.`,
     'recycle-empty': `Permanently delete ALL items in the Recycle Bin? This action cannot be undone and cannot be recovered.`
@@ -9774,6 +9866,7 @@ function requestDelete(type, value, label){
     category: 'Delete Category?',
     subcategory: 'Delete Subcategory?',
     budget: 'Delete Budget?',
+    'category-budget': 'Delete Category Budgets?',
     goal: 'Delete Savings Goal?',
     'recycle-permanent': 'Permanently Delete Item?',
     'recycle-empty': 'Empty Recycle Bin?'
@@ -9783,6 +9876,7 @@ function requestDelete(type, value, label){
     category: 'Category Deletion',
     subcategory: 'Subcategory Deletion',
     budget: 'Budget Deletion',
+    'category-budget': 'Budget Deletion',
     goal: 'Goal Deletion',
     'recycle-permanent': 'Permanent Deletion Warning',
     'recycle-empty': 'Permanent Deletion Warning'
@@ -9851,6 +9945,11 @@ function confirmDelete(){
     const budget = DB.budgets.find(item => item.id === value);
     activityLabel = budget ? `${budget.category}${budget.subCategory ? ` / ${budget.subCategory}` : ''} budget` : 'budget';
     restorePayload = {budget: budget ? {...budget} : null};
+  } else if(type === 'category-budget'){
+    const [categoryName, bMonth, bYear] = value;
+    activityLabel = `${categoryName} budgets (${MONTH_NAMES[bMonth-1]} ${bYear})`;
+    const bList = (DB.budgets || []).filter(b => b.category === categoryName && b.month === bMonth && b.year === bYear);
+    restorePayload = {budgets: bList.map(b => ({...b}))};
   } else if(type === 'goal'){
     const goal = DB.savingsGoals.find(item => item.id === value);
     activityLabel = goal ? goal.name : 'savings goal';
@@ -9874,6 +9973,10 @@ function confirmDelete(){
     }
   }
   if(type === 'budget') DB.budgets = DB.budgets.filter(budget => budget.id !== value);
+  if(type === 'category-budget'){
+    const [categoryName, bMonth, bYear] = value;
+    DB.budgets = (DB.budgets || []).filter(b => !(b.category === categoryName && b.month === bMonth && b.year === bYear));
+  }
   if(type === 'goal'){
     const goal = DB.savingsGoals.find(item => item.id === value);
     if(goal){
@@ -10309,190 +10412,365 @@ function toggleCatBlock(catName){
   openBudgetCategory = (openBudgetCategory === catName) ? null : catName;
   renderBudgets();
 }
+function toggleBudgetActive(id){
+  const b = (DB.budgets || []).find(item => item.id === id);
+  if(!b) return;
+  b.active = b.active === false ? true : false;
+  saveDB(true);
+  renderBudgets();
+  showToast(`${b.active ? 'Activated' : 'Paused'} ${b.category}${b.subCategory ? ' (' + b.subCategory + ')' : ''} budget`, 'success');
+}
+
+function toggleCategoryBudgetsActive(category, month, year){
+  const catBudgets = (DB.budgets || []).filter(b => b.category === category && b.month === month && b.year === year);
+  if(!catBudgets.length) return;
+  const anyActive = catBudgets.some(b => b.active !== false);
+  const targetState = !anyActive;
+  catBudgets.forEach(b => { b.active = targetState; });
+  saveDB(true);
+  renderBudgets();
+  showToast(`${targetState ? 'Activated' : 'Paused'} all ${category} budgets`, 'success');
+}
+
+function requestDeleteCategoryBudgets(category, month, year){
+  const catBudgets = (DB.budgets || []).filter(b => b.category === category && b.month === month && b.year === year);
+  if(!catBudgets.length) return;
+  if(catBudgets.length === 1){
+    requestDelete('budget', catBudgets[0].id, `${category}${catBudgets[0].subCategory ? ' (' + catBudgets[0].subCategory + ')' : ''} budget`);
+    return;
+  }
+  requestDelete('category-budget', [category, month, year], category);
+}
+
 function renderBudgets(){
   initBudgetSelectors();
 
-  const rows = budgetProgress(DB.transactions, DB.budgets, budgetSelMonth, budgetSelYear);
-  const distinctCategories = [...new Set(rows.map(r => r.category))];
+  // 1. Calculate Total Account Balance across all accounts (Income - Expenses - Savings)
+  const allInc = (DB.transactions || []).filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const allExp = (DB.transactions || []).filter(t => t.type === 'expense').reduce((s, t) => {
+    const cov = t.companyCovered ? (t.companyCoveredAmount !== undefined ? t.companyCoveredAmount : (t.amount || 0)) : 0;
+    return s + Math.max(0, (parseFloat(t.amount) || 0) - cov);
+  }, 0);
+  const allSav = (DB.transactions || []).filter(t => t.type === 'savings').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const totalAccountBalance = Math.max(0, allInc - allExp - allSav);
+
+  // 2. Fetch all budgets configured for this month/year
+  const monthBudgets = (DB.budgets || []).filter(b => b.month === budgetSelMonth && b.year === budgetSelYear);
+  const distinctCategories = [...new Set(monthBudgets.map(b => b.category))];
+
+  // 3. Process each category with zero double-counting
+  let totalPlannedBudget = 0;
+  let totalDeduplicatedSpent = 0;
+  let activeCategoryCount = 0;
 
   const catCards = distinctCategories.map(catName => {
-    const mainRow = rows.find(r => r.category === catName && !r.subCategory);
-    const subRows = rows.filter(r => r.category === catName && r.subCategory);
+    const catBudgets = monthBudgets.filter(b => b.category === catName);
+    const mainRow = catBudgets.find(b => !b.subCategory);
+    const subRows = catBudgets.filter(b => !!b.subCategory);
     const hasMainBudget = !!mainRow;
-    const totalCategorySpent = spentFor(DB.transactions, budgetSelMonth, budgetSelYear, catName, null);
 
-    let budgetAmount = 0;
-    let spent = 0;
-    if(hasMainBudget){
-      budgetAmount = mainRow.budgetAmount;
-      spent = mainRow.spent;
+    const isMainActive = mainRow ? (mainRow.active !== false) : false;
+    const activeSubRows = subRows.filter(s => s.active !== false);
+    const isCardActive = isMainActive || activeSubRows.length > 0;
+
+    // Expenses in this category for the viewing month
+    const monthCatTxs = (DB.transactions || []).filter(t => inMonth(t, budgetSelMonth, budgetSelYear) && t.type === 'expense' && t.category === catName);
+    const subSpentMap = {};
+    let totalCategorySpent = 0;
+
+    monthCatTxs.forEach(t => {
+      const sub = (t.subCategory || '').trim() || 'General';
+      const cov = t.companyCovered ? (t.companyCoveredAmount !== undefined ? t.companyCoveredAmount : (t.amount || 0)) : 0;
+      const amt = Math.max(0, (parseFloat(t.amount) || 0) - cov);
+      subSpentMap[sub] = (subSpentMap[sub] || 0) + amt;
+      totalCategorySpent += amt;
+    });
+
+    // Effective budget calculation
+    const mainAmt = isMainActive ? (parseFloat(mainRow.budgetAmount) || 0) : 0;
+    const sumActiveSubAmt = activeSubRows.reduce((sum, s) => sum + (parseFloat(s.budgetAmount) || 0), 0);
+    let effectiveBudgetAmount = 0;
+
+    if(isMainActive && sumActiveSubAmt > 0){
+      effectiveBudgetAmount = Math.max(mainAmt, sumActiveSubAmt);
+    } else if(isMainActive){
+      effectiveBudgetAmount = mainAmt;
     } else {
-      budgetAmount = subRows.reduce((s, r) => s + r.budgetAmount, 0);
-      spent = subRows.reduce((s, r) => s + r.spent, 0);
+      effectiveBudgetAmount = sumActiveSubAmt;
     }
-    const percent = budgetAmount > 0 ? Math.min(100, (spent / budgetAmount) * 100) : 0;
-    const overspent = spent > budgetAmount;
-    const remaining = budgetAmount - spent;
-    const unbudgetedSpent = !hasMainBudget ? Math.max(0, totalCategorySpent - spent) : 0;
+
+    // Category budget spent calculation (zero double counting)
+    let catBudgetSpent = 0;
+    if(isMainActive){
+      catBudgetSpent = totalCategorySpent;
+    } else if(activeSubRows.length > 0){
+      activeSubRows.forEach(sb => {
+        (sb.subCategory || '').split(',').forEach(s => {
+          catBudgetSpent += (subSpentMap[s.trim()] || 0);
+        });
+      });
+    }
+
+    if(isCardActive){
+      totalPlannedBudget += effectiveBudgetAmount;
+      totalDeduplicatedSpent += catBudgetSpent;
+      activeCategoryCount++;
+    }
+
+    const catRemaining = effectiveBudgetAmount - catBudgetSpent;
+    const catPercent = effectiveBudgetAmount > 0 ? Math.min(100, Math.round((catBudgetSpent / effectiveBudgetAmount) * 100)) : 0;
+    const catOverspent = catBudgetSpent > effectiveBudgetAmount;
+
+    // Compile immediately visible subcategories
+    const catDef = (DB.categories.expense || []).find(c => c.name === catName);
+    const definedSubs = catDef ? (catDef.subcategories || []) : [];
+    const budgetedSubNames = [];
+    subRows.forEach(sb => {
+      (sb.subCategory || '').split(',').forEach(s => budgetedSubNames.push(s.trim()));
+    });
+    const txSubNames = Object.keys(subSpentMap);
+    const allDisplaySubs = [...new Set([...budgetedSubNames, ...definedSubs, ...txSubNames])];
+
+    const subcategoryItems = allDisplaySubs.map(subName => {
+      const sb = subRows.find(b => (b.subCategory || '').split(',').map(s => s.trim()).includes(subName));
+      const sSpent = subSpentMap[subName] || 0;
+      if(sb){
+        const sLimit = parseFloat(sb.budgetAmount) || 0;
+        const sRem = sLimit - sSpent;
+        const sPct = sLimit > 0 ? Math.min(100, Math.round((sSpent / sLimit) * 100)) : 0;
+        const sOver = sSpent > sLimit;
+        const sActive = sb.active !== false;
+        return {
+          name: subName,
+          id: sb.id,
+          hasBudget: true,
+          limit: sLimit,
+          spent: sSpent,
+          remaining: sRem,
+          percent: sPct,
+          overspent: sOver,
+          active: sActive
+        };
+      } else {
+        return {
+          name: subName,
+          id: null,
+          hasBudget: false,
+          limit: 0,
+          spent: sSpent,
+          remaining: 0,
+          percent: 0,
+          overspent: false,
+          active: true
+        };
+      }
+    });
 
     return {
       category: catName,
+      mainRow,
       hasMainBudget,
-      id: mainRow ? mainRow.id : null,
-      budgetAmount,
-      spent,
+      subRows,
+      isCardActive,
+      effectiveBudgetAmount,
+      catBudgetSpent,
       totalCategorySpent,
-      unbudgetedSpent,
-      percent,
-      overspent,
-      remaining,
-      subRows
+      catRemaining,
+      catPercent,
+      catOverspent,
+      subcategoryItems
     };
   });
 
-  const totalBudget = catCards.reduce((s, c) => s + c.budgetAmount, 0);
-  const totalSpent = catCards.reduce((s, c) => s + c.spent, 0);
+  const unspentTotal = totalPlannedBudget - totalDeduplicatedSpent;
 
-  const totalLabel = document.getElementById('budgets-total-label');
-  if(totalLabel){
-    totalLabel.textContent = catCards.length ? `${fmt(totalSpent)} / ${fmt(totalBudget)}` : 'No active budgets';
+  // 4. Render 4 Modern Independent KPIs Matching Dashboard Structure
+  const spentPct = totalPlannedBudget > 0 ? Math.round((totalDeduplicatedSpent / totalPlannedBudget) * 100) : 0;
+  const budgetKpis = [
+    {
+      label: 'Total Account Balance',
+      amount: fmt(totalAccountBalance),
+      change: 'Real cash across accounts',
+      tone: 'pos',
+      accent: 'primary',
+      icon: 'wallet'
+    },
+    {
+      label: 'Total Budget',
+      amount: fmt(totalPlannedBudget),
+      change: activeCategoryCount + ' active categor' + (activeCategoryCount === 1 ? 'y' : 'ies'),
+      tone: 'neu',
+      accent: 'amber',
+      icon: 'scale'
+    },
+    {
+      label: 'Total Spent',
+      amount: fmt(totalDeduplicatedSpent),
+      change: spentPct + '% of total budget spent',
+      tone: totalDeduplicatedSpent > totalPlannedBudget ? 'neg' : 'neu',
+      accent: 'rose',
+      icon: 'down'
+    },
+    {
+      label: 'Unspent Budget',
+      amount: fmt(Math.abs(unspentTotal)),
+      change: unspentTotal < 0 ? 'Over budget by ' + fmt(Math.abs(unspentTotal)) : fmt(unspentTotal) + ' available',
+      tone: unspentTotal < 0 ? 'neg' : 'pos',
+      accent: 'teal',
+      icon: 'piggy'
+    }
+  ];
+
+  const summaryGrid = document.getElementById('budget-summary-grid');
+  if(summaryGrid){
+    summaryGrid.innerHTML = budgetKpis.map(c => `
+      <div class="card ov-card">
+        <div class="ov-top"><span class="label-eyebrow">${c.label}</span><div class="ov-icon accent-${c.accent}">${miniIcon(c.icon)}</div></div>
+        <p class="ov-amount">${c.amount}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${c.tone}">${c.change}</span></div>
+      </div>`).join('');
   }
 
-  const remaining = totalBudget - totalSpent;
-  const mCash = monthTotals(DB.transactions, budgetSelMonth, budgetSelYear);
-  const netBalance = mCash.net;
-  const netTone = netBalance < 0 ? 'tone-neg' : (netBalance > 0 ? 'tone-pos' : 'tone-neu');
-  const netSign = netBalance < 0 ? '-' : '';
-  const netSub = netBalance < 0 ? 'Monthly deficit' : (netBalance > 0 ? 'Monthly surplus' : 'Balanced');
+  // 5. Render Vertical Cards Grid for Active Category Budgets
+  const catPalette = ['#7C3AED', '#0D9488', '#D97706', '#E11D48', '#2563EB', '#059669', '#4F46E5', '#EA580C'];
+  const rowsContainer = document.getElementById('budgets-rows');
 
-  const spentPct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
-  const budgetKpis = [
-    {label:'Total Budget', amount:fmt(totalBudget), change:catCards.length + ' categor' + (catCards.length===1?'y':'ies'), tone:'neu', accent:'primary', icon:'wallet'},
-    {label:'Spent (Budgeted)', amount:fmt(totalSpent), change:spentPct + '% of total', tone:totalSpent > totalBudget ? 'neg' : 'neu', accent:'rose', icon:'down'},
-    {label:'Remaining', amount:fmt(Math.abs(remaining)), change:remaining < 0 ? 'Over budget' : 'Available', tone:remaining < 0 ? 'neg' : 'pos', accent:'teal', icon:'piggy'},
-    {label:'Net Balance', amount:netSign + fmt(Math.abs(netBalance)), change:netSub, tone:netBalance < 0 ? 'neg' : (netBalance > 0 ? 'pos' : 'neu'), accent:'amber', icon:'scale'},
-  ];
-  document.getElementById('budget-summary-grid').innerHTML = budgetKpis.map(c => `
-    <div class="card ov-card">
-      <div class="ov-top"><span class="label-eyebrow">${c.label}</span><div class="ov-icon accent-${c.accent}">${miniIcon(c.icon)}</div></div>
-      <p class="ov-amount">${c.amount}</p>
-      <div class="ov-change"><span class="kpi-trend-badge trend-${c.tone}">${c.change}</span></div>
-    </div>`).join('');
+  if(rowsContainer){
+    if(!catCards.length){
+      rowsContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align:center; padding:36px 20px; background:var(--surface); border:1px dashed var(--line); border-radius:14px;">
+          <div style="width:42px; height:42px; border-radius:12px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          </div>
+          <p style="font-size:15px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Category Budgets for ${MONTH_NAMES[budgetSelMonth-1]} ${budgetSelYear}</p>
+          <p class="text-xs muted" style="margin:0 auto; max-width:400px; line-height:1.5;">Choose an expense category below to set a monthly limit. Category and subcategory budgets can be set simultaneously.</p>
+        </div>`;
+    } else {
+      rowsContainer.innerHTML = catCards.map((b, idx) => {
+        const catColor = catPalette[idx % catPalette.length];
+        const barClass = b.catOverspent ? 'fill-rose' : (b.catPercent >= 80 ? 'fill-amber' : 'fill-teal');
 
-  const catPalette = ['#7C3AED','#0F9E93','#D97706','#E1435C','#2563EB','#059669'];
-  document.getElementById('budgets-rows').innerHTML = catCards.length ? catCards.map((b, idx) => {
-    const isOpen = openBudgetCategory === b.category;
-    const catObj = findExpenseCategory(b.category);
-    const allSubs = catObj ? catObj.subcategories : [];
-    const usedSubs = new Set();
-    b.subRows.forEach(s => {
-      (s.subCategory || '').split(',').forEach(sub => usedSubs.add(sub.trim()));
-    });
-    const availableSubs = allSubs.filter(s=>!usedSubs.has(s));
-    const catColor = catPalette[idx % catPalette.length];
-    const barClass = b.overspent ? 'fill-rose' : (b.percent >= 80 ? 'fill-amber' : 'fill-teal');
-    return `
-    <div class="cat-block draggable-item" draggable="true" data-reorder-group="budgets-cat" data-reorder-key="${escapeHtml(b.category)}" style="border-left:3px solid ${catColor};">
-      <div class="cat-block-head" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\\'")}')">
-        <div style="flex:1;">
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; ${b.hasMainBudget ? 'margin-bottom:6px;' : ''}">
-            <span style="display:inline-flex; align-items:center; gap:8px; font-weight:600; color:var(--ink);">
+        return `
+        <div class="bvc-card draggable-item ${!b.isCardActive ? 'is-inactive' : ''}" draggable="true" data-reorder-group="budgets-cat" data-reorder-key="${escapeHtml(b.category)}" style="border-top:3.5px solid ${catColor};">
+          <!-- Card Header -->
+          <div class="bvc-head">
+            <div class="bvc-title-area">
               ${dragHandleHtml()}
-              <span style="width:8px; height:8px; border-radius:50%; background:${catColor}; display:inline-block; flex-shrink:0;"></span>
-              ${b.category}
-            </span>
-            <div style="display:flex; align-items:center; gap:8px;">
-              ${b.hasMainBudget
-                ? `<span class="figure" style="font-weight:700; color:var(--ink);">${fmt(b.spent)} <span class="muted" style="font-weight:500;">/ ${fmt(b.budgetAmount)}</span></span>`
-                : `<span class="figure" style="font-weight:700; color:var(--ink);">${fmt(b.totalCategorySpent)}</span>`
-              }
-              ${b.overspent ? '<span class="badge badge-over">Over budget</span>' : '<span class="badge badge-ok">On track</span>'}
+              <span class="bvc-cat-dot" style="background:${catColor};"></span>
+              <span class="bvc-cat-name" title="${escapeHtml(b.category)}">${escapeHtml(b.category)}</span>
+              ${!b.isCardActive ? '<span class="badge" style="background:var(--surface-2); color:var(--muted); font-size:10px;">Paused</span>' : (b.catOverspent ? '<span class="badge badge-over">Over</span>' : '<span class="badge badge-ok">On track</span>')}
+            </div>
+            <div class="bvc-controls">
               ${reorderArrowsHtml('budgets-cat', b.category, idx === 0, idx === catCards.length - 1)}
+              <label class="budget-switch" title="${b.isCardActive ? 'Pause category budget' : 'Activate category budget'}">
+                <input type="checkbox" ${b.isCardActive ? 'checked' : ''} onchange="toggleCategoryBudgetsActive('${b.category.replace(/'/g, "\\'")}', ${budgetSelMonth}, ${budgetSelYear})">
+                <span class="budget-switch-slider"></span>
+              </label>
+              <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g, "\\'")}')" title="Add subcategory limit" style="padding:3px 8px; font-size:11px; height:24px; border-radius:6px;">+ Sub-limit</button>
               ${b.hasMainBudget ? `
-                <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
+                <button class="icon-btn" onclick="openEditBudgetModal('${b.mainRow.id}')" title="Edit Category Budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
               ` : ''}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .15s; color:var(--muted-2);"><polyline points="9 18 15 12 9 6"/></svg>
+              <button class="icon-btn" onclick="requestDeleteCategoryBudgets('${b.category.replace(/'/g, "\\'")}', ${budgetSelMonth}, ${budgetSelYear})" title="Delete Category Budgets" aria-label="Delete ${b.category} budgets">✕</button>
             </div>
           </div>
-          ${b.hasMainBudget ? `
-            <div class="progress-track"><div class="progress-fill ${barClass}" style="width:${Math.min(100,b.percent)}%;"></div></div>
-            ${b.overspent ? `<p class="text-xs" style="color:var(--rose); margin:5px 0 0; font-weight:500;">Over by ${fmt(b.spent-b.budgetAmount)}</p>` : `<p class="text-xs muted" style="margin:5px 0 0;">${fmt(b.remaining)} remaining</p>`}
-          ` : ''}
-        </div>
-      </div>
-      <div class="cat-block-body ${isOpen?'open':''}">
-        ${b.subRows.map((s, sIdx) => {
-          const sRem = s.budgetAmount - s.spent;
-          const sBar = s.overspent ? 'fill-rose' : (s.percent >= 80 ? 'fill-amber' : 'fill-teal');
-          return `
-          <div class="subcat-row draggable-item" draggable="true" data-reorder-group="budgets-subcat" data-reorder-parent="${escapeHtml(b.category)}" data-reorder-key="${escapeHtml(s.id)}">
-            <div style="flex:1;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="display:inline-flex; align-items:center; gap:6px; font-weight:600; flex:1; color:var(--ink);">${dragHandleHtml()}${s.subCategory}</span>
-                <span class="figure" style="margin-right:8px; font-weight:700; color:var(--ink);">${fmt(s.spent)} <span class="muted" style="font-weight:500;">/ ${fmt(s.budgetAmount)}</span></span>
-                ${s.overspent ? '<span class="badge badge-over">Over</span>' : '<span class="badge badge-ok">OK</span>'}
-                <div style="display:flex; align-items:center; gap:4px; margin-left:6px;">
-                  ${reorderArrowsHtml('budgets-subcat', s.id, sIdx === 0, sIdx === b.subRows.length - 1, b.category)}
-                  <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${s.id}')" title="Edit subcategory budget" aria-label="Edit ${s.subCategory} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                  <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" aria-label="Delete ${s.subCategory} budget">✕</button>
-                </div>
-              </div>
-              <div class="progress-track" style="height:5px; margin-top:6px;"><div class="progress-fill ${sBar}" style="width:${Math.min(100,s.percent)}%;"></div></div>
-              ${s.overspent ? `<p class="text-xs" style="color:var(--rose); margin:4px 0 0; font-weight:500;">Over by ${fmt(s.spent - s.budgetAmount)}</p>` : `<p class="text-xs muted" style="margin:4px 0 0;">${fmt(sRem)} remaining</p>`}
-            </div>
-          </div>`;
-        }).join('')}
-        ${!b.hasMainBudget && b.unbudgetedSpent > 0 ? `
-          <div class="subcat-row" style="background:var(--surface-2); border-radius:8px; margin-top:8px; padding:9px 12px; border:1px solid var(--line-soft);">
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-              <span style="font-weight:500; font-size:13px; color:var(--muted);">Other Subcategories</span>
-              <span class="figure" style="font-weight:700; font-size:13px; color:var(--ink);">${fmt(b.unbudgetedSpent)}</span>
-            </div>
-          </div>
-        ` : ''}
-        ${availableSubs.length ? `<button class="btn-small" style="margin-top:10px;" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\\'")}')">+ Add sub-category budget</button>` : (allSubs.length===0 ? `<p class="text-xs muted" style="margin-top:10px;">This category has no sub-categories yet. Add some in Settings.</p>` : '')}
-      </div>
-    </div>`;
-  }).join('') : `
-    <div style="text-align:center; padding:32px 18px; background:var(--surface-2); border:1px dashed var(--line); border-radius:12px; margin-bottom:12px;">
-      <div style="width:40px; height:40px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h4M7 16h8"/></svg>
-      </div>
-      <p style="font-size:14px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Category Budgets for ${MONTH_NAMES[budgetSelMonth-1]} ${budgetSelYear}</p>
-      <p class="text-xs muted" style="margin:0 auto; max-width:380px; line-height:1.5;">Choose an expense category below to set a monthly limit. Only categories with an active budget are shown.</p>
-    </div>
-  `;
 
-  const fullyBudgetedCats = new Set();
-  (DB.categories.expense||[]).forEach(category => {
-    const hasMain = DB.budgets.some(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category.name && !b.subCategory);
-    const allSubs = category.subcategories || [];
-    const budgetedSubs = new Set();
-    DB.budgets.filter(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category.name && b.subCategory).forEach(b => {
-      (b.subCategory || '').split(',').forEach(s => budgetedSubs.add(s.trim()));
-    });
-    const hasUnbudgetedSub = allSubs.some(s => !budgetedSubs.has(s));
-    if(hasMain && !hasUnbudgetedSub){
-      fullyBudgetedCats.add(category.name);
+          <!-- 4-Stat Metric Box -->
+          <div class="bvc-stats-grid">
+            <div class="bvc-stat-box">
+              <span class="bvc-stat-label">Category Spend</span>
+              <span class="bvc-stat-val figure">${fmt(b.totalCategorySpent)}</span>
+            </div>
+            <div class="bvc-stat-box">
+              <span class="bvc-stat-label">Category Budget</span>
+              <span class="bvc-stat-val figure">${b.effectiveBudgetAmount > 0 ? fmt(b.effectiveBudgetAmount) : 'No cap'}</span>
+            </div>
+            <div class="bvc-stat-box">
+              <span class="bvc-stat-label">Budget Spent</span>
+              <span class="bvc-stat-val figure ${b.catOverspent ? 'val-rose' : ''}">${fmt(b.catBudgetSpent)}</span>
+            </div>
+            <div class="bvc-stat-box">
+              <span class="bvc-stat-label">Unspent Budget</span>
+              <span class="bvc-stat-val figure ${b.catRemaining < 0 ? 'val-rose' : 'val-teal'}">${b.catRemaining < 0 ? '-' : ''}${fmt(Math.abs(b.catRemaining))}</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+              <span class="muted">${b.effectiveBudgetAmount > 0 ? b.catPercent + '% spent' : 'Spending tracked'}</span>
+              ${b.catOverspent ? `<span style="color:var(--rose); font-weight:700;">Over by ${fmt(b.catBudgetSpent - b.effectiveBudgetAmount)}</span>` : `<span class="muted figure">${fmt(b.catRemaining)} remaining</span>`}
+            </div>
+            <div class="progress-track" style="height:6px;"><div class="progress-fill ${barClass}" style="width:${Math.min(100, b.catPercent)}%;"></div></div>
+          </div>
+
+          <!-- Subcategories & Allocations Section (ALWAYS VISIBLE) -->
+          <div class="bvc-subcats">
+            <div class="bvc-subcats-head">
+              <span class="bvc-subcats-title">Subcategories & Allocations</span>
+              <span class="muted" style="font-size:11px;">${b.subcategoryItems.length} listed</span>
+            </div>
+
+            ${b.subcategoryItems.length ? b.subcategoryItems.map((s, sIdx) => {
+              if(s.hasBudget){
+                const sBarClass = s.overspent ? 'fill-rose' : (s.percent >= 80 ? 'fill-amber' : 'fill-teal');
+                return `
+                <div class="bvc-subcat-item draggable-item ${!s.active ? 'is-inactive' : ''}" draggable="true" data-reorder-group="budgets-subcat" data-reorder-parent="${escapeHtml(b.category)}" data-reorder-key="${escapeHtml(s.id)}">
+                  <div class="bvc-subcat-main">
+                    <div class="bvc-subcat-left">
+                      ${dragHandleHtml()}
+                      <span class="bvc-subcat-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
+                      ${!s.active ? '<span class="badge" style="font-size:9.5px; padding:1px 5px;">Paused</span>' : (s.overspent ? '<span class="badge badge-over" style="font-size:9.5px; padding:1px 5px;">Over</span>' : '<span class="badge badge-ok" style="font-size:9.5px; padding:1px 5px;">OK</span>')}
+                    </div>
+                    <div class="bvc-subcat-nums">
+                      <span class="figure" style="font-size:12.5px; font-weight:700; color:var(--ink);">${fmt(s.spent)} <span class="muted" style="font-weight:500;">/ ${fmt(s.limit)}</span></span>
+                      <label class="budget-switch" title="${s.active ? 'Pause subcategory limit' : 'Activate subcategory limit'}" style="transform:scale(0.85); transform-origin:right center;">
+                        <input type="checkbox" ${s.active ? 'checked' : ''} onchange="toggleBudgetActive('${s.id}')">
+                        <span class="budget-switch-slider"></span>
+                      </label>
+                      <button class="icon-btn" onclick="openEditBudgetModal('${s.id}')" title="Edit subcategory budget" style="padding:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                      <button class="icon-btn" onclick="requestDelete('budget', '${s.id}', '${b.category} / ${s.name} budget')" title="Delete subcategory budget" style="padding:2px;">✕</button>
+                    </div>
+                  </div>
+                  <div class="progress-track" style="height:4px;"><div class="progress-fill ${sBarClass}" style="width:${Math.min(100, s.percent)}%;"></div></div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+                    <span class="muted">${s.percent}% spent</span>
+                    ${s.overspent ? `<span style="color:var(--rose); font-weight:600;">Over by ${fmt(s.spent - s.limit)}</span>` : `<span class="muted">${fmt(s.remaining)} unspent</span>`}
+                  </div>
+                </div>`;
+              } else {
+                return `
+                <div class="bvc-subcat-item" style="background:var(--surface);">
+                  <div class="bvc-subcat-main">
+                    <div class="bvc-subcat-left">
+                      <span class="bvc-subcat-name" style="color:var(--ink-muted, #475569);" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
+                      ${s.spent > 0 ? '<span class="badge" style="background:var(--surface-2); color:var(--muted); font-size:9.5px; padding:1px 5px;">Uncapped</span>' : ''}
+                    </div>
+                    <div class="bvc-subcat-nums">
+                      <span class="figure" style="font-size:12px; font-weight:600; color:var(--ink);">${fmt(s.spent)} spent</span>
+                      <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}')" style="padding:2px 7px; font-size:10.5px; height:22px; border-radius:5px;">+ Set Limit</button>
+                    </div>
+                  </div>
+                </div>`;
+              }
+            }).join('') : `
+              <p class="text-xs muted" style="margin:4px 0 0; line-height:1.4;">No subcategories defined for this category. Add subcategories in Settings to track them.</p>
+            `}
+          </div>
+        </div>`;
+      }).join('');
     }
-  });
-  const available = (DB.categories.expense||[]).filter(category => !fullyBudgetedCats.has(category.name));
-  const form = document.getElementById('budget-add-form');
-  if(available.length===0){
-    form.style.display='none';
-  } else {
-    form.style.display='flex';
-    const categorySelect=document.getElementById('budget-new-category');
-    const currentCategory=categorySelect.value;
-    categorySelect.innerHTML = available.map(category=>`<option value="${category.name}">${category.name}</option>`).join('');
-    categorySelect.value=available.some(category=>category.name===currentCategory)?currentCategory:available[0].name;
+  }
+
+  // 6. Populate New Budget Form
+  const categorySelect = document.getElementById('budget-new-category');
+  if(categorySelect){
+    const expenseCats = DB.categories.expense || [];
+    categorySelect.innerHTML = expenseCats.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
     onBudgetCategoryChoice();
   }
 
   renderBudgetHistory();
 }
-
 let openBudgetHistoryKey = null;
 let budgetHistoryFilterState = {};
 
@@ -10663,27 +10941,34 @@ function handleAddBudget(e){
   showToast(`Set budget for ${category}${subCategory ? ` (${subCategory})` : ''}: ${fmt(amount)}`);
 }
 function onBudgetCategoryChoice(){
-  const categorySelect=document.getElementById('budget-new-category');
+  const categorySelect = document.getElementById('budget-new-category');
   if(!categorySelect) return;
-  const category=categorySelect.value;
-  const categoryObj=findExpenseCategory(category);
-  const existing=DB.budgets.filter(budget=>budget.month===budgetSelMonth&&budget.year===budgetSelYear&&budget.category===category);
-  const hasCategoryBudget=existing.some(budget=>!budget.subCategory);
-  const usedSubs=new Set();
-  existing.filter(budget=>budget.subCategory).forEach(budget => {
+  const category = categorySelect.value;
+  const categoryObj = findExpenseCategory(category);
+  const existing = (DB.budgets || []).filter(budget => budget.month === budgetSelMonth && budget.year === budgetSelYear && budget.category === category);
+  const hasCategoryBudget = existing.some(budget => !budget.subCategory);
+  const usedSubs = new Set();
+  existing.filter(budget => budget.subCategory).forEach(budget => {
     (budget.subCategory || '').split(',').forEach(s => usedSubs.add(s.trim()));
   });
-  const subcategorySelect=document.getElementById('budget-new-subcategory');
+  const subcategorySelect = document.getElementById('budget-new-subcategory');
   if(!subcategorySelect) return;
-  const availableSubs=(categoryObj?.subcategories||[]).filter(subCategory=>!usedSubs.has(subCategory));
+  const availableSubs = (categoryObj?.subcategories || []).filter(subCategory => !usedSubs.has(subCategory));
 
-  if(hasCategoryBudget){
-    subcategorySelect.innerHTML=(availableSubs.length?'<option value="" disabled selected>Select</option>':'<option value="" disabled selected>All subcategories budgeted</option>')+availableSubs.map(s=>`<option value="${s}">${s}</option>`).join('');
-    subcategorySelect.disabled=!availableSubs.length;
-  } else {
-    subcategorySelect.innerHTML='<option value="">Whole category</option>'+availableSubs.map(s=>`<option value="${s}">${s}</option>`).join('');
-    subcategorySelect.disabled=false;
+  let opts = '';
+  if(!hasCategoryBudget){
+    opts += '<option value="">Whole Category (Overall Cap)</option>';
   }
+  availableSubs.forEach(s => {
+    opts += `<option value="${escapeHtml(s)}">${escapeHtml(s)} (Sub-limit)</option>`;
+  });
+  if(!opts){
+    opts = '<option value="" disabled selected>All subcategories budgeted</option>';
+    subcategorySelect.disabled = true;
+  } else {
+    subcategorySelect.disabled = false;
+  }
+  subcategorySelect.innerHTML = opts;
 }
 function copyPreviousBudget(){
   const previous = new Date(budgetSelYear,budgetSelMonth-2,1);
@@ -10694,35 +10979,43 @@ function copyPreviousBudget(){
   saveDB(true); renderAllForCurrentPage();
 }
 let budgetSubcatModalCategory = null;
-function openBudgetSubcatModal(category){
+function openBudgetSubcatModal(category, preselectedSubcat){
   budgetSubcatModalCategory = category;
   const parentEl = document.getElementById('budget-subcat-modal-parent');
   if(parentEl) parentEl.textContent = category;
   const catObj = findExpenseCategory(category);
-  const existingSubBudgets = DB.budgets.filter(b=>b.month===budgetSelMonth && b.year===budgetSelYear && b.category===category && b.subCategory);
+  const existingSubBudgets = (DB.budgets || []).filter(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === category && b.subCategory);
   const usedSubs = new Set();
   existingSubBudgets.forEach(b => {
     (b.subCategory || '').split(',').forEach(s => usedSubs.add(s.trim()));
   });
-  const available = (catObj ? catObj.subcategories : []).filter(s=>!usedSubs.has(s));
+
+  const txSubs = new Set();
+  (DB.transactions || []).filter(t => inMonth(t, budgetSelMonth, budgetSelYear) && t.type === 'expense' && t.category === category).forEach(t => {
+    if(t.subCategory) t.subCategory.split(',').forEach(s => txSubs.add(s.trim()));
+  });
+
+  const allKnown = [...new Set([...(catObj ? catObj.subcategories : []), ...txSubs])];
+  const available = allKnown.filter(s => !usedSubs.has(s) || (preselectedSubcat && s === preselectedSubcat));
 
   const container = document.getElementById('budget-subcat-checkbox-group');
   if(container){
     if(available.length === 0){
       container.innerHTML = '<p class="text-xs muted" style="margin:4px 0;">All subcategories in this category are already budgeted.</p>';
     } else {
-      container.innerHTML = available.map((s, idx) => `
+      container.innerHTML = available.map((s, idx) => {
+        const checked = preselectedSubcat ? (s === preselectedSubcat) : (idx === 0);
+        return `
         <label style="display:flex; align-items:center; gap:8px; padding:5px 0; cursor:pointer; font-size:13px; color:var(--ink);">
-          <input type="checkbox" name="budget-subcat-item" value="${escapeHtml(s)}" ${idx===0?'checked':''}>
+          <input type="checkbox" name="budget-subcat-item" value="${escapeHtml(s)}" ${checked ? 'checked' : ''}>
           <span>${escapeHtml(s)}</span>
-        </label>
-      `).join('');
+        </label>`;
+      }).join('');
     }
   }
   document.getElementById('budget-subcat-amount').value = '';
   document.getElementById('budget-subcat-modal-backdrop').classList.remove('hidden');
 }
-
 function selectAllBudgetSubcats(select){
   const cbs = document.querySelectorAll('input[name="budget-subcat-item"]');
   cbs.forEach(cb => {
