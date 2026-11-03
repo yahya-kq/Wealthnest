@@ -834,6 +834,17 @@
   .cat-block-body{padding:0 14px 14px; border-top:1px solid var(--line-soft); display:none;}
   .cat-block-body.open{display:block;}
   .subcat-row{display:flex; align-items:center; justify-content:space-between; padding:7px 10px; border:1px solid var(--line-soft); border-radius:8px; margin-top:8px; font-size:13px; background:var(--surface-2);}
+  .drag-handle{cursor:grab; color:var(--muted-2); display:inline-flex; align-items:center; justify-content:center; padding:4px; border-radius:5px; transition:color .15s, background .15s; flex-shrink:0; user-select:none;}
+  .drag-handle:hover{color:var(--ink); background:var(--surface-2);}
+  .drag-handle:active{cursor:grabbing;}
+  .reorder-arrows{display:inline-flex; align-items:center; gap:1px;}
+  .reorder-btn{background:none; border:none; color:var(--muted-2); padding:3px 4px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:color .15s, background .15s;}
+  .reorder-btn:hover:not(:disabled){color:var(--primary); background:var(--primary-light);}
+  .reorder-btn:disabled{opacity:0.25; cursor:default;}
+  .draggable-item{transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease;}
+  .draggable-item.dragging{opacity:0.45;}
+  .draggable-item.drag-over-before{box-shadow:0 -2px 0 0 var(--primary) !important;}
+  .draggable-item.drag-over-after{box-shadow:0 2px 0 0 var(--primary) !important;}
   .settings-tabs{display:inline-flex; gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:4px; margin-bottom:18px;}
   .kpi-ring-wrap{display:flex; align-items:center; gap:16px;}
   .breadcrumb-tag{font-size:11px; color:var(--muted-2); font-weight:500;}
@@ -3993,13 +4004,13 @@ function getExcelOptions(type){
     const recorded = DB.transactions
       .filter(t => t.type === 'expense' && activeCats.includes(t.category) && t.subCategory)
       .flatMap(t => t.subCategory.split(',').map(s => s.trim()));
-    const allSubs = [...new Set([...subcats, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+    const allSubs = [...new Set([...subcats, ...recorded])].filter(Boolean);
     return allSubs.map(s => ({ value: s, label: s }));
   }
   if(type === 'dash-goal'){
     const recorded = DB.transactions.filter(t => t.type === 'savings').map(t => t.category);
     const stored = (DB.savingsGoals || []).map(g => g.name);
-    const goals = [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+    const goals = [...new Set([...stored, ...recorded])].filter(Boolean);
     return goals.map(g => ({ value: g, label: g }));
   }
   if(type === 'tx-category'){
@@ -4023,7 +4034,7 @@ function getExcelOptions(type){
     const recorded = DB.transactions
       .filter(t => (txFilter === 'all' || t.type === txFilter) && activeCats.includes(t.category) && t.subCategory)
       .flatMap(t => t.subCategory.split(',').map(s => s.trim()));
-    const allSubs = [...new Set([...subcats, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+    const allSubs = [...new Set([...subcats, ...recorded])].filter(Boolean);
     return allSubs.map(s => ({ value: s, label: s }));
   }
   if(type === 'tx-modal-subcategory'){
@@ -5582,7 +5593,7 @@ function renderAllowancesSettings(){
   var now = new Date();
   var m = now.getMonth()+1, y = now.getFullYear();
 
-  var cardsHtml = accounts.length ? accounts.map(function(acc){
+  var cardsHtml = accounts.length ? accounts.map(function(acc, idx){
     var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
     var available = Math.max(0, acc.limit - used);
     var pct = acc.limit > 0 ? Math.min(100, Math.round((used/acc.limit)*100)) : 0;
@@ -5593,15 +5604,17 @@ function renderAllowancesSettings(){
     var badgeClass = isOver ? 'badge-over' : (isWarn ? 'badge-warn' : 'badge-ok');
     var pLabel = acc.period==='year' ? 'year' : 'month';
 
-    return '<div class="card" style="padding:18px 20px; margin-bottom:12px; border:1px solid var(--line);">'
+    return '<div class="card draggable-item" draggable="true" data-reorder-group="allowances" data-reorder-key="' + escapeHtml(acc.id) + '" style="padding:18px 20px; margin-bottom:12px; border:1px solid var(--line);">'
       + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">'
-      + '  <div style="display:flex; align-items:center; gap:12px;">'
+      + '  <div style="display:flex; align-items:center; gap:10px;">'
+      +      dragHandleHtml()
       + '    <div>'
       + '      <div style="font-weight:700; font-size:16px; color:var(--ink); line-height:1.2;">' + escapeHtml(acc.name) + '</div>'
       + '      <div style="font-size:12px; color:var(--muted-2); margin-top:3px;">Limit: ' + fmt(acc.limit) + ' / ' + pLabel + ' &bull; <span class="badge ' + badgeClass + '" style="font-size:10.5px; padding:2px 8px;">' + statusText + '</span></div>'
       + '    </div>'
       + '  </div>'
       + '  <div style="display:flex; align-items:center; gap:8px;">'
+      +      reorderArrowsHtml('allowances', acc.id, idx === 0, idx === accounts.length - 1)
       + '    <button type="button" onclick="openTransferAllowanceModal(\'' + acc.id + '\')" class="btn-ghost" style="height:32px; font-size:12.5px; padding:0 12px; border:1px solid var(--line); border-radius:6px; color:var(--teal); font-weight:600; display:inline-flex; align-items:center; gap:5px;" ' + (available <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : '') + '>'
       + '      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Transfer'
       + '    </button>'
@@ -5669,7 +5682,7 @@ function renderAllowanceTrackerWidget(){
   var now = new Date();
   var m = now.getMonth()+1, y = now.getFullYear();
 
-  var rows = accounts.map(function(acc){
+  var rows = accounts.map(function(acc, idx){
     var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
     var available = Math.max(0, acc.limit - used);
     var pct = acc.limit > 0 ? Math.min(100, Math.round((used/acc.limit)*100)) : 0;
@@ -5678,13 +5691,15 @@ function renderAllowanceTrackerWidget(){
     var badgeClass = isOver ? 'badge-over' : (isWarn ? 'badge-warn' : 'badge-ok');
     var badgeText = isOver ? 'Over Limit' : (isWarn ? 'Near Limit' : 'Within Quota');
 
-    return '<div style="padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">'
+    return '<div class="draggable-item" draggable="true" data-reorder-group="allowances" data-reorder-key="' + escapeHtml(acc.id) + '" style="padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">'
       + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">'
       + '  <div style="display:flex; align-items:center; gap:8px;">'
+      +      dragHandleHtml()
       + '    <span style="font-size:14px; font-weight:700; color:var(--ink);">' + escapeHtml(acc.name) + '</span>'
       + '    <span class="badge ' + badgeClass + '" style="font-size:10.5px; padding:2px 7px;">' + badgeText + '</span>'
       + '  </div>'
       + '  <div style="display:flex; align-items:center; gap:8px;">'
+      +      reorderArrowsHtml('allowances', acc.id, idx === 0, idx === accounts.length - 1)
       + '    <span style="font-size:12px; font-family:var(--font-mono); font-weight:600; color:' + barColor + ';">' + pct + '%</span>'
       + '    <button type="button" onclick="openTransferAllowanceModal(\'' + acc.id + '\')" class="btn-ghost" style="height:28px; font-size:11.5px; padding:0 10px; border:1px solid var(--line); border-radius:6px; color:var(--teal); font-weight:600; display:inline-flex; align-items:center; gap:4px;" ' + (available <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : '') + '>'
       + '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Transfer'
@@ -9472,7 +9487,7 @@ function transactionCategories(type){
     ];
   }
   const recorded = DB.transactions.filter(transaction => type === 'all' || transaction.type === type).map(transaction => transaction.category);
-  return [...new Set([...stored, ...recorded])].filter(Boolean).sort((a,b) => a.localeCompare(b));
+  return [...new Set([...stored, ...recorded])].filter(Boolean);
 }
 function renderTxCategoryFilter(){
   const wrap = document.getElementById('tx-category-filter-wrap');
@@ -10377,11 +10392,12 @@ function renderBudgets(){
     const catColor = catPalette[idx % catPalette.length];
     const barClass = b.overspent ? 'fill-rose' : (b.percent >= 80 ? 'fill-amber' : 'fill-teal');
     return `
-    <div class="cat-block" style="border-left:3px solid ${catColor};">
+    <div class="cat-block draggable-item" draggable="true" data-reorder-group="budgets-cat" data-reorder-key="${escapeHtml(b.category)}" style="border-left:3px solid ${catColor};">
       <div class="cat-block-head" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\\'")}')">
         <div style="flex:1;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; ${b.hasMainBudget ? 'margin-bottom:6px;' : ''}">
             <span style="display:inline-flex; align-items:center; gap:8px; font-weight:600; color:var(--ink);">
+              ${dragHandleHtml()}
               <span style="width:8px; height:8px; border-radius:50%; background:${catColor}; display:inline-block; flex-shrink:0;"></span>
               ${b.category}
             </span>
@@ -10391,6 +10407,7 @@ function renderBudgets(){
                 : `<span class="figure" style="font-weight:700; color:var(--ink);">${fmt(b.totalCategorySpent)}</span>`
               }
               ${b.overspent ? '<span class="badge badge-over">Over budget</span>' : '<span class="badge badge-ok">On track</span>'}
+              ${reorderArrowsHtml('budgets-cat', b.category, idx === 0, idx === catCards.length - 1)}
               ${b.hasMainBudget ? `
                 <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                 <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\\'")} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
@@ -10405,17 +10422,18 @@ function renderBudgets(){
         </div>
       </div>
       <div class="cat-block-body ${isOpen?'open':''}">
-        ${b.subRows.map(s => {
+        ${b.subRows.map((s, sIdx) => {
           const sRem = s.budgetAmount - s.spent;
           const sBar = s.overspent ? 'fill-rose' : (s.percent >= 80 ? 'fill-amber' : 'fill-teal');
           return `
-          <div class="subcat-row">
+          <div class="subcat-row draggable-item" draggable="true" data-reorder-group="budgets-subcat" data-reorder-parent="${escapeHtml(b.category)}" data-reorder-key="${escapeHtml(s.id)}">
             <div style="flex:1;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:600; flex:1; color:var(--ink);">${s.subCategory}</span>
+                <span style="display:inline-flex; align-items:center; gap:6px; font-weight:600; flex:1; color:var(--ink);">${dragHandleHtml()}${s.subCategory}</span>
                 <span class="figure" style="margin-right:8px; font-weight:700; color:var(--ink);">${fmt(s.spent)} <span class="muted" style="font-weight:500;">/ ${fmt(s.budgetAmount)}</span></span>
                 ${s.overspent ? '<span class="badge badge-over">Over</span>' : '<span class="badge badge-ok">OK</span>'}
                 <div style="display:flex; align-items:center; gap:4px; margin-left:6px;">
+                  ${reorderArrowsHtml('budgets-subcat', s.id, sIdx === 0, sIdx === b.subRows.length - 1, b.category)}
                   <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${s.id}')" title="Edit subcategory budget" aria-label="Edit ${s.subCategory} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                   <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" aria-label="Delete ${s.subCategory} budget">✕</button>
                 </div>
@@ -11020,7 +11038,7 @@ function renderSavings(){
   const allGoalsMode = (savingsViewMode === 'all');
   const allGoalsList = DB.savingsGoals || [];
   const visibleGoals = allGoalsMode
-    ? [...allGoalsList].sort((a,b) => (b.currentAmount || 0) - (a.currentAmount || 0))
+    ? [...allGoalsList]
     : allGoalsList.filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
 
   const allGoalsBtn = document.getElementById('btn-savings-all-goals');
@@ -11136,7 +11154,7 @@ function renderSavings(){
     return;
   }
 
-  grid.innerHTML = visibleGoals.map(g => {
+  grid.innerHTML = visibleGoals.map((g, gIdx) => {
     const cur = g.currentAmount || 0;
     const reached = cur >= g.targetAmount;
     const isExpired = Boolean(g.deadline && g.deadline < todayStr && !reached);
@@ -11145,10 +11163,11 @@ function renderSavings(){
     const savingInLabel = g.savingIn || 'Bank Account';
 
     return `
-      <div class="card" style="padding:22px; ${reached ? 'border-color:var(--teal);' : (isExpired ? 'border-color:var(--rose);' : '')}">
+      <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${reached ? 'border-color:var(--teal);' : (isExpired ? 'border-color:var(--rose);' : '')}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
           <div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              ${dragHandleHtml()}
               <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
               ${reached ? '<span class="badge badge-ok" style="font-weight:700;">Completed</span>' : (isExpired ? '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>' : '<span class="badge badge-off">In Progress</span>')}
             </div>
@@ -11157,7 +11176,8 @@ function renderSavings(){
               <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            ${reorderArrowsHtml('savings-goals', g.id, gIdx === 0, gIdx === visibleGoals.length - 1)}
             <span class="figure" style="font-size:18px; font-weight:700; color:${reached ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
             <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
             <button type="button" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" title="Delete goal">Delete</button>
@@ -12140,7 +12160,7 @@ function renderHoldingsTable(){
     }
 
     emptyWrap.style.display = 'none';
-    tbody.innerHTML = filtered.map(inv => {
+    tbody.innerHTML = filtered.map((inv, invIdx) => {
       const meta = getAssetClassMeta(inv.assetType);
       const invested = inv.initialInvested || 0;
       const current = inv.currentValue || 0;
@@ -12149,11 +12169,16 @@ function renderHoldingsTable(){
       const isPos = net >= 0;
 
       return `
-        <tr style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+        <tr class="draggable-item" draggable="true" data-reorder-group="investments-active" data-reorder-key="${escapeHtml(inv.id)}" style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
           <td style="padding:12px;">
-            <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${dragHandleHtml()}
+              <div>
+                <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
             ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
             ${inv.assetType === 'Provident Fund / VPS' && inv.employerMatchPct ? `<span class="text-xs" style="color:var(--teal); font-size:10.5px; font-weight:600; display:block; margin-top:2px;">Employer Match: ${inv.employerMatchPct}%</span>` : ''}
+              </div>
+            </div>
           </td>
           <td style="padding:12px;">
             <span class="asset-tag-badge" style="background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border};">
@@ -12185,6 +12210,7 @@ function renderHoldingsTable(){
                    <button class="btn-small" onclick="openWithdrawInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Withdraw cash or spend from fund">Withdraw</button>`
                 : `<button class="btn-small" onclick="openWithdrawInvestmentModal('${inv.id}')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Withdraw proceeds or sell asset">Withdraw / Sell</button>`
               }
+              ${reorderArrowsHtml('investments-active', inv.id, invIdx === 0, invIdx === filtered.length - 1)}
               <button class="icon-btn" onclick="openEditInvestmentModal('${inv.id}')" title="Edit asset" aria-label="Edit ${escapeHtml(inv.name)}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
@@ -12233,7 +12259,7 @@ function renderHoldingsTable(){
     }
 
     emptyWrap.style.display = 'none';
-    tbody.innerHTML = filtered.map(inv => {
+    tbody.innerHTML = filtered.map((inv, invIdx) => {
       const meta = getAssetClassMeta(inv.assetType);
       const cost = inv.initialInvested || 0;
       const sold = inv.soldPrice || 0;
@@ -12242,10 +12268,15 @@ function renderHoldingsTable(){
       const isPos = gain >= 0;
 
       return `
-        <tr style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+        <tr class="draggable-item" draggable="true" data-reorder-group="investments-sold" data-reorder-key="${escapeHtml(inv.id)}" style="border-bottom:1px solid var(--line-soft); transition:background 0.15s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
           <td style="padding:12px;">
-            <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
-            ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${dragHandleHtml()}
+              <div>
+                <strong style="color:var(--ink); font-size:13.5px; display:block;">${escapeHtml(inv.name)}</strong>
+                ${inv.notes ? `<span class="text-xs muted" style="font-size:11px;">${escapeHtml(inv.notes)}</span>` : ''}
+              </div>
+            </div>
           </td>
           <td style="padding:12px;">
             <span class="asset-tag-badge" style="background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border};">
@@ -12273,9 +12304,12 @@ function renderHoldingsTable(){
             ${escapeHtml(inv.soldDate || '–')}
           </td>
           <td style="padding:12px; text-align:center;">
-            <button class="icon-btn" onclick="deleteSoldInvestment('${inv.id}')" title="Delete trade record" aria-label="Delete closed trade record">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            </button>
+            <div style="display:inline-flex; align-items:center; gap:4px;">
+              ${reorderArrowsHtml('investments-sold', inv.id, invIdx === 0, invIdx === filtered.length - 1)}
+              <button class="icon-btn" onclick="deleteSoldInvestment('${inv.id}')" title="Delete trade record" aria-label="Delete closed trade record">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+              </button>
+            </div>
           </td>
         </tr>`;
     }).join('');
@@ -13286,7 +13320,7 @@ function renderPaymentMethodsSettings(){
   const methods = getPaymentMethods();
   if(badgeEl) badgeEl.textContent = `${methods.length} Active`;
 
-  listEl.innerHTML = methods.map(name => {
+  listEl.innerHTML = methods.map((name, idx) => {
     let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`;
     const lower = name.toLowerCase();
     if(lower.includes('cash')) {
@@ -13298,14 +13332,16 @@ function renderPaymentMethodsSettings(){
     }
 
     return `
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); transition:background .15s;">
-        <div style="display:flex; align-items:center; gap:14px;">
+      <div class="draggable-item" draggable="true" data-reorder-group="payment-methods" data-reorder-key="${escapeHtml(name)}" style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); transition:background .15s;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          ${dragHandleHtml()}
           <div style="width:36px; height:36px; border-radius:8px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             ${iconSvg}
           </div>
           <div style="font-weight:600; font-size:14px; color:var(--ink);">${escapeHtml(name)}</div>
         </div>
         <div style="display:inline-flex; align-items:center; gap:4px;">
+          ${reorderArrowsHtml('payment-methods', name, idx === 0, idx === methods.length - 1)}
           <button onclick="openEditPaymentMethodModal('${name.replace(/'/g, "\\'")}')" class="icon-btn icon-btn-edit" title="Edit payment method" aria-label="Edit ${escapeHtml(name)}">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
@@ -13857,42 +13893,46 @@ function renderCategoryList(){
   const query = (document.getElementById('category-search')?.value || '').trim().toLowerCase();
   if(catTypeTab === 'expense'){
     const list = (DB.categories.expense || []).filter(c => !query || c.name.toLowerCase().includes(query) || (c.subcategories || []).some(s => s.toLowerCase().includes(query)));
-    document.getElementById('cat-list').innerHTML = list.length ? list.map(c => {
+    document.getElementById('cat-list').innerHTML = list.length ? list.map((c, cIdx) => {
       const isOpen = openSettingsCategory === c.name;
       const subList = c.subcategories || [];
+      const visibleSubs = subList.filter(s => !query || c.name.toLowerCase().includes(query) || s.toLowerCase().includes(query));
       const draftVal = subcatDrafts[c.name] || '';
       return `
-      <div class="cat-block">
-        <div class="cat-block-head" onclick="toggleSettingsCategory('${c.name.replace(/'/g,"\\'")}')">
+      <div class="cat-block draggable-item" draggable="true" data-reorder-group="settings-cat-expense" data-reorder-key="${escapeHtml(c.name)}">
+        <div class="cat-block-head" onclick="toggleSettingsCategory('${c.name.replace(/'/g,"\\\'")}')">
           <div style="display:flex; align-items:center; gap:8px;">
+            ${dragHandleHtml()}
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .15s; color:var(--muted-2);"><polyline points="9 18 15 12 9 6"/></svg>
             <span style="font-weight:500;">${escapeHtml(c.name)}</span>
             <span class="text-xs muted">${subList.length ? `${subList.length} sub-categor${subList.length===1?'y':'ies'}` : 'No sub-categories'}</span>
           </div>
           <div style="display:inline-flex; align-items:center; gap:4px;" onclick="event.stopPropagation()">
-            <button class="icon-btn icon-btn-edit" onclick="openEditCategoryModal('expense','${c.name.replace(/'/g,"\\'")}');" title="Edit category" aria-label="Edit ${escapeHtml(c.name)}">
+            ${reorderArrowsHtml('settings-cat-expense', c.name, cIdx === 0, cIdx === list.length - 1)}
+            <button class="icon-btn icon-btn-edit" onclick="openEditCategoryModal('expense','${c.name.replace(/'/g,"\\\'")}');" title="Edit category" aria-label="Edit ${escapeHtml(c.name)}">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['expense','${c.name.replace(/'/g,"\\'")}'],'${c.name.replace(/'/g,"\\'")}')" title="Remove category" aria-label="Delete ${escapeHtml(c.name)}">
+            <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['expense','${c.name.replace(/'/g,"\\\'")}'],'${c.name.replace(/'/g,"\\\'")}')" title="Remove category" aria-label="Delete ${escapeHtml(c.name)}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
         </div>
         <div class="cat-block-body ${isOpen?'open':''}">
-          ${subList.filter(s => !query || c.name.toLowerCase().includes(query) || s.toLowerCase().includes(query)).map(s => `
-            <div class="subcat-row">
-              <span>${escapeHtml(s)}</span>
+          ${visibleSubs.map((s, sIdx) => `
+            <div class="subcat-row draggable-item" draggable="true" data-reorder-group="settings-subcat" data-reorder-parent="${escapeHtml(c.name)}" data-reorder-key="${escapeHtml(s)}">
+              <span style="display:inline-flex; align-items:center; gap:6px;">${dragHandleHtml()}${escapeHtml(s)}</span>
               <div style="display:inline-flex; align-items:center; gap:4px;">
-                <button class="icon-btn icon-btn-edit" onclick="openEditSubcategoryModal('${c.name.replace(/'/g,"\\'")}','${s.replace(/'/g,"\\'")}')" title="Edit subcategory" aria-label="Edit ${escapeHtml(s)}">
+                ${reorderArrowsHtml('settings-subcat', s, sIdx === 0, sIdx === visibleSubs.length - 1, c.name)}
+                <button class="icon-btn icon-btn-edit" onclick="openEditSubcategoryModal('${c.name.replace(/'/g,"\\\'")}','${s.replace(/'/g,"\\\'")}')" title="Edit subcategory" aria-label="Edit ${escapeHtml(s)}">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button class="icon-btn icon-btn-delete" onclick="requestDelete('subcategory',['${c.name.replace(/'/g,"\\'")}','${s.replace(/'/g,"\\'")}'],'${s.replace(/'/g,"\\'")}')" title="Remove subcategory" aria-label="Delete ${escapeHtml(s)}">
+                <button class="icon-btn icon-btn-delete" onclick="requestDelete('subcategory',['${c.name.replace(/'/g,"\\\'")}','${s.replace(/'/g,"\\\'")}'],'${s.replace(/'/g,"\\\'")}')" title="Remove subcategory" aria-label="Delete ${escapeHtml(s)}">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
             </div>`).join('')}
-          <form data-category="${escapeHtml(c.name)}" onsubmit="handleAddSubcategoryInline(event, '${c.name.replace(/'/g,"\\'")}')" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center;">
-            <input type="text" placeholder="Add sub-category under ${escapeHtml(c.name)}..." value="${escapeHtml(draftVal)}" class="field-input" style="font-size:13px; flex:1; min-width:160px;" required oninput="subcatDrafts['${c.name.replace(/'/g,"\\'")}'] = this.value; const m=this.form.querySelector('.subcategory-add-message'); if(m) m.textContent=''; this.style.borderColor='';">
+          <form data-category="${escapeHtml(c.name)}" onsubmit="handleAddSubcategoryInline(event, '${c.name.replace(/'/g,"\\\'")}')" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center;">
+            <input type="text" placeholder="Add sub-category under ${escapeHtml(c.name)}..." value="${escapeHtml(draftVal)}" class="field-input" style="font-size:13px; flex:1; min-width:160px;" required oninput="subcatDrafts['${c.name.replace(/'/g,"\\\'")}'] = this.value; const m=this.form.querySelector('.subcategory-add-message'); if(m) m.textContent=''; this.style.borderColor='';">
             <button type="submit" class="btn-small" style="white-space:nowrap;">Add</button>
             <span class="subcategory-add-message text-xs muted" style="width:100%; min-height:16px;"></span>
           </form>
@@ -13901,14 +13941,15 @@ function renderCategoryList(){
     }).join('') : '<p class="empty-note">No categories yet.</p>';
   } else {
     const list = (DB.categories[catTypeTab] || []).filter(c => !query || c.toLowerCase().includes(query));
-    document.getElementById('cat-list').innerHTML = list.length ? list.map(c => `
-      <div class="cat-block-head" style="border:1px solid var(--line); border-radius:11px; margin-bottom:8px; background:var(--surface); display:flex; justify-content:space-between; align-items:center;">
-        <span>${escapeHtml(c)}</span>
+    document.getElementById('cat-list').innerHTML = list.length ? list.map((c, idx) => `
+      <div class="cat-block-head draggable-item" draggable="true" data-reorder-group="settings-cat-other" data-reorder-parent="${escapeHtml(catTypeTab)}" data-reorder-key="${escapeHtml(c)}" style="border:1px solid var(--line); border-radius:11px; margin-bottom:8px; background:var(--surface); display:flex; justify-content:space-between; align-items:center;">
+        <span style="display:inline-flex; align-items:center; gap:8px; font-weight:500;">${dragHandleHtml()}${escapeHtml(c)}</span>
         <div style="display:inline-flex; align-items:center; gap:4px;">
-          <button class="icon-btn icon-btn-edit" onclick="openEditCategoryModal('${catTypeTab}','${c.replace(/'/g,"\\'")}');" title="Edit category" aria-label="Edit ${escapeHtml(c)}">
+          ${reorderArrowsHtml('settings-cat-other', c, idx === 0, idx === list.length - 1, catTypeTab)}
+          <button class="icon-btn icon-btn-edit" onclick="openEditCategoryModal('${catTypeTab}','${c.replace(/'/g,"\\\'")}');" title="Edit category" aria-label="Edit ${escapeHtml(c)}">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['${catTypeTab}','${c.replace(/'/g,"\\'")}'],'${c.replace(/'/g,"\\'")}')" title="Remove" aria-label="Delete ${escapeHtml(c)}">
+          <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['${catTypeTab}','${c.replace(/'/g,"\\\'")}'],'${c.replace(/'/g,"\\\'")}')" title="Remove" aria-label="Delete ${escapeHtml(c)}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
         </div>
@@ -14211,6 +14252,267 @@ function renderActivityLog(){
   const entries=Array.isArray(DB.activityLog) ? DB.activityLog : [];
   container.innerHTML=entries.length ? `<div class="activity-list">${entries.map(entry=>`<div class="activity-item"><span class="activity-icon">×</span><div><p>Deleted ${escapeHtml(entry.type)}: <strong>${escapeHtml(entry.label)}</strong></p><time>${new Date(entry.timestamp).toLocaleString()}</time></div></div>`).join('')}</div>` : '<p class="empty-note">No deleted items yet.</p>';
 }
+
+/* ---------------- Universal Drag-and-Drop & Reorder Engine ---------------- */
+function dragHandleHtml(){
+  return '<span class="drag-handle" title="Drag to reorder" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.8"/><circle cx="15" cy="5" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="19" r="1.8"/><circle cx="15" cy="19" r="1.8"/></svg></span>';
+}
+
+function reorderArrowsHtml(group, key, isFirst, isLast, parentKey){
+  var safeGroup = String(group || '').replace(/'/g, "\\'");
+  var safeKey = String(key || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  var safeParent = String(parentKey || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return '<span class="reorder-arrows" onclick="event.stopPropagation()">'
+    + '<button type="button" class="reorder-btn" ' + (isFirst ? 'disabled' : '') + ' onclick="event.stopPropagation(); moveListItem(\'' + safeGroup + '\', \'' + safeKey + '\', -1, \'' + safeParent + '\')" title="Move up" aria-label="Move up">'
+    + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>'
+    + '</button>'
+    + '<button type="button" class="reorder-btn" ' + (isLast ? 'disabled' : '') + ' onclick="event.stopPropagation(); moveListItem(\'' + safeGroup + '\', \'' + safeKey + '\', 1, \'' + safeParent + '\')" title="Move down" aria-label="Move down">'
+    + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
+    + '</button>'
+    + '</span>';
+}
+
+function moveArrayElement(arr, fromIdx, toIdx){
+  if(!Array.isArray(arr) || fromIdx < 0 || toIdx < 0 || fromIdx >= arr.length || toIdx >= arr.length || fromIdx === toIdx) return false;
+  const [item] = arr.splice(fromIdx, 1);
+  arr.splice(toIdx, 0, item);
+  return true;
+}
+
+function getReorderTargetArray(group, parentKey){
+  if(group === 'settings-cat-expense') return DB.categories.expense || [];
+  if(group === 'settings-subcat'){
+    const cat = findExpenseCategory(parentKey);
+    return (cat && Array.isArray(cat.subcategories)) ? cat.subcategories : [];
+  }
+  if(group === 'settings-cat-other'){
+    if(!DB.categories[parentKey]) DB.categories[parentKey] = [];
+    return DB.categories[parentKey];
+  }
+  if(group === 'payment-methods'){
+    DB.paymentMethods = [...getPaymentMethods()];
+    return DB.paymentMethods;
+  }
+  if(group === 'allowances'){
+    if(!Array.isArray(DB.allowanceAccounts)) DB.allowanceAccounts = [];
+    return DB.allowanceAccounts;
+  }
+  if(group === 'savings-goals'){
+    if(!Array.isArray(DB.savingsGoals)) DB.savingsGoals = [];
+    return DB.savingsGoals;
+  }
+  if(group === 'budgets-subcat'){
+    if(!Array.isArray(DB.budgets)) DB.budgets = [];
+    return DB.budgets;
+  }
+  if(group === 'investments-active'){
+    if(!Array.isArray(DB.investments)) DB.investments = [];
+    return DB.investments;
+  }
+  if(group === 'investments-sold'){
+    if(!Array.isArray(DB.soldInvestments)) DB.soldInvestments = [];
+    return DB.soldInvestments;
+  }
+  return null;
+}
+
+function matchReorderKey(group, item, key){
+  if(group === 'settings-cat-expense') return (item.name || item) === key;
+  if(group === 'settings-subcat' || group === 'settings-cat-other' || group === 'payment-methods') return item === key;
+  if(group === 'allowances' || group === 'savings-goals' || group === 'budgets-subcat' || group === 'investments-active' || group === 'investments-sold') return item && item.id === key;
+  return false;
+}
+
+function refreshAfterReorder(group){
+  saveDB(true);
+  if(group === 'settings-cat-expense'){
+    renderLinkedSubcategorySelector();
+    renderCategoryList();
+  } else if(group === 'settings-subcat' || group === 'settings-cat-other'){
+    renderCategoryList();
+  } else if(group === 'payment-methods'){
+    renderPaymentMethodsSettings();
+    if(typeof renderModalPaymentMethods === 'function') renderModalPaymentMethods();
+  } else if(group === 'allowances'){
+    renderAllowancesSettings();
+    renderAllowanceTrackerWidget();
+  } else if(group === 'savings-goals'){
+    renderSavings();
+  } else if(group === 'budgets-cat' || group === 'budgets-subcat'){
+    renderBudgets();
+  } else if(group === 'investments-active' || group === 'investments-sold'){
+    renderHoldingsTable();
+  }
+}
+
+function reorderBudgetCategories(fromCat, toCat, insertAfter){
+  if(!fromCat || !toCat || fromCat === toCat) return;
+  const monthBudgets = (DB.budgets || []).filter(b => b.month === budgetSelMonth && b.year === budgetSelYear);
+  const cats = [...new Set(monthBudgets.map(b => b.category))];
+  const fromIdx = cats.indexOf(fromCat);
+  const toIdx = cats.indexOf(toCat);
+  if(fromIdx === -1 || toIdx === -1) return;
+  cats.splice(fromIdx, 1);
+  let targetIdx = cats.indexOf(toCat);
+  if(insertAfter) targetIdx++;
+  cats.splice(targetIdx, 0, fromCat);
+
+  const reorderedMonthBudgets = [];
+  cats.forEach(c => {
+    monthBudgets.filter(b => b.category === c).forEach(b => reorderedMonthBudgets.push(b));
+  });
+  let mPtr = 0;
+  DB.budgets = (DB.budgets || []).map(b => {
+    if(b.month === budgetSelMonth && b.year === budgetSelYear){
+      return reorderedMonthBudgets[mPtr++];
+    }
+    return b;
+  });
+
+  // Also sync order in DB.categories.expense if both exist
+  const expArr = DB.categories.expense || [];
+  const eFrom = expArr.findIndex(c => (c.name || c) === fromCat);
+  const eTo = expArr.findIndex(c => (c.name || c) === toCat);
+  if(eFrom !== -1 && eTo !== -1){
+    const [moved] = expArr.splice(eFrom, 1);
+    let eTarget = expArr.findIndex(c => (c.name || c) === toCat);
+    if(insertAfter) eTarget++;
+    expArr.splice(eTarget, 0, moved);
+  }
+  refreshAfterReorder('budgets-cat');
+}
+
+function reorderListItems(group, fromKey, toKey, insertAfter, parentKey){
+  if(!fromKey || !toKey || fromKey === toKey) return;
+  if(group === 'budgets-cat'){
+    reorderBudgetCategories(fromKey, toKey, insertAfter);
+    return;
+  }
+  const arr = getReorderTargetArray(group, parentKey);
+  if(!arr) return;
+  const fromIdx = arr.findIndex(item => matchReorderKey(group, item, fromKey));
+  const toIdx = arr.findIndex(item => matchReorderKey(group, item, toKey));
+  if(fromIdx === -1 || toIdx === -1) return;
+  const [moved] = arr.splice(fromIdx, 1);
+  let targetIdx = arr.findIndex(item => matchReorderKey(group, item, toKey));
+  if(insertAfter) targetIdx++;
+  arr.splice(targetIdx, 0, moved);
+  refreshAfterReorder(group);
+}
+
+function moveListItem(group, key, direction, parentKey){
+  if(group === 'budgets-cat'){
+    const monthBudgets = (DB.budgets || []).filter(b => b.month === budgetSelMonth && b.year === budgetSelYear);
+    const cats = [...new Set(monthBudgets.map(b => b.category))];
+    const idx = cats.indexOf(key);
+    const targetIdx = idx + direction;
+    if(idx === -1 || targetIdx < 0 || targetIdx >= cats.length) return;
+    reorderBudgetCategories(key, cats[targetIdx], direction > 0);
+    return;
+  }
+  const arr = getReorderTargetArray(group, parentKey);
+  if(!arr) return;
+  if(group === 'budgets-subcat'){
+    const subBudgets = arr.filter(b => b.month === budgetSelMonth && b.year === budgetSelYear && b.category === parentKey && b.subCategory);
+    const sIdx = subBudgets.findIndex(b => b.id === key);
+    const sTarget = sIdx + direction;
+    if(sIdx === -1 || sTarget < 0 || sTarget >= subBudgets.length) return;
+    reorderListItems(group, key, subBudgets[sTarget].id, direction > 0, parentKey);
+    return;
+  }
+  const idx = arr.findIndex(item => matchReorderKey(group, item, key));
+  const targetIdx = idx + direction;
+  if(idx === -1 || targetIdx < 0 || targetIdx >= arr.length) return;
+  moveArrayElement(arr, idx, targetIdx);
+  refreshAfterReorder(group);
+}
+
+let _dragReorderState = null;
+let _dragPreventedByInput = false;
+
+document.addEventListener('mousedown', function(e){
+  const interactive = e.target.closest('input, select, textarea, button:not(.drag-handle)');
+  _dragPreventedByInput = Boolean(interactive);
+}, true);
+
+document.addEventListener('dragstart', function(e){
+  if(_dragPreventedByInput){
+    e.preventDefault();
+    return;
+  }
+  const item = e.target.closest('[data-reorder-group]');
+  if(!item) return;
+  e.stopPropagation();
+  const group = item.getAttribute('data-reorder-group');
+  const key = item.getAttribute('data-reorder-key');
+  const parent = item.getAttribute('data-reorder-parent') || '';
+  _dragReorderState = { group, key, parent, el: item };
+  item.classList.add('dragging');
+  if(e.dataTransfer){
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', key); } catch(err){}
+  }
+});
+
+document.addEventListener('dragover', function(e){
+  if(!_dragReorderState) return;
+  const target = e.target.closest('[data-reorder-group="' + _dragReorderState.group + '"]');
+  if(!target) return;
+  const targetParent = target.getAttribute('data-reorder-parent') || '';
+  if(targetParent !== _dragReorderState.parent) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+
+  const targetKey = target.getAttribute('data-reorder-key');
+  document.querySelectorAll('.drag-over-before, .drag-over-after').forEach(el => {
+    if(el !== target) el.classList.remove('drag-over-before', 'drag-over-after');
+  });
+  if(targetKey === _dragReorderState.key){
+    target.classList.remove('drag-over-before', 'drag-over-after');
+    return;
+  }
+  const rect = target.getBoundingClientRect();
+  const isAfter = (e.clientY - rect.top) > (rect.height / 2);
+  target.classList.toggle('drag-over-before', !isAfter);
+  target.classList.toggle('drag-over-after', isAfter);
+});
+
+document.addEventListener('dragleave', function(e){
+  if(!_dragReorderState) return;
+  const target = e.target.closest('[data-reorder-group="' + _dragReorderState.group + '"]');
+  if(target && !target.contains(e.relatedTarget)){
+    target.classList.remove('drag-over-before', 'drag-over-after');
+  }
+});
+
+document.addEventListener('drop', function(e){
+  if(!_dragReorderState) return;
+  const target = e.target.closest('[data-reorder-group="' + _dragReorderState.group + '"]');
+  const state = _dragReorderState;
+  _dragReorderState = null;
+  document.querySelectorAll('.dragging, .drag-over-before, .drag-over-after').forEach(el => {
+    el.classList.remove('dragging', 'drag-over-before', 'drag-over-after');
+  });
+  if(!target) return;
+  const targetParent = target.getAttribute('data-reorder-parent') || '';
+  if(targetParent !== state.parent) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const toKey = target.getAttribute('data-reorder-key');
+  if(!toKey || toKey === state.key) return;
+  const rect = target.getBoundingClientRect();
+  const insertAfter = (e.clientY - rect.top) > (rect.height / 2);
+  reorderListItems(state.group, state.key, toKey, insertAfter, state.parent);
+});
+
+document.addEventListener('dragend', function(){
+  _dragReorderState = null;
+  _dragPreventedByInput = false;
+  document.querySelectorAll('.dragging, .drag-over-before, .drag-over-after').forEach(el => {
+    el.classList.remove('dragging', 'drag-over-before', 'drag-over-after');
+  });
+});
 
 /* ---------------- master render dispatcher ---------------- */
 function renderPage(page){
