@@ -1022,11 +1022,6 @@
   @media(max-width:768px){.grid-inv-sub{grid-template-columns:1fr !important;}}
   .sim-input-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   @media(max-width:540px){.sim-input-grid{grid-template-columns:1fr; gap:10px;}}
-  @media(max-width:639px){
-    #investment-kpi-grid{grid-template-columns:repeat(2,1fr) !important; gap:10px !important;}
-    #investment-kpi-grid .ov-card{padding:12px 14px !important;}
-    #investment-kpi-grid .ov-amount{font-size:19px !important;}
-  }
   .table-responsive{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
   #dashboard-trend-scroll-container {
     scrollbar-width: none !important;
@@ -1994,7 +1989,7 @@
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span id="budgets-total-label" class="figure text-sm muted"></span></div>
       </div>
 
-      <div class="budget-summary-grid" id="budget-summary-grid"></div>
+      <div class="grid grid-4 mb-4" id="budget-summary-grid"></div>
 
       <div class="card" style="padding:22px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
@@ -2058,7 +2053,7 @@
         </div>
       </div>
       <!-- 4-Card Summary KPI Grid with Embedded Carry Forward & Roll All Actions -->
-      <div class="budget-summary-grid mb-4" id="savings-summary-grid"></div>
+      <div class="grid grid-4 mb-4" id="savings-summary-grid"></div>
 
       <!-- Clean Section Header (No giant empty card) -->
       <div style="display:flex; align-items:center; justify-content:space-between; margin:22px 0 14px; flex-wrap:wrap; gap:12px;">
@@ -2096,28 +2091,7 @@
       </div>
 
       <!-- Top KPI Row -->
-      <div class="grid grid-4 mb-4" id="investment-kpi-grid">
-        <div class="card ov-card" style="padding:18px 20px;">
-          <div class="ov-label">Total Invested</div>
-          <div class="ov-amount figure" id="inv-kpi-invested">$0</div>
-          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-invested-sub">Cost basis</div>
-        </div>
-        <div class="card ov-card" style="padding:18px 20px;">
-          <div class="ov-label">Portfolio Value</div>
-          <div class="ov-amount figure" id="inv-kpi-value" style="color:var(--primary);">$0</div>
-          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-value-sub">Market valuation</div>
-        </div>
-        <div class="card ov-card" style="padding:18px 20px;">
-          <div class="ov-label">Total Return</div>
-          <div class="ov-amount figure" id="inv-kpi-return">$0</div>
-          <div class="text-xs" style="margin-top:4px; font-weight:600;" id="inv-kpi-roi">0% ROI</div>
-        </div>
-        <div class="card ov-card" style="padding:18px 20px;">
-          <div class="ov-label">Realized Profit</div>
-          <div class="ov-amount figure" id="inv-kpi-realized" style="color:var(--teal);">$0</div>
-          <div class="text-xs muted" style="margin-top:4px;" id="inv-kpi-realized-sub">From closed trades</div>
-        </div>
-      </div>
+      <div class="grid grid-4 mb-4" id="investment-kpi-grid"></div>
 
       <!-- Main Portfolio Section (Front & Center) -->
       <div class="card mb-4" style="padding:22px;">
@@ -6611,7 +6585,7 @@ function renderReports(){
             ${isPlannedOver ? 'Over budget' : 'On track'}
           </span>
           <span class="${overReportCats.length ? 'tone-neg' : 'tone-pos'}" style="font-weight:500;">
-            ${overReportCats.length ? `⚠️ ${overReportCats.length} category exceeded limit` : '✓Categories on track'}
+            ${overReportCats.length ? `${overReportCats.length} categor${overReportCats.length===1?'y':'ies'} exceeded limit` : 'Categories on track'}
           </span>
         </div>
       `;
@@ -10376,51 +10350,22 @@ function renderBudgets(){
   const netSign = netBalance < 0 ? '-' : '';
   const netSub = netBalance < 0 ? 'Monthly deficit' : (netBalance > 0 ? 'Monthly surplus' : 'Balanced');
 
-  document.getElementById('budget-summary-grid').innerHTML = catCards.length ? `
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Total Budget</span>
-      <strong>${fmt(totalBudget)}</strong>
-      <span class="text-xs muted">${catCards.length} categor${catCards.length===1?'y':'ies'} configured</span>
-    </div>
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Spent (Budgeted)</span>
-      <strong class="${totalSpent>totalBudget?'tone-neg':'tone-neu'}">${fmt(totalSpent)}</strong>
-      <span class="text-xs muted">${totalBudget>0?Math.round((totalSpent/totalBudget)*100):0}% of total</span>
-    </div>
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Remaining</span>
-      <strong class="${remaining<0?'tone-neg':'tone-pos'}">${fmt(Math.abs(remaining))}</strong>
-      <span class="text-xs muted">${remaining<0?'Over budget':'Available'}</span>
-    </div>
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Net Balance</span>
-      <strong class="${netTone}">${netSign}${fmt(Math.abs(netBalance))}</strong>
-      <span class="text-xs muted">${netSub}</span>
-    </div>
-  ` : `
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Total Budget</span>
-      <strong>${fmt(0)}</strong>
-      <span class="text-xs muted">0 categories set</span>
-    </div>
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Spent (Budgeted)</span>
-      <strong>${fmt(0)}</strong>
-      <span class="text-xs muted">On track</span>
-    </div>
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Remaining</span>
-      <strong>${fmt(0)}</strong>
-      <span class="text-xs muted">No active limits</span>
-    </div>
-    <div class="budget-summary-item">
-      <span class="label-eyebrow">Net Balance</span>
-      <strong class="${netTone}">${netSign}${fmt(Math.abs(netBalance))}</strong>
-      <span class="text-xs muted">${netSub}</span>
-    </div>
-  `;
+  const spentPct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+  const budgetKpis = [
+    {label:'Total Budget', amount:fmt(totalBudget), change:catCards.length + ' categor' + (catCards.length===1?'y':'ies'), tone:'neu', accent:'primary', icon:'wallet'},
+    {label:'Spent (Budgeted)', amount:fmt(totalSpent), change:spentPct + '% of total', tone:totalSpent > totalBudget ? 'neg' : 'neu', accent:'rose', icon:'down'},
+    {label:'Remaining', amount:fmt(Math.abs(remaining)), change:remaining < 0 ? 'Over budget' : 'Available', tone:remaining < 0 ? 'neg' : 'pos', accent:'teal', icon:'piggy'},
+    {label:'Net Balance', amount:netSign + fmt(Math.abs(netBalance)), change:netSub, tone:netBalance < 0 ? 'neg' : (netBalance > 0 ? 'pos' : 'neu'), accent:'amber', icon:'scale'},
+  ];
+  document.getElementById('budget-summary-grid').innerHTML = budgetKpis.map(c => `
+    <div class="card ov-card">
+      <div class="ov-top"><span class="label-eyebrow">${c.label}</span><div class="ov-icon accent-${c.accent}">${miniIcon(c.icon)}</div></div>
+      <p class="ov-amount">${c.amount}</p>
+      <div class="ov-change"><span class="kpi-trend-badge trend-${c.tone}">${c.change}</span></div>
+    </div>`).join('');
 
-  document.getElementById('budgets-rows').innerHTML = catCards.length ? catCards.map(b => {
+  const catPalette = ['#7C3AED','#0F9E93','#D97706','#E1435C','#2563EB','#059669'];
+  document.getElementById('budgets-rows').innerHTML = catCards.length ? catCards.map((b, idx) => {
     const isOpen = openBudgetCategory === b.category;
     const catObj = findExpenseCategory(b.category);
     const allSubs = catObj ? catObj.subcategories : [];
@@ -10429,14 +10374,22 @@ function renderBudgets(){
       (s.subCategory || '').split(',').forEach(sub => usedSubs.add(sub.trim()));
     });
     const availableSubs = allSubs.filter(s=>!usedSubs.has(s));
+    const catColor = catPalette[idx % catPalette.length];
+    const barClass = b.overspent ? 'fill-rose' : (b.percent >= 80 ? 'fill-amber' : 'fill-teal');
     return `
-    <div class="cat-block">
-      <div class="cat-block-head" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\'")}')">
+    <div class="cat-block" style="border-left:3px solid ${catColor};">
+      <div class="cat-block-head" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\\'")}')">
         <div style="flex:1;">
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; margin-bottom:6px;">
-            <span style="font-weight:600;">${b.category}</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; ${b.hasMainBudget ? 'margin-bottom:6px;' : ''}">
+            <span style="display:inline-flex; align-items:center; gap:8px; font-weight:600; color:var(--ink);">
+              <span style="width:8px; height:8px; border-radius:50%; background:${catColor}; display:inline-block; flex-shrink:0;"></span>
+              ${b.category}
+            </span>
             <div style="display:flex; align-items:center; gap:8px;">
-              <span class="figure muted">${fmt(b.spent)} / ${fmt(b.budgetAmount)}</span>
+              ${b.hasMainBudget
+                ? `<span class="figure" style="font-weight:700; color:var(--ink);">${fmt(b.spent)} <span class="muted" style="font-weight:500;">/ ${fmt(b.budgetAmount)}</span></span>`
+                : `<span class="figure" style="font-weight:700; color:var(--ink);">${fmt(b.totalCategorySpent)}</span>`
+              }
               ${b.overspent ? '<span class="badge badge-over">Over budget</span>' : '<span class="badge badge-ok">On track</span>'}
               ${b.hasMainBudget ? `
                 <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -10445,33 +10398,42 @@ function renderBudgets(){
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .15s; color:var(--muted-2);"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
-          <div class="progress-track"><div class="progress-fill ${b.overspent?'fill-rose':'fill-primary'}" style="width:${Math.min(100,b.percent)}%;"></div></div>
-          ${b.overspent?`<p class="text-xs" style="color:var(--rose); margin:5px 0 0; font-weight:500;">Over by ${fmt(b.spent-b.budgetAmount)}</p>`:`<p class="text-xs muted" style="margin:5px 0 0;">${fmt(b.remaining)} remaining${b.subRows.length?` · ${b.subRows.length} sub-category budget${b.subRows.length===1?'':'s'}`:''}${!b.hasMainBudget && b.unbudgetedSpent > 0 ? ` · ${fmt(b.totalCategorySpent)} total category spent` : ''}</p>`}
+          ${b.hasMainBudget ? `
+            <div class="progress-track"><div class="progress-fill ${barClass}" style="width:${Math.min(100,b.percent)}%;"></div></div>
+            ${b.overspent ? `<p class="text-xs" style="color:var(--rose); margin:5px 0 0; font-weight:500;">Over by ${fmt(b.spent-b.budgetAmount)}</p>` : `<p class="text-xs muted" style="margin:5px 0 0;">${fmt(b.remaining)} remaining</p>`}
+          ` : ''}
         </div>
       </div>
       <div class="cat-block-body ${isOpen?'open':''}">
-        ${b.subRows.map(s => `
+        ${b.subRows.map(s => {
+          const sRem = s.budgetAmount - s.spent;
+          const sBar = s.overspent ? 'fill-rose' : (s.percent >= 80 ? 'fill-amber' : 'fill-teal');
+          return `
           <div class="subcat-row">
             <div style="flex:1;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; flex:1;">${s.subCategory}</span>
-                <span class="figure muted" style="margin-right:8px;">${fmt(s.spent)} / ${fmt(s.budgetAmount)}</span>
+                <span style="font-weight:600; flex:1; color:var(--ink);">${s.subCategory}</span>
+                <span class="figure" style="margin-right:8px; font-weight:700; color:var(--ink);">${fmt(s.spent)} <span class="muted" style="font-weight:500;">/ ${fmt(s.budgetAmount)}</span></span>
                 ${s.overspent ? '<span class="badge badge-over">Over</span>' : '<span class="badge badge-ok">OK</span>'}
                 <div style="display:flex; align-items:center; gap:4px; margin-left:6px;">
                   <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${s.id}')" title="Edit subcategory budget" aria-label="Edit ${s.subCategory} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                   <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" aria-label="Delete ${s.subCategory} budget">✕</button>
                 </div>
               </div>
-              <div class="progress-track" style="height:5px; margin-top:6px;"><div class="progress-fill ${s.overspent?'fill-rose':'fill-primary'}" style="width:${Math.min(100,s.percent)}%;"></div></div>
+              <div class="progress-track" style="height:5px; margin-top:6px;"><div class="progress-fill ${sBar}" style="width:${Math.min(100,s.percent)}%;"></div></div>
+              ${s.overspent ? `<p class="text-xs" style="color:var(--rose); margin:4px 0 0; font-weight:500;">Over by ${fmt(s.spent - s.budgetAmount)}</p>` : `<p class="text-xs muted" style="margin:4px 0 0;">${fmt(sRem)} remaining</p>`}
             </div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
         ${!b.hasMainBudget && b.unbudgetedSpent > 0 ? `
-          <div style="margin-top:10px; padding:8px 12px; border-radius:8px; background:var(--surface-2); border:1px dashed var(--line); font-size:11.5px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;">
-            <span>Unbudgeted ${b.category} spending (not counted against limits):</span>
-            <span class="figure" style="font-weight:600; color:var(--ink);">${fmt(b.unbudgetedSpent)}</span>
+          <div class="subcat-row" style="background:var(--surface-2); border-radius:8px; margin-top:8px; padding:9px 12px; border:1px solid var(--line-soft);">
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+              <span style="font-weight:500; font-size:13px; color:var(--muted);">Other Subcategories</span>
+              <span class="figure" style="font-weight:700; font-size:13px; color:var(--ink);">${fmt(b.unbudgetedSpent)}</span>
+            </div>
           </div>
         ` : ''}
-        ${availableSubs.length ? `<button class="btn-small" style="margin-top:10px;" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\'")}')">+ Add sub-category budget</button>` : (allSubs.length===0 ? `<p class="text-xs muted" style="margin-top:10px;">This category has no sub-categories yet. Add some in Settings.</p>` : '')}
+        ${availableSubs.length ? `<button class="btn-small" style="margin-top:10px;" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\\'")}')">+ Add sub-category budget</button>` : (allSubs.length===0 ? `<p class="text-xs muted" style="margin-top:10px;">This category has no sub-categories yet. Add some in Settings.</p>` : '')}
       </div>
     </div>`;
   }).join('') : `
@@ -11116,48 +11078,40 @@ function renderSavings(){
   // 5. Render 4-card Summary KPI Grid with Embedded Actions
   const summaryGrid = document.getElementById('savings-summary-grid');
   if(summaryGrid){
+    const remainTone = activeCf ? 'pos' : (rawRemaining >= 0 ? 'pos' : 'neg');
+    const remainLabel = activeCf ? 'Rolled over to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget');
+    const goalsTone = monthGoalsAchieved > 0 ? 'pos' : 'neu';
+    const goalsLabel = allGoalsMode ? 'All-time reached' : (monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName);
     summaryGrid.innerHTML = `
-      <div class="budget-summary-item" style="position:relative;">
-        <span class="label-eyebrow">Total Savings</span>
-        <strong style="color:var(--teal); font-size:22px;">${fmt(netTotalSavingsAllTime)}</strong>
-        <span class="text-xs muted">All-time accumulated savings</span>
-        ${netTotalSavingsAllTime > 0 ? `
-          <div style="margin-top:6px;">
-            <button type="button" onclick="openRollAllSavingsModal()" class="link-sm" style="font-size:11.5px; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">
-              Roll All to Next Month →
-            </button>
-          </div>
-        ` : ''}
+      <div class="card ov-card">
+        <div class="ov-top"><span class="label-eyebrow">Total Savings</span><div class="ov-icon accent-teal">${miniIcon('piggy')}</div></div>
+        <p class="ov-amount">${fmt(netTotalSavingsAllTime)}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-pos">All-time accumulated</span></div>
+        ${netTotalSavingsAllTime > 0 ? `<div style="margin-top:6px;"><button type="button" onclick="openRollAllSavingsModal()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">Roll All to Next Month</button></div>` : ''}
       </div>
-      <div class="budget-summary-item">
-        <span class="label-eyebrow">Saved This Month</span>
-        <strong style="color:var(--ink); font-size:22px;">${fmt(monthSaved)}</strong>
-        <span class="text-xs muted">${curMonthName} ${curY} contributions</span>
+      <div class="card ov-card">
+        <div class="ov-top"><span class="label-eyebrow">Saved This Month</span><div class="ov-icon accent-primary">${miniIcon('wallet')}</div></div>
+        <p class="ov-amount">${fmt(monthSaved)}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-neu">${curMonthName} ${curY} contributions</span></div>
       </div>
-      <div class="budget-summary-item" style="position:relative;">
-        <span class="label-eyebrow">Remaining Balance</span>
-        <strong style="color:${activeCf ? 'var(--teal)' : (rawRemaining >= 0 ? 'var(--teal)' : 'var(--rose)')}; font-size:22px;">${fmt(Math.abs(activeCf ? activeCf.amount : rawRemaining))}</strong>
-        <span class="text-xs muted">${activeCf ? 'Rolled over to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget')}</span>
+      <div class="card ov-card">
+        <div class="ov-top"><span class="label-eyebrow">Remaining Balance</span><div class="ov-icon accent-amber">${miniIcon('scale')}</div></div>
+        <p class="ov-amount">${fmt(Math.abs(activeCf ? activeCf.amount : rawRemaining))}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${remainTone}">${remainLabel}</span></div>
         <div style="margin-top:6px;">
           ${activeCf ? `
             <span class="badge badge-ok" style="font-size:10.5px; padding:2px 6px;">Applied</span>
             <button type="button" onclick="reverseCarryForward('${activeCf.id}')" class="link-sm" style="font-size:11px; color:var(--rose); background:none; border:none; cursor:pointer; margin-left:6px; font-weight:600;">Reverse</button>
           ` : (rawRemaining > 0 ? `
-            <button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:2px 10px; font-size:11px; height:24px; border-radius:6px; font-weight:600;">
-              Carry Forward
-            </button>
+            <button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:2px 10px; font-size:11px; height:24px; border-radius:6px; font-weight:600;">Carry Forward</button>
           ` : '')}
         </div>
       </div>
-      <div class="budget-summary-item">
-        <span class="label-eyebrow">Goals Achieved</span>
-        <strong style="color:var(--primary); font-size:22px;">${monthGoalsAchieved} of ${monthGoalsCount}</strong>
-        <span class="text-xs muted">${allGoalsMode ? 'All-time reached' : (monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName)}</span>
-        <div style="margin-top:6px;">
-          <button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11.5px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">
-            ${allGoalsMode ? '← Show Monthly' : 'All Goals →'}
-          </button>
-        </div>
+      <div class="card ov-card">
+        <div class="ov-top"><span class="label-eyebrow">Goals Achieved</span><div class="ov-icon accent-rose">${miniIcon('up')}</div></div>
+        <p class="ov-amount">${monthGoalsAchieved} of ${monthGoalsCount}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${goalsTone}">${goalsLabel}</span></div>
+        <div style="margin-top:6px;"><button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">${allGoalsMode ? 'Show Monthly' : 'All Goals'}</button></div>
       </div>
     `;
   }
@@ -11728,31 +11682,21 @@ function renderInvestments(){
     countLabel.textContent = `${list.length} active asset${list.length === 1 ? '' : 's'} • ${fmt(totalValue)} portfolio valuation`;
   }
 
-  // Top KPIs
-  const kpiInvested = document.getElementById('inv-kpi-invested');
-  if(kpiInvested) kpiInvested.textContent = fmt(totalInvested);
-  const kpiValue = document.getElementById('inv-kpi-value');
-  if(kpiValue) kpiValue.textContent = fmt(totalValue);
-  
-  const kpiReturn = document.getElementById('inv-kpi-return');
-  if(kpiReturn){
-    kpiReturn.textContent = `${netReturn >= 0 ? '+' : ''}${fmt(netReturn)}`;
-    kpiReturn.style.color = netReturn >= 0 ? 'var(--teal)' : 'var(--rose)';
-  }
-  const kpiRoi = document.getElementById('inv-kpi-roi');
-  if(kpiRoi){
-    kpiRoi.textContent = `${netReturn >= 0 ? '+' : ''}${roiPct.toFixed(1)}% ROI`;
-    kpiRoi.className = `text-xs ${netReturn >= 0 ? 'tone-pos' : 'tone-neg'}`;
-  }
-
-  const kpiRealized = document.getElementById('inv-kpi-realized');
-  if(kpiRealized){
-    kpiRealized.textContent = `${totalRealized >= 0 ? '+' : ''}${fmt(totalRealized)}`;
-    kpiRealized.style.color = totalRealized >= 0 ? 'var(--teal)' : 'var(--rose)';
-  }
-  const kpiRealizedSub = document.getElementById('inv-kpi-realized-sub');
-  if(kpiRealizedSub){
-    kpiRealizedSub.textContent = `${soldList.length} closed trade${soldList.length === 1 ? '' : 's'}`;
+  // Top KPIs - ov-card style matching dashboard
+  const invKpiGrid = document.getElementById('investment-kpi-grid');
+  if(invKpiGrid){
+    const invKpis = [
+      {label:'Total Invested', amount:fmt(totalInvested), change:'Cost basis', tone:'neu', accent:'primary', icon:'wallet'},
+      {label:'Portfolio Value', amount:fmt(totalValue), change:list.length + ' active asset' + (list.length===1?'':'s'), tone:'neu', accent:'teal', icon:'piggy'},
+      {label:'Total Return', amount:(netReturn >= 0 ? '+' : '') + fmt(netReturn), change:(netReturn >= 0 ? '+' : '') + roiPct.toFixed(1) + '% ROI', tone:netReturn >= 0 ? 'pos' : 'neg', accent:'amber', icon:'up'},
+      {label:'Realized Profit', amount:(totalRealized >= 0 ? '+' : '') + fmt(totalRealized), change:soldList.length + ' closed trade' + (soldList.length===1?'':'s'), tone:totalRealized >= 0 ? 'pos' : 'neg', accent:'rose', icon:'scale'},
+    ];
+    invKpiGrid.innerHTML = invKpis.map(c => `
+      <div class="card ov-card">
+        <div class="ov-top"><span class="label-eyebrow">${c.label}</span><div class="ov-icon accent-${c.accent}">${miniIcon(c.icon)}</div></div>
+        <p class="ov-amount">${c.amount}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${c.tone}">${c.change}</span></div>
+      </div>`).join('');
   }
 
   // Init / sync simulator defaults if first load
