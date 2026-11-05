@@ -2610,27 +2610,60 @@
 </div>
 
 <!-- Roll ALL Savings to Next Month Income Modal -->
+<!-- Roll ALL Savings Modal -->
 <div id="roll-all-savings-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeRollAllSavingsModal()">
-  <div class="modal" style="max-width:460px;">
+  <div class="modal" style="max-width:480px;">
     <button class="modal-close" onclick="closeRollAllSavingsModal()" aria-label="Close">✕</button>
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
       <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       </div>
       <div>
-        <h2 style="margin:0; font-size:18px;">Roll All Savings to Next Month</h2>
+        <h2 style="margin:0; font-size:18px;">Roll All Savings</h2>
         <p class="text-xs muted" id="roll-all-subtitle" style="margin:2px 0 0;"></p>
       </div>
     </div>
 
-    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; margin:14px 0 16px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+    <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; margin:14px 0 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <span class="text-xs muted">Total Accumulated Savings</span>
-        <span id="roll-all-current-amount" class="figure" style="font-weight:700; font-size:18px; color:var(--teal);"></span>
+        <span id="roll-all-current-amount" class="figure" style="font-weight:700; font-size:17px; color:var(--teal);"></span>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="text-xs muted">Transfer Destination</span>
-        <strong id="roll-all-next-month-label" style="font-size:13px; color:var(--ink);"></strong>
+    </div>
+
+    <!-- Month Selection: Source & Destination -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+      <div>
+        <label class="field-label" style="margin-bottom:4px;">Source Period</label>
+        <div id="roll-all-source-month-display" style="padding:8px 12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px; font-size:12.5px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">All-Time Savings</div>
+      </div>
+      <div>
+        <label class="field-label" style="margin-bottom:4px;">Destination Month</label>
+        <div style="display:flex; gap:6px;">
+          <select id="roll-all-dest-month" class="field-input" style="flex:1.2; padding:6px 8px; font-size:12.5px;" onchange="onRollAllDestMonthChange()"></select>
+          <select id="roll-all-dest-year" class="field-input" style="flex:1; padding:6px 8px; font-size:12.5px;" onchange="onRollAllDestYearChange()"></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Destination Options: Savings vs Income -->
+    <div style="margin-bottom:14px;">
+      <label class="field-label" style="margin-bottom:6px;">Select Transfer Destination</label>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="roll-all-dest-type" value="savings" checked onchange="onRollAllDestTypeChange()" style="margin-top:2px;">
+          <div style="flex:1;">
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer to Destination Month's Savings</strong>
+            <span class="text-xs muted" style="display:block; margin-top:2px;" id="roll-all-dest-savings-sub"></span>
+          </div>
+        </label>
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="roll-all-dest-type" value="income" onchange="onRollAllDestTypeChange()" style="margin-top:2px;">
+          <div style="flex:1;">
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer Directly into Income</strong>
+            <span class="text-xs muted" style="display:block; margin-top:2px;" id="roll-all-dest-income-sub"></span>
+          </div>
+        </label>
       </div>
     </div>
 
@@ -2641,24 +2674,24 @@
           Use All Savings
         </button>
       </div>
-      <input type="number" id="roll-all-amount-input" min="1" step="any" class="field-input figure" style="font-size:16px; font-weight:700;">
+      <input type="number" id="roll-all-amount-input" min="1" step="any" class="field-input figure" style="font-size:16px; font-weight:700;" oninput="updateRollAllImpactMsg()">
     </div>
 
-    <div style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:12px 14px; margin-bottom:16px;">
-      <div style="font-size:12.5px; font-weight:700; color:var(--teal); margin-bottom:4px;">Transfer Details & Impact</div>
-      <p id="roll-all-impact-msg" class="text-xs muted" style="margin:0; line-height:1.5;"></p>
+    <div style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:10px 12px; margin-bottom:16px;">
+      <div style="font-size:12px; font-weight:700; color:var(--teal); margin-bottom:4px;">Transfer Details & Impact</div>
+      <div id="roll-all-impact-msg" class="text-xs muted" style="margin:0; line-height:1.5;"></div>
     </div>
 
     <div style="display:flex; justify-content:flex-end; gap:10px;">
       <button type="button" onclick="closeRollAllSavingsModal()" class="btn-ghost">Cancel</button>
-      <button type="button" onclick="executeRollAllSavings()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
-        Confirm Roll All
+      <button type="button" id="btn-confirm-roll-all" onclick="executeRollAllSavings()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+        Confirm Transfer
       </button>
     </div>
   </div>
 </div>
-
 <!-- Roll Savings Goal to Next Month Income Modal -->
+<!-- Transfer Savings Goal Modal -->
 <div id="roll-goal-income-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSavingsTransferModal()">
   <div class="modal" style="max-width:480px;">
     <button class="modal-close" onclick="closeSavingsTransferModal()" aria-label="Close">✕</button>
@@ -2679,6 +2712,21 @@
       </div>
     </div>
 
+    <!-- Month Selection: Source & Destination -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+      <div>
+        <label class="field-label" style="margin-bottom:4px;">Source Month</label>
+        <div id="roll-goal-source-month-display" style="padding:8px 12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px; font-size:12.5px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+      </div>
+      <div>
+        <label class="field-label" style="margin-bottom:4px;">Destination Month</label>
+        <div style="display:flex; gap:6px;">
+          <select id="roll-goal-dest-month" class="field-input" style="flex:1.2; padding:6px 8px; font-size:12.5px;" onchange="onSavingsTransferDestMonthChange()"></select>
+          <select id="roll-goal-dest-year" class="field-input" style="flex:1; padding:6px 8px; font-size:12.5px;" onchange="onSavingsTransferDestYearChange()"></select>
+        </div>
+      </div>
+    </div>
+
     <!-- Transfer Destination Radio Choices -->
     <div style="margin-bottom:14px;">
       <label class="field-label" style="margin-bottom:6px;">Select Transfer Destination</label>
@@ -2686,8 +2734,12 @@
         <label style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
           <input type="radio" name="savings-transfer-dest" value="savings" checked onchange="onSavingsTransferDestChange()" style="margin-top:2px;">
           <div style="flex:1;">
-            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer to Next Month's Savings</strong>
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer to Savings</strong>
             <span class="text-xs muted" style="display:block; margin-top:2px;" id="transfer-dest-savings-sub"></span>
+            <div id="transfer-dest-goal-wrap" style="margin-top:8px;">
+              <label class="field-label" style="font-size:11px; margin-bottom:3px;">Deposit into Goal / Allocation</label>
+              <select id="roll-goal-dest-goal" class="field-input" style="font-size:12px; padding:5px 8px;" onchange="onSavingsTransferDestGoalChange()"></select>
+            </div>
           </div>
         </label>
         <label style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--surface);">
@@ -2711,19 +2763,18 @@
     </div>
 
     <div style="background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.22); border-radius:8px; padding:10px 12px; margin-bottom:16px;">
-      <div style="font-size:12px; font-weight:700; color:var(--teal); margin-bottom:3px;">Transfer Details & Impact</div>
-      <p id="roll-goal-impact-msg" class="text-xs muted" style="margin:0; line-height:1.45;"></p>
+      <div style="font-size:12px; font-weight:700; color:var(--teal); margin-bottom:4px;">Transfer Details & Impact</div>
+      <div id="roll-goal-impact-msg" class="text-xs muted" style="margin:0; line-height:1.5;"></div>
     </div>
 
     <div style="display:flex; justify-content:flex-end; gap:10px;">
       <button type="button" onclick="closeSavingsTransferModal()" class="btn-ghost">Cancel</button>
-      <button type="button" onclick="executeSavingsTransfer()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+      <button type="button" id="btn-confirm-savings-transfer" onclick="executeSavingsTransfer()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
         Confirm Transfer
       </button>
     </div>
   </div>
 </div>
-
 <div id="goal-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal" style="max-width:360px;">
     <button class="modal-close" onclick="closeGoalModal()">✕</button>
@@ -15097,9 +15148,33 @@ function reverseCarryForward(cfId){
 /* ============================================================
    ROLL ALL SAVINGS TO NEXT MONTH WORKFLOW
    ============================================================ */
+/* ============================================================
+   MONTH / YEAR SELECTOR HELPERS FOR SAVINGS TRANSFERS & ROLLOVERS
+   ============================================================ */
+function populateMonthSelectOptions(selectEl, selectedMonth){
+  if(!selectEl) return;
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  selectEl.innerHTML = MONTHS.map((m, idx) => `<option value="${idx + 1}" ${idx + 1 === selectedMonth ? 'selected' : ''}>${m}</option>`).join('');
+}
+
+function populateYearSelectOptions(selectEl, selectedYear, baseYear){
+  if(!selectEl) return;
+  const nowY = new Date().getFullYear();
+  const startY = Math.min(baseYear - 1, nowY - 1);
+  const endY = Math.max(baseYear + 5, nowY + 5);
+  const years = [];
+  for(let y = startY; y <= endY; y++){ years.push(y); }
+  selectEl.innerHTML = years.map(y => `<option value="${y}" ${y === selectedYear ? 'selected' : ''}>${y}</option>`).join('');
+}
+
+/* ============================================================
+   KPI WORKFLOW: ROLL ALL ACCUMULATED SAVINGS TO ANY DESTINATION MONTH
+   ============================================================ */
 let _rollAllTotalAmount = 0;
-let _rollAllNextM = 0;
-let _rollAllNextY = 0;
+let _rollAllSourceM = 0;
+let _rollAllSourceY = 0;
+let _rollAllDestM = 0;
+let _rollAllDestY = 0;
 
 function openRollAllSavingsModal(){
   const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings');
@@ -15113,24 +15188,23 @@ function openRollAllSavingsModal(){
   }
 
   const now = new Date();
-  const curM = savingsFilterMonth || (now.getMonth() + 1);
-  const curY = savingsFilterYear || now.getFullYear();
-  let nextM = curM + 1;
-  let nextY = curY;
+  _rollAllSourceM = savingsFilterMonth || (now.getMonth() + 1);
+  _rollAllSourceY = savingsFilterYear || now.getFullYear();
+
+  let nextM = _rollAllSourceM + 1;
+  let nextY = _rollAllSourceY;
   if(nextM > 12){ nextM = 1; nextY++; }
-  _rollAllNextM = nextM;
-  _rollAllNextY = nextY;
+  _rollAllDestM = nextM;
+  _rollAllDestY = nextY;
 
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const curMonthName = SHORT_MONTHS[curM - 1];
-  const nextMonthName = SHORT_MONTHS[nextM - 1];
+  const sourceMonthName = SHORT_MONTHS[_rollAllSourceM - 1];
 
-  const sub = document.getElementById('roll-all-subtitle');
-  if(sub) sub.textContent = 'Transfer accumulated savings into ' + nextMonthName + ' ' + nextY + ' Income';
+  const srcDisplay = document.getElementById('roll-all-source-month-display');
+  if(srcDisplay) srcDisplay.textContent = `All-Time Savings (${sourceMonthName} ${_rollAllSourceY})`;
+
   const curEl = document.getElementById('roll-all-current-amount');
   if(curEl) curEl.textContent = fmt(_rollAllTotalAmount);
-  const destEl = document.getElementById('roll-all-next-month-label');
-  if(destEl) destEl.textContent = nextMonthName + ' ' + nextY + ' Income';
 
   const inputEl = document.getElementById('roll-all-amount-input');
   if(inputEl){
@@ -15138,22 +15212,79 @@ function openRollAllSavingsModal(){
     inputEl.max = _rollAllTotalAmount;
   }
 
-  const msgEl = document.getElementById('roll-all-impact-msg');
-  if(msgEl){
-    msgEl.innerHTML = 'Are you sure you want to contribute all savings to next month\'s income?<br>' +
-      '• Deducts <strong>' + fmt(_rollAllTotalAmount) + '</strong> from your total savings balance.<br>' +
-      '• Adds it as a lump-sum income entry on 1st of <strong>' + nextMonthName + ' ' + nextY + '</strong>.<br>' +
-      '• Makes all saved funds immediately available in next month\'s spending budget.<br>' +
-      '• Can be reversed at any time.';
-  }
+  populateMonthSelectOptions(document.getElementById('roll-all-dest-month'), _rollAllDestM);
+  populateYearSelectOptions(document.getElementById('roll-all-dest-year'), _rollAllDestY, _rollAllSourceY);
+
+  const radioSavings = document.querySelector('input[name="roll-all-dest-type"][value="savings"]');
+  if(radioSavings) radioSavings.checked = true;
+
+  const btn = document.getElementById('btn-confirm-roll-all');
+  if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
+
+  updateRollAllModalText();
 
   const backdrop = document.getElementById('roll-all-savings-modal-backdrop');
   if(backdrop) backdrop.classList.remove('hidden');
 }
 
+function onRollAllDestMonthChange(){
+  const mSelect = document.getElementById('roll-all-dest-month');
+  if(mSelect) _rollAllDestM = parseInt(mSelect.value, 10) || _rollAllDestM;
+  updateRollAllModalText();
+}
+
+function onRollAllDestYearChange(){
+  const ySelect = document.getElementById('roll-all-dest-year');
+  if(ySelect) _rollAllDestY = parseInt(ySelect.value, 10) || _rollAllDestY;
+  updateRollAllModalText();
+}
+
+function onRollAllDestTypeChange(){
+  updateRollAllModalText();
+}
+
+function updateRollAllModalText(){
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const destMonthName = SHORT_MONTHS[_rollAllDestM - 1];
+
+  const sub = document.getElementById('roll-all-subtitle');
+  if(sub) sub.textContent = `Transfer accumulated savings to ${destMonthName} ${_rollAllDestY}`;
+
+  const destSavSub = document.getElementById('roll-all-dest-savings-sub');
+  if(destSavSub) destSavSub.textContent = `Allocates funds to ${destMonthName} ${_rollAllDestY} savings pool.`;
+
+  const destIncSub = document.getElementById('roll-all-dest-income-sub');
+  if(destIncSub) destIncSub.textContent = `Credits as income in ${destMonthName} ${_rollAllDestY} to increase spending capacity.`;
+
+  updateRollAllImpactMsg();
+}
+
+function updateRollAllImpactMsg(){
+  const dest = document.querySelector('input[name="roll-all-dest-type"]:checked')?.value || 'savings';
+  const amtInput = document.getElementById('roll-all-amount-input');
+  const amt = evaluateTxAmountInput(amtInput) || _rollAllTotalAmount;
+
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const destMonthName = SHORT_MONTHS[_rollAllDestM - 1];
+
+  const msgEl = document.getElementById('roll-all-impact-msg');
+  if(!msgEl) return;
+
+  if(dest === 'savings'){
+    msgEl.innerHTML = `• Deducts <strong>${fmt(amt)}</strong> across your active savings balances.<br>` +
+      `• Deposits it into the <strong>${destMonthName} ${_rollAllDestY}</strong> savings pool.<br>` +
+      `• Maintains the funds securely within your savings reserves for that month.`;
+  } else {
+    msgEl.innerHTML = `• Deducts <strong>${fmt(amt)}</strong> across your active savings balances.<br>` +
+      `• Credits it as income in <strong>${destMonthName} ${_rollAllDestY}</strong>.<br>` +
+      `• Increases ${destMonthName} ${_rollAllDestY}'s spending capacity and available cash flow.`;
+  }
+}
+
 function setRollAllWholeAmount(){
   const inputEl = document.getElementById('roll-all-amount-input');
   if(inputEl) inputEl.value = _rollAllTotalAmount;
+  updateRollAllImpactMsg();
 }
 
 function closeRollAllSavingsModal(){
@@ -15162,18 +15293,25 @@ function closeRollAllSavingsModal(){
 }
 
 function executeRollAllSavings(){
+  const btn = document.getElementById('btn-confirm-roll-all');
+  if(btn){ btn.disabled = true; btn.textContent = 'Transferring...'; }
+
   const inputEl = document.getElementById('roll-all-amount-input');
-  const amt = parseFloat(inputEl?.value);
+  const amt = evaluateTxAmountInput(inputEl);
   if(!amt || amt <= 0 || amt > _rollAllTotalAmount){
     showToast('Please enter a valid amount up to ' + fmt(_rollAllTotalAmount), 'error');
+    if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
     return;
   }
 
+  const dest = document.querySelector('input[name="roll-all-dest-type"]:checked')?.value || 'savings';
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const nextMonthName = SHORT_MONTHS[_rollAllNextM - 1];
-  const dateStr = _rollAllNextY + '-' + String(_rollAllNextM).padStart(2, '0') + '-01';
+  const destMonthName = SHORT_MONTHS[_rollAllDestM - 1];
+  const lastDayOfSourceMonth = new Date(_rollAllSourceY, _rollAllSourceM, 0).getDate();
+  const sourceDate = _rollAllSourceY + '-' + String(_rollAllSourceM).padStart(2, '0') + '-' + String(lastDayOfSourceMonth).padStart(2, '0');
+  const destDate = _rollAllDestY + '-' + String(_rollAllDestM).padStart(2, '0') + '-01';
 
-  // Find active goals with balances to deduct from proportionally or sequentially
+  // Find active goals with balances to deduct from sequentially
   const activeGoals = (DB.savingsGoals || []).map(g => ({
     id: g.id,
     name: g.name,
@@ -15189,43 +15327,72 @@ function executeRollAllSavings(){
     remainingToDeduct -= deductAmt;
     outTxs.push({
       id: uid(),
-      date: ymd(new Date()),
+      date: sourceDate,
       type: 'expense',
       category: 'Savings Transfer',
-      description: 'Funded from ' + g.name + ': Rolled all savings into ' + nextMonthName + ' ' + _rollAllNextY + ' income',
+      description: 'Funded from ' + g.name + ': Rolled savings into ' + destMonthName + ' ' + _rollAllDestY + ' ' + (dest === 'savings' ? 'savings' : 'income'),
       amount: deductAmt,
       paymentMethod: 'Bank Transfer',
       isGoalRolloverOut: true,
       goalId: g.id,
-      relatedGoalName: g.name
+      relatedGoalName: g.name,
+      fromMonth: _rollAllSourceM,
+      fromYear: _rollAllSourceY,
+      toMonth: _rollAllDestM,
+      toYear: _rollAllDestY
     });
   }
 
-  // If there's any remaining that wasn't in active goals (e.g. general savings transactions)
   if(remainingToDeduct > 0){
     outTxs.push({
       id: uid(),
-      date: ymd(new Date()),
+      date: sourceDate,
       type: 'expense',
       category: 'Savings Transfer',
-      description: 'Funded from Total Savings: Rolled into ' + nextMonthName + ' ' + _rollAllNextY + ' income',
+      description: 'Funded from Total Savings: Rolled into ' + destMonthName + ' ' + _rollAllDestY + ' ' + (dest === 'savings' ? 'savings' : 'income'),
       amount: remainingToDeduct,
-      paymentMethod: 'Bank Transfer'
+      paymentMethod: 'Bank Transfer',
+      fromMonth: _rollAllSourceM,
+      fromYear: _rollAllSourceY,
+      toMonth: _rollAllDestM,
+      toYear: _rollAllDestY
     });
   }
 
-  // Income entry in next month
-  const inTx = {
-    id: uid(),
-    date: dateStr,
-    type: 'income',
-    category: 'Savings Rollover',
-    description: 'All-time savings rolled over into income',
-    amount: amt,
-    paymentMethod: 'Bank Transfer',
-    isAllSavingsRolloverIn: true,
-    relatedTxIds: outTxs.map(t => t.id)
-  };
+  let inTx;
+  if(dest === 'savings'){
+    inTx = {
+      id: uid(),
+      date: destDate,
+      type: 'savings',
+      category: 'Savings',
+      description: 'All-time savings rolled over into savings (' + destMonthName + ' ' + _rollAllDestY + ')',
+      amount: amt,
+      paymentMethod: 'Bank Transfer',
+      isAllSavingsRolloverIn: true,
+      relatedTxIds: outTxs.map(t => t.id),
+      fromMonth: _rollAllSourceM,
+      fromYear: _rollAllSourceY,
+      toMonth: _rollAllDestM,
+      toYear: _rollAllDestY
+    };
+  } else {
+    inTx = {
+      id: uid(),
+      date: destDate,
+      type: 'income',
+      category: 'Savings Rollover',
+      description: 'All-time savings rolled over into income (' + destMonthName + ' ' + _rollAllDestY + ')',
+      amount: amt,
+      paymentMethod: 'Bank Transfer',
+      isAllSavingsRolloverIn: true,
+      relatedTxIds: outTxs.map(t => t.id),
+      fromMonth: _rollAllSourceM,
+      fromYear: _rollAllSourceY,
+      toMonth: _rollAllDestM,
+      toYear: _rollAllDestY
+    };
+  }
 
   DB.transactions = DB.transactions || [];
   outTxs.forEach(t => DB.transactions.unshift(t));
@@ -15234,27 +15401,50 @@ function executeRollAllSavings(){
   if(!DB.allSavingsRollovers) DB.allSavingsRollovers = [];
   DB.allSavingsRollovers.push({
     id: uid(),
+    type: dest === 'savings' ? 'all_to_savings' : 'all_to_income',
     amount: amt,
     outTxIds: outTxs.map(t => t.id),
     inTxId: inTx.id,
-    toMonth: _rollAllNextM,
-    toYear: _rollAllNextY,
+    fromMonth: _rollAllSourceM,
+    fromYear: _rollAllSourceY,
+    toMonth: _rollAllDestM,
+    toYear: _rollAllDestY,
     date: new Date().toISOString()
   });
 
   saveDB(true);
   renderAll();
   closeRollAllSavingsModal();
-  showToast('Rolled ' + fmt(amt) + ' of total savings into ' + nextMonthName + ' ' + _rollAllNextY + ' income!', 'success');
+  showToast('Rolled ' + fmt(amt) + ' of total savings into ' + destMonthName + ' ' + _rollAllDestY + ' ' + (dest === 'savings' ? 'savings' : 'income') + '!', 'success');
 }
 
 /* ============================================================
-   SAVINGS GOAL TRANSFER WORKFLOW (TO NEXT MONTH SAVINGS OR INCOME)
+   INDIVIDUAL GOAL TRANSFER WORKFLOW (TO ANY DESTINATION MONTH SAVINGS OR INCOME)
    ============================================================ */
 let _rollGoalId = null;
 let _rollGoalCurAmount = 0;
-let _rollGoalNextM = 0;
-let _rollGoalNextY = 0;
+let _rollGoalSourceM = 0;
+let _rollGoalSourceY = 0;
+let _rollGoalDestM = 0;
+let _rollGoalDestY = 0;
+
+function populateDestGoalsDropdown(destM, destY, currentGoalId){
+  const goalSelect = document.getElementById('roll-goal-dest-goal');
+  if(!goalSelect) return;
+  const activeGoals = (DB.savingsGoals || []).filter(g => goalActiveInPeriod(g, destM, destY));
+  
+  let options = [];
+  const currentInDest = activeGoals.find(g => g.id === currentGoalId);
+  if(currentInDest){
+    options.push(`<option value="${currentInDest.id}" selected>${escapeHtml(currentInDest.name)} (Same Goal)</option>`);
+  }
+  activeGoals.filter(g => g.id !== currentGoalId).forEach(g => {
+    options.push(`<option value="${g.id}">${escapeHtml(g.name)}</option>`);
+  });
+  options.push(`<option value="__general__" ${!currentInDest ? 'selected' : ''}>Monthly Savings Allocation (General)</option>`);
+  
+  goalSelect.innerHTML = options.join('');
+}
 
 function openSavingsTransferModal(goalId){
   const goal = (DB.savingsGoals || []).find(g => g.id === goalId);
@@ -15267,26 +15457,23 @@ function openSavingsTransferModal(goalId){
   }
 
   const now = new Date();
-  const curM = savingsFilterMonth || (now.getMonth() + 1);
-  const curY = savingsFilterYear || now.getFullYear();
-  let nextM = curM + 1;
-  let nextY = curY;
+  _rollGoalSourceM = savingsFilterMonth || (now.getMonth() + 1);
+  _rollGoalSourceY = savingsFilterYear || now.getFullYear();
+
+  let nextM = _rollGoalSourceM + 1;
+  let nextY = _rollGoalSourceY;
   if(nextM > 12){ nextM = 1; nextY++; }
-  _rollGoalNextM = nextM;
-  _rollGoalNextY = nextY;
+  _rollGoalDestM = nextM;
+  _rollGoalDestY = nextY;
 
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const nextMonthName = SHORT_MONTHS[nextM - 1];
+  const sourceMonthName = SHORT_MONTHS[_rollGoalSourceM - 1];
 
-  const sub = document.getElementById('roll-goal-subtitle');
-  if(sub) sub.textContent = 'Transfer from ' + goal.name + ' to ' + nextMonthName + ' ' + nextY;
+  const srcDisplay = document.getElementById('roll-goal-source-month-display');
+  if(srcDisplay) srcDisplay.textContent = `${sourceMonthName} ${_rollGoalSourceY}`;
+
   const curEl = document.getElementById('roll-goal-current-amount');
   if(curEl) curEl.textContent = fmt(_rollGoalCurAmount);
-  
-  const destSavSub = document.getElementById('transfer-dest-savings-sub');
-  if(destSavSub) destSavSub.textContent = 'Allocates funds to ' + nextMonthName + ' ' + nextY + ' savings pool.';
-  const destIncSub = document.getElementById('transfer-dest-income-sub');
-  if(destIncSub) destIncSub.textContent = 'Credits as income on 1st of ' + nextMonthName + ' ' + nextY + ' to increase spending capacity.';
 
   const inputEl = document.getElementById('roll-goal-amount-input');
   if(inputEl){
@@ -15294,21 +15481,64 @@ function openSavingsTransferModal(goalId){
     inputEl.max = _rollGoalCurAmount;
   }
 
+  populateMonthSelectOptions(document.getElementById('roll-goal-dest-month'), _rollGoalDestM);
+  populateYearSelectOptions(document.getElementById('roll-goal-dest-year'), _rollGoalDestY, _rollGoalSourceY);
+  populateDestGoalsDropdown(_rollGoalDestM, _rollGoalDestY, goal.id);
+
   const radioSavings = document.querySelector('input[name="savings-transfer-dest"][value="savings"]');
   if(radioSavings) radioSavings.checked = true;
 
-  updateSavingsTransferImpactMsg();
+  const btn = document.getElementById('btn-confirm-savings-transfer');
+  if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
+
+  updateSavingsTransferModalText();
 
   const backdrop = document.getElementById('roll-goal-income-modal-backdrop');
   if(backdrop) backdrop.classList.remove('hidden');
 }
 
 function openRollGoalToIncomeModal(goalId){
-  // Backward compatibility alias
   openSavingsTransferModal(goalId);
 }
 
+function onSavingsTransferDestMonthChange(){
+  const mSelect = document.getElementById('roll-goal-dest-month');
+  if(mSelect) _rollGoalDestM = parseInt(mSelect.value, 10) || _rollGoalDestM;
+  populateDestGoalsDropdown(_rollGoalDestM, _rollGoalDestY, _rollGoalId);
+  updateSavingsTransferModalText();
+}
+
+function onSavingsTransferDestYearChange(){
+  const ySelect = document.getElementById('roll-goal-dest-year');
+  if(ySelect) _rollGoalDestY = parseInt(ySelect.value, 10) || _rollGoalDestY;
+  populateDestGoalsDropdown(_rollGoalDestM, _rollGoalDestY, _rollGoalId);
+  updateSavingsTransferModalText();
+}
+
 function onSavingsTransferDestChange(){
+  updateSavingsTransferModalText();
+}
+
+function onSavingsTransferDestGoalChange(){
+  updateSavingsTransferImpactMsg();
+}
+
+function updateSavingsTransferModalText(){
+  const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
+  const goalName = goal ? goal.name : 'Goal';
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const sourceMonthName = SHORT_MONTHS[_rollGoalSourceM - 1];
+  const destMonthName = SHORT_MONTHS[_rollGoalDestM - 1];
+
+  const sub = document.getElementById('roll-goal-subtitle');
+  if(sub) sub.textContent = `Transfer from ${goalName} (${sourceMonthName} ${_rollGoalSourceY}) to ${destMonthName} ${_rollGoalDestY}`;
+
+  const destSavSub = document.getElementById('transfer-dest-savings-sub');
+  if(destSavSub) destSavSub.textContent = `Allocates funds to ${destMonthName} ${_rollGoalDestY} savings.`;
+
+  const destIncSub = document.getElementById('transfer-dest-income-sub');
+  if(destIncSub) destIncSub.textContent = `Credits as income in ${destMonthName} ${_rollGoalDestY} to increase spending capacity.`;
+
   updateSavingsTransferImpactMsg();
 }
 
@@ -15317,22 +15547,35 @@ function updateSavingsTransferImpactMsg(){
   const goalName = goal ? goal.name : 'Goal';
   const dest = document.querySelector('input[name="savings-transfer-dest"]:checked')?.value || 'savings';
   const amtInput = document.getElementById('roll-goal-amount-input');
-  const amt = parseFloat(amtInput?.value) || _rollGoalCurAmount;
+  const amt = evaluateTxAmountInput(amtInput) || _rollGoalCurAmount;
 
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const nextMonthName = SHORT_MONTHS[_rollGoalNextM - 1];
+  const sourceMonthName = SHORT_MONTHS[_rollGoalSourceM - 1];
+  const destMonthName = SHORT_MONTHS[_rollGoalDestM - 1];
+
+  const destGoalWrap = document.getElementById('transfer-dest-goal-wrap');
+  if(destGoalWrap){
+    destGoalWrap.style.display = (dest === 'savings') ? 'block' : 'none';
+  }
+
+  const destGoalSelect = document.getElementById('roll-goal-dest-goal');
+  let targetName = 'Monthly Savings Pool';
+  if(dest === 'savings' && destGoalSelect && destGoalSelect.value !== '__general__'){
+    const tg = (DB.savingsGoals || []).find(g => g.id === destGoalSelect.value);
+    if(tg) targetName = tg.name;
+  }
 
   const msgEl = document.getElementById('roll-goal-impact-msg');
   if(!msgEl) return;
 
   if(dest === 'savings'){
-    msgEl.innerHTML = '• Deducts <strong>' + fmt(amt) + '</strong> from <strong>' + escapeHtml(goalName) + '</strong>.<br>' +
-      '• Deposits it directly into the <strong>' + nextMonthName + ' ' + _rollGoalNextY + '</strong> savings pool.<br>' +
-      '• Keeps the funds safely within your accumulated savings reserves.';
+    msgEl.innerHTML = `• Deducts <strong>${fmt(amt)}</strong> from <strong>${escapeHtml(goalName)}</strong> (${sourceMonthName} ${_rollGoalSourceY}).<br>` +
+      `• Adds <strong>${fmt(amt)}</strong> to <strong>${destMonthName} ${_rollGoalDestY}</strong> savings (<strong>${escapeHtml(targetName)}</strong>).<br>` +
+      `• Updates ${destMonthName} ${_rollGoalDestY}'s savings allocation and available contribution balance.`;
   } else {
-    msgEl.innerHTML = '• Deducts <strong>' + fmt(amt) + '</strong> from <strong>' + escapeHtml(goalName) + '</strong>.<br>' +
-      '• Credits it as income on 1st of <strong>' + nextMonthName + ' ' + _rollGoalNextY + '</strong>.<br>' +
-      '• Increases next month\'s spending capacity and available cash flow.';
+    msgEl.innerHTML = `• Deducts <strong>${fmt(amt)}</strong> from <strong>${escapeHtml(goalName)}</strong> (${sourceMonthName} ${_rollGoalSourceY}).<br>` +
+      `• Credits <strong>${fmt(amt)}</strong> as income in <strong>${destMonthName} ${_rollGoalDestY}</strong>.<br>` +
+      `• Increases ${destMonthName} ${_rollGoalDestY}'s spending capacity and available cash flow.`;
   }
 }
 
@@ -15351,60 +15594,96 @@ function closeRollGoalIncomeModal(){
 }
 
 function executeSavingsTransfer(){
+  const btn = document.getElementById('btn-confirm-savings-transfer');
+  if(btn){ btn.disabled = true; btn.textContent = 'Transferring...'; }
+
   const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
-  if(!goal){ showToast('Goal not found', 'error'); return; }
+  if(!goal){
+    showToast('Goal not found', 'error');
+    if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
+    return;
+  }
   const inputEl = document.getElementById('roll-goal-amount-input');
-  const amt = parseFloat(inputEl?.value);
+  const amt = evaluateTxAmountInput(inputEl);
   if(!amt || amt <= 0 || amt > _rollGoalCurAmount){
     showToast('Please enter a valid amount up to ' + fmt(_rollGoalCurAmount), 'error');
+    if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
     return;
   }
 
   const dest = document.querySelector('input[name="savings-transfer-dest"]:checked')?.value || 'savings';
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const nextMonthName = SHORT_MONTHS[_rollGoalNextM - 1];
-  const dateStr = _rollGoalNextY + '-' + String(_rollGoalNextM).padStart(2, '0') + '-01';
+  const sourceMonthName = SHORT_MONTHS[_rollGoalSourceM - 1];
+  const destMonthName = SHORT_MONTHS[_rollGoalDestM - 1];
+  const lastDayOfSourceMonth = new Date(_rollGoalSourceY, _rollGoalSourceM, 0).getDate();
+  const sourceDate = _rollGoalSourceY + '-' + String(_rollGoalSourceM).padStart(2, '0') + '-' + String(lastDayOfSourceMonth).padStart(2, '0');
+  const destDate = _rollGoalDestY + '-' + String(_rollGoalDestM).padStart(2, '0') + '-01';
 
-  // 1. Outflow transaction from current goal
+  let targetGoalId = null;
+  let targetGoalName = 'Savings';
+  if(dest === 'savings'){
+    const destGoalSelect = document.getElementById('roll-goal-dest-goal');
+    if(destGoalSelect && destGoalSelect.value !== '__general__'){
+      const tg = (DB.savingsGoals || []).find(g => g.id === destGoalSelect.value);
+      if(tg){
+        targetGoalId = tg.id;
+        targetGoalName = tg.name;
+      }
+    }
+  }
+
+  // 1. Outflow transaction from source goal in source month
   const outTx = {
     id: uid(),
-    date: ymd(new Date()),
+    date: sourceDate,
     type: 'expense',
     category: 'Savings Transfer',
-    description: 'Funded from ' + goal.name + ': Transferred to ' + nextMonthName + ' ' + _rollGoalNextY + ' ' + (dest === 'savings' ? 'savings' : 'income'),
+    description: 'Funded from ' + goal.name + ': Transferred to ' + destMonthName + ' ' + _rollGoalDestY + ' ' + (dest === 'savings' ? 'savings (' + targetGoalName + ')' : 'income'),
     amount: amt,
     paymentMethod: 'Bank Transfer',
     isGoalRolloverOut: true,
     goalId: goal.id,
-    relatedGoalName: goal.name
+    relatedGoalName: goal.name,
+    fromMonth: _rollGoalSourceM,
+    fromYear: _rollGoalSourceY,
+    toMonth: _rollGoalDestM,
+    toYear: _rollGoalDestY
   };
 
-  // 2. Inflow transaction to target
+  // 2. Inflow transaction to destination in destination month
   let inTx;
   if(dest === 'savings'){
     inTx = {
       id: uid(),
-      date: dateStr,
+      date: destDate,
       type: 'savings',
-      category: 'Savings',
-      description: 'Rolled over savings from ' + goal.name,
+      category: targetGoalName,
+      description: 'Transferred savings from ' + goal.name + ' (' + sourceMonthName + ' ' + _rollGoalSourceY + ')',
       amount: amt,
       paymentMethod: 'Bank Transfer',
       isGoalRolloverIn: true,
-      goalId: goal.id
+      goalId: targetGoalId || goal.id,
+      fromMonth: _rollGoalSourceM,
+      fromYear: _rollGoalSourceY,
+      toMonth: _rollGoalDestM,
+      toYear: _rollGoalDestY
     };
   } else {
     inTx = {
       id: uid(),
-      date: dateStr,
+      date: destDate,
       type: 'income',
       category: 'Savings Transfer',
       subCategory: 'Drawdown',
-      description: 'Transferred from ' + goal.name + ' savings',
+      description: 'Transferred from ' + goal.name + ' savings (' + sourceMonthName + ' ' + _rollGoalSourceY + ')',
       amount: amt,
       paymentMethod: 'Bank Transfer',
       isGoalRolloverIn: true,
-      goalId: goal.id
+      goalId: goal.id,
+      fromMonth: _rollGoalSourceM,
+      fromYear: _rollGoalSourceY,
+      toMonth: _rollGoalDestM,
+      toYear: _rollGoalDestY
     };
   }
   outTx.relatedTxId = inTx.id;
@@ -15414,18 +15693,19 @@ function executeSavingsTransfer(){
   DB.transactions.unshift(outTx);
   DB.transactions.unshift(inTx);
 
-  // 3. Record in goalRollovers & savingsRolloverHistory
   if(!DB.goalRollovers) DB.goalRollovers = [];
   const rollRecord = {
     id: uid(),
     type: dest === 'savings' ? 'goal_to_savings' : 'goal_to_income',
     goalId: goal.id,
     goalName: goal.name,
+    targetGoalId: targetGoalId,
+    targetGoalName: targetGoalName,
     amount: amt,
-    fromMonth: savingsFilterMonth || (new Date().getMonth() + 1),
-    fromYear: savingsFilterYear || new Date().getFullYear(),
-    toMonth: _rollGoalNextM,
-    toYear: _rollGoalNextY,
+    fromMonth: _rollGoalSourceM,
+    fromYear: _rollGoalSourceY,
+    toMonth: _rollGoalDestM,
+    toYear: _rollGoalDestY,
     outTxId: outTx.id,
     inTxId: inTx.id,
     date: new Date().toISOString()
@@ -15438,7 +15718,7 @@ function executeSavingsTransfer(){
   saveDB(true);
   renderAll();
   closeSavingsTransferModal();
-  showToast('Transferred ' + fmt(amt) + ' from ' + goal.name + ' to ' + nextMonthName + ' ' + (dest === 'savings' ? 'Savings' : 'Income') + '!', 'success');
+  showToast('Transferred ' + fmt(amt) + ' from ' + goal.name + ' to ' + destMonthName + ' ' + _rollGoalDestY + ' ' + (dest === 'savings' ? 'Savings' : 'Income') + '!', 'success');
 }
 
 function executeRollGoalToIncome(){
@@ -15457,8 +15737,6 @@ function reverseGoalRollover(rolloverId){
   renderAll();
   showToast('Savings transfer reversed successfully', 'success');
 }
-
-
 /* ---------------- init ---------------- */
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
