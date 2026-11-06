@@ -1256,11 +1256,14 @@
   .notification-drawer-head { padding:18px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .notification-drawer-title { font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--ink); margin:0; display:flex; align-items:center; gap:8px; }
   .notification-drawer-body { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:12px; }
-  .notification-card { background:var(--surface-2); border:1px solid var(--line-soft); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; transition:border-color .15s ease; }
-  .notification-card.unread { border-left:3px solid var(--primary); background:var(--surface); }
-  .notification-card.priority-danger { border-left:3px solid var(--rose); }
-  .notification-card.priority-teal { border-left:3px solid var(--teal); }
-  .notification-card.priority-amber { border-left:3px solid var(--amber); }
+  .notification-card { background:var(--surface-2); border:1px solid var(--line-soft); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; transition:all .18s ease; }
+  .notification-card.unread { border-left:3.5px solid var(--primary); background:var(--surface); box-shadow:0 2px 6px rgba(15,23,42,0.04); }
+  .notification-card.unread.priority-danger { border-left-color:var(--rose); }
+  .notification-card.unread.priority-teal { border-left-color:var(--teal); }
+  .notification-card.unread.priority-amber { border-left-color:var(--amber); }
+  .notification-card.read { opacity:0.88; background:var(--surface); border:1px solid var(--line-soft); border-left:3.5px solid var(--muted-2); }
+  .notification-card.read:hover { opacity:1; }
+  .notification-card.read .notification-card-title { font-weight:500; color:var(--ink); }
   .notification-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
   .notification-card-title { font-size:13.5px; font-weight:600; color:var(--ink); margin:0; }
   .notification-card-desc { font-size:12.5px; color:var(--muted); line-height:1.45; margin:0; }
@@ -3790,8 +3793,17 @@
       <button type="button" onclick="closeNotificationDrawer()" aria-label="Close" style="background:none; border:none; color:var(--muted); font-size:18px; line-height:1; cursor:pointer; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; transition:all .15s ease;" onmouseover="this.style.color='var(--ink)'; this.style.background='var(--surface-2)';" onmouseout="this.style.color='var(--muted)'; this.style.background='none';">✕</button>
     </div>
   </div>
-  <div style="padding:10px 20px; border-bottom:1px solid var(--line-soft); background:var(--surface-2); display:flex; gap:6px;">
+  <div class="notification-month-bar" style="padding:8px 20px; background:var(--surface); border-bottom:1px solid var(--line-soft); display:flex; align-items:center; justify-content:space-between;">
+    <button type="button" class="btn-ghost" onclick="changeNotificationMonth(-1)" style="padding:2px 10px; font-size:13px; height:28px; border-radius:6px; font-weight:600; display:flex; align-items:center; gap:3px;" title="Previous Month">‹ Prev</button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span id="notif-month-label" style="font-weight:700; font-size:13px; color:var(--ink);">November 2026</span>
+      <button type="button" id="notif-jump-current-btn" onclick="resetNotificationMonthToCurrent()" class="badge badge-teal hidden" style="cursor:pointer; border:none; font-size:10px; padding:2px 7px; font-weight:600;" title="Return to current month">Current</button>
+    </div>
+    <button type="button" class="btn-ghost" onclick="changeNotificationMonth(1)" style="padding:2px 10px; font-size:13px; height:28px; border-radius:6px; font-weight:600; display:flex; align-items:center; gap:3px;" title="Next Month">Next ›</button>
+  </div>
+  <div style="padding:8px 20px; border-bottom:1px solid var(--line-soft); background:var(--surface-2); display:flex; gap:6px; align-items:center;">
     <button type="button" class="btn-chip active" id="notif-filter-all" onclick="filterNotifications('all')" style="font-size:11px; padding:3px 10px;">All</button>
+    <button type="button" class="btn-chip" id="notif-filter-unread" onclick="filterNotifications('unread')" style="font-size:11px; padding:3px 10px;">Unread</button>
     <button type="button" class="btn-chip" id="notif-filter-alerts" onclick="filterNotifications('alerts')" style="font-size:11px; padding:3px 10px;">Alerts</button>
     <button type="button" class="btn-chip" id="notif-filter-reminders" onclick="filterNotifications('reminders')" style="font-size:11px; padding:3px 10px;">Reminders</button>
   </div>
@@ -4580,6 +4592,8 @@ function ensureDemoBudgetData(){
     };
   }
   if (!Array.isArray(DB.notifications)) DB.notifications = [];
+  if (!Array.isArray(DB.readNotifications)) DB.readNotifications = [];
+  if (!Array.isArray(DB.dismissedNotifications)) DB.dismissedNotifications = [];
   if (!Array.isArray(DB.savingsRolloverHistory)) DB.savingsRolloverHistory = [];
 
   DB.categories = mergeDefaultCategories(DB.categories || {});
@@ -4664,6 +4678,8 @@ function sanitizeLoadedDB(parsed){
     }
   });
   parsed.recycleBin = parsed.recycleBin.filter(item => new Date(item.expiresAt || item.deletedAt).getTime() > Date.now());
+  parsed.readNotifications = Array.isArray(parsed.readNotifications) ? parsed.readNotifications : [];
+  parsed.dismissedNotifications = Array.isArray(parsed.dismissedNotifications) ? parsed.dismissedNotifications : [];
   if(!parsed.budgets) parsed.budgets = [];
   parsed.budgets.forEach(b => { if(b.subCategory === undefined) b.subCategory = null; });
 }
@@ -14653,7 +14669,35 @@ function renderPage(page){
 }
 
 /* ---------------- Notification Center Engine ---------------- */
+let notifSelMonth = undefined;
+let notifSelYear = undefined;
 let notificationFilter = 'all';
+
+function initNotificationMonth(){
+  const now = new Date();
+  if(notifSelMonth === undefined) notifSelMonth = now.getMonth() + 1;
+  if(notifSelYear === undefined) notifSelYear = now.getFullYear();
+}
+
+function changeNotificationMonth(delta){
+  initNotificationMonth();
+  notifSelMonth += delta;
+  if(notifSelMonth > 12){
+    notifSelMonth = 1;
+    notifSelYear++;
+  } else if(notifSelMonth < 1){
+    notifSelMonth = 12;
+    notifSelYear--;
+  }
+  renderNotifications();
+}
+
+function resetNotificationMonthToCurrent(){
+  const now = new Date();
+  notifSelMonth = now.getMonth() + 1;
+  notifSelYear = now.getFullYear();
+  renderNotifications();
+}
 
 function toggleNotificationDrawer(){
   const drawer = document.getElementById('notification-drawer');
@@ -14671,6 +14715,7 @@ function openNotificationDrawer(){
   const drawer = document.getElementById('notification-drawer');
   const backdrop = document.getElementById('notification-drawer-backdrop');
   if(!drawer) return;
+  initNotificationMonth();
   renderNotifications();
   drawer.classList.add('open');
   if(backdrop) backdrop.classList.remove('hidden');
@@ -14685,55 +14730,142 @@ function closeNotificationDrawer(){
 
 function filterNotifications(filter){
   notificationFilter = filter;
-  ['all', 'alerts', 'reminders'].forEach(f => {
+  ['all', 'unread', 'alerts', 'reminders'].forEach(f => {
     const btn = document.getElementById('notif-filter-' + f);
     if(btn) btn.classList.toggle('active', f === filter);
   });
   renderNotifications();
 }
 
-function getSystemNotifications(){
-  const list = [];
+function isNotificationRead(id){
+  if (!DB.readNotifications || !Array.isArray(DB.readNotifications)) DB.readNotifications = [];
+  const baseId = id.replace(/-[0-9]{4}-[0-9]{1,2}$/, '');
+  return DB.readNotifications.includes(id) || DB.readNotifications.includes(baseId);
+}
+
+function markNotificationRead(id){
+  if (!DB.readNotifications || !Array.isArray(DB.readNotifications)) DB.readNotifications = [];
+  if (!DB.readNotifications.includes(id)) DB.readNotifications.push(id);
+  saveDB(true);
+  renderNotifications();
+}
+
+function markNotificationUnread(id){
+  if (!DB.readNotifications || !Array.isArray(DB.readNotifications)) DB.readNotifications = [];
+  const baseId = id.replace(/-[0-9]{4}-[0-9]{1,2}$/, '');
+  DB.readNotifications = DB.readNotifications.filter(x => x !== id && x !== baseId);
+  saveDB(true);
+  renderNotifications();
+}
+
+function toggleNotificationRead(id){
+  if (isNotificationRead(id)){
+    markNotificationUnread(id);
+    showToast('Marked alert as unread');
+  } else {
+    markNotificationRead(id);
+    showToast('Marked alert as read', 'success');
+  }
+}
+
+function formatNotifDate(dateStr){
+  if(!dateStr) return '';
+  try {
+    const parts = dateStr.split('-');
+    if(parts.length === 3){
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      const d = parseInt(parts[2], 10);
+      const shortM = SHORT_MONTH_NAMES[m - 1] || '';
+      return `${shortM} ${d}, ${y}`;
+    }
+  } catch(e){}
+  return dateStr;
+}
+
+function getSystemNotifications(targetMonth, targetYear){
   const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
-  const todayStr = ymd(now);
+  const m = targetMonth || (notifSelMonth !== undefined ? notifSelMonth : (now.getMonth() + 1));
+  const y = targetYear || (notifSelYear !== undefined ? notifSelYear : now.getFullYear());
   const cfg = DB.notificationSettings || {};
   const dismissed = new Set(DB.dismissedNotifications || []);
+  const list = [];
 
-  // 1. Budget Alerts
+  const isCurrentOrFuture = (y > now.getFullYear()) || (y === now.getFullYear() && m >= now.getMonth() + 1);
+
+  const monthStartStr = `${y}-${String(m).padStart(2, '0')}-01`;
+  const monthEndDay = new Date(y, m, 0).getDate();
+  const monthEndStr = `${y}-${String(m).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`;
+
+  // 1. Budget Alerts for Month m, Year y
   if(cfg.budgetAlerts !== false){
-    const currentBudgets = (DB.budgets || []).filter(b => b.month === currentMonth && b.year === currentYear);
-    const chartTxs = (DB.transactions || []).filter(t => inMonth(t, currentMonth, currentYear) && t.type === 'expense');
-    const catNames = [...new Set(currentBudgets.map(b => b.category))];
+    const budgetsForMonth = (DB.budgets || []).filter(b => b.month === m && b.year === y);
+    const expensesForMonth = (DB.transactions || []).filter(t => inMonth(t, m, y) && t.type === 'expense');
+    const catNames = [...new Set(budgetsForMonth.map(b => b.category))];
+
     catNames.forEach(cat => {
-      const main = currentBudgets.find(b => b.category === cat && !b.subCategory);
-      const subs = currentBudgets.filter(b => b.category === cat && b.subCategory);
+      const main = budgetsForMonth.find(b => b.category === cat && !b.subCategory);
+      const subs = budgetsForMonth.filter(b => b.category === cat && b.subCategory);
       const budgetAmt = main ? main.budgetAmount : subs.reduce((s, r) => s + r.budgetAmount, 0);
-      const spent = chartTxs.filter(t => t.category === cat).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+
+      const catTxs = expensesForMonth
+        .filter(t => t.category === cat)
+        .slice()
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+      const spent = catTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+
       if(budgetAmt > 0 && spent > budgetAmt){
         const overBy = spent - budgetAmt;
-        const id = 'notif-budget-' + cat;
-        if(!dismissed.has(id)){
+        const id = `notif-budget-${cat}-${y}-${m}`;
+        const baseId = `notif-budget-${cat}`;
+        if(!dismissed.has(id) && !dismissed.has(baseId)){
+          let running = 0;
+          let eventDate = catTxs.length ? catTxs[catTxs.length - 1].date : monthStartStr;
+          for(const tx of catTxs){
+            running += (parseFloat(tx.amount) || 0);
+            if(running > budgetAmt){
+              eventDate = tx.date;
+              break;
+            }
+          }
           list.push({
             id: id,
             type: 'alert',
             priority: 'danger',
             title: 'Budget Exceeded: ' + cat,
-            desc: 'Spending (' + fmt(spent) + ') has exceeded your ' + fmt(budgetAmt) + ' limit by ' + fmt(overBy) + '.',
+            desc: 'Spending (' + fmt(spent) + ') exceeded your ' + fmt(budgetAmt) + ' limit by ' + fmt(overBy) + '.',
+            date: eventDate,
+            month: m,
+            year: y,
+            read: isNotificationRead(id),
             actionLabel: 'View Budgets',
             actionFn: "goToApp('budgets'); closeNotificationDrawer();"
           });
         }
       } else if(budgetAmt > 0 && spent >= budgetAmt * 0.85){
-        const id = 'notif-budget-warn-' + cat;
-        if(!dismissed.has(id)){
+        const id = `notif-budget-warn-${cat}-${y}-${m}`;
+        const baseId = `notif-budget-warn-${cat}`;
+        if(!dismissed.has(id) && !dismissed.has(baseId)){
+          let running = 0;
+          let eventDate = catTxs.length ? catTxs[catTxs.length - 1].date : monthStartStr;
+          for(const tx of catTxs){
+            running += (parseFloat(tx.amount) || 0);
+            if(running >= budgetAmt * 0.85){
+              eventDate = tx.date;
+              break;
+            }
+          }
           list.push({
             id: id,
             type: 'alert',
             priority: 'amber',
             title: 'Budget Warning: ' + cat,
-            desc: 'Spending (' + fmt(spent) + ') is at ' + Math.round((spent/budgetAmt)*100) + '% of your ' + fmt(budgetAmt) + ' limit.',
+            desc: 'Spending (' + fmt(spent) + ') reached ' + Math.round((spent/budgetAmt)*100) + '% of your ' + fmt(budgetAmt) + ' limit.',
+            date: eventDate,
+            month: m,
+            year: y,
+            read: isNotificationRead(id),
             actionLabel: 'View Budgets',
             actionFn: "goToApp('budgets'); closeNotificationDrawer();"
           });
@@ -14742,20 +14874,28 @@ function getSystemNotifications(){
     });
   }
 
-  // 2. Company Benefits Surplus Alerts
+  // 2. Company Benefits Surplus Alerts for Month m, Year y
   if(cfg.benefitsAlerts !== false){
     (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
       const avail = computeAllowanceAvailable(acc);
-      const cycleEnded = acc.endDate ? (acc.endDate <= todayStr) : (now.getDate() >= 25);
+      const cycleEnded = acc.endDate ? (acc.endDate <= monthEndStr) : (!isCurrentOrFuture || now.getDate() >= 25);
       if(avail > 0 && cycleEnded){
-        const id = 'notif-benefit-surplus-' + acc.id;
-        if(!dismissed.has(id)){
+        const id = `notif-benefit-surplus-${acc.id}-${y}-${m}`;
+        const baseId = `notif-benefit-surplus-${acc.id}`;
+        if(!dismissed.has(id) && !dismissed.has(baseId)){
+          const eventDate = acc.endDate && acc.endDate.startsWith(`${y}-${String(m).padStart(2,'0')}`)
+            ? acc.endDate
+            : `${y}-${String(m).padStart(2, '0')}-25`;
           list.push({
             id: id,
             type: 'alert',
             priority: 'teal',
             title: 'Surplus Allowance: ' + acc.name,
             desc: 'You have ' + fmt(avail) + ' unspent quota available. Transfer it to your personal Income or Savings Goal!',
+            date: eventDate,
+            month: m,
+            year: y,
+            read: isNotificationRead(id),
             actionLabel: 'Transfer Quota',
             actionFn: "openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
           });
@@ -14770,34 +14910,48 @@ function getSystemNotifications(){
       const cur = getGoalCurrentAmount(g);
       const reached = cur >= g.targetAmount;
       if(reached){
-        const id = 'notif-goal-reached-' + g.id;
-        if(!dismissed.has(id)){
+        const id = `notif-goal-reached-${g.id}-${y}-${m}`;
+        const baseId = `notif-goal-reached-${g.id}`;
+        if(!dismissed.has(id) && !dismissed.has(baseId)){
+          const goalTxs = (DB.transactions || [])
+            .filter(t => t.type === 'savings' && (t.savingsGoal === g.name || (t.category && t.category.includes(g.name))))
+            .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+          const lastTx = goalTxs.length ? goalTxs[goalTxs.length - 1] : null;
+          const eventDate = (lastTx && lastTx.date && lastTx.date.startsWith(`${y}-${String(m).padStart(2,'0')}`))
+            ? lastTx.date
+            : `${y}-${String(m).padStart(2,'0')}-15`;
+
           list.push({
             id: id,
             type: 'reminder',
             priority: 'teal',
             title: 'Goal Achieved: ' + g.name,
             desc: 'Congratulations! You reached your savings target of ' + fmt(g.targetAmount) + '.',
+            date: eventDate,
+            month: m,
+            year: y,
+            read: isNotificationRead(id),
             actionLabel: 'View Goals',
             actionFn: "goToApp('savings'); closeNotificationDrawer();"
           });
         }
-      } else if(g.deadline){
-        const dDate = new Date(g.deadline + 'T00:00:00');
-        const diffDays = Math.ceil((dDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        if(diffDays >= 0 && diffDays <= 7){
-          const id = 'notif-goal-deadline-' + g.id;
-          if(!dismissed.has(id)){
-            list.push({
-              id: id,
-              type: 'alert',
-              priority: 'amber',
-              title: 'Goal Deadline Approaching: ' + g.name,
-              desc: 'Target date is in ' + diffDays + ' day' + (diffDays === 1 ? '' : 's') + '. You have ' + fmt(Math.max(0, g.targetAmount - cur)) + ' remaining.',
-              actionLabel: 'Contribute',
-              actionFn: "goToApp('savings'); closeNotificationDrawer();"
-            });
-          }
+      } else if(g.deadline && g.deadline.startsWith(`${y}-${String(m).padStart(2,'0')}`)){
+        const id = `notif-goal-deadline-${g.id}-${y}-${m}`;
+        const baseId = `notif-goal-deadline-${g.id}`;
+        if(!dismissed.has(id) && !dismissed.has(baseId)){
+          list.push({
+            id: id,
+            type: 'alert',
+            priority: 'amber',
+            title: 'Goal Deadline Approaching: ' + g.name,
+            desc: 'Target date is ' + g.deadline + '. You have ' + fmt(Math.max(0, g.targetAmount - cur)) + ' remaining to reach your goal.',
+            date: g.deadline,
+            month: m,
+            year: y,
+            read: isNotificationRead(id),
+            actionLabel: 'Contribute',
+            actionFn: "goToApp('savings'); closeNotificationDrawer();"
+          });
         }
       }
     });
@@ -14806,10 +14960,11 @@ function getSystemNotifications(){
   // 4. Monthly Savings Carry-Forward Prompt (Always Ask Me)
   const rolloverMode = cfg.rolloverMode ?? 'prompt';
   if(rolloverMode !== 'off'){
-    const prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0);
-    const prevM = prevMonthDate.getMonth() + 1;
-    const prevY = prevMonthDate.getFullYear();
+    let prevM = m - 1;
+    let prevY = y;
+    if(prevM < 1){ prevM = 12; prevY--; }
     const prevMonthKey = prevY + '-' + String(prevM).padStart(2, '0');
+
     if(!DB.savingsRolloverHistory) DB.savingsRolloverHistory = [];
     if(!DB.savingsRolloverHistory.includes(prevMonthKey)){
       const prevTotals = monthTotals(DB.transactions, prevM, prevY);
@@ -14826,6 +14981,10 @@ function getSystemNotifications(){
             priority: 'teal',
             title: 'Unallocated Surplus from ' + MONTH_NAMES[prevM - 1],
             desc: "You have " + fmt(unallocated) + " remaining from " + MONTH_NAMES[prevM - 1] + ". Carry it forward to this month's income or allocate to a savings goal!",
+            date: `${y}-${String(m).padStart(2, '0')}-01`,
+            month: m,
+            year: y,
+            read: isNotificationRead(id),
             actionLabel: 'Carry Forward',
             actionFn: "openCarryForwardModal(" + unallocated + ", " + prevM + ", " + prevY + "); closeNotificationDrawer();"
           });
@@ -14834,52 +14993,113 @@ function getSystemNotifications(){
     }
   }
 
+  // Sort: unread first, then latest date first
+  list.sort((a, b) => {
+    if (a.read !== b.read) return a.read ? 1 : -1;
+    return (b.date || '').localeCompare(a.date || '');
+  });
+
   return list;
 }
 
 function renderNotifications(){
+  initNotificationMonth();
   const container = document.getElementById('notification-list');
   const countBadge = document.getElementById('notification-drawer-count');
+  const monthLabel = document.getElementById('notif-month-label');
+  const jumpBtn = document.getElementById('notif-jump-current-btn');
 
-  const allNotifs = getSystemNotifications();
-  const filtered = allNotifs.filter(n => {
+  const now = new Date();
+  const curM = now.getMonth() + 1;
+  const curY = now.getFullYear();
+
+  if(monthLabel){
+    monthLabel.textContent = `${MONTH_NAMES[notifSelMonth - 1]} ${notifSelYear}`;
+  }
+  if(jumpBtn){
+    const isCurrent = (notifSelMonth === curM && notifSelYear === curY);
+    jumpBtn.classList.toggle('hidden', isCurrent);
+  }
+
+  const monthNotifs = getSystemNotifications(notifSelMonth, notifSelYear);
+  const unreadInMonth = monthNotifs.filter(n => !n.read).length;
+
+  if(countBadge){
+    countBadge.textContent = unreadInMonth;
+    countBadge.className = 'badge ' + (unreadInMonth > 0 ? 'badge-over' : 'badge-ok');
+  }
+
+  // Update topbar bell badge across all pages with global current month unread count
+  const currentMonthNotifs = (notifSelMonth === curM && notifSelYear === curY)
+    ? monthNotifs
+    : getSystemNotifications(curM, curY);
+  const totalUnreadNow = currentMonthNotifs.filter(n => !n.read).length;
+
+  document.querySelectorAll('.notification-badge, [id="topbar-bell-badge"]').forEach(badge => {
+    badge.textContent = totalUnreadNow;
+    badge.classList.toggle('hidden', totalUnreadNow === 0);
+  });
+
+  if(!container) return;
+
+  const filtered = monthNotifs.filter(n => {
+    if(notificationFilter === 'unread') return !n.read;
     if(notificationFilter === 'alerts') return n.type === 'alert';
     if(notificationFilter === 'reminders') return n.type === 'reminder';
     return true;
   });
 
-  const count = allNotifs.length;
-  if(countBadge) countBadge.textContent = count;
-  
-  // Update ALL bell badges across all pages
-  document.querySelectorAll('.notification-badge, [id="topbar-bell-badge"]').forEach(badge => {
-    badge.textContent = count;
-    badge.classList.toggle('hidden', count === 0);
-  });
-
-  if(!container) return;
-
   if(!filtered.length){
-    container.innerHTML = `
-      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 16px; color:var(--muted);">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="opacity:0.5; margin-bottom:10px;"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-        <strong style="font-size:14px; color:var(--ink);">All Caught Up!</strong>
-        <p class="text-xs muted" style="margin:4px 0 0;">No active alerts or pending reminders.</p>
-      </div>
-    `;
+    if(notificationFilter === 'unread' && monthNotifs.length > 0){
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:44px 16px; color:var(--muted);">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="opacity:0.6; margin-bottom:12px; color:var(--teal);"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <strong style="font-size:14px; color:var(--ink);">All Caught Up!</strong>
+          <p class="text-xs muted" style="margin:4px 0 12px;">All ${monthNotifs.length} alert${monthNotifs.length===1?'':'s'} for ${MONTH_NAMES[notifSelMonth - 1]} ${notifSelYear} have been read.</p>
+          <button type="button" class="btn-ghost" style="padding:4px 12px; font-size:12px;" onclick="filterNotifications('all')">Show All Alerts</button>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:44px 16px; color:var(--muted);">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="opacity:0.4; margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <strong style="font-size:14px; color:var(--ink);">No Alerts for ${MONTH_NAMES[notifSelMonth - 1]} ${notifSelYear}</strong>
+          <p class="text-xs muted" style="margin:4px 0 0;">No active alerts or reminders were recorded for this period.</p>
+        </div>
+      `;
+    }
     return;
   }
 
   container.innerHTML = filtered.map(n => `
-    <div class="notification-card unread priority-${n.priority}">
+    <div class="notification-card ${n.read ? 'read' : 'unread'} priority-${n.priority}" id="card-${n.id}">
       <div class="notification-card-header">
-        <h4 class="notification-card-title">${escapeHtml(n.title)}</h4>
-        <span class="badge ${n.priority==='danger'?'badge-over':(n.priority==='amber'?'badge-off':'badge-ok')}" style="font-size:10.5px; font-weight:700;">${n.type.toUpperCase()}</span>
+        <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:0;">
+          <h4 class="notification-card-title" style="white-space:normal; word-break:break-word;">${escapeHtml(n.title)}</h4>
+          <div class="notification-card-date" style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--muted); font-weight:500; margin-top:1px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.75;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>${formatNotifDate(n.date)}</span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+          ${n.read ? `
+            <span class="badge" style="background:var(--line-soft); color:var(--muted); font-size:10px; font-weight:700; padding:2px 6px; border:1px solid var(--line);">READ</span>
+          ` : `
+            <span class="badge ${n.priority==='danger'?'badge-over':(n.priority==='amber'?'badge-off':'badge-ok')}" style="font-size:10px; font-weight:700; padding:2px 6px;">NEW</span>
+          `}
+        </div>
       </div>
-      <p class="notification-card-desc">${escapeHtml(n.desc)}</p>
-      <div class="notification-card-actions">
-        ${n.actionLabel ? `<button type="button" class="btn-primary" style="padding:4px 12px; font-size:11.5px; height:28px;" onclick="${n.actionFn}">${escapeHtml(n.actionLabel)}</button>` : ''}
-        <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:11.5px; height:28px;" onclick="dismissNotification('${n.id}')">Dismiss</button>
+      <p class="notification-card-desc" style="white-space:normal; word-break:break-word;">${escapeHtml(n.desc)}</p>
+      <div class="notification-card-actions" style="display:flex; align-items:center; justify-content:space-between; margin-top:6px; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          ${n.actionLabel ? `<button type="button" class="btn-primary" style="padding:4px 12px; font-size:11.5px; height:28px;" onclick="${n.actionFn}">${escapeHtml(n.actionLabel)}</button>` : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:11.5px; height:28px;" onclick="toggleNotificationRead('${n.id}')" title="${n.read ? 'Mark as Unread' : 'Mark as Read'}">
+            ${n.read ? 'Mark Unread' : 'Mark Read'}
+          </button>
+          <button type="button" onclick="dismissNotification('${n.id}')" style="background:none; border:none; color:var(--muted); cursor:pointer; padding:4px 6px; font-size:13px; line-height:1; border-radius:4px;" title="Dismiss permanently" onmouseover="this.style.color='var(--rose)';" onmouseout="this.style.color='var(--muted)';">✕</button>
+        </div>
       </div>
     </div>
   `).join('');
@@ -14893,27 +15113,28 @@ function dismissNotification(id){
 }
 
 function markAllNotificationsRead(){
-  const allNotifs = getSystemNotifications();
-  if(!DB.dismissedNotifications) DB.dismissedNotifications = [];
-  allNotifs.forEach(n => {
-    if(!DB.dismissedNotifications.includes(n.id)) DB.dismissedNotifications.push(n.id);
+  initNotificationMonth();
+  const monthNotifs = getSystemNotifications(notifSelMonth, notifSelYear);
+  if(!DB.readNotifications) DB.readNotifications = [];
+  monthNotifs.forEach(n => {
+    if(!DB.readNotifications.includes(n.id)) DB.readNotifications.push(n.id);
   });
   saveDB(true);
   renderNotifications();
-  showToast('All notifications marked as read', 'success');
+  showToast('Marked all alerts as read for ' + MONTH_NAMES[notifSelMonth - 1] + ' ' + notifSelYear, 'success');
 }
 
 function clearAllNotifications(){
-  const allNotifs = getSystemNotifications();
+  initNotificationMonth();
+  const monthNotifs = getSystemNotifications(notifSelMonth, notifSelYear);
   if(!DB.dismissedNotifications) DB.dismissedNotifications = [];
-  allNotifs.forEach(n => {
+  monthNotifs.forEach(n => {
     if(!DB.dismissedNotifications.includes(n.id)) DB.dismissedNotifications.push(n.id);
   });
   saveDB(true);
   renderNotifications();
-  showToast('Notifications cleared');
+  showToast('Notifications cleared for ' + MONTH_NAMES[notifSelMonth - 1] + ' ' + notifSelYear);
 }
-
 
 function executeSavingsRollover(amount, monthKey){
   if(!amount || amount <= 0) return;
@@ -14951,9 +15172,9 @@ function openTxModalWithGoal(goalName){
 }
 
 function renderAllForCurrentPage(){
-  if(typeof renderNotifications === "function") renderNotifications(); renderPage(currentPage); }
-
-
+  if(typeof renderNotifications === "function") renderNotifications();
+  renderPage(currentPage);
+}
 /* ============================================================
    CARRY-FORWARD BALANCE & GOAL-TO-INCOME ROLLOVER WORKFLOW
    ============================================================ */
