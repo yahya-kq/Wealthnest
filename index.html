@@ -830,15 +830,21 @@
   .month-select-row select:focus{outline:none;}
   /* Budget Category Box-type Cards Grid */
   #budgets-rows{display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:16px; align-items:start;}
-  .subcat-card{padding:9px 11px; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface-2); margin-top:6px; transition:border-color .15s ease;}
+  .subcat-card{padding:10px 12px; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface-2); margin-top:6px; transition:all .2s ease;}
+  .subcat-card.on-track{border:1px solid var(--line-soft); box-shadow:none;}
+  .subcat-card.warning-zero{border:1px solid rgba(217, 119, 6, 0.45); box-shadow:0 0 14px -3px rgba(217, 119, 6, 0.12);}
+  .subcat-card.warning-over{border:1px solid rgba(225, 29, 72, 0.45); box-shadow:0 0 14px -3px rgba(225, 29, 72, 0.14);}
   .subcat-card:hover{border-color:var(--line);}
   @media(max-width:600px){ #budgets-rows{grid-template-columns:1fr;} }
 
-  .budget-box-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color .15s ease, box-shadow .15s ease; display:flex; flex-direction:column;}
+  .budget-box-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:all .2s ease; display:flex; flex-direction:column;}
+  .budget-box-card.on-track{border:1px solid var(--line); box-shadow:0 1px 3px rgba(0,0,0,0.03);}
+  .budget-box-card.warning-zero{border:1px solid rgba(217, 119, 6, 0.45); box-shadow:0 0 18px -3px rgba(217, 119, 6, 0.12), 0 2px 8px rgba(0,0,0,0.03);}
+  .budget-box-card.warning-over{border:1px solid rgba(225, 29, 72, 0.45); box-shadow:0 0 18px -3px rgba(225, 29, 72, 0.14), 0 2px 8px rgba(0,0,0,0.03);}
   .budget-box-card:hover{border-color:var(--line-strong, #CBD5E1); box-shadow:0 4px 14px rgba(0,0,0,0.06);}
 
   .bbc-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px;}
-  .bbc-title{font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bbc-title{font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--ink); word-break:break-word; line-height:1.25;}
   .bbc-body{margin-bottom:8px;}
   .bbc-footer{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px;}
   .bbc-subcat-btn{background:var(--surface-2); border:1px solid var(--line-soft); border-radius:7px; padding:4px 9px; font-size:11.5px; font-weight:600; color:var(--muted); cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:background .15s, color .15s;}
@@ -2803,7 +2809,7 @@
   </div>
 </div>
 
-<div id="subcat-modal-backdrop" class="modal-backdrop hidden">
+<div id="subcat-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSubcatModal()">
   <div class="modal" style="max-width:380px;">
     <button class="modal-close" onclick="closeSubcatModal()">✕</button>
     <h2>Subcategories <span id="subcat-modal-parent" class="breadcrumb-tag"></span></h2>
@@ -2815,7 +2821,7 @@
   </div>
 </div>
 
-<div id="budget-subcat-modal-backdrop" class="modal-backdrop hidden">
+<div id="budget-subcat-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeBudgetSubcatModal()">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeBudgetSubcatModal()">✕</button>
     <h2>Add Subcategory Budget <span id="budget-subcat-modal-parent" class="breadcrumb-tag"></span></h2>
@@ -4682,6 +4688,47 @@ function sanitizeLoadedDB(parsed){
   parsed.dismissedNotifications = Array.isArray(parsed.dismissedNotifications) ? parsed.dismissedNotifications : [];
   if(!parsed.budgets) parsed.budgets = [];
   parsed.budgets.forEach(b => { if(b.subCategory === undefined) b.subCategory = null; });
+
+  // Ensure 'Savings Transfer' is pre-registered in income categories so it never shows [Deleted]
+  if(parsed.categories && Array.isArray(parsed.categories.income)){
+    if(!parsed.categories.income.includes('Savings Transfer')){
+      parsed.categories.income.push('Savings Transfer');
+    }
+  }
+
+  // Sanitize legacy fake 'expense' rollover outflow transactions that distorted monthly expenses and dashboard net balance
+  if(Array.isArray(parsed.transactions)){
+    parsed.transactions = parsed.transactions.filter(t => {
+      if(t.type === 'expense' && (t.isGoalRolloverOut || (t.category === 'Savings Transfer' && (t.description || '').startsWith('Funded from')))){
+        return false;
+      }
+      return true;
+    });
+
+    // Deduplicate any repeated rollover in transactions caused by button hang
+    const seenRollIn = new Set();
+    parsed.transactions = parsed.transactions.filter(t => {
+      if(t.isGoalRolloverIn && t.fromMonth && t.fromYear && t.toMonth && t.toYear && t.goalId){
+        const rollKey = t.type + '_' + t.goalId + '_' + t.fromYear + '-' + t.fromMonth + '_' + t.toYear + '-' + t.toMonth + '_' + t.amount;
+        if(seenRollIn.has(rollKey)){
+          return false;
+        }
+        seenRollIn.add(rollKey);
+      }
+      return true;
+    });
+  }
+
+  // Deduplicate DB.goalRollovers if any
+  if(Array.isArray(parsed.goalRollovers)){
+    const seenRollRecord = new Set();
+    parsed.goalRollovers = parsed.goalRollovers.filter(r => {
+      const k = r.type + '_' + r.goalId + '_' + r.fromYear + '-' + r.fromMonth + '_' + r.toYear + '-' + r.toMonth + '_' + r.amount;
+      if(seenRollRecord.has(k)) return false;
+      seenRollRecord.add(k);
+      return true;
+    });
+  }
 }
 
 function loadDB(){
@@ -9673,7 +9720,7 @@ function renderTransactions(){
   }
 
   const activeExpenseMap = new Map((DB.categories.expense || []).map(c => [c.name, c.subcategories || []]));
-  const activeIncomeSet = new Set(DB.categories.income || []);
+  const activeIncomeSet = new Set([...(DB.categories.income || []), 'Savings Transfer', 'Savings Rollover']);
   const activeSavingsSet = new Set((DB.savingsGoals || []).map(g => g.name));
 
   // Count unassigned/missing/deleted subcategories among expense transactions
@@ -9953,6 +10000,16 @@ function confirmDelete(){
   recordDeletion(type, activityLabel, restorePayload);
 
   if(type === 'transaction') {
+    const deletedTx = (DB.transactions || []).find(item => item.id === value);
+    if(deletedTx && deletedTx.isGoalRolloverIn){
+      // Deleting a transferred savings/income transaction cleans up the rollover and restores the source goal balance
+      if(Array.isArray(DB.goalRollovers)){
+        DB.goalRollovers = DB.goalRollovers.filter(r => r.inTxId !== value);
+      }
+      if(Array.isArray(DB.savingsRolloverHistory)){
+        DB.savingsRolloverHistory = DB.savingsRolloverHistory.filter(r => r.inTxId !== value);
+      }
+    }
     DB.transactions = DB.transactions.filter(transaction => transaction.id !== value);
     if(Array.isArray(DB.savingsGoals)){
       DB.savingsGoals.forEach(g => { g.currentAmount = getGoalCurrentAmount(g); });
@@ -10393,7 +10450,6 @@ function jumpBudgetsToMonth(month, year){
 }
 function toggleCatBlock(catName){
   if(openBudgetCategories.has(catName)){ openBudgetCategories.delete(catName); } else { openBudgetCategories.add(catName); }
-  openBudgetCategory = catName;
   renderBudgets();
 }
 function renderBudgets(){
@@ -10472,7 +10528,7 @@ function renderBudgets(){
   const rowsContainer = document.getElementById('budgets-rows');
   if(rowsContainer){
     rowsContainer.innerHTML = catCards.length ? catCards.map((b, idx) => {
-      const isOpen = openBudgetCategories.has(b.category) || openBudgetCategory === b.category;
+      const isOpen = openBudgetCategories.has(b.category);
       const catObj = findExpenseCategory(b.category);
       const allSubs = catObj ? catObj.subcategories : [];
       const usedSubs = new Set();
@@ -10480,78 +10536,86 @@ function renderBudgets(){
         (s.subCategory || '').split(',').forEach(sub => usedSubs.add(sub.trim()));
       });
       const availableSubs = allSubs.filter(s=>!usedSubs.has(s));
-      const catColor = catPalette[idx % catPalette.length];
-      const barClass = b.overspent ? 'fill-rose' : (b.percent >= 80 ? 'fill-amber' : 'fill-teal');
+      
+      // Independent category status: warning only if category itself is zero or exceeded
+      const isCatOver = b.budgetAmount > 0 && b.spent > b.budgetAmount;
+      const isCatZero = b.budgetAmount > 0 && b.remaining === 0;
+      const cardWarningClass = isCatOver ? 'warning-over' : (isCatZero ? 'warning-zero' : 'on-track');
+      const barClass = isCatOver ? 'fill-rose' : (b.percent >= 80 ? 'fill-amber' : 'fill-teal');
 
       return `
-      <div class="budget-box-card draggable-item" draggable="true" data-reorder-group="budgets-cat" data-reorder-key="${escapeHtml(b.category)}" style="border-top:3.5px solid ${catColor};">
-        <!-- Card Header (Clean title without dot icon) -->
+      <div class="budget-box-card ${cardWarningClass} draggable-item" draggable="true" data-reorder-group="budgets-cat" data-reorder-key="${escapeHtml(b.category)}">
+        <!-- Card Header (Clean title without dot icon, wraps gracefully) -->
         <div class="bbc-head">
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             ${dragHandleHtml()}
             <span class="bbc-title" title="${escapeHtml(b.category)}">${escapeHtml(b.category)}</span>
-            ${b.overspent ? '<span class="badge badge-over">Over</span>' : '<span class="badge badge-ok">On track</span>'}
+            ${isCatOver ? '<span class="badge badge-over">Over</span>' : (isCatZero ? '<span class="badge badge-off">Limit Reached</span>' : '<span class="badge badge-ok">On track</span>')}
           </div>
           <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
-            ${reorderArrowsHtml('budgets-cat', b.category, idx === 0, idx === catCards.length - 1)}
             ${b.hasMainBudget ? `
               <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit category budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\\\\'")} category budget')" title="Delete category budget" aria-label="Delete ${b.category} budget">✕</button>
+              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\'")} category budget')" title="Delete category budget" aria-label="Delete ${b.category} budget">✕</button>
             ` : (b.subRows.length === 1 ? `
               <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.subRows[0].id}')" title="Edit subcategory budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.subRows[0].id}','${b.category.replace(/'/g,"\\\\\'")} / ${b.subRows[0].subCategory} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
+              <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.subRows[0].id}','${b.category.replace(/'/g,"\\'")} / ${b.subRows[0].subCategory} budget')" title="Delete budget" aria-label="Delete ${b.category} budget">✕</button>
             ` : '')}
           </div>
         </div>
 
         <!-- Main Numbers & Progress -->
         <div class="bbc-body">
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
             <span class="figure" style="font-size:15px; font-weight:700; color:var(--ink);">
               ${fmt(b.spent)} <span class="muted" style="font-size:12.5px; font-weight:500;">/ ${fmt(b.budgetAmount)}</span>
             </span>
             <span style="font-size:12px; font-weight:600;">
-              ${b.overspent ? `<span style="color:var(--rose);">Over by ${fmt(b.spent - b.budgetAmount)}</span>` : `<span class="muted figure">${fmt(b.remaining)} remaining</span>`}
+              ${isCatOver ? `<span style="color:var(--rose);">Over by ${fmt(b.spent - b.budgetAmount)}</span>` : `<span class="muted figure">${fmt(b.remaining)} remaining</span>`}
             </span>
           </div>
           <div class="progress-track" style="height:6px; margin-bottom:6px;"><div class="progress-fill ${barClass}" style="width:${Math.min(100, b.percent)}%;"></div></div>
+          
+          <!-- Total Category Spending Line (Budgeted & Unbudgeted combined) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; font-size:11.5px; color:var(--muted);">
+            <span>Total Category Spending:</span>
+            <span class="figure" style="font-weight:600; color:var(--ink);">${fmt(b.totalCategorySpent)}</span>
+          </div>
         </div>
 
-        <!-- Footer: Subcategories Dropdown Toggle & Action Buttons -->
-        <div class="bbc-footer">
+        <!-- Footer: Clean Subcategories Expand/Collapse & + Add Subcategory (Category Limit removed) -->
+        <div class="bbc-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--line-soft);">
           ${b.subRows.length ? `
-            <button type="button" class="bbc-subcat-btn" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\\\\'")}');">
+            <button type="button" class="bbc-subcat-toggle-btn" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\'")}');" title="${isOpen ? 'Collapse' : 'Expand'} subcategories" style="display:inline-flex; align-items:center; gap:5px; background:none; border:none; padding:4px 0; color:var(--ink); font-size:12px; font-weight:600; cursor:pointer;">
               <span>${b.subRows.length} Subcategor${b.subRows.length === 1 ? 'y' : 'ies'}</span>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?180:0}deg); transition:transform .2s ease;"><polyline points="6 9 12 15 18 9"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transform:rotate(${isOpen?180:0}deg); transition:transform .2s ease;"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
           ` : '<span></span>'}
           <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
-            ${!b.hasMainBudget ? `
-              <button class="btn-small" onclick="openSetCategoryLimitModal('${b.category.replace(/'/g,"\\\\\'")}');" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; font-weight:600;">+ Category Limit</button>
-            ` : ''}
             ${availableSubs.length ? `
-              <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\\\\'")}');" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; font-weight:600;">+ Add Subcategory</button>
+              <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\'")}');" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; font-weight:600;">+ Add Subcategory</button>
             ` : ''}
           </div>
         </div>
 
-        <!-- Dropdown Content: Clean, Spacious Subcategory Cards (No collisions) -->
+        <!-- Dropdown Content: Independent Subcategory Cards -->
         ${isOpen && b.subRows.length ? `
-          <div class="bbc-subcat-list">
+          <div class="bbc-subcat-list" style="margin-top:8px;">
             ${b.subRows.map((s, sIdx) => {
               const sRem = s.budgetAmount - s.spent;
-              const sBar = s.overspent ? 'fill-rose' : (s.percent >= 80 ? 'fill-amber' : 'fill-teal');
+              const sIsOver = s.budgetAmount > 0 && s.spent > s.budgetAmount;
+              const sIsZero = s.budgetAmount > 0 && sRem === 0;
+              const sCardClass = sIsOver ? 'warning-over' : (sIsZero ? 'warning-zero' : 'on-track');
+              const sBar = sIsOver ? 'fill-rose' : (s.percent >= 80 ? 'fill-amber' : 'fill-teal');
               return `
-              <div class="subcat-card draggable-item" draggable="true" data-reorder-group="budgets-subcat" data-reorder-parent="${escapeHtml(b.category)}" data-reorder-key="${escapeHtml(s.id)}">
+              <div class="subcat-card ${sCardClass} draggable-item" draggable="true" data-reorder-group="budgets-subcat" data-reorder-parent="${escapeHtml(b.category)}" data-reorder-key="${escapeHtml(s.id)}">
                 <!-- Subcat Top: Title + Status Badge & Actions -->
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px;">
                   <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
                     ${dragHandleHtml()}
-                    <span style="font-weight:600; font-size:12.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(s.subCategory)}">${escapeHtml(s.subCategory)}</span>
+                    <span style="font-weight:600; font-size:12.5px; color:var(--ink); word-break:break-word;" title="${escapeHtml(s.subCategory)}">${escapeHtml(s.subCategory)}</span>
                   </div>
                   <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
-                    ${s.overspent ? '<span class="badge badge-over" style="font-size:9.5px; padding:1px 5px;">Over</span>' : '<span class="badge badge-ok" style="font-size:9.5px; padding:1px 5px;">On track</span>'}
-                    ${reorderArrowsHtml('budgets-subcat', s.id, sIdx === 0, sIdx === b.subRows.length - 1, b.category)}
+                    ${sIsOver ? '<span class="badge badge-over" style="font-size:9.5px; padding:1px 5px;">Over</span>' : (sIsZero ? '<span class="badge badge-off" style="font-size:9.5px; padding:1px 5px;">Limit Reached</span>' : '<span class="badge badge-ok" style="font-size:9.5px; padding:1px 5px;">On track</span>')}
                     <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${s.id}')" title="Edit subcategory budget" style="padding:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                     <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${s.id}','${s.category} / ${s.subCategory} budget')" title="Delete subcategory budget" style="padding:2px;">✕</button>
                   </div>
@@ -10563,7 +10627,7 @@ function renderBudgets(){
                     ${fmt(s.spent)} <span class="muted" style="font-size:11px; font-weight:500;">/ ${fmt(s.budgetAmount)}</span>
                   </span>
                   <span style="font-size:11px; font-weight:600;">
-                    ${s.overspent ? `<span style="color:var(--rose);">Over by ${fmt(s.spent - s.budgetAmount)}</span>` : `<span class="muted figure">${fmt(sRem)} remaining</span>`}
+                    ${sIsOver ? `<span style="color:var(--rose);">Over by ${fmt(s.spent - s.budgetAmount)}</span>` : `<span class="muted figure">${fmt(sRem)} remaining</span>`}
                   </span>
                 </div>
 
@@ -10774,7 +10838,7 @@ function handleAddBudget(e){
   }
 
   DB.budgets.push({ id:uid(), month:budgetSelMonth, year:budgetSelYear, category, subCategory, budgetAmount:amount });
-  openBudgetCategory = category;
+  openBudgetCategories.add(category);
   saveDB(true);
   amtInput.value='';
   const msgEl = document.getElementById('budget-add-message');
@@ -10892,7 +10956,7 @@ function handleAddSubcatBudget(){
   });
 
   openBudgetCategories.add(budgetSubcatModalCategory);
-  openBudgetCategory = budgetSubcatModalCategory;
+  if(budgetSubcatModalCategory) openBudgetCategories.add(budgetSubcatModalCategory);
   saveDB(true);
   closeBudgetSubcatModal();
   renderAllForCurrentPage();
@@ -11022,7 +11086,7 @@ function handleSaveEditBudget(e){
   b.category = newCategory;
   b.subCategory = newSubCategory;
   b.budgetAmount = amount;
-  openBudgetCategory = newCategory;
+  if(newCategory) openBudgetCategories.add(newCategory);
 
   saveDB(true);
   closeEditBudgetModal();
@@ -11153,11 +11217,20 @@ function rolloverGoal(id){
 function getGoalCurrentAmount(goal){
   if(!goal) return 0;
   const txs = Array.isArray(DB.transactions) ? DB.transactions : [];
+  // Direct contributions deposited into this goal
   const deposits = txs.filter(t => t.type === 'savings' && t.category === goal.name)
                       .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
-  const used = txs.filter(t => t.type === 'expense' && (t.description || '').includes('Funded from ' + goal.name))
+  // Real expenses funded from this goal (excluding any legacy transfer outflows)
+  const used = txs.filter(t => t.type === 'expense' && !t.isGoalRolloverOut && !t.isTransfer && (t.description || '').includes('Funded from ' + goal.name))
                   .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
-  return Math.max(0, Math.round((deposits - used) * 100) / 100);
+  // Net rollovers tracked in DB.goalRollovers
+  const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
+  const transferredOut = rollList.filter(r => r.goalId === goal.id || r.goalName === goal.name)
+                                 .reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
+  const transferredIn = rollList.filter(r => (r.targetGoalId === goal.id) || (r.type === 'goal_to_savings' && r.targetGoalName === goal.name))
+                                .reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
+
+  return Math.max(0, Math.round((deposits + transferredIn - used - transferredOut) * 100) / 100);
 }
 
 
@@ -11294,27 +11367,47 @@ function renderSavings(){
   grid.innerHTML = visibleGoals.map((g, gIdx) => {
     const cur = g.currentAmount || 0;
     const reached = cur >= g.targetAmount;
-    const isExpired = Boolean(g.deadline && g.deadline < todayStr && !reached);
+    // Check if goal funds were transferred out to another month/income
+    const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
+    const transferOutRecords = rollList.filter(r => r.goalId === g.id || r.goalName === g.name);
+    const totalTransferredOut = transferOutRecords.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+    const lastTransferOut = transferOutRecords[transferOutRecords.length - 1];
+    const isTransferred = totalTransferredOut > 0 && cur === 0;
+
+    const isExpired = !isTransferred && Boolean(g.deadline && g.deadline < todayStr && !reached);
     const pct = g.targetAmount > 0 ? Math.min(100, (cur / g.targetAmount) * 100) : 0;
     const rem = Math.max(0, g.targetAmount - cur);
     const savingInLabel = g.savingIn || 'Bank Account';
 
+    const cardBorder = reached ? 'border-color:var(--teal);' : (isTransferred ? 'border-color:rgba(15,158,147,0.3);' : (isExpired ? 'border-color:var(--rose);' : ''));
+
+    let statusBadge = '<span class="badge badge-off">In Progress</span>';
+    if(reached){
+      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">Completed</span>';
+    } else if(isTransferred && lastTransferOut){
+      const destLabel = lastTransferOut.type === 'goal_to_income' ? 'Income' : (lastTransferOut.targetGoalName || 'Savings');
+      const destDateLabel = MONTH_NAMES[lastTransferOut.toMonth - 1] + ' ' + lastTransferOut.toYear;
+      statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">Transferred to ${destLabel} (${destDateLabel})</span>`;
+    } else if(isExpired){
+      statusBadge = '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>';
+    }
+
     return `
-      <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${reached ? 'border-color:var(--teal);' : (isExpired ? 'border-color:var(--rose);' : '')}">
+      <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${cardBorder}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
           <div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               ${dragHandleHtml()}
               <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
-              ${reached ? '<span class="badge badge-ok" style="font-weight:700;">Completed</span>' : (isExpired ? '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>' : '<span class="badge badge-off">In Progress</span>')}
+              ${statusBadge}
             </div>
             ${g.deadline ? `<p class="text-xs muted" style="margin:4px 0 0;">Target Date: <strong>${escapeHtml(g.deadline)}</strong></p>` : ''}
+            ${isTransferred && lastTransferOut ? `<p class="text-xs" style="margin:4px 0 0; color:var(--teal); font-weight:500;">Transferred ${fmt(totalTransferredOut)} to ${MONTH_NAMES[lastTransferOut.toMonth-1]} ${lastTransferOut.toYear}.</p>` : ''}
             <div style="margin-top:6px; display:inline-flex; align-items:center; gap:5px; background:var(--surface-2); border:1px solid var(--line-soft); padding:3px 8px; border-radius:6px; font-size:11.5px; color:var(--muted);">
               <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            ${reorderArrowsHtml('savings-goals', g.id, gIdx === 0, gIdx === visibleGoals.length - 1)}
             <span class="figure" style="font-size:18px; font-weight:700; color:${reached ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
             <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
             <button type="button" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" title="Delete goal">Delete</button>
@@ -11341,16 +11434,19 @@ function renderSavings(){
             <button type="button" onclick="openGoalContributionsModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px;">
               History
             </button>
+            ${isTransferred && lastTransferOut ? `
+              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--amber); border-color:var(--amber);" title="Reverse transfer and return funds to this goal">Reverse Transfer</button>
+            ` : ''}
             ${cur > 0 ? `
               <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use savings from this goal for expenses.">
                 Use Savings
               </button>
-              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Transfer savings to next month's savings or directly into income (current balance: ${fmt(cur)})">
+              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Transfer savings to another month or directly into income (current balance: ${fmt(cur)})">
                 Transfer
               </button>
             ` : ''}
           </div>
-          ${(!reached && g.deadline) ? `
+          ${(!reached && g.deadline && !isTransferred) ? `
             <button type="button" onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="font-size:11.5px; color:var(--muted); background:none; border:none; cursor:pointer;">
               Extend Date
             </button>
@@ -14396,17 +14492,7 @@ function dragHandleHtml(){
 }
 
 function reorderArrowsHtml(group, key, isFirst, isLast, parentKey){
-  var safeGroup = String(group || '').replace(/'/g, "\\'");
-  var safeKey = String(key || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-  var safeParent = String(parentKey || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-  return '<span class="reorder-arrows" onclick="event.stopPropagation()">'
-    + '<button type="button" class="reorder-btn" ' + (isFirst ? 'disabled' : '') + ' onclick="event.stopPropagation(); moveListItem(\'' + safeGroup + '\', \'' + safeKey + '\', -1, \'' + safeParent + '\')" title="Move up" aria-label="Move up">'
-    + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>'
-    + '</button>'
-    + '<button type="button" class="reorder-btn" ' + (isLast ? 'disabled' : '') + ' onclick="event.stopPropagation(); moveListItem(\'' + safeGroup + '\', \'' + safeKey + '\', 1, \'' + safeParent + '\')" title="Move down" aria-label="Move down">'
-    + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
-    + '</button>'
-    + '</span>';
+  return ''; // Global removal of up/down arrow buttons; drag-and-drop handles reordering cleanly
 }
 
 function moveArrayElement(arr, fromIdx, toIdx){
@@ -15814,132 +15900,143 @@ function closeRollGoalIncomeModal(){
   closeSavingsTransferModal();
 }
 
+function closeBudgetSubcatModal(){
+  const modal = document.getElementById('budget-subcat-modal-backdrop');
+  if(modal) modal.classList.add('hidden');
+  const amtInput = document.getElementById('budget-subcat-amount');
+  if(amtInput) amtInput.value = '';
+}
+
+function closeSubcatModal(){
+  const modal = document.getElementById('subcat-modal-backdrop');
+  if(modal) modal.classList.add('hidden');
+}
+
+function renderAll(){
+  renderAllForCurrentPage();
+}
+
 function executeSavingsTransfer(){
   const btn = document.getElementById('btn-confirm-savings-transfer');
   if(btn){ btn.disabled = true; btn.textContent = 'Transferring...'; }
 
-  const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
-  if(!goal){
-    showToast('Goal not found', 'error');
-    if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
-    return;
-  }
-  const inputEl = document.getElementById('roll-goal-amount-input');
-  const amt = evaluateTxAmountInput(inputEl);
-  if(!amt || amt <= 0 || amt > _rollGoalCurAmount){
-    showToast('Please enter a valid amount up to ' + fmt(_rollGoalCurAmount), 'error');
-    if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
-    return;
-  }
+  try {
+    const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
+    if(!goal){
+      showToast('Goal not found', 'error');
+      return;
+    }
+    const inputEl = document.getElementById('roll-goal-amount-input');
+    const amt = evaluateTxAmountInput(inputEl);
+    if(!amt || amt <= 0 || amt > _rollGoalCurAmount){
+      showToast('Please enter a valid amount up to ' + fmt(_rollGoalCurAmount), 'error');
+      return;
+    }
 
-  const dest = document.querySelector('input[name="savings-transfer-dest"]:checked')?.value || 'savings';
-  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const sourceMonthName = SHORT_MONTHS[_rollGoalSourceM - 1];
-  const destMonthName = SHORT_MONTHS[_rollGoalDestM - 1];
-  const lastDayOfSourceMonth = new Date(_rollGoalSourceY, _rollGoalSourceM, 0).getDate();
-  const sourceDate = _rollGoalSourceY + '-' + String(_rollGoalSourceM).padStart(2, '0') + '-' + String(lastDayOfSourceMonth).padStart(2, '0');
-  const destDate = _rollGoalDestY + '-' + String(_rollGoalDestM).padStart(2, '0') + '-01';
+    const dest = document.querySelector('input[name="savings-transfer-dest"]:checked')?.value || 'savings';
+    const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const sourceMonthName = SHORT_MONTHS[_rollGoalSourceM - 1];
+    const destMonthName = SHORT_MONTHS[_rollGoalDestM - 1];
+    const destDate = _rollGoalDestY + '-' + String(_rollGoalDestM).padStart(2, '0') + '-01';
 
-  let targetGoalId = null;
-  let targetGoalName = 'Savings';
-  if(dest === 'savings'){
-    const destGoalSelect = document.getElementById('roll-goal-dest-goal');
-    if(destGoalSelect && destGoalSelect.value !== '__general__'){
-      const tg = (DB.savingsGoals || []).find(g => g.id === destGoalSelect.value);
-      if(tg){
-        targetGoalId = tg.id;
-        targetGoalName = tg.name;
+    let targetGoalId = null;
+    let targetGoalName = 'Savings';
+    if(dest === 'savings'){
+      const destGoalSelect = document.getElementById('roll-goal-dest-goal');
+      if(destGoalSelect && destGoalSelect.value !== '__general__'){
+        const tg = (DB.savingsGoals || []).find(g => g.id === destGoalSelect.value);
+        if(tg){
+          targetGoalId = tg.id;
+          targetGoalName = tg.name;
+        }
       }
     }
-  }
 
-  // 1. Outflow transaction from source goal in source month
-  const outTx = {
-    id: uid(),
-    date: sourceDate,
-    type: 'expense',
-    category: 'Savings Transfer',
-    description: 'Funded from ' + goal.name + ': Transferred to ' + destMonthName + ' ' + _rollGoalDestY + ' ' + (dest === 'savings' ? 'savings (' + targetGoalName + ')' : 'income'),
-    amount: amt,
-    paymentMethod: 'Bank Transfer',
-    isGoalRolloverOut: true,
-    goalId: goal.id,
-    relatedGoalName: goal.name,
-    fromMonth: _rollGoalSourceM,
-    fromYear: _rollGoalSourceY,
-    toMonth: _rollGoalDestM,
-    toYear: _rollGoalDestY
-  };
+    // Ensure 'Savings Transfer' exists in DB.categories.income so transactions are never marked as Deleted
+    if(!Array.isArray(DB.categories.income)) DB.categories.income = [];
+    if(!DB.categories.income.includes('Savings Transfer')){
+      DB.categories.income.push('Savings Transfer');
+    }
 
-  // 2. Inflow transaction to destination in destination month
-  let inTx;
-  if(dest === 'savings'){
-    inTx = {
+    // Inflow transaction to destination in destination month (First of the month)
+    // NOTE: We do NOT create any fake 'expense' transaction, preventing dashboard distortion!
+    let inTx;
+    if(dest === 'savings'){
+      inTx = {
+        id: uid(),
+        date: destDate,
+        type: 'savings',
+        category: targetGoalName,
+        description: 'Transferred savings from ' + goal.name + ' (' + sourceMonthName + ' ' + _rollGoalSourceY + ')',
+        amount: amt,
+        paymentMethod: 'Bank Transfer',
+        isGoalRolloverIn: true,
+        goalId: targetGoalId || goal.id,
+        fromMonth: _rollGoalSourceM,
+        fromYear: _rollGoalSourceY,
+        toMonth: _rollGoalDestM,
+        toYear: _rollGoalDestY
+      };
+    } else {
+      inTx = {
+        id: uid(),
+        date: destDate,
+        type: 'income',
+        category: 'Savings Transfer',
+        subCategory: 'Drawdown',
+        description: 'Transferred from ' + goal.name + ' savings (' + sourceMonthName + ' ' + _rollGoalSourceY + ')',
+        amount: amt,
+        paymentMethod: 'Bank Transfer',
+        isGoalRolloverIn: true,
+        goalId: goal.id,
+        fromMonth: _rollGoalSourceM,
+        fromYear: _rollGoalSourceY,
+        toMonth: _rollGoalDestM,
+        toYear: _rollGoalDestY
+      };
+    }
+
+    DB.transactions = DB.transactions || [];
+    DB.transactions.unshift(inTx);
+
+    if(!DB.goalRollovers) DB.goalRollovers = [];
+    const rollRecord = {
       id: uid(),
-      date: destDate,
-      type: 'savings',
-      category: targetGoalName,
-      description: 'Transferred savings from ' + goal.name + ' (' + sourceMonthName + ' ' + _rollGoalSourceY + ')',
-      amount: amt,
-      paymentMethod: 'Bank Transfer',
-      isGoalRolloverIn: true,
-      goalId: targetGoalId || goal.id,
-      fromMonth: _rollGoalSourceM,
-      fromYear: _rollGoalSourceY,
-      toMonth: _rollGoalDestM,
-      toYear: _rollGoalDestY
-    };
-  } else {
-    inTx = {
-      id: uid(),
-      date: destDate,
-      type: 'income',
-      category: 'Savings Transfer',
-      subCategory: 'Drawdown',
-      description: 'Transferred from ' + goal.name + ' savings (' + sourceMonthName + ' ' + _rollGoalSourceY + ')',
-      amount: amt,
-      paymentMethod: 'Bank Transfer',
-      isGoalRolloverIn: true,
+      type: dest === 'savings' ? 'goal_to_savings' : 'goal_to_income',
       goalId: goal.id,
+      goalName: goal.name,
+      targetGoalId: targetGoalId,
+      targetGoalName: targetGoalName,
+      amount: amt,
       fromMonth: _rollGoalSourceM,
       fromYear: _rollGoalSourceY,
       toMonth: _rollGoalDestM,
-      toYear: _rollGoalDestY
+      toYear: _rollGoalDestY,
+      inTxId: inTx.id,
+      date: new Date().toISOString()
     };
+    DB.goalRollovers.push(rollRecord);
+
+    DB.savingsRolloverHistory = DB.savingsRolloverHistory || [];
+    DB.savingsRolloverHistory.push(rollRecord);
+
+    // Update goal balances
+    goal.currentAmount = getGoalCurrentAmount(goal);
+    if(targetGoalId){
+      const tgtG = (DB.savingsGoals || []).find(g => g.id === targetGoalId);
+      if(tgtG) tgtG.currentAmount = getGoalCurrentAmount(tgtG);
+    }
+
+    saveDB(true);
+    closeSavingsTransferModal();
+    renderAllForCurrentPage();
+    showToast('Transferred ' + fmt(amt) + ' from ' + goal.name + ' to ' + destMonthName + ' ' + _rollGoalDestY + ' ' + (dest === 'savings' ? 'Savings' : 'Income') + '!', 'success');
+  } catch(err) {
+    console.error('Transfer failed:', err);
+    showToast('Transfer failed: ' + (err.message || 'Unknown error'), 'error');
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
   }
-  outTx.relatedTxId = inTx.id;
-  inTx.relatedTxId = outTx.id;
-
-  DB.transactions = DB.transactions || [];
-  DB.transactions.unshift(outTx);
-  DB.transactions.unshift(inTx);
-
-  if(!DB.goalRollovers) DB.goalRollovers = [];
-  const rollRecord = {
-    id: uid(),
-    type: dest === 'savings' ? 'goal_to_savings' : 'goal_to_income',
-    goalId: goal.id,
-    goalName: goal.name,
-    targetGoalId: targetGoalId,
-    targetGoalName: targetGoalName,
-    amount: amt,
-    fromMonth: _rollGoalSourceM,
-    fromYear: _rollGoalSourceY,
-    toMonth: _rollGoalDestM,
-    toYear: _rollGoalDestY,
-    outTxId: outTx.id,
-    inTxId: inTx.id,
-    date: new Date().toISOString()
-  };
-  DB.goalRollovers.push(rollRecord);
-
-  DB.savingsRolloverHistory = DB.savingsRolloverHistory || [];
-  DB.savingsRolloverHistory.push(rollRecord);
-
-  saveDB(true);
-  renderAll();
-  closeSavingsTransferModal();
-  showToast('Transferred ' + fmt(amt) + ' from ' + goal.name + ' to ' + destMonthName + ' ' + _rollGoalDestY + ' ' + (dest === 'savings' ? 'Savings' : 'Income') + '!', 'success');
 }
 
 function executeRollGoalToIncome(){
@@ -15951,13 +16048,23 @@ function reverseGoalRollover(rolloverId){
   if(!record) return;
   const confirmed = confirm('Reverse savings transfer of ' + fmt(record.amount) + ' from ' + record.goalName + '? This will return the funds to the goal.');
   if(!confirmed) return;
-  DB.transactions = (DB.transactions || []).filter(t => t.id !== record.outTxId && t.id !== record.inTxId);
+  DB.transactions = (DB.transactions || []).filter(t => t.id !== record.inTxId && (!record.outTxId || t.id !== record.outTxId));
   DB.goalRollovers = (DB.goalRollovers || []).filter(r => r.id !== rolloverId);
   DB.savingsRolloverHistory = (DB.savingsRolloverHistory || []).filter(r => r.id !== rolloverId);
+  
+  // Recalculate goal balance
+  const sourceGoal = (DB.savingsGoals || []).find(g => g.id === record.goalId);
+  if(sourceGoal) sourceGoal.currentAmount = getGoalCurrentAmount(sourceGoal);
+  if(record.targetGoalId){
+    const tgt = (DB.savingsGoals || []).find(g => g.id === record.targetGoalId);
+    if(tgt) tgt.currentAmount = getGoalCurrentAmount(tgt);
+  }
+
   saveDB(true);
-  renderAll();
-  showToast('Savings transfer reversed successfully', 'success');
+  renderAllForCurrentPage();
+  showToast('Savings transfer reversed successfully. Funds returned to ' + record.goalName, 'success');
 }
+
 /* ---------------- init ---------------- */
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
