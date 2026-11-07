@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2769,6 +2769,19 @@
             <div id="transfer-dest-goal-wrap" style="margin-top:8px;">
               <label class="field-label" style="font-size:11px; margin-bottom:3px;">Deposit into Goal / Allocation</label>
               <select id="roll-goal-dest-goal" class="field-input" style="font-size:12px; padding:5px 8px;" onchange="onSavingsTransferDestGoalChange()"></select>
+              <div id="transfer-dest-new-goal-box" class="hidden" style="margin-top:10px; padding:10px 12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px;">
+                <span style="font-size:11.5px; font-weight:700; color:var(--ink); display:block; margin-bottom:8px;">New Target Details</span>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <div>
+                    <label class="field-label" style="font-size:10.5px; margin-bottom:2px;">Goal Name</label>
+                    <input type="text" id="roll-goal-new-name" placeholder="e.g. New Gym Q2" class="field-input" style="font-size:12px; padding:5px 8px;">
+                  </div>
+                  <div>
+                    <label class="field-label" style="font-size:10.5px; margin-bottom:2px;">Target Amount</label>
+                    <input type="number" id="roll-goal-new-target" placeholder="e.g. 5000" class="field-input figure" style="font-size:12px; padding:5px 8px;">
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </label>
@@ -3111,7 +3124,17 @@
       <!-- Provident Fund / VPS Specific Settings (Clean & Visual) -->
       <div id="inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
         <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <span>Employer Match</span>
+          <span>Employer Match &amp; Payday Schedule</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+          <div>
+            <label class="field-label" for="inv-vps-base-salary">Base Monthly Salary</label>
+            <input type="number" min="0" step="any" id="inv-vps-base-salary" value="80000" placeholder="80000" class="field-input figure" oninput="updateInvVpsPreviewNote()">
+          </div>
+          <div>
+            <label class="field-label" for="inv-vps-payday">Payday (Day of Month)</label>
+            <input type="number" min="1" max="31" id="inv-vps-payday" value="3" placeholder="3" class="field-input figure">
+          </div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
@@ -3199,7 +3222,17 @@
       <!-- Provident Fund / VPS Specific Settings (Clean) -->
       <div id="edit-inv-vps-settings-wrap" class="hidden" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.22); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
         <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <span>Employer Match</span>
+          <span>Employer Match &amp; Payday Schedule</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+          <div>
+            <label class="field-label" for="edit-inv-vps-base-salary">Base Monthly Salary</label>
+            <input type="number" min="0" step="any" id="edit-inv-vps-base-salary" value="80000" placeholder="80000" class="field-input figure" oninput="updateEditInvVpsPreviewNote()">
+          </div>
+          <div>
+            <label class="field-label" for="edit-inv-vps-payday">Payday (Day of Month)</label>
+            <input type="number" min="1" max="31" id="edit-inv-vps-payday" value="3" placeholder="3" class="field-input figure">
+          </div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
@@ -3587,8 +3620,9 @@
     </button>
 
     <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line); text-align:center;">
-      <p class="text-xs muted" style="margin:0; line-height:1.5;">
-        🔒 Encrypted cloud sync powered by Supabase &amp; Google.
+      <p class="text-xs muted" style="margin:0; line-height:1.5; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.75;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Encrypted cloud sync powered by Supabase &amp; Google.</span>
       </p>
     </div>
   </div>
@@ -7910,7 +7944,7 @@ function openPrintReportView(month, year) {
   const htmlContent = generateReportPDFContent(month, year);
   const printWindow = window.open('', '_blank', 'width=880,height=960');
   if (!printWindow) {
-    showToast('⚠️ Pop-up blocked. Please allow pop-ups to print/export PDF.');
+    showToast('Pop-up blocked. Please allow pop-ups to print/export PDF.');
     return;
   }
   printWindow.document.write(`
@@ -11221,7 +11255,7 @@ function handleSaveEditBudget(e){
 
   if(duplicate){
     if(msgEl){
-      msgEl.innerHTML = `⚠️ Budget for "<strong>${escapeHtml(newCategory)}${newSubCategory ? ` (${escapeHtml(newSubCategory)})` : ''}</strong>" already exists for this month!`;
+      msgEl.innerHTML = `Budget for "<strong>${escapeHtml(newCategory)}${newSubCategory ? ` (${escapeHtml(newSubCategory)})` : ''}</strong>" already exists for this month!`;
       msgEl.className = 'text-xs settings-add-message message-error';
     }
     amtInput.style.borderColor = 'var(--rose)';
@@ -11357,6 +11391,27 @@ function handleSaveRolloverGoal(e){
 
 function rolloverGoal(id){
   openRolloverGoalModal(id);
+}
+
+function getGoalMonthsRemaining(goal, refDateStr){
+  if(!goal || !goal.deadline) return 1;
+  const ref = refDateStr ? new Date(refDateStr) : new Date();
+  const dParts = goal.deadline.split('-');
+  if(dParts.length < 2) return 1;
+  const deadY = parseInt(dParts[0], 10);
+  const deadM = parseInt(dParts[1], 10);
+  const refY = ref.getFullYear();
+  const refM = ref.getMonth() + 1;
+  const diffMonths = (deadY - refY) * 12 + (deadM - refM);
+  return Math.max(1, diffMonths + 1);
+}
+
+function getGoalMonthlyPacing(goal, refDateStr){
+  if(!goal || !goal.targetAmount) return 0;
+  const remainingTarget = Math.max(0, goal.targetAmount - getGoalAccumulatedDeposits(goal));
+  if(remainingTarget <= 0) return 0;
+  const monthsRemaining = getGoalMonthsRemaining(goal, refDateStr);
+  return Math.round(remainingTarget / monthsRemaining);
 }
 
 function getGoalAccumulatedDeposits(goal){
@@ -11589,6 +11644,18 @@ function renderSavings(){
       statusBadge = '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>';
     }
 
+    // Multi-month pacing calculation
+    const monthsRemaining = getGoalMonthsRemaining(g);
+    const monthlyPacing = getGoalMonthlyPacing(g);
+    let pacingBadgeHtml = '';
+    if(!reached && !isFullySettled && g.deadline && monthlyPacing > 0){
+      if(monthsRemaining > 1){
+        pacingBadgeHtml = `<span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px;">Pacing: ${fmt(monthlyPacing)} / mo · ${monthsRemaining} mos left</span>`;
+      } else {
+        pacingBadgeHtml = `<span class="badge" style="background:rgba(217,119,6,0.1); color:var(--amber); font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px;">Final Month · ${fmt(monthlyPacing)} left</span>`;
+      }
+    }
+
     let transferBannerHtml = '';
     if(lastTransferOut){
       const destLabel = lastTransferOut.type === 'goal_to_income' ? 'Income' : (escapeHtml(lastTransferOut.targetGoalName || 'Savings'));
@@ -11640,6 +11707,7 @@ function renderSavings(){
               ${g.deadline ? `<span>Target Date: <strong style="color:var(--ink);">${escapeHtml(g.deadline)}</strong></span>` : ''}
               ${g.deadline ? `<span>•</span>` : ''}
               <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
+              ${pacingBadgeHtml}
             </div>
             ${transferBannerHtml}
           </div>
@@ -12213,6 +12281,49 @@ function checkAutomatedVPSInflow(){
   saveDB(true);
 }
 
+function logQuickPaydayVpsDeposit(invId, m, y){
+  const inv = (DB.investments || []).find(i => i.id === invId);
+  if(!inv) return;
+  const salary = inv.vpsBaseSalary || 80000;
+  const cutPct = inv.vpsDeductionPct !== undefined ? inv.vpsDeductionPct : 10;
+  const matchPct = inv.vpsMatchPct !== undefined ? inv.vpsMatchPct : 100;
+
+  const userAmt = Math.round((salary * (cutPct / 100)) * 100) / 100;
+  const employerAmt = Math.round((userAmt * (matchPct / 100)) * 100) / 100;
+  const totalAmt = userAmt + employerAmt;
+
+  const now = new Date();
+  const targetM = m || (notifSelMonth !== undefined ? notifSelMonth : (now.getMonth() + 1));
+  const targetY = y || (notifSelYear !== undefined ? notifSelYear : now.getFullYear());
+  const paydayDay = String(inv.vpsPaydayDay || 3).padStart(2, '0');
+  const txDate = `${targetY}-${String(targetM).padStart(2, '0')}-${paydayDay}`;
+
+  inv.initialInvested = (Number(inv.initialInvested) || 0) + totalAmt;
+  inv.currentValue = (Number(inv.currentValue) || 0) + totalAmt;
+  inv.totalEmployerMatch = (Number(inv.totalEmployerMatch || inv.totalEmployerMatched) || 0) + employerAmt;
+  inv.totalEmployerMatched = inv.totalEmployerMatch;
+
+  DB.transactions = DB.transactions || [];
+  DB.transactions.unshift({
+    id: uid(),
+    date: txDate,
+    type: 'expense',
+    category: 'Investments',
+    subCategory: 'Provident Fund / VPS',
+    investmentId: inv.id,
+    description: `Payday Contribution to ${inv.name} (+${fmt(employerAmt)} employer match)`,
+    amount: userAmt,
+    paymentMethod: (DB.paymentMethods && DB.paymentMethods[0]) || 'Bank Transfer'
+  });
+
+  const notifId = `notif-vps-payday-${inv.id}-${targetY}-${targetM}`;
+  markNotificationRead(notifId);
+
+  saveDB(true);
+  renderAllForCurrentPage();
+  showToast(`Logged Payday Deposit of ${fmt(totalAmt)} (${fmt(userAmt)} employee + ${fmt(employerAmt)} match) for ${inv.name}!`, 'success');
+}
+
 function renderInvestments(){
   checkAutomatedVPSInflow();
   const list = DB.investments || [];
@@ -12719,7 +12830,7 @@ function renderHoldingsTable(){
           </td>
           <td style="padding:12px; text-align:right;" class="figure">
             ${fmt(invested)}
-            ${inv.assetType === 'Provident Fund / VPS' && (inv.totalEmployerMatch || 0) > 0 ? `<span style="display:block; font-size:10.5px; color:var(--teal); font-weight:600;">+${fmt(inv.totalEmployerMatch)} employer</span>` : ''}
+            ${inv.assetType === 'Provident Fund / VPS' && ((inv.totalEmployerMatch || inv.totalEmployerMatched || 0) > 0) ? `<span style="display:block; font-size:10.5px; color:var(--teal); font-weight:600;">+${fmt(inv.totalEmployerMatch || inv.totalEmployerMatched)} employer</span>` : ''}
           </td>
           <td style="padding:12px; text-align:right;" class="figure" style="font-weight:600;">
             <strong>${fmt(current)}</strong>
@@ -13175,6 +13286,12 @@ function handleAddInvestment(e){
   const vpsMatchPct = assetType === 'Provident Fund / VPS'
     ? (parseFloat(document.getElementById('inv-vps-match-pct')?.value) || 100)
     : undefined;
+  const vpsBaseSalary = assetType === 'Provident Fund / VPS'
+    ? (parseFloat(document.getElementById('inv-vps-base-salary')?.value) || 0)
+    : undefined;
+  const vpsPaydayDay = assetType === 'Provident Fund / VPS'
+    ? (parseInt(document.getElementById('inv-vps-payday')?.value, 10) || 3)
+    : undefined;
 
   DB.investments = DB.investments || [];
   const newAsset = {
@@ -13194,6 +13311,8 @@ function handleAddInvestment(e){
   if(vpsDeductionPct !== undefined){
     newAsset.vpsDeductionPct = vpsDeductionPct;
     newAsset.vpsMatchPct = vpsMatchPct;
+    newAsset.vpsBaseSalary = vpsBaseSalary;
+    newAsset.vpsPaydayDay = vpsPaydayDay;
     newAsset.totalEmployerMatched = 0;
   }
 
@@ -13281,6 +13400,8 @@ function handleSaveEditInvestment(e){
   if(assetType === 'Provident Fund / VPS'){
     inv.vpsDeductionPct = parseFloat(document.getElementById('edit-inv-vps-deduction-pct')?.value) || 10;
     inv.vpsMatchPct = parseFloat(document.getElementById('edit-inv-vps-match-pct')?.value) || 100;
+    inv.vpsBaseSalary = parseFloat(document.getElementById('edit-inv-vps-base-salary')?.value) || 0;
+    inv.vpsPaydayDay = parseInt(document.getElementById('edit-inv-vps-payday')?.value, 10) || 3;
   }
 
   saveDB(true);
@@ -13434,7 +13555,8 @@ function handleConfirmDepositInvestment(e){
   inv.initialInvested = (inv.initialInvested || 0) + depositAmount;
   inv.currentValue = newVal;
   if(employerMatch > 0){
-    inv.totalEmployerMatched = (inv.totalEmployerMatched || 0) + employerMatch;
+    inv.totalEmployerMatch = (Number(inv.totalEmployerMatch || inv.totalEmployerMatched) || 0) + employerMatch;
+    inv.totalEmployerMatched = inv.totalEmployerMatch;
   }
 
   // Record history log inside notes or deposit log
@@ -13921,7 +14043,7 @@ function handleSaveEditPaymentMethod(e){
   if(newName.toLowerCase() !== oldName.toLowerCase()){
     if(methods.some(m => m.toLowerCase() === newName.toLowerCase())){
       if(msgEl){
-        msgEl.innerHTML = `⚠️ Payment method "<strong>${escapeHtml(newName)}</strong>" already exists!`;
+        msgEl.innerHTML = `Payment method "<strong>${escapeHtml(newName)}</strong>" already exists!`;
         msgEl.className = 'text-xs tone-neg settings-add-message';
       }
       input.style.borderColor = 'var(--rose)';
@@ -14271,7 +14393,7 @@ function handleSaveEditCategory(e){
 
   if(exists){
     if(msgEl){
-      msgEl.innerHTML = `⚠️ Category "<strong>${escapeHtml(newName)}</strong>" already exists!`;
+      msgEl.innerHTML = `Category "<strong>${escapeHtml(newName)}</strong>" already exists!`;
       msgEl.className = 'text-xs settings-add-message message-error';
     }
     input.style.borderColor = 'var(--rose)';
@@ -14361,7 +14483,7 @@ function handleSaveEditSubcategory(e){
     const exists = (category.subcategories || []).some(s => s.toLowerCase() === newName.toLowerCase());
     if(exists){
       if(msgEl){
-        msgEl.innerHTML = `⚠️ Subcategory "<strong>${escapeHtml(newName)}</strong>" already exists in ${escapeHtml(parentCategory)}!`;
+        msgEl.innerHTML = `Subcategory "<strong>${escapeHtml(newName)}</strong>" already exists in ${escapeHtml(parentCategory)}!`;
         msgEl.className = 'text-xs settings-add-message message-error';
       }
       input.style.borderColor = 'var(--rose)';
@@ -14502,7 +14624,7 @@ function handleAddCategory(e){
 
   if(exists){
     if(message){
-      message.innerHTML = `⚠️ Category "<strong>${escapeHtml(name)}</strong>" already exists!`;
+      message.innerHTML = `Category "<strong>${escapeHtml(name)}</strong>" already exists!`;
       message.className = 'text-xs settings-add-message message-error';
     }
     input.style.borderColor = 'var(--rose)';
@@ -14540,7 +14662,7 @@ function handleAddLinkedSubcategory(e){
   const exists = (category.subcategories || []).some(s => s.trim().toLowerCase() === name.toLowerCase());
   if(exists){
     if(message){
-      message.innerHTML = `⚠️ Subcategory "<strong>${escapeHtml(name)}</strong>" already exists in ${escapeHtml(parent)}!`;
+      message.innerHTML = `Subcategory "<strong>${escapeHtml(name)}</strong>" already exists in ${escapeHtml(parent)}!`;
       message.className = 'text-xs settings-add-message message-error';
     }
     input.style.borderColor = 'var(--rose)';
@@ -14580,7 +14702,7 @@ function handleAddSubcategoryInline(e, categoryName){
 
   if(cat && (cat.subcategories || []).some(sub => sub.trim().toLowerCase() === name.toLowerCase())){
     if(message){
-      message.innerHTML = `⚠️ Subcategory "<strong>${escapeHtml(name)}</strong>" already exists!`;
+      message.innerHTML = `Subcategory "<strong>${escapeHtml(name)}</strong>" already exists!`;
       message.className = 'subcategory-add-message text-xs settings-add-message message-error';
     }
     input.style.borderColor = 'var(--rose)';
@@ -15286,35 +15408,31 @@ function getSystemNotifications(targetMonth, targetYear){
     });
   }
 
-  // 3. Savings Goal Milestones & Deadlines
+  // 3. Savings Goal Milestones & Deadlines (Interactive Sinking Fund Actions)
   if(cfg.goalsAlerts !== false){
     (DB.savingsGoals || []).forEach(g => {
       const cur = getGoalCurrentAmount(g);
-      const reached = cur >= g.targetAmount;
+      const acc = getGoalAccumulatedDeposits(g);
+      const reached = acc >= (Number(g.targetAmount) || 0) && g.targetAmount > 0;
       if(reached){
         const id = `notif-goal-reached-${g.id}-${y}-${m}`;
         const baseId = `notif-goal-reached-${g.id}`;
         if(!dismissed.has(id) && !dismissed.has(baseId)){
-          const goalTxs = (DB.transactions || [])
-            .filter(t => t.type === 'savings' && (t.savingsGoal === g.name || (t.category && t.category.includes(g.name))))
-            .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
-          const lastTx = goalTxs.length ? goalTxs[goalTxs.length - 1] : null;
-          const eventDate = (lastTx && lastTx.date && lastTx.date.startsWith(`${y}-${String(m).padStart(2,'0')}`))
-            ? lastTx.date
-            : `${y}-${String(m).padStart(2,'0')}-15`;
-
+          const eventDate = `${y}-${String(m).padStart(2,'0')}-15`;
           list.push({
             id: id,
             type: 'reminder',
             priority: 'teal',
             title: 'Goal Achieved: ' + g.name,
-            desc: 'Congratulations! You reached your savings target of ' + fmt(g.targetAmount) + '.',
+            desc: 'Congratulations! You reached your savings target of ' + fmt(g.targetAmount) + (cur > 0 ? '. You have ' + fmt(cur) + ' ready to spend or reallocate.' : '. Goal is fully settled.'),
             date: eventDate,
             month: m,
             year: y,
             read: isNotificationRead(id),
-            actionLabel: 'View Goals',
-            actionFn: "goToApp('savings'); closeNotificationDrawer();"
+            actionLabel: cur > 0 ? 'Pay Bill / Use Savings' : 'View Goal',
+            actionFn: cur > 0 ? `openTxModalWithGoal('${escapeHtml(g.name)}', ${cur}); closeNotificationDrawer();` : `goToApp('savings'); closeNotificationDrawer();`,
+            secondaryActionLabel: cur > 0 ? 'Transfer Funds' : null,
+            secondaryActionFn: cur > 0 ? `openSavingsTransferModal('${g.id}'); closeNotificationDrawer();` : null
           });
         }
       } else if(g.deadline && g.deadline.startsWith(`${y}-${String(m).padStart(2,'0')}`)){
@@ -15326,18 +15444,55 @@ function getSystemNotifications(targetMonth, targetYear){
             type: 'alert',
             priority: 'amber',
             title: 'Goal Deadline Approaching: ' + g.name,
-            desc: 'Target date is ' + g.deadline + '. You have ' + fmt(Math.max(0, g.targetAmount - cur)) + ' remaining to reach your goal.',
+            desc: 'Target date is ' + g.deadline + '. You have ' + fmt(cur) + ' in vault (' + fmt(Math.max(0, g.targetAmount - acc)) + ' remaining to reach target).',
             date: g.deadline,
             month: m,
             year: y,
             read: isNotificationRead(id),
-            actionLabel: 'Contribute',
-            actionFn: "goToApp('savings'); closeNotificationDrawer();"
+            actionLabel: cur > 0 ? 'Pay Bill / Use Savings' : 'Contribute',
+            actionFn: cur > 0 ? `openTxModalWithGoal('${escapeHtml(g.name)}', ${cur}); closeNotificationDrawer();` : `goToApp('savings'); closeNotificationDrawer();`,
+            secondaryActionLabel: cur > 0 ? 'Transfer Funds' : null,
+            secondaryActionFn: cur > 0 ? `openSavingsTransferModal('${g.id}'); closeNotificationDrawer();` : null
           });
         }
       }
     });
   }
+
+  // 3b. Provident Fund / VPS Payday Reminder
+  (DB.investments || []).filter(i => i.assetType === 'Provident Fund / VPS' && i.vpsBaseSalary > 0).forEach(inv => {
+    const paydayDay = inv.vpsPaydayDay || 3;
+    const notifId = `notif-vps-payday-${inv.id}-${y}-${m}`;
+    const baseId = `notif-vps-payday-${inv.id}`;
+    if(!dismissed.has(notifId) && !dismissed.has(baseId)){
+      // Check if already deposited in month m, y
+      const alreadyDeposited = (DB.transactions || []).some(t => inMonth(t, m, y) && (t.description || '').includes(inv.name));
+      if(!alreadyDeposited){
+        const salary = inv.vpsBaseSalary;
+        const cutPct = inv.vpsDeductionPct !== undefined ? inv.vpsDeductionPct : 10;
+        const matchPct = inv.vpsMatchPct !== undefined ? inv.vpsMatchPct : 100;
+        const userAmt = Math.round(salary * (cutPct / 100));
+        const matchAmt = Math.round(userAmt * (matchPct / 100));
+        const eventDate = `${y}-${String(m).padStart(2, '0')}-${String(paydayDay).padStart(2, '0')}`;
+
+        list.push({
+          id: notifId,
+          type: 'reminder',
+          priority: 'teal',
+          title: 'Payday Contribution: ' + inv.name,
+          desc: 'Payday scheduled on day ' + paydayDay + ' of ' + MONTH_NAMES[m - 1] + '. Log ' + fmt(userAmt) + ' salary deduction (+ ' + fmt(matchAmt) + ' employer match)?',
+          date: eventDate,
+          month: m,
+          year: y,
+          read: isNotificationRead(notifId),
+          actionLabel: 'Log Payday Deposit',
+          actionFn: `logQuickPaydayVpsDeposit('${inv.id}', ${m}, ${y}); closeNotificationDrawer();`,
+          secondaryActionLabel: 'View Fund',
+          secondaryActionFn: "goToApp('investments'); closeNotificationDrawer();"
+        });
+      }
+    }
+  });
 
   // 4. Monthly Savings Carry-Forward Prompt (Always Ask Me)
   const rolloverMode = cfg.rolloverMode ?? 'prompt';
@@ -15472,9 +15627,10 @@ function renderNotifications(){
         </div>
       </div>
       <p class="notification-card-desc" style="white-space:normal; word-break:break-word;">${escapeHtml(n.desc)}</p>
-      <div class="notification-card-actions" style="display:flex; align-items:center; justify-content:space-between; margin-top:6px; gap:8px;">
-        <div style="display:flex; align-items:center; gap:8px;">
+      <div class="notification-card-actions" style="display:flex; align-items:center; justify-content:space-between; margin-top:6px; gap:8px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           ${n.actionLabel ? `<button type="button" class="btn-primary" style="padding:4px 12px; font-size:11.5px; height:28px;" onclick="${n.actionFn}">${escapeHtml(n.actionLabel)}</button>` : ''}
+          ${n.secondaryActionLabel ? `<button type="button" class="btn-ghost" style="padding:4px 10px; font-size:11.5px; height:28px; color:var(--primary); border-color:var(--line);" onclick="${n.secondaryActionFn}">${escapeHtml(n.secondaryActionLabel)}</button>` : ''}
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
           <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:11.5px; height:28px;" onclick="toggleNotificationRead('${n.id}')" title="${n.read ? 'Mark as Unread' : 'Mark as Read'}">
@@ -15545,11 +15701,15 @@ function executeSavingsRollover(amount, monthKey){
   showToast('Rolled over ' + fmt(amount) + ' into current month income!', 'success');
 }
 
-function openTxModalWithGoal(goalName){
+function openTxModalWithGoal(goalName, defaultAmt){
   openTxModal();
   setTxType('expense');
   const descEl = document.getElementById('tx-description');
   if(descEl) descEl.value = 'Funded from ' + goalName;
+  if(defaultAmt && defaultAmt > 0){
+    const amtEl = document.getElementById('tx-amount');
+    if(amtEl) amtEl.value = defaultAmt;
+  }
   showToast('Logging expense funded by ' + goalName);
 }
 
@@ -16049,6 +16209,7 @@ function populateDestGoalsDropdown(destM, destY, currentGoalId){
   if(currentGoal && !currentInDest){
     options.push(`<option value="__clone_current__" selected>Carry Over to Next Month: "${escapeHtml(currentGoal.name)}"</option>`);
   }
+  options.push(`<option value="__new_goal__">+ Create New Goal...</option>`);
   options.push(`<option value="__general__" ${(!currentInDest && !currentGoal) ? 'selected' : ''}>Monthly Savings Allocation (General)</option>`);
   
   goalSelect.innerHTML = options.join('');
@@ -16128,6 +16289,11 @@ function onSavingsTransferDestChange(){
 }
 
 function onSavingsTransferDestGoalChange(){
+  const destGoalSelect = document.getElementById('roll-goal-dest-goal');
+  const newGoalBox = document.getElementById('transfer-dest-new-goal-box');
+  if(newGoalBox){
+    newGoalBox.classList.toggle('hidden', !destGoalSelect || destGoalSelect.value !== '__new_goal__');
+  }
   updateSavingsTransferImpactMsg();
 }
 
@@ -16245,7 +16411,25 @@ function executeSavingsTransfer(){
     if(dest === 'savings'){
       const destGoalSelect = document.getElementById('roll-goal-dest-goal');
       if(destGoalSelect){
-        if(destGoalSelect.value === '__clone_current__'){
+        if(destGoalSelect.value === '__new_goal__'){
+          const newName = (document.getElementById('roll-goal-new-name')?.value || '').trim() || (goal.name + ' (New)');
+          const newTarget = evaluateTxAmountInput(document.getElementById('roll-goal-new-target')) || amt;
+          const destPeriodStart = _rollGoalDestY + '-' + String(_rollGoalDestM).padStart(2, '0') + '-01';
+          const destPeriodEnd = ymd(new Date(_rollGoalDestY, _rollGoalDestM, 0));
+          const newGoal = {
+            id: uid(),
+            name: newName,
+            targetAmount: newTarget,
+            currentAmount: 0,
+            startDate: destPeriodStart,
+            deadline: destPeriodEnd,
+            savingIn: goal.savingIn || 'Bank Account'
+          };
+          DB.savingsGoals = DB.savingsGoals || [];
+          DB.savingsGoals.push(newGoal);
+          targetGoalId = newGoal.id;
+          targetGoalName = newGoal.name;
+        } else if(destGoalSelect.value === '__clone_current__'){
           const destPeriodStart = _rollGoalDestY + '-' + String(_rollGoalDestM).padStart(2, '0') + '-01';
           const destPeriodEnd = ymd(new Date(_rollGoalDestY, _rollGoalDestM, 0));
           const newGoal = {
