@@ -6430,6 +6430,10 @@ function sumByType(txs, type){
       return s + Math.max(0, (t.amount || 0) - covered);
     }, 0);
   }
+  if(type === 'savings'){
+    // Exclude goal rollovers into savings from monthly new savings to prevent false double-counting
+    return txs.filter(t => t.type === type && !t.isGoalRolloverIn).reduce((s, t) => s + (t.amount || 0), 0);
+  }
   return txs.filter(t => t.type === type).reduce((s, t) => s + (t.amount || 0), 0);
 }
 function monthTotals(txs, month, year){
@@ -11358,29 +11362,50 @@ function rolloverGoal(id){
 function getGoalAccumulatedDeposits(goal){
   if(!goal) return 0;
   const txs = Array.isArray(DB.transactions) ? DB.transactions : [];
-  const deposits = txs.filter(t => t.type === 'savings' && t.category === goal.name)
-                      .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
+  const deposits = txs.filter(t => {
+    if(t.type !== 'savings' || t.isGoalRolloverIn) return false;
+    if(t.goalId) return t.goalId === goal.id;
+    if(t.category !== goal.name) return false;
+    if(goal.startDate && t.date && t.date < goal.startDate) return false;
+    if(goal.deadline && t.date && t.date > goal.deadline) return false;
+    return true;
+  }).reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
   const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
-  const transferredIn = rollList.filter(r => (r.targetGoalId === goal.id) || (r.type === 'goal_to_savings' && r.targetGoalName === goal.name))
-                                .reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
+  const transferredIn = rollList.filter(r => {
+    if(r.goalId && r.goalId === goal.id) return false;
+    if(r.targetGoalId) return r.targetGoalId === goal.id;
+    return r.type === 'goal_to_savings' && r.targetGoalName === goal.name;
+  }).reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
   return Math.round((deposits + transferredIn) * 100) / 100;
 }
 
 function getGoalCurrentAmount(goal){
   if(!goal) return 0;
   const txs = Array.isArray(DB.transactions) ? DB.transactions : [];
-  // Direct contributions deposited into this goal
-  const deposits = txs.filter(t => t.type === 'savings' && t.category === goal.name)
-                      .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
+  // Direct contributions deposited into this goal (excluding rollover inflows which are counted in transferredIn)
+  const deposits = txs.filter(t => {
+    if(t.type !== 'savings' || t.isGoalRolloverIn) return false;
+    if(t.goalId) return t.goalId === goal.id;
+    if(t.category !== goal.name) return false;
+    if(goal.startDate && t.date && t.date < goal.startDate) return false;
+    if(goal.deadline && t.date && t.date > goal.deadline) return false;
+    return true;
+  }).reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
   // Real expenses funded from this goal (excluding any legacy transfer outflows)
   const used = txs.filter(t => t.type === 'expense' && !t.isGoalRolloverOut && !t.isTransfer && (t.description || '').includes('Funded from ' + goal.name))
                   .reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
   // Net rollovers tracked in DB.goalRollovers
   const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
-  const transferredOut = rollList.filter(r => r.goalId === goal.id || r.goalName === goal.name)
-                                 .reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
-  const transferredIn = rollList.filter(r => (r.targetGoalId === goal.id) || (r.type === 'goal_to_savings' && r.targetGoalName === goal.name))
-                                .reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
+  const transferredOut = rollList.filter(r => {
+    if(r.targetGoalId && r.targetGoalId === goal.id) return false;
+    if(r.goalId) return r.goalId === goal.id;
+    return r.goalName === goal.name;
+  }).reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
+  const transferredIn = rollList.filter(r => {
+    if(r.goalId && r.goalId === goal.id) return false;
+    if(r.targetGoalId) return r.targetGoalId === goal.id;
+    return r.type === 'goal_to_savings' && r.targetGoalName === goal.name;
+  }).reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0);
 
   return Math.max(0, Math.round((deposits + transferredIn - used - transferredOut) * 100) / 100);
 }
@@ -11427,7 +11452,7 @@ function renderSavings(){
   }
 
   // 1. Calculate All-Time Cumulative Unspent Savings (deposits minus funded expenses and income drawdowns)
-  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings');
+  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings' && !t.isGoalRolloverIn);
   const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const allDrawdownsToIncome = (DB.goalRollovers || []).filter(r => r.type === 'goal_to_income').reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
@@ -11437,7 +11462,7 @@ function renderSavings(){
   const now = new Date();
   const curM = savingsFilterMonth || (now.getMonth() + 1);
   const curY = savingsFilterYear || now.getFullYear();
-  const monthSaved = (DB.transactions || []).filter(t => t.type === 'savings' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const monthSaved = (DB.transactions || []).filter(t => t.type === 'savings' && !t.isGoalRolloverIn && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthIncome = (DB.transactions || []).filter(t => t.type === 'income' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthExpense = (DB.transactions || []).filter(t => t.type === 'expense' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const rawRemaining = monthIncome - monthExpense - monthSaved;
@@ -11521,71 +11546,125 @@ function renderSavings(){
   // Render a single goal card cleanly
   function renderSingleGoalCard(g, gIdx){
     const accumulated = getGoalAccumulatedDeposits(g);
-    const cur = g.currentAmount || 0;
-    const reached = accumulated >= (Number(g.targetAmount) || 0);
+    const cur = getGoalCurrentAmount(g);
+    const targetAmt = Number(g.targetAmount) || 0;
+    const reached = accumulated >= targetAmt && targetAmt > 0;
 
     // Check if goal funds were transferred out via rollover
     const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
-    const transferOutRecords = rollList.filter(r => r.goalId === g.id || r.goalName === g.name);
+    const transferOutRecords = rollList.filter(r => {
+      if(r.targetGoalId && r.targetGoalId === g.id) return false;
+      return r.goalId ? (r.goalId === g.id) : (r.goalName === g.name);
+    });
     const totalTransferredOut = transferOutRecords.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
     const lastTransferOut = transferOutRecords[transferOutRecords.length - 1];
-    const isTransferred = totalTransferredOut > 0 && cur === 0;
 
-    const isExpired = !isTransferred && Boolean(g.deadline && g.deadline < todayStr && !reached);
-    const pct = isTransferred ? 100 : (g.targetAmount > 0 ? Math.min(100, (cur / g.targetAmount) * 100) : 0);
-    const rem = isTransferred ? 0 : Math.max(0, g.targetAmount - cur);
+    const isFullySettled = totalTransferredOut > 0 && cur === 0;
+    const isPartiallyTransferred = totalTransferredOut > 0 && cur > 0;
+    const isExpired = !isFullySettled && !reached && Boolean(g.deadline && g.deadline < todayStr);
+
+    const pct = reached ? 100 : (targetAmt > 0 ? Math.min(100, (accumulated / targetAmt) * 100) : 0);
+    const rem = reached ? 0 : Math.max(0, targetAmt - accumulated);
     const savingInLabel = g.savingIn || 'Bank Account';
 
-    const cardBorder = reached ? 'border-color:var(--teal);' : (isTransferred ? 'border-color:rgba(15,158,147,0.3);' : (isExpired ? 'border-color:var(--rose);' : ''));
+    let cardBorder = '';
+    let cardBg = '';
+    if(isFullySettled){
+      cardBorder = 'border-color:rgba(15,158,147,0.35);';
+      cardBg = 'background:rgba(15,158,147,0.02);';
+    } else if(reached){
+      cardBorder = 'border-color:var(--teal);';
+    } else if(isExpired){
+      cardBorder = 'border-color:var(--rose);';
+    }
 
     let statusBadge = '<span class="badge badge-off">In Progress</span>';
-    if(isTransferred && lastTransferOut){
-      const destLabel = lastTransferOut.type === 'goal_to_income' ? 'Income' : (lastTransferOut.targetGoalName || 'Savings');
-      const destDateLabel = MONTH_NAMES[lastTransferOut.toMonth - 1] + ' ' + lastTransferOut.toYear;
-      statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">100% Completed · Transferred to ${destLabel} (${destDateLabel})</span>`;
+    if(isFullySettled){
+      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">✓ Settled</span>';
+    } else if(isPartiallyTransferred){
+      statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">Partially Transferred</span>`;
     } else if(reached){
-      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">Completed</span>';
+      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">✓ 100% Achieved</span>';
     } else if(isExpired){
       statusBadge = '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>';
     }
 
+    let transferBannerHtml = '';
+    if(lastTransferOut){
+      const destLabel = lastTransferOut.type === 'goal_to_income' ? 'Income' : (escapeHtml(lastTransferOut.targetGoalName || 'Savings'));
+      const destDateLabel = MONTH_NAMES[lastTransferOut.toMonth - 1] + ' ' + lastTransferOut.toYear;
+      if(isFullySettled){
+        transferBannerHtml = `
+          <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
+            <span style="font-size:13px; font-weight:700;">↳</span>
+            <span><strong>Settled:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}).</span>
+          </div>
+        `;
+      } else if(isPartiallyTransferred){
+        transferBannerHtml = `
+          <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
+            <span style="font-size:13px; font-weight:700;">↳</span>
+            <span><strong>Partial Transfer:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}). <strong>${fmt(cur)}</strong> remaining in vault.</span>
+          </div>
+        `;
+      }
+    }
+
+    let rightSideFigure = '';
+    if(isFullySettled){
+      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">PKR 0 in Vault · Settled</span>`;
+    } else if(isPartiallyTransferred){
+      rightSideFigure = `<span class="text-xs" style="color:var(--ink); font-weight:600;">${fmt(cur)} in Vault</span>`;
+    } else if(reached){
+      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">${fmt(cur)} in Vault · Target Met</span>`;
+    } else {
+      rightSideFigure = `<span class="text-xs muted">${fmt(rem)} remaining</span>`;
+    }
+
+    const canContribute = !reached && !isFullySettled;
+    const canReverseTransfer = Boolean(lastTransferOut);
+    const canUseSavings = cur > 0;
+    const canTransfer = cur > 0;
+    const canExtend = !reached && g.deadline && !isFullySettled;
+
     return `
-      <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${cardBorder}">
+      <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${cardBorder} ${cardBg}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
-          <div>
+          <div style="flex:1;">
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               ${dragHandleHtml()}
               <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
               ${statusBadge}
             </div>
-            ${g.deadline ? `<p class="text-xs muted" style="margin:4px 0 0;">Target Date: <strong>${escapeHtml(g.deadline)}</strong></p>` : ''}
-            ${isTransferred && lastTransferOut ? `<p class="text-xs" style="margin:4px 0 0; color:var(--teal); font-weight:500;">Transferred ${fmt(totalTransferredOut)} to ${MONTH_NAMES[lastTransferOut.toMonth-1]} ${lastTransferOut.toYear}.</p>` : ''}
-            <div style="margin-top:6px; display:inline-flex; align-items:center; gap:5px; background:var(--surface-2); border:1px solid var(--line-soft); padding:3px 8px; border-radius:6px; font-size:11.5px; color:var(--muted);">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:12px; color:var(--muted);">
+              ${g.deadline ? `<span>Target Date: <strong style="color:var(--ink);">${escapeHtml(g.deadline)}</strong></span>` : ''}
+              ${g.deadline ? `<span>•</span>` : ''}
               <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
             </div>
+            ${transferBannerHtml}
           </div>
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            <span class="figure" style="font-size:18px; font-weight:700; color:${reached || isTransferred ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
+            <span class="figure" style="font-size:18px; font-weight:700; color:${reached || isFullySettled ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
             <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
             <button type="button" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" title="Delete goal">Delete</button>
           </div>
         </div>
 
-        <div class="progress-track" style="height:8px; border-radius:999px; overflow:hidden;">
-          <div class="progress-fill ${reached || isTransferred ? 'fill-teal' : 'fill-primary'}" style="width:${pct}%; transition:width 0.4s ease;"></div>
+        <div class="progress-track" style="height:8px; border-radius:999px; overflow:hidden; margin-top:12px;">
+          <div class="progress-fill ${reached || isFullySettled ? 'fill-teal' : 'fill-primary'}" style="width:${pct}%; transition:width 0.4s ease;"></div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px;">
           <span class="figure">
-            <strong>${fmt(isTransferred ? accumulated : cur)}</strong> <span class="muted">/ ${fmt(g.targetAmount)}</span>
+            <strong>${fmt(accumulated)}</strong> <span class="muted">/ ${fmt(g.targetAmount)} Target</span>
           </span>
-          <span class="text-xs muted">${isTransferred ? 'PKR 0 remaining · Settled' : (reached ? 'Target Achieved' : fmt(rem) + ' remaining')}</span>
+          ${rightSideFigure}
         </div>
 
         <!-- Clean Action Buttons with Transfer & Use Savings Options -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            ${(!reached && !isTransferred) ? `
+            ${canContribute ? `
               <button type="button" onclick="showContributeRow('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px;">
                 Contribute
               </button>
@@ -11593,19 +11672,21 @@ function renderSavings(){
             <button type="button" onclick="openGoalContributionsModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px;">
               History
             </button>
-            ${isTransferred && lastTransferOut ? `
-              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--amber); border-color:var(--amber);" title="Reverse transfer and return funds to this goal">Reverse Transfer</button>
+            ${canReverseTransfer ? `
+              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--amber); border-color:var(--amber);" title="Reverse transfer and return funds to this goal">↺ Reverse Transfer</button>
             ` : ''}
-            ${cur > 0 ? `
+            ${canUseSavings ? `
               <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use savings from this goal for expenses.">
                 Use Savings
               </button>
+            ` : ''}
+            ${canTransfer ? `
               <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Transfer savings to another month or directly into income (current balance: ${fmt(cur)})">
                 Transfer
               </button>
             ` : ''}
           </div>
-          ${(!reached && g.deadline && !isTransferred) ? `
+          ${canExtend ? `
             <button type="button" onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="font-size:11.5px; color:var(--muted); background:none; border:none; cursor:pointer;">
               Extend Date
             </button>
@@ -11732,7 +11813,8 @@ function contribute(id){
     description: `Contribution to ${goal.name}`,
     paymentMethod: paymentValue,
     savingIn: savingInValue,
-    amount: val
+    amount: val,
+    goalId: goal.id
   });
 
   // Dynamically update goal amount from transactions
@@ -15698,10 +15780,11 @@ let _rollAllDestM = 0;
 let _rollAllDestY = 0;
 
 function openRollAllSavingsModal(){
-  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings');
+  const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings' && !t.isGoalRolloverIn);
   const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-  _rollAllTotalAmount = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed) * 100) / 100);
+  const allDrawdownsToIncome = (DB.goalRollovers || []).filter(r => r.type === 'goal_to_income').reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  _rollAllTotalAmount = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed - allDrawdownsToIncome) * 100) / 100);
 
   if(_rollAllTotalAmount <= 0){
     showToast('No accumulated savings available to transfer', 'info');
@@ -15952,6 +16035,7 @@ let _rollGoalDestY = 0;
 function populateDestGoalsDropdown(destM, destY, currentGoalId){
   const goalSelect = document.getElementById('roll-goal-dest-goal');
   if(!goalSelect) return;
+  const currentGoal = (DB.savingsGoals || []).find(g => g.id === currentGoalId);
   const activeGoals = (DB.savingsGoals || []).filter(g => goalActiveInPeriod(g, destM, destY));
   
   let options = [];
@@ -15962,7 +16046,10 @@ function populateDestGoalsDropdown(destM, destY, currentGoalId){
   activeGoals.filter(g => g.id !== currentGoalId).forEach(g => {
     options.push(`<option value="${g.id}">${escapeHtml(g.name)}</option>`);
   });
-  options.push(`<option value="__general__" ${!currentInDest ? 'selected' : ''}>Monthly Savings Allocation (General)</option>`);
+  if(currentGoal && !currentInDest){
+    options.push(`<option value="__clone_current__" selected>Carry Over to Next Month: "${escapeHtml(currentGoal.name)}"</option>`);
+  }
+  options.push(`<option value="__general__" ${(!currentInDest && !currentGoal) ? 'selected' : ''}>Monthly Savings Allocation (General)</option>`);
   
   goalSelect.innerHTML = options.join('');
 }
@@ -16157,11 +16244,31 @@ function executeSavingsTransfer(){
     let targetGoalName = 'Savings';
     if(dest === 'savings'){
       const destGoalSelect = document.getElementById('roll-goal-dest-goal');
-      if(destGoalSelect && destGoalSelect.value !== '__general__'){
-        const tg = (DB.savingsGoals || []).find(g => g.id === destGoalSelect.value);
-        if(tg){
-          targetGoalId = tg.id;
-          targetGoalName = tg.name;
+      if(destGoalSelect){
+        if(destGoalSelect.value === '__clone_current__'){
+          const destPeriodStart = _rollGoalDestY + '-' + String(_rollGoalDestM).padStart(2, '0') + '-01';
+          const destPeriodEnd = ymd(new Date(_rollGoalDestY, _rollGoalDestM, 0));
+          const newGoal = {
+            id: uid(),
+            name: goal.name,
+            targetAmount: goal.targetAmount,
+            currentAmount: 0,
+            startDate: destPeriodStart,
+            deadline: destPeriodEnd,
+            savingIn: goal.savingIn || 'Bank Account',
+            isRolloverContinuation: true,
+            continuedFromGoalId: goal.id
+          };
+          DB.savingsGoals = DB.savingsGoals || [];
+          DB.savingsGoals.push(newGoal);
+          targetGoalId = newGoal.id;
+          targetGoalName = newGoal.name;
+        } else if(destGoalSelect.value !== '__general__'){
+          const tg = (DB.savingsGoals || []).find(g => g.id === destGoalSelect.value);
+          if(tg){
+            targetGoalId = tg.id;
+            targetGoalName = tg.name;
+          }
         }
       }
     }
@@ -16271,7 +16378,12 @@ function reverseGoalRollover(rolloverId){
   if(sourceGoal) sourceGoal.currentAmount = getGoalCurrentAmount(sourceGoal);
   if(record.targetGoalId){
     const tgt = (DB.savingsGoals || []).find(g => g.id === record.targetGoalId);
-    if(tgt) tgt.currentAmount = getGoalCurrentAmount(tgt);
+    if(tgt){
+      tgt.currentAmount = getGoalCurrentAmount(tgt);
+      if(tgt.isRolloverContinuation && getGoalAccumulatedDeposits(tgt) <= 0 && tgt.currentAmount <= 0){
+        DB.savingsGoals = DB.savingsGoals.filter(g => g.id !== tgt.id);
+      }
+    }
   }
 
   saveDB(true);
