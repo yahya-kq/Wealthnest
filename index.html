@@ -1313,6 +1313,46 @@
     .card{padding:16px 14px !important;}
     .modal{width:calc(100% - 24px) !important; max-width:100% !important; margin:12px auto !important; padding:18px 16px !important;}
   }
+
+  /* --- Category Management Settings --- */
+  .cat-block { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; background: var(--surface); overflow: hidden; transition: border-color .15s ease; }
+  .cat-block:hover { border-color: var(--line-strong, #CBD5E1); }
+  .cat-block-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; user-select: none; background: var(--surface); transition: background .15s ease; }
+  .cat-block-head:hover { background: var(--surface-2); }
+  .cat-block-body { display: none; padding: 6px 14px 12px; border-top: 1px solid var(--line-soft); background: var(--surface); }
+  .cat-block-body.open { display: block; }
+  .cat-chevron { transition: transform .2s ease; flex-shrink: 0; }
+  .cat-chevron.open { transform: rotate(90deg) !important; }
+
+  /* --- Sidebar Centered Alignment (Collapsed Mode) --- */
+  #sidebar.collapsed .brand-header { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; width: 100% !important; gap: 8px !important; padding: 0 0 12px 0 !important; }
+  #sidebar.collapsed .brand { display: flex !important; justify-content: center !important; width: 100% !important; margin: 0 auto !important; }
+  #sidebar.collapsed .brand-mark { margin: 0 auto !important; }
+  #sidebar.collapsed #sidebar-toggle-btn { margin: 0 auto !important; width: 28px !important; height: 24px !important; padding: 2px !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+  #sidebar.collapsed .nav-link { justify-content: center !important; width: 100% !important; padding: 10px 0 !important; margin: 2px 0 !important; }
+  #sidebar.collapsed .nav-link svg { margin: 0 auto !important; }
+
+  /* --- Transaction Category Cell & Dot Alignment --- */
+  .tx-cat-cell { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; min-width: 0; }
+  .tx-cat-pill { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .tx-cat-name { font-weight: 600; color: var(--ink); line-height: 1.35; }
+
+  /* --- Dedicated Warning Signs Page --- */
+  .warning-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; transition: all .15s ease; }
+  .warning-card:hover { border-color: var(--line-strong, #CBD5E1); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .warning-card.priority-danger { border-left: 4px solid var(--rose); background: rgba(225,29,72,0.02); }
+  .warning-card.priority-amber { border-left: 4px solid var(--amber); background: rgba(217,119,6,0.02); }
+  .warning-card.priority-teal { border-left: 4px solid var(--teal); background: rgba(15,158,147,0.02); }
+  .warning-card.priority-primary { border-left: 4px solid var(--primary); background: rgba(99,102,241,0.02); }
+
+  /* --- Mobile Settings Tabs & Layout Improvements --- */
+  @media(max-width: 768px){
+    .settings-tabs { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; padding-bottom: 6px !important; margin-bottom: 14px !important; }
+    .settings-tabs .btn-chip { flex-shrink: 0 !important; }
+    .cat-block-head { padding: 10px 12px !important; }
+    .subcat-row { padding: 8px 10px !important; font-size: 12.5px !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -2189,6 +2229,40 @@
     </section>
 
     <!-- ---- SETTINGS ---- -->
+    
+    <!-- ---- WARNING SIGNS & SYSTEM ALERTS ---- -->
+    <section id="page-warnings" class="page hidden">
+      <div class="topbar">
+        <div>
+          <h1>Warning Signs &amp; Alerts</h1>
+          <p>Centralized monitoring for budget limits, savings milestones, and cash flow health.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
+      </div>
+
+      <!-- Warning Filter Chips & Quick Stats Bar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+        <div class="chip-row" id="warnings-filter-chips">
+          <button type="button" class="btn-chip active" id="wf-all" onclick="setWarningsFilter('all')">All Warnings</button>
+          <button type="button" class="btn-chip" id="wf-budget" onclick="setWarningsFilter('budget')">Budgets &amp; Overruns</button>
+          <button type="button" class="btn-chip" id="wf-savings" onclick="setWarningsFilter('savings')">Savings Milestones</button>
+          <button type="button" class="btn-chip" id="wf-benefits" onclick="setWarningsFilter('benefits')">Benefits &amp; Surplus</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge badge-ok" id="warnings-active-count" style="font-size:11.5px; font-weight:700;">0 Active</span>
+        </div>
+      </div>
+
+      <!-- Warning List Container -->
+      <div id="warnings-page-list"></div>
+    </section>
+
     <section id="page-settings" class="page hidden">
       <div class="topbar"><div><h1>Settings</h1><p>Manage categories, currency, and preferences.</p></div><div style="display:flex; align-items:center; gap:10px;">
           <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
@@ -3837,6 +3911,7 @@ const ICONS = {
   budgets: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h4M7 16h8"/></svg>',
   savings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
   investments: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 7-7 7-4-4-5 5"/><circle cx="19" cy="7" r="2"/></svg>',
+  warnings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   settings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
 };
 
@@ -3849,6 +3924,7 @@ const NAV_BOTTOM = [
   { id: "budgets", label: "Budgets" },
   { id: "savings", label: "Savings Goals" },
   { id: "investments", label: "Investments" },
+  { id: "warnings", label: "Warning Signs" },
 ];
 const NAV_SETTINGS = [
   { id: "settings", label: "Settings" },
@@ -8441,46 +8517,46 @@ function renderDashboardTopExpenses(periodTxs, totals){
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-            <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
-            <span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">No Spending</span>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
+            <span class="badge badge-ok" style="font-size:11px; font-weight:700;">No Spending</span>
           </div>
-          <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); margin-bottom:12px;"></div>
-          <p class="muted text-xs" style="margin:24px 0; text-align:center;">No expenses recorded for this period.</p>
+          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
+          <p class="muted text-xs" style="margin:20px 0; text-align:center;">No expenses recorded for this period.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
-          <button type="button" onclick="goToApp('transactions')" class="excel-filter-text-btn" style="font-size:12px; padding:2px 8px;">View Transactions</button>
+          <button type="button" onclick="goToApp('transactions')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px;">View Transactions</button>
         </div>
       </div>
     `;
     return;
   }
 
-  const palette = ['#F43F5E', '#F59E0B', '#8B5CF6'];
+  const palette = ['#E11D48', '#D97706', '#7C3AED'];
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-          <span class="figure" style="font-size:18px; font-weight:800; color:var(--rose);">${fmt(totalExpense)}</span>
-          <span class="badge ${expRatio > 90 ? 'badge-over' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">${expRatio > 0 ? expRatio + '% of Income' : 'Expenses'}</span>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+          <span class="figure" style="font-size:22px; font-weight:800; color:var(--rose);">${fmt(totalExpense)}</span>
+          <span class="badge ${expRatio > 90 ? 'badge-over' : 'badge-off'}" style="font-size:11px; font-weight:700;">${expRatio > 0 ? expRatio + '% of Income' : 'Outflow'}</span>
         </div>
-        <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:12px;">
-          <div style="width:${expRatio}%; height:100%; background:var(--rose); border-radius:999px;"></div>
+        <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
+          <div style="width:${Math.min(100, expRatio)}%; height:100%; background:var(--rose); border-radius:999px;"></div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
           ${categories.map((cat, idx) => {
             const pct = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
             const color = palette[idx % palette.length];
             return `
-              <div style="padding:4px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:3px;">
-                  <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
-                    <span style="width:6px; height:6px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
-                    <span style="font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px;">${titleCase(cat.category)}</span>
+              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
+                  <div style="display:flex; align-items:center; gap:7px; min-width:0; flex:1;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
+                    <span style="font-weight:700; color:var(--ink); word-break:break-word;">${escapeHtml(cat.category)}</span>
                   </div>
-                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11.5px;">${fmt(cat.amount)} <span style="font-weight:400; color:var(--muted); font-size:10px;">(${pct}%)</span></span>
+                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:12px; flex-shrink:0;">${fmt(cat.amount)} <span style="font-weight:500; color:var(--muted); font-size:10.5px;">(${pct}%)</span></span>
                 </div>
-                <div class="progress-track" style="height:4px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
+                <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
                   <div style="width:${pct}%; height:100%; background:${color}; border-radius:999px;"></div>
                 </div>
               </div>
@@ -8488,8 +8564,8 @@ function renderDashboardTopExpenses(periodTxs, totals){
           }).join('')}
         </div>
       </div>
-      <div style="text-align:center; margin-top:8px;">
-        <button type="button" onclick="goToApp('reports')" class="excel-filter-text-btn" style="font-size:12px; padding:2px 8px;">View Full Reports</button>
+      <div style="text-align:center; margin-top:10px;">
+        <button type="button" onclick="goToApp('reports')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">View Full Reports</button>
       </div>
     </div>
   `;
@@ -8505,7 +8581,7 @@ function renderDashboardBudgetSummary(period, totals){
 
   const subEl = document.getElementById('budget-perf-sub');
   if(subEl){
-    subEl.textContent = budgeted > 0 ? `${fmt(spent)} of ${fmt(budgeted)} limit` : 'Monthly spending caps';
+    subEl.textContent = budgeted > 0 ? `${fmt(spent)} of ${fmt(budgeted)} Limit` : 'Monthly spending caps';
   }
 
   const container = document.getElementById('dashboard-budget-summary');
@@ -8518,12 +8594,12 @@ function renderDashboardBudgetSummary(period, totals){
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-            <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
-            <span class="badge badge-off" style="font-size:10.5px; font-weight:700;">No Budget</span>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
+            <span class="badge badge-off" style="font-size:11px; font-weight:700;">No Budget</span>
           </div>
-          <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); margin-bottom:12px;"></div>
-          <p class="muted text-xs" style="margin:24px 0; text-align:center;">No category budgets configured for this month.</p>
+          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
+          <p class="muted text-xs" style="margin:20px 0; text-align:center;">No category budgets configured for this month.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
           <button type="button" onclick="goToApp('budgets')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Set Budget</button>
@@ -8534,43 +8610,41 @@ function renderDashboardBudgetSummary(period, totals){
   }
 
   const statusBadge = isOver
-    ? `<span class="badge badge-over" style="font-size:10.5px; font-weight:700;">Over by ${fmt(spent - budgeted)}</span>`
-    : `<span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">${fmt(remaining)} Left (${percent}%)</span>`;
+    ? `<span class="badge badge-over" style="font-size:11px; font-weight:700;">Over by ${fmt(spent - budgeted)}</span>`
+    : `<span class="badge badge-ok" style="font-size:11px; font-weight:700;">${fmt(remaining)} Left (${percent}%)</span>`;
 
+  const topThree = categoryRows.slice(0, 3);
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-          <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(spent)}</span>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+          <span class="figure" style="font-size:22px; font-weight:800; color:var(--ink);">${fmt(spent)}</span>
           ${statusBadge}
         </div>
-        <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:12px;">
+        <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
           <div style="width:${Math.min(100, percent)}%; height:100%; background:${isOver ? 'var(--rose)' : (percent >= 85 ? '#D97706' : 'var(--teal)')}; border-radius:999px; transition:width 0.4s ease;"></div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          ${categoryRows.slice(0, 3).map(r => {
-            const catPct = r.budgetAmount > 0 ? Math.round((r.spent / r.budgetAmount) * 100) : 0;
-            const catOver = r.spent > r.budgetAmount;
-            const catWarn = !catOver && catPct >= 75;
-            const barColor = catOver ? 'var(--rose)' : catWarn ? '#D97706' : 'var(--teal)';
-            const statusLabel = catOver ? 'Over' : catWarn ? 'Warning' : 'OK';
-            const statusColor = catOver ? 'var(--rose)' : catWarn ? '#D97706' : 'var(--teal)';
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${topThree.map(c => {
+            const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
+            const cOver = c.spent > c.budgetAmount;
+            const cColor = cOver ? 'var(--rose)' : (cPct >= 85 ? '#D97706' : 'var(--teal)');
             return `
-              <div style="padding:4px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                  <span style="font-size:12px; font-weight:600; color:var(--ink); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${titleCase(r.category)}</span>
-                  <span style="font-size:11px; font-weight:700; color:${statusColor};">${fmt(r.spent)} <span style="font-weight:400; color:var(--muted); font-size:10px;">/ ${fmt(r.budgetAmount)}</span></span>
+              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
+                  <span style="font-weight:700; color:var(--ink); word-break:break-word; flex:1;">${escapeHtml(c.category)}</span>
+                  <span class="figure" style="font-weight:700; color:${cColor}; font-size:11.5px; flex-shrink:0;">${fmt(c.spent)} <span class="muted" style="font-weight:400; font-size:10.5px;">/ ${fmt(c.budgetAmount)}</span></span>
                 </div>
-                <div class="progress-track" style="height:4px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
-                  <div style="width:${Math.min(100,catPct)}%; height:100%; background:${barColor}; border-radius:999px;"></div>
+                <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
+                  <div style="width:${Math.min(100, cPct)}%; height:100%; background:${cColor}; border-radius:999px;"></div>
                 </div>
               </div>
             `;
           }).join('')}
         </div>
       </div>
-      <div style="text-align:center; margin-top:8px;">
-        <button type="button" onclick="goToApp('budgets')" class="excel-filter-text-btn" style="font-size:12px; padding:2px 8px;">Manage All Budgets</button>
+      <div style="text-align:center; margin-top:10px;">
+        <button type="button" onclick="goToApp('budgets')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">Manage All Budgets</button>
       </div>
     </div>
   `;
@@ -8581,32 +8655,31 @@ function renderDashboardSavings(period, totals){
   if(!container) return;
 
   const monthlySaved = (totals && typeof totals.savings === 'number') ? totals.savings : 0;
-
-  // Filter goals strictly by the active dashboard period
   let filteredGoals = DB.savingsGoals || [];
   if (period && !period.all) {
     if (period.months && period.months.length === 1 && period.year) {
-      filteredGoals = filteredGoals.filter(g => goalActiveInPeriod(g, period.months[0], period.year));
+      filteredGoals = filteredGoals.filter(g => g.isIndependent || goalActiveInPeriod(g, period.months[0], period.year));
     } else if (period.year) {
       const mList = (period.months && period.months.length) ? period.months : [1,2,3,4,5,6,7,8,9,10,11,12];
-      filteredGoals = filteredGoals.filter(g => mList.some(m => goalActiveInPeriod(g, m, period.year)));
+      filteredGoals = filteredGoals.filter(g => g.isIndependent || mList.some(m => goalActiveInPeriod(g, m, period.year)));
     }
   }
 
   const totalTarget = filteredGoals.reduce((s, g) => s + (Number(g.targetAmount) || 0), 0);
-  const totalCurrent = filteredGoals.reduce((s, g) => s + getGoalCurrentAmount(g), 0);
-  const overallPct = totalTarget > 0 ? Math.min(100, Math.round((totalCurrent / totalTarget) * 100)) : 0;
+  const totalAccum = filteredGoals.reduce((s, g) => s + getGoalAccumulatedDeposits(g), 0);
+  const overallPct = totalTarget > 0 ? Math.min(100, Math.round((totalAccum / totalTarget) * 100)) : 0;
+  const achievedCount = filteredGoals.filter(g => getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0)).length;
 
   if(!filteredGoals.length){
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-            <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(monthlySaved)}</span>
-            <span class="badge badge-off" style="font-size:10.5px; font-weight:700;">No Goals</span>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(monthlySaved)}</span>
+            <span class="badge badge-off" style="font-size:11px; font-weight:700;">No Goals</span>
           </div>
-          <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); margin-bottom:12px;"></div>
-          <p class="muted text-xs" style="margin:24px 0; text-align:center;">No savings targets active for this period.</p>
+          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
+          <p class="muted text-xs" style="margin:20px 0; text-align:center;">No savings targets active for this period.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
           <button type="button" onclick="goToApp('savings')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Create Goal</button>
@@ -8616,37 +8689,43 @@ function renderDashboardSavings(period, totals){
     return;
   }
 
+  const topGoals = filteredGoals.slice(0, 3);
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-          <span class="figure" style="font-size:18px; font-weight:800; color:var(--teal);">${fmt(monthlySaved)}</span>
-          <span class="badge ${overallPct >= 100 ? 'badge-ok' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">${overallPct}% Target</span>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+          <span class="figure" style="font-size:22px; font-weight:800; color:var(--teal);">${fmt(monthlySaved)}</span>
+          <span class="badge ${achievedCount > 0 ? 'badge-ok' : 'badge-off'}" style="font-size:11px; font-weight:700;">${achievedCount} of ${filteredGoals.length} Achieved</span>
         </div>
-        <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:12px;">
+        <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
           <div style="width:${overallPct}%; height:100%; background:var(--teal); border-radius:999px; transition:width 0.4s ease;"></div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          ${filteredGoals.slice(0, 3).map(g => {
-            const cur = getGoalCurrentAmount(g);
-            const tgt = Number(g.targetAmount) || 0;
-            const p = tgt > 0 ? Math.min(100, Math.round((cur / tgt) * 100)) : 0;
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${topGoals.map(g => {
+            const gAcc = getGoalAccumulatedDeposits(g);
+            const gTgt = Number(g.targetAmount) || 0;
+            const gCur = getGoalCurrentAmount(g);
+            const gPct = gTgt > 0 ? Math.min(100, Math.round((gAcc / gTgt) * 100)) : 0;
+            const gReached = gAcc >= gTgt && gTgt > 0;
             return `
-              <div style="padding:4px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                  <span style="font-size:12px; font-weight:600; color:var(--ink); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(g.name)}</span>
-                  <span class="figure tone-neu" style="font-size:11px; font-weight:600;">${fmt(cur)} <span style="font-weight:400; color:var(--muted); font-size:10px;">/ ${fmt(tgt)}</span></span>
+              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
+                  <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
+                    <span style="font-weight:700; color:var(--ink); word-break:break-word;">${escapeHtml(g.name)}</span>
+                    ${g.isIndependent ? '<span class="badge" style="font-size:9.5px; padding:1px 4px; background:rgba(99,102,241,0.08); color:var(--primary);">Flexible</span>' : ''}
+                  </div>
+                  <span class="figure" style="font-weight:700; color:var(--teal); font-size:11.5px; flex-shrink:0;">${fmt(gAcc)} <span class="muted" style="font-weight:400; font-size:10.5px;">/ ${fmt(gTgt)} (${gPct}%)</span></span>
                 </div>
-                <div class="progress-track" style="height:4px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
-                  <div style="width:${p}%; height:100%; background:var(--teal); border-radius:999px;"></div>
+                <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
+                  <div style="width:${gPct}%; height:100%; background:${gReached ? 'var(--teal)' : 'var(--primary)'}; border-radius:999px;"></div>
                 </div>
               </div>
             `;
           }).join('')}
         </div>
       </div>
-      <div style="text-align:center; margin-top:8px;">
-        <button type="button" onclick="goToApp('savings')" class="excel-filter-text-btn" style="font-size:12px; padding:2px 8px;">View Savings Details</button>
+      <div style="text-align:center; margin-top:10px;">
+        <button type="button" onclick="goToApp('savings')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">Manage Savings Goals</button>
       </div>
     </div>
   `;
@@ -8662,12 +8741,12 @@ function renderDashboardInvestments(){
     body.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-            <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
-            <span class="badge ${vpsActive ? 'badge-ok' : 'badge-off'}" style="font-size:10.5px; font-weight:700;">VPS ${vpsActive ? 'Active' : 'Paused'}</span>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
+            <span class="badge ${vpsActive ? 'badge-ok' : 'badge-off'}" style="font-size:11px; font-weight:700;">VPS ${vpsActive ? 'Active' : 'Paused'}</span>
           </div>
-          <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); margin-bottom:12px;"></div>
-          <p class="muted text-xs" style="margin:24px 0; text-align:center;">Track stocks, mutual funds, gold, and VPS assets in real-time.</p>
+          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
+          <p class="muted text-xs" style="margin:20px 0; text-align:center;">Track stocks, mutual funds, gold, and VPS assets in real-time.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
           <button type="button" onclick="goToApp('investments')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Add First Asset</button>
@@ -8686,34 +8765,40 @@ function renderDashboardInvestments(){
   body.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
-          <span class="figure" style="font-size:18px; font-weight:800; color:var(--ink);">${fmt(totalVal)}</span>
-          <span class="badge ${totalGain >= 0 ? 'badge-ok' : 'badge-over'}" style="font-size:10.5px; font-weight:700;">${roiSign}${roi.toFixed(1)}% Return</span>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+          <span class="figure" style="font-size:22px; font-weight:800; color:var(--ink);">${fmt(totalVal)}</span>
+          <span class="badge ${totalGain >= 0 ? 'badge-ok' : 'badge-over'}" style="font-size:11px; font-weight:700;">${roiSign}${roi.toFixed(1)}% Return</span>
         </div>
-        <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:12px;">
+        <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
           <div style="width:${Math.min(100, Math.max(10, Math.round(roi + 50)))}%; height:100%; background:${totalGain >= 0 ? 'var(--teal)' : 'var(--rose)'}; border-radius:999px;"></div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
           ${list.slice(0, 3).map(inv => {
             const invVal = Number(inv.currentValue) || 0;
             const invCost = Number(inv.initialInvested) || 0;
             const invGain = invVal - invCost;
+            const invRoi = invCost > 0 ? ((invGain / invCost) * 100) : 0;
+            const meta = getAssetClassMeta(inv.assetType);
             return `
-              <div style="padding:4px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                  <span style="font-weight:600; font-size:12px; color:var(--ink); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(inv.name)}</span>
-                  <span class="figure" style="font-weight:700; font-size:11px; color:${invGain >= 0 ? 'var(--teal)' : 'var(--rose)'};">${fmt(invVal)}</span>
+              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
+                  <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:${meta.color || 'var(--primary)'}; flex-shrink:0;"></span>
+                    <span style="font-weight:700; color:var(--ink); word-break:break-word;">${escapeHtml(inv.name)}</span>
+                  </div>
+                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11.5px; flex-shrink:0;">${fmt(invVal)} <span style="font-weight:500; color:${invGain>=0?'var(--teal)':'var(--rose)'}; font-size:10.5px;">(${invGain>=0?'+':''}${invRoi.toFixed(1)}%)</span></span>
                 </div>
-                <div class="progress-track" style="height:4px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
-                  <div style="width:100%; height:100%; background:var(--primary); border-radius:999px; opacity:0.8;"></div>
+                <div style="font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between;">
+                  <span>${escapeHtml(meta.label || inv.assetType || 'Asset')}</span>
+                  <span>Cost: ${fmt(invCost)}</span>
                 </div>
               </div>
             `;
           }).join('')}
         </div>
       </div>
-      <div style="text-align:center; margin-top:8px;">
-        <button type="button" onclick="goToApp('investments')" class="excel-filter-text-btn" style="font-size:12px; padding:2px 8px;">Manage Portfolio</button>
+      <div style="text-align:center; margin-top:10px;">
+        <button type="button" onclick="goToApp('investments')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">View Portfolio Holdings</button>
       </div>
     </div>
   `;
@@ -9685,6 +9770,26 @@ function toggleTxDateSort(){
   renderTransactions();
 }
 
+function getCategoryColor(cat, type){
+  if(type === 'income') return '#059669';
+  if(type === 'savings') return '#D97706';
+  const palette = {
+    'Food & Dining': '#0D9488',
+    'Family Support': '#7C3AED',
+    'Health & Medical': '#E11D48',
+    'Transportation': '#0284C7',
+    'Personal Care': '#C026D3',
+    'Education': '#2563EB',
+    'Shopping': '#EA580C',
+    'Fitness': '#16A34A',
+    'Entertainment': '#9333EA',
+    'Bills & Utilities': '#DC2626',
+    'Housing': '#475569',
+    'Travel': '#0891B2'
+  };
+  return palette[cat] || '#6366F1';
+}
+
 function renderTransactions(){
   updateTxMonthLabel();
   document.getElementById('tx-count-label').textContent = `${DB.transactions.length} logged`;
@@ -9844,7 +9949,13 @@ function renderTransactions(){
     return `
     <tr class="${isHighlight ? 'tx-row-highlight' : ''}">
       <td class="muted" style="white-space:nowrap;">${escapeHtml(formattedDate)}</td>
-      <td><span class="dot dot-${escapeHtml(t.type)}"></span><strong>${escapeHtml(t.category)}</strong>${catDeletedBadge}</td>
+      <td>
+        <div class="tx-cat-cell">
+          <span class="tx-cat-pill" style="background:${getCategoryColor(t.category, t.type)};"></span>
+          <span class="tx-cat-name">${escapeHtml(t.category)}</span>
+          ${catDeletedBadge}
+        </div>
+      </td>
       ${subcatCell}
       <td class="muted">${t.description ? escapeHtml(t.description) : '<span style="color:var(--muted-2);">-</span>'}</td>
       <td class="muted">${methodBadges}${savingInBadge}</td>
@@ -13450,7 +13561,8 @@ function renderSettingsTabs(){
     {id:'account', label:'Account'},
     {id:'notifications', label:'Notifications'},
     {id:'backup', label:'Backup & Data'},
-    {id:'recycle', label:'Recycle Bin'}
+    {id:'recycle', label:'Recycle Bin'},
+    {id:'warnings', label:'Warning Signs'}
   ];
 
   const container = document.getElementById('settings-tabs');
@@ -13596,15 +13708,27 @@ function requestDesktopNotificationPermission(){
     showToast('Browser notifications are not supported on this browser', 'info');
     return;
   }
-  Notification.requestPermission().then(function(perm){
-    renderNotificationSettings();
-    if(perm === 'granted'){
-      showToast('Desktop push notifications enabled!', 'success');
-      new Notification('WealthNest', { body: 'Desktop notifications are active.', icon: '/favicon.ico' });
-    } else {
-      showToast('Notification permission was denied', 'info');
+  if(window.location.protocol === 'file:'){
+    showToast('Note: Browsers restrict desktop push on local file:// URLs. Host via http://localhost to enable native alerts.', 'warning');
+  }
+  try {
+    const handlePerm = function(perm){
+      renderNotificationSettings();
+      if(perm === 'granted'){
+        showToast('Desktop push notifications enabled!', 'success');
+        dispatchDesktopNotification('WealthNest Desktop Alerts Active', { body: 'You will receive desktop alerts for budget limits and goal milestones.' });
+      } else {
+        showToast('Notification permission was denied by browser', 'info');
+      }
+    };
+    const req = Notification.requestPermission(handlePerm);
+    if(req && typeof req.then === 'function'){
+      req.then(handlePerm);
     }
-  });
+  } catch(err){
+    console.warn('Permission request error:', err);
+    showToast('Unable to request notification permission: ' + err.message, 'error');
+  }
 }
 
 function sendTestNotification(){
@@ -13965,9 +14089,13 @@ function setCatTypeTab(t){
   renderCategoryList();
 }
 
-let openSettingsCategory = null;
+let openSettingsCategories = new Set(['Food & Dining']);
 function toggleSettingsCategory(name){
-  openSettingsCategory = (openSettingsCategory === name) ? null : name;
+  if(openSettingsCategories.has(name)){
+    openSettingsCategories.delete(name);
+  } else {
+    openSettingsCategories.add(name);
+  }
   renderCategoryList();
 }
 
@@ -14078,8 +14206,9 @@ function handleSaveEditCategory(e){
     }
   });
 
-  if(openSettingsCategory === oldName){
-    openSettingsCategory = newName;
+  if(openSettingsCategories.has(oldName)){
+    openSettingsCategories.delete(oldName);
+    openSettingsCategories.add(newName);
   }
 
   saveDB();
@@ -14186,7 +14315,7 @@ function handleSaveEditSubcategory(e){
 
   saveDB();
   closeEditSubcategoryModal();
-  openSettingsCategory = parentCategory;
+  openSettingsCategories.add(parentCategory);
   renderAllForCurrentPage();
   showToast(`Renamed subcategory to "${newName}"`);
 }
@@ -14197,51 +14326,46 @@ function renderCategoryList(){
   if(catTypeTab === 'expense'){
     const list = (DB.categories.expense || []).filter(c => !query || c.name.toLowerCase().includes(query) || (c.subcategories || []).some(s => s.toLowerCase().includes(query)));
     document.getElementById('cat-list').innerHTML = list.length ? list.map((c, cIdx) => {
-      const isOpen = openSettingsCategory === c.name;
+      const isOpen = openSettingsCategories.has(c.name);
       const subList = c.subcategories || [];
       const visibleSubs = subList.filter(s => !query || c.name.toLowerCase().includes(query) || s.toLowerCase().includes(query));
-      const draftVal = subcatDrafts[c.name] || '';
       return `
       <div class="cat-block draggable-item" draggable="true" data-reorder-group="settings-cat-expense" data-reorder-key="${escapeHtml(c.name)}">
-        <div class="cat-block-head" onclick="toggleSettingsCategory('${c.name.replace(/'/g,"\\\'")}')">
+        <div class="cat-block-head" onclick="toggleSettingsCategory('${c.name.replace(/'/g,"\\'")}')">
           <div style="display:flex; align-items:center; gap:8px;">
-            ${dragHandleHtml()}
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .15s; color:var(--muted-2);"><polyline points="9 18 15 12 9 6"/></svg>
-            <span style="font-weight:500;">${escapeHtml(c.name)}</span>
-            <span class="text-xs muted">${subList.length ? `${subList.length} sub-categor${subList.length===1?'y':'ies'}` : 'No sub-categories'}</span>
+            <span class="drag-handle" title="Drag to reorder" onclick="event.stopPropagation()">${dragHandleHtml()}</span>
+            <svg class="cat-chevron ${isOpen ? 'open' : ''}" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transform:rotate(${isOpen?90:0}deg); color:var(--muted);"><polyline points="9 18 15 12 9 6"/></svg>
+            <span style="font-weight:600; font-size:14px; color:var(--ink);">${escapeHtml(c.name)}</span>
+            <span class="text-xs muted">(${subList.length} sub-categor${subList.length===1?'y':'ies'})</span>
           </div>
           <div style="display:inline-flex; align-items:center; gap:4px;" onclick="event.stopPropagation()">
             ${reorderArrowsHtml('settings-cat-expense', c.name, cIdx === 0, cIdx === list.length - 1)}
             <button class="icon-btn icon-btn-edit" onclick="openEditCategoryModal('expense','${c.name.replace(/'/g,"\\\'")}');" title="Edit category" aria-label="Edit ${escapeHtml(c.name)}">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['expense','${c.name.replace(/'/g,"\\\'")}'],'${c.name.replace(/'/g,"\\\'")}')" title="Remove category" aria-label="Delete ${escapeHtml(c.name)}">
+            <button class="icon-btn icon-btn-delete" onclick="requestDelete('category',['expense','${c.name.replace(/'/g,"\\\'")}'],'${c.name.replace(/'/g,"\\\'")}');" title="Remove category" aria-label="Delete ${escapeHtml(c.name)}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
         </div>
-        <div class="cat-block-body ${isOpen?'open':''}">
+        <div class="cat-block-body ${isOpen ? 'open' : ''}">
           ${visibleSubs.map((s, sIdx) => `
             <div class="subcat-row draggable-item" draggable="true" data-reorder-group="settings-subcat" data-reorder-parent="${escapeHtml(c.name)}" data-reorder-key="${escapeHtml(s)}">
               <span style="display:inline-flex; align-items:center; gap:6px;">${dragHandleHtml()}${escapeHtml(s)}</span>
               <div style="display:inline-flex; align-items:center; gap:4px;">
                 ${reorderArrowsHtml('settings-subcat', s, sIdx === 0, sIdx === visibleSubs.length - 1, c.name)}
-                <button class="icon-btn icon-btn-edit" onclick="openEditSubcategoryModal('${c.name.replace(/'/g,"\\\'")}','${s.replace(/'/g,"\\\'")}')" title="Edit subcategory" aria-label="Edit ${escapeHtml(s)}">
+                <button class="icon-btn icon-btn-edit" onclick="openEditSubcategoryModal('${c.name.replace(/'/g,"\\\'")}','${s.replace(/'/g,"\\\'")}');" title="Edit subcategory" aria-label="Edit ${escapeHtml(s)}">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button class="icon-btn icon-btn-delete" onclick="requestDelete('subcategory',['${c.name.replace(/'/g,"\\\'")}','${s.replace(/'/g,"\\\'")}'],'${s.replace(/'/g,"\\\'")}')" title="Remove subcategory" aria-label="Delete ${escapeHtml(s)}">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <button class="icon-btn icon-btn-delete" onclick="requestDelete('subcategory',['${c.name.replace(/'/g,"\\\'")}','${s.replace(/'/g,"\\\'")}'],'${s.replace(/'/g,"\\\'")}');" title="Remove subcategory" aria-label="Delete ${escapeHtml(s)}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
-            </div>`).join('')}
-          <form data-category="${escapeHtml(c.name)}" onsubmit="handleAddSubcategoryInline(event, '${c.name.replace(/'/g,"\\\'")}')" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center;">
-            <input type="text" placeholder="Add sub-category under ${escapeHtml(c.name)}..." value="${escapeHtml(draftVal)}" class="field-input" style="font-size:13px; flex:1; min-width:160px;" required oninput="subcatDrafts['${c.name.replace(/'/g,"\\\'")}'] = this.value; const m=this.form.querySelector('.subcategory-add-message'); if(m) m.textContent=''; this.style.borderColor='';">
-            <button type="submit" class="btn-small" style="white-space:nowrap;">Add</button>
-            <span class="subcategory-add-message text-xs muted" style="width:100%; min-height:16px;"></span>
-          </form>
+            </div>
+          `).join('')}
         </div>
-      </div>`;
-    }).join('') : '<p class="empty-note">No categories yet.</p>';
+      </div>
+      `;}).join('') : '<p class="empty-note">No categories yet.</p>';
   } else {
     const list = (DB.categories[catTypeTab] || []).filter(c => !query || c.toLowerCase().includes(query));
     document.getElementById('cat-list').innerHTML = list.length ? list.map((c, idx) => `
@@ -14329,7 +14453,7 @@ function handleAddLinkedSubcategory(e){
   input.value = '';
   delete subcatDrafts['__top_subcat__'];
   saveDB();
-  openSettingsCategory = parent;
+  openSettingsCategories.add(parent);
   renderCategoryList();
   showToast(`Added subcategory "${name}" to ${parent}`);
 }
@@ -14372,7 +14496,7 @@ function handleAddSubcategoryInline(e, categoryName){
   input.value = '';
   delete subcatDrafts[categoryName];
   saveDB();
-  openSettingsCategory = categoryName;
+  openSettingsCategories.add(categoryName);
   renderCategoryList();
   showToast(`Added subcategory "${name}" to ${categoryName}`);
 }
@@ -14821,6 +14945,7 @@ function renderPage(page){
   else if(page==='budgets') renderBudgets();
   else if(page==='savings') renderSavings();
   else if(page==='investments') renderInvestments();
+  else if(page==='warnings') renderWarningsPage();
   else if(page==='settings') renderSettings();
 }
 
@@ -16338,6 +16463,198 @@ window.addEventListener('beforeunload', () => {
 });
 
 initAuth();
+
+/* ============================================================
+   WARNING SIGNS & ALERTS SYSTEM ENGINE
+   ============================================================ */
+let warningsFilterMode = 'all';
+
+function setWarningsFilter(mode){
+  warningsFilterMode = mode;
+  document.querySelectorAll('#warnings-filter-chips .btn-chip').forEach(b => {
+    b.classList.toggle('active', b.id === 'wf-' + mode);
+  });
+  renderWarningsPage();
+}
+
+function getActiveWarningsList(){
+  const now = new Date();
+  const curM = (notifSelMonth !== undefined) ? notifSelMonth : (now.getMonth() + 1);
+  const curY = (notifSelYear !== undefined) ? notifSelYear : now.getFullYear();
+  const warnings = [];
+
+  // 1. Budget Overruns and Warnings
+  const monthBudgets = (DB.budgets || []).filter(b => b.month === curM && b.year === curY);
+  const monthTxs = (DB.transactions || []).filter(t => inMonth(t, curM, curY) && t.type === 'expense');
+
+  monthBudgets.forEach(b => {
+    const spent = monthTxs.filter(t => t.category === b.category && (!b.subCategory || t.subCategory === b.subCategory))
+                          .reduce((s, t) => s + (t.amount || 0), 0);
+    const limit = Number(b.amount || b.budgetAmount) || 0;
+    if(limit > 0){
+      if(spent > limit){
+        warnings.push({
+          id: 'warn-budget-over-' + b.id,
+          category: 'budget',
+          priority: 'danger',
+          title: 'Budget Exceeded: ' + b.category + (b.subCategory ? ' (' + b.subCategory + ')' : ''),
+          subhead: 'Spending (' + fmt(spent) + ') exceeded your ' + fmt(limit) + ' monthly cap by ' + fmt(spent - limit) + '.',
+          section: 'Budgets',
+          actionLabel: 'Adjust Budget',
+          actionFn: "goToApp('budgets')"
+        });
+      } else if((spent / limit) >= 0.85){
+        warnings.push({
+          id: 'warn-budget-watch-' + b.id,
+          category: 'budget',
+          priority: 'amber',
+          title: 'Budget Warning: ' + b.category + (b.subCategory ? ' (' + b.subCategory + ')' : ''),
+          subhead: 'Spending (' + fmt(spent) + ') has reached ' + Math.round((spent / limit) * 100) + '% of your ' + fmt(limit) + ' cap.',
+          section: 'Budgets',
+          actionLabel: 'View Transactions',
+          actionFn: "goToApp('transactions')"
+        });
+      }
+    }
+  });
+
+  // 2. Savings Goal Deadlines & Milestones
+  const todayStr = ymd(now);
+  (DB.savingsGoals || []).forEach(g => {
+    const cur = getGoalCurrentAmount(g);
+    const acc = getGoalAccumulatedDeposits(g);
+    const target = Number(g.targetAmount) || 0;
+    const reached = acc >= target && target > 0;
+
+    if(!reached && g.deadline && !g.isIndependent){
+      const daysDiff = Math.ceil((new Date(g.deadline).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      if(daysDiff < 0){
+        warnings.push({
+          id: 'warn-goal-passed-' + g.id,
+          category: 'savings',
+          priority: 'danger',
+          title: 'Deadline Passed: ' + g.name,
+          subhead: 'Target date (' + g.deadline + ') passed with ' + fmt(cur) + ' saved in vault (' + fmt(Math.max(0, target - acc)) + ' remaining).',
+          section: 'Savings',
+          actionLabel: 'Extend or Settle',
+          actionFn: "goToApp('savings')"
+        });
+      } else if(daysDiff <= 7){
+        warnings.push({
+          id: 'warn-goal-soon-' + g.id,
+          category: 'savings',
+          priority: 'amber',
+          title: 'Goal Deadline Approaching: ' + g.name,
+          subhead: 'Target date is in ' + daysDiff + ' day' + (daysDiff===1?'':'s') + ' (' + g.deadline + '). ' + fmt(Math.max(0, target - acc)) + ' remaining.',
+          section: 'Savings',
+          actionLabel: 'Contribute',
+          actionFn: "goToApp('savings')"
+        });
+      }
+    } else if(reached && cur > 0){
+      warnings.push({
+        id: 'warn-goal-ready-' + g.id,
+        category: 'savings',
+        priority: 'teal',
+        title: 'Goal 100% Achieved: ' + g.name,
+        subhead: 'Target met! You have ' + fmt(cur) + ' ready to use for expenses or transfer.',
+        section: 'Savings',
+        actionLabel: 'Use Savings',
+        actionFn: "goToApp('savings')"
+      });
+    }
+  });
+
+  // 3. Company Benefits Quota Surplus
+  (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
+    const avail = computeAllowanceAvailable(acc);
+    if(avail > 0){
+      warnings.push({
+        id: 'warn-benefit-surplus-' + acc.id,
+        category: 'benefits',
+        priority: 'teal',
+        title: 'Unspent Allowance: ' + acc.name,
+        subhead: 'You have ' + fmt(avail) + ' unspent quota available to transfer to personal cash flow.',
+        section: 'Benefits',
+        actionLabel: 'Claim Surplus',
+        actionFn: "openTransferAllowanceModal('" + acc.id + "')"
+      });
+    }
+  });
+
+  return warnings;
+}
+
+function renderWarningsPage(){
+  const container = document.getElementById('warnings-page-list');
+  const countBadge = document.getElementById('warnings-active-count');
+  if(!container) return;
+
+  const allWarnings = getActiveWarningsList();
+  const filtered = warningsFilterMode === 'all' 
+    ? allWarnings 
+    : allWarnings.filter(w => w.category === warningsFilterMode);
+
+  if(countBadge){
+    countBadge.textContent = allWarnings.length + ' Active Alert' + (allWarnings.length===1?'':'s');
+    countBadge.className = 'badge ' + (allWarnings.length > 0 ? 'badge-over' : 'badge-ok');
+  }
+
+  if(!filtered.length){
+    container.innerHTML = `
+      <div class="card" style="padding:48px 24px; text-align:center;">
+        <div style="width:48px; height:48px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; color:var(--teal);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3 style="margin:0 0 6px; font-size:18px;">All Clear - No Active Warning Signs</h3>
+        <p class="text-xs muted" style="margin:0 auto; max-width:400px; line-height:1.5;">Your spending is within configured budget limits, savings goals are on track, and no urgent actions require your attention.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="warning-grid">
+      ${filtered.map(w => {
+        const priorityColors = {
+          danger: { badge: 'badge-over', tag: 'Danger / Overrun' },
+          amber: { badge: 'badge-off', tag: 'Warning / Watch' },
+          teal: { badge: 'badge-ok', tag: 'Actionable / Surplus' }
+        };
+        const pMeta = priorityColors[w.priority] || priorityColors.amber;
+        return `
+          <div class="warning-card priority-${w.priority}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span class="badge ${pMeta.badge}" style="font-size:11px; font-weight:700;">${pMeta.tag}</span>
+                <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:11px; font-weight:600; color:var(--muted);">${w.section}</span>
+                <h3 style="margin:0; font-size:15px; font-weight:700; color:var(--ink);">${escapeHtml(w.title)}</h3>
+              </div>
+              <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px;" onclick="${w.actionFn}">${w.actionLabel}</button>
+            </div>
+            <p style="margin:0; font-size:13px; color:var(--ink); line-height:1.4;">${escapeHtml(w.subhead)}</p>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+// Push Notification Helper
+function dispatchDesktopNotification(title, options){
+  if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+    try {
+      new Notification(title, {
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236366F1"><circle cx="12" cy="12" r="10"/></svg>',
+        ...options
+      });
+    } catch(e){
+      console.warn('Desktop notification dispatch error:', e);
+    }
+  }
+}
+
+
 </script>
 </body>
 </html>
