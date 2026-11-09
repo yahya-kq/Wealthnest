@@ -1300,6 +1300,19 @@
   .topbar-bell-btn { position:relative; width:36px; height:36px; border-radius:10px; border:1px solid var(--line); background:var(--surface); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink); transition:all .15s ease; flex-shrink:0; }
   .topbar-bell-btn:hover { background:var(--surface-2); border-color:var(--primary); color:var(--primary); }
 
+/* Mobile enhancements: clean responsive spacing, zero-overlap typography & breathing room */
+  @media(max-width:768px){
+    .bbc-head{display:flex !important; align-items:center !important; justify-content:space-between !important; gap:12px !important; min-width:0 !important; margin-bottom:10px !important;}
+    .bbc-title{flex:1 1 auto !important; min-width:0 !important; word-break:break-word !important; font-size:14.5px !important; line-height:1.3 !important;}
+    .bbc-footer{display:flex !important; align-items:center !important; justify-content:space-between !important; gap:12px !important; min-width:0 !important; margin-top:6px !important;}
+    .category-row{display:flex !important; justify-content:space-between !important; align-items:center !important; gap:12px !important; min-width:0 !important; margin-bottom:6px !important;}
+    .category-row > span:first-child{flex:1 1 auto !important; min-width:0 !important; word-break:break-word !important;}
+    .category-row > span:last-child{flex-shrink:0 !important; text-align:right !important;}
+    .dashboard-dropdowns-row{flex-wrap:wrap !important; gap:8px !important;}
+    .table-responsive-container{width:100% !important; overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; margin-bottom:12px !important;}
+    .card{padding:16px 14px !important;}
+    .modal{width:calc(100% - 24px) !important; max-width:100% !important; margin:12px auto !important; padding:18px 16px !important;}
+  }
 </style>
 </head>
 <body>
@@ -2160,154 +2173,19 @@
         <div id="inv-holdings-empty" style="display:none; text-align:center; padding:36px 16px;"></div>
       </div>
 
-      <!-- Mid Row: Asset Allocation (Left) & Wealth Milestones (Right) -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;" class="grid-inv-sub">
-        <!-- Asset Allocation Donut -->
-        <div class="card" style="padding:22px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <h2 class="section-title" style="margin:0;">Asset Allocation</h2>
-            <span class="text-xs muted" id="inv-allocation-total"></span>
-          </div>
-          <div style="height:190px; position:relative; display:flex; align-items:center; justify-content:center;">
-            <canvas id="asset-allocation-chart"></canvas>
-          </div>
-          <div id="asset-allocation-legend" style="margin-top:14px; display:flex; flex-direction:column; gap:6px;"></div>
+            <!-- Asset Allocation Donut -->
+      <div class="card" style="padding:22px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h2 class="section-title" style="margin:0;">Asset Allocation</h2>
+          <span class="text-xs muted" id="inv-allocation-total"></span>
         </div>
-
-        <!-- Milestone Roadmap Card -->
-        <div class="card" style="padding:22px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <h2 class="section-title" style="margin:0;">Wealth Milestones</h2>
-            <span class="badge" style="font-size:10px; padding:1px 6px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line);">Projected</span>
-          </div>
-          <p class="text-xs muted" style="margin:0 0 12px;">Timeline to reach portfolio milestones at current rate:</p>
-          <div id="inv-milestones-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <div style="height:220px; position:relative; display:flex; align-items:center; justify-content:center;">
+          <canvas id="asset-allocation-chart"></canvas>
         </div>
+        <div id="asset-allocation-legend" style="margin-top:14px; display:flex; flex-direction:column; gap:6px;"></div>
       </div>
+    </div>
 
-      <!-- Collapsible Outcome Projection Simulator Card -->
-      <div class="card" style="padding:20px 22px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <h2 class="section-title" style="margin:0;">Outcome Projections &amp; Growth Simulator</h2>
-              <span class="badge" style="background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">Future Value</span>
-            </div>
-            <p class="text-xs muted" style="margin:4px 0 0;">Optional compound growth modeler • Test scenarios and project 1–30 year horizons</p>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" onclick="syncSimWithPortfolio()" class="btn-ghost btn-small" style="font-size:11.5px; padding:5px 11px;" title="Auto-fills calculator with your active holdings total">
-              Use My Holdings
-            </button>
-            <button type="button" id="btn-toggle-sim" onclick="toggleSimDrawer()" class="btn-primary btn-small" style="font-size:11.5px; padding:5px 12px; display:inline-flex; align-items:center; gap:5px;">
-              <span id="btn-toggle-sim-label">Show Simulator</span>
-              <svg id="btn-toggle-sim-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Collapsible Simulator Drawer -->
-        <div id="inv-sim-drawer" class="hidden" style="margin-top:18px; padding-top:18px; border-top:1px solid var(--line-soft);">
-          <!-- Highlight Result Banner -->
-          <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(2,132,199,0.06) 100%); border:1px solid rgba(16,185,129,0.22); border-radius:14px; padding:18px 20px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-              <div>
-                <span class="text-xs uppercase muted" style="font-weight:700; letter-spacing:0.05em;" id="sim-horizon-title">Projected Wealth in 10 Years</span>
-                <div class="figure" id="sim-result-fv" style="font-size:32px; font-weight:700; color:var(--ink); margin-top:2px; line-height:1.1;">$0</div>
-              </div>
-              <div style="text-align:right;">
-                <span class="text-xs muted">Pure Wealth Created</span>
-                <div class="figure" id="sim-result-gain" style="font-size:20px; font-weight:700; color:var(--teal); margin-top:2px;">+$0</div>
-              </div>
-            </div>
-            
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; padding-top:12px; border-top:1px solid rgba(16,185,129,0.15); font-size:12px;">
-              <div>
-                <span class="muted text-xs">Total Principal:</span>
-                <strong class="figure" id="sim-result-principal" style="display:block; font-size:13.5px; margin-top:1px;">$0</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Projected Gain:</span>
-                <strong class="figure" id="sim-result-pure-gain" style="display:block; font-size:13.5px; margin-top:1px; color:var(--teal);">+$0</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Expected Return Rate:</span>
-                <strong class="figure" id="sim-result-rate" style="display:block; font-size:13.5px; margin-top:1px; color:var(--ink);">10.0% / yr</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Return Multiple:</span>
-                <strong class="figure" id="sim-result-multiple" style="display:block; font-size:13.5px; margin-top:1px; color:var(--primary);">1.0x Return</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Doubling Time:</span>
-                <strong class="figure" id="sim-result-doubling" style="display:block; font-size:13.5px; margin-top:1px; color:var(--ink);">N/A</strong>
-              </div>
-              <div>
-                <span class="muted text-xs">Passive Income (4%):</span>
-                <strong class="figure" id="sim-result-passive" style="display:block; font-size:13.5px; margin-top:1px; color:#059669;">$0/mo</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- Simulator Interactive Sliders & Inputs -->
-          <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:20px;">
-            <div class="sim-input-grid">
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <label class="field-label" style="margin:0; font-size:12px;">Starting Capital</label>
-                  <span class="figure" id="sim-disp-principal" style="font-size:12px; font-weight:700; color:var(--primary);">$0</span>
-                </div>
-                <input type="number" min="0" step="100" id="sim-input-principal" class="field-input figure" value="0" oninput="onSimInputChange('principal', this.value)">
-              </div>
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <label class="field-label" style="margin:0; font-size:12px;">Monthly Addition (Optional Planner)</label>
-                  <span class="figure" id="sim-disp-monthly" style="font-size:12px; font-weight:700; color:var(--teal);">$0/mo</span>
-                </div>
-                <input type="number" min="0" step="25" id="sim-input-monthly" class="field-input figure" value="0" oninput="onSimInputChange('monthly', this.value)">
-              </div>
-            </div>
-
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="field-label" style="margin:0; font-size:12px;">Expected Annual Return Rate</label>
-                <span class="figure" id="sim-disp-rate" style="font-size:13px; font-weight:700; color:var(--ink);">10.0% / yr</span>
-              </div>
-              <input type="range" min="1" max="25" step="0.5" id="sim-slider-rate" value="10" class="wealth-range-slider" oninput="onSimInputChange('rate', this.value)">
-              <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
-                <button type="button" class="btn-chip" id="preset-rate-6" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(6.0)">Safe / Bank (6%)</button>
-                <button type="button" class="btn-chip active" id="preset-rate-10" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(10.0)">Balanced (10%)</button>
-                <button type="button" class="btn-chip" id="preset-rate-14" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(14.0)">PSX Stocks (14%)</button>
-                <button type="button" class="btn-chip" id="preset-rate-18" style="font-size:11px; padding:3px 8px;" onclick="setSimRatePreset(18.0)">High Growth (18%)</button>
-              </div>
-            </div>
-
-            <div>
-              <label class="field-label" style="margin-bottom:6px; font-size:12px;">Time Horizon</label>
-              <div style="display:flex; gap:6px; flex-wrap:wrap;" id="sim-horizon-chips">
-                <button type="button" class="btn-chip" id="horizon-chip-1" onclick="setSimHorizon(1)">1 Year</button>
-                <button type="button" class="btn-chip" id="horizon-chip-2" onclick="setSimHorizon(2)">2 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-3" onclick="setSimHorizon(3)">3 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-5" onclick="setSimHorizon(5)">5 Years</button>
-                <button type="button" class="btn-chip active" id="horizon-chip-10" onclick="setSimHorizon(10)">10 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-15" onclick="setSimHorizon(15)">15 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-20" onclick="setSimHorizon(20)">20 Years</button>
-                <button type="button" class="btn-chip" id="horizon-chip-30" onclick="setSimHorizon(30)">30 Years</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dynamic Area Chart -->
-          <div style="min-height:270px; position:relative;">
-            <canvas id="investment-projection-chart"></canvas>
-            <div id="sim-chart-empty" style="display:none; min-height:270px; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; border:1px dashed var(--line); border-radius:12px; background:var(--surface-2);">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted); margin-bottom:8px;"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-              <p style="margin:0 0 4px; font-weight:600; font-size:13.5px; color:var(--ink);">No Investment Projections Yet</p>
-              <p class="text-xs muted" style="margin:0; max-width:300px;">Add assets to your portfolio or enter a starting capital above to project compound wealth growth.</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- ---- SETTINGS ---- -->
@@ -2823,6 +2701,13 @@
     <button class="modal-close" onclick="closeGoalModal()">✕</button>
     <h2>New Savings Goal</h2>
     <form onsubmit="handleAddGoal(event)">
+      <div style="margin-bottom:12px; padding:10px 12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px; display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="goal-is-independent" onchange="onGoalIndependentChange()" style="width:16px; height:16px; cursor:pointer;">
+        <label for="goal-is-independent" style="font-size:12px; font-weight:700; color:var(--ink); cursor:pointer; margin:0;">
+          Flexible / Long-Term Goal (No Monthly Restriction)
+        </label>
+      </div>
+
       <label class="field-label">Goal Name</label>
       <input type="text" id="goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
       <label class="field-label">Start Date</label>
@@ -2921,6 +2806,13 @@
     <h2>Edit Savings Goal</h2>
     <form onsubmit="handleSaveEditGoal(event)">
       <input type="hidden" id="edit-goal-id">
+      <div style="margin-bottom:12px; padding:10px 12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px; display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="edit-goal-is-independent" onchange="onEditGoalIndependentChange()" style="width:16px; height:16px; cursor:pointer;">
+        <label for="edit-goal-is-independent" style="font-size:12px; font-weight:700; color:var(--ink); cursor:pointer; margin:0;">
+          Flexible / Long-Term Goal (No Monthly Restriction)
+        </label>
+      </div>
+
       <label class="field-label">Goal Name</label>
       <input type="text" id="edit-goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
       <label class="field-label">Start Date</label>
@@ -3104,15 +2996,22 @@
         <div>
           <label class="field-label" for="inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
           <select id="inv-type" class="field-input" required onchange="onInvTypeChange(this.value)">
-            <option value="Stocks">Stocks</option>
-            <option value="ETFs & Index Funds" selected>ETFs &amp; Funds</option>
-            <option value="Crypto">Crypto</option>
+            <option value="National Savings (NSS)">National Savings (NSS)</option>
+            <option value="Treasury Bills & Sukuk">Treasury Bills &amp; Sukuk</option>
+            <option value="Term Deposits (TDR / Fixed)">Term Deposits (TDR / Fixed)</option>
+            <option value="Cash & Liquid Reserves">Cash &amp; Liquid Reserves</option>
+            <option value="Foreign Currency (Forex)">Foreign Currency (Forex)</option>
+            <option value="Private Business Equity">Private Business Equity</option>
+            <option value="Islamic Mutual Funds">Islamic Mutual Funds</option>
             <option value="Provident Fund / VPS">Provident Fund / VPS</option>
-            <option value="Real Estate">Real Estate</option>
-            <option value="Bonds / Fixed Income">Bonds</option>
-            <option value="Gold & Commodities">Gold</option>
-            <option value="Mutual Funds">Mutual Funds</option>
-            <option value="Other">Other</option>
+            <option value="Stocks" selected>Stocks (Global Equities)</option>
+            <option value="PSX Stocks">PSX Stocks</option>
+            <option value="ETFs & Index Funds">ETFs &amp; Index Funds</option>
+            <option value="Crypto">Crypto &amp; Digital Assets</option>
+            <option value="Real Estate">Real Estate (Property)</option>
+            <option value="Bonds / Fixed Income">Bonds &amp; Corporate Debt</option>
+            <option value="Gold & Commodities">Gold &amp; Commodities</option>
+            <option value="Other">Other Alternative Assets</option>
           </select>
         </div>
         <div>
@@ -3202,15 +3101,22 @@
         <div>
           <label class="field-label" for="edit-inv-type">Asset Class <span style="color:var(--rose);">*</span></label>
           <select id="edit-inv-type" class="field-input" required onchange="onEditInvTypeChange(this.value)">
-            <option value="Stocks">Stocks</option>
-            <option value="ETFs & Index Funds">ETFs &amp; Funds</option>
-            <option value="Crypto">Crypto</option>
+            <option value="National Savings (NSS)">National Savings (NSS)</option>
+            <option value="Treasury Bills & Sukuk">Treasury Bills &amp; Sukuk</option>
+            <option value="Term Deposits (TDR / Fixed)">Term Deposits (TDR / Fixed)</option>
+            <option value="Cash & Liquid Reserves">Cash &amp; Liquid Reserves</option>
+            <option value="Foreign Currency (Forex)">Foreign Currency (Forex)</option>
+            <option value="Private Business Equity">Private Business Equity</option>
+            <option value="Islamic Mutual Funds">Islamic Mutual Funds</option>
             <option value="Provident Fund / VPS">Provident Fund / VPS</option>
-            <option value="Real Estate">Real Estate</option>
-            <option value="Bonds / Fixed Income">Bonds</option>
-            <option value="Gold & Commodities">Gold</option>
-            <option value="Mutual Funds">Mutual Funds</option>
-            <option value="Other">Other</option>
+            <option value="Stocks" selected>Stocks (Global Equities)</option>
+            <option value="PSX Stocks">PSX Stocks</option>
+            <option value="ETFs & Index Funds">ETFs &amp; Index Funds</option>
+            <option value="Crypto">Crypto &amp; Digital Assets</option>
+            <option value="Real Estate">Real Estate (Property)</option>
+            <option value="Bonds / Fixed Income">Bonds &amp; Corporate Debt</option>
+            <option value="Gold & Commodities">Gold &amp; Commodities</option>
+            <option value="Other">Other Alternative Assets</option>
           </select>
         </div>
         <div>
@@ -11288,6 +11194,7 @@ function onSavingsFilterChange(){
   renderSavings();
 }
 function goalActiveInPeriod(goal,month,year){
+  if(goal && goal.isIndependent) return false;
   const periodStart=`${year}-${String(month).padStart(2,'0')}-01`;
   const periodEnd=ymd(new Date(year,month,0));
   return (!goal.startDate||goal.startDate<=periodEnd)&&(!goal.deadline||goal.deadline>=periodStart);
@@ -11479,31 +11386,33 @@ function renderSavings(){
   initSavingsFilters();
   const allGoalsMode = (savingsViewMode === 'all');
   const allGoalsList = DB.savingsGoals || [];
-  const visibleGoals = allGoalsMode
-    ? [...allGoalsList]
-    : allGoalsList.filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
+  
+  // Separate flexible independent goals from monthly targets
+  const flexibleGoals = allGoalsList.filter(g => g.isIndependent);
+  const monthlyPeriodGoals = allGoalsList.filter(g => !g.isIndependent && (allGoalsMode || goalActiveInPeriod(g, savingsFilterMonth, savingsFilterYear)));
+  const visibleGoals = allGoalsMode ? [...allGoalsList] : [...flexibleGoals, ...monthlyPeriodGoals];
 
   const allGoalsBtn = document.getElementById('btn-savings-all-goals');
   if(allGoalsBtn){
     if(allGoalsMode){
       allGoalsBtn.className = 'btn-primary';
-      allGoalsBtn.textContent = 'Showing All Goals';
+      allGoalsBtn.textContent = 'Showing All-Time';
     } else {
       allGoalsBtn.className = 'btn-ghost';
-      allGoalsBtn.textContent = 'All Goals';
+      allGoalsBtn.textContent = 'All-Time';
     }
   }
 
   const noteEl = document.getElementById('savings-filter-note');
   if(noteEl && allGoalsMode){
-    noteEl.textContent = 'Showing all goals grouped chronologically by month.';
+    noteEl.textContent = 'Showing all cumulative goals across all time.';
   }
 
   const countLabel = document.getElementById('savings-count-label');
   if(countLabel){
     countLabel.textContent = allGoalsMode
-      ? `${visibleGoals.length} total goal${visibleGoals.length===1?'':'s'} on record`
-      : `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'} for this period`;
+      ? `${visibleGoals.length} total goal${visibleGoals.length===1?'':'s'} on record (${flexibleGoals.length} flexible)`
+      : `${monthlyPeriodGoals.length} active target${monthlyPeriodGoals.length===1?'':'s'} · ${flexibleGoals.length} flexible`;
   }
 
   // 1. Calculate All-Time Cumulative Unspent Savings (deposits minus funded expenses and income drawdowns)
@@ -11528,8 +11437,9 @@ function renderSavings(){
   const activeCf = (DB.carryForwards || []).find(cf => cf.fromMonth === curM && cf.fromYear === curY && (DB.transactions || []).some(t => t.id === cf.txId));
 
   // 3. Goals Achieved KPI (based on accumulated savings reached target!)
-  const monthGoalsCount = visibleGoals.length;
-  const monthGoalsAchieved = visibleGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+  const monthGoalsCount = monthlyPeriodGoals.length;
+  const monthGoalsAchieved = monthlyPeriodGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+  const allAchievedCount = allGoalsList.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
 
   // 4. Update goal currentAmounts
   visibleGoals.forEach(g => {
@@ -11541,7 +11451,7 @@ function renderSavings(){
   if(summaryGrid){
     const remainTone = activeCf ? 'pos' : (rawRemaining >= 0 ? 'pos' : 'neg');
     const remainLabel = activeCf ? 'Rolled over to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget');
-    const goalsTone = monthGoalsAchieved > 0 ? 'pos' : 'neu';
+    const goalsTone = (allGoalsMode ? allAchievedCount : monthGoalsAchieved) > 0 ? 'pos' : 'neu';
     const goalsLabel = allGoalsMode ? 'All-time achieved' : (monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName);
     summaryGrid.innerHTML = `
       <div class="card ov-card">
@@ -11551,28 +11461,28 @@ function renderSavings(){
         ${netTotalSavingsAllTime > 0 ? `<div style="margin-top:6px;"><button type="button" onclick="openRollAllSavingsModal()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">Roll All to Next Month</button></div>` : ''}
       </div>
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">Saved This Month</span><div class="ov-icon accent-primary">${miniIcon('calendarCheck')}</div></div>
-        <p class="ov-amount">${fmt(monthSaved)}</p>
-        <div class="ov-change"><span class="kpi-trend-badge trend-neu">${curMonthName} ${curY} contributions</span></div>
+        <div class="ov-top"><span class="label-eyebrow">${allGoalsMode ? 'Saved All-Time' : 'Saved This Month'}</span><div class="ov-icon accent-primary">${miniIcon('calendarCheck')}</div></div>
+        <p class="ov-amount">${fmt(allGoalsMode ? allSavingsDeposited : monthSaved)}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-neu">${allGoalsMode ? 'Lifetime gross deposits' : curMonthName + ' ' + curY + ' contributions'}</span></div>
       </div>
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">Remaining Balance</span><div class="ov-icon accent-amber">${miniIcon('coins')}</div></div>
-        <p class="ov-amount">${fmt(Math.abs(activeCf ? activeCf.amount : rawRemaining))}</p>
-        <div class="ov-change"><span class="kpi-trend-badge trend-${remainTone}">${remainLabel}</span></div>
+        <div class="ov-top"><span class="label-eyebrow">${allGoalsMode ? 'Unspent Balance' : 'Remaining Balance'}</span><div class="ov-icon accent-amber">${miniIcon('coins')}</div></div>
+        <p class="ov-amount">${fmt(allGoalsMode ? netTotalSavingsAllTime : Math.abs(activeCf ? activeCf.amount : rawRemaining))}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${remainTone}">${allGoalsMode ? 'Available Across Vaults' : remainLabel}</span></div>
         <div style="margin-top:6px;">
-          ${activeCf ? `
+          ${!allGoalsMode && activeCf ? `
             <span class="badge badge-ok" style="font-size:10.5px; padding:2px 6px;">Applied</span>
             <button type="button" onclick="reverseCarryForward('${activeCf.id}')" class="link-sm" style="font-size:11px; color:var(--rose); background:none; border:none; cursor:pointer; margin-left:6px; font-weight:600;">Reverse</button>
-          ` : (rawRemaining > 0 ? `
+          ` : (!allGoalsMode && rawRemaining > 0 ? `
             <button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:2px 10px; font-size:11px; height:24px; border-radius:6px; font-weight:600;">Carry Forward</button>
           ` : '')}
         </div>
       </div>
       <div class="card ov-card">
         <div class="ov-top"><span class="label-eyebrow">Goals Achieved</span><div class="ov-icon accent-rose">${miniIcon('trophy')}</div></div>
-        <p class="ov-amount">${monthGoalsAchieved} of ${monthGoalsCount}</p>
+        <p class="ov-amount">${allGoalsMode ? allAchievedCount + ' of ' + allGoalsList.length : monthGoalsAchieved + ' of ' + monthGoalsCount}</p>
         <div class="ov-change"><span class="kpi-trend-badge trend-${goalsTone}">${goalsLabel}</span></div>
-        <div style="margin-top:6px;"><button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">${allGoalsMode ? 'Show Monthly' : 'All Goals'}</button></div>
+        <div style="margin-top:6px;"><button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">${allGoalsMode ? 'Show Monthly' : 'All-Time'}</button></div>
       </div>
     `;
   }
@@ -11591,14 +11501,14 @@ function renderSavings(){
         <div style="width:40px; height:40px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         </div>
-        <p style="font-size:14px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Savings Goals for ${curMonthName} ${curY}</p>
-        <p class="text-xs muted" style="margin:0 auto; max-width:380px; line-height:1.5;">You haven't created a savings target for this month yet. Click "+ Create Goal" to set a target milestone.</p>
+        <p style="font-size:14px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Savings Goals for ${allGoalsMode ? 'All-Time' : curMonthName + ' ' + curY}</p>
+        <p class="text-xs muted" style="margin:0 auto; max-width:380px; line-height:1.5;">Click "+ Create Goal" to set a monthly milestone or an independent flexible goal.</p>
       </div>
     `;
     return;
   }
 
-  // Render a single goal card cleanly
+  // Render Single Goal Card with Full Clarity (Milestone Achieved vs Vault Balance)
   function renderSingleGoalCard(g, gIdx){
     const accumulated = getGoalAccumulatedDeposits(g);
     const cur = getGoalCurrentAmount(g);
@@ -11635,20 +11545,25 @@ function renderSavings(){
 
     let statusBadge = '<span class="badge badge-off">In Progress</span>';
     if(isFullySettled){
-      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">✓ Settled</span>';
+      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">[Settled]</span>';
     } else if(isPartiallyTransferred){
-      statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">Partially Transferred</span>`;
+      statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">[Partially Transferred]</span>`;
     } else if(reached){
-      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">✓ 100% Achieved</span>';
+      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">[100% Achieved]</span>';
     } else if(isExpired){
-      statusBadge = '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>';
+      statusBadge = '<span class="badge badge-over" style="font-weight:600;">[Deadline Passed]</span>';
     }
+
+    // Independent / Flexible goal badge
+    let goalTypeBadge = g.isIndependent 
+      ? '<span class="badge" style="background:rgba(99,102,241,0.09); color:var(--primary); font-size:11px; font-weight:700;">Flexible Goal</span>'
+      : '';
 
     // Multi-month pacing calculation
     const monthsRemaining = getGoalMonthsRemaining(g);
     const monthlyPacing = getGoalMonthlyPacing(g);
     let pacingBadgeHtml = '';
-    if(!reached && !isFullySettled && g.deadline && monthlyPacing > 0){
+    if(!reached && !isFullySettled && g.deadline && monthlyPacing > 0 && !g.isIndependent){
       if(monthsRemaining > 1){
         pacingBadgeHtml = `<span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px;">Pacing: ${fmt(monthlyPacing)} / mo · ${monthsRemaining} mos left</span>`;
       } else {
@@ -11664,14 +11579,14 @@ function renderSavings(){
         transferBannerHtml = `
           <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
             <span style="font-size:13px; font-weight:700;">↳</span>
-            <span><strong>Settled:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}).</span>
+            <span><strong>Settled Outflow:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}). Available in vault: ${fmt(cur)}.</span>
           </div>
         `;
       } else if(isPartiallyTransferred){
         transferBannerHtml = `
           <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
             <span style="font-size:13px; font-weight:700;">↳</span>
-            <span><strong>Partial Transfer:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}). <strong>${fmt(cur)}</strong> remaining in vault.</span>
+            <span><strong>Partial Outflow:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}) · <strong>${fmt(cur)}</strong> remaining in vault.</span>
           </div>
         `;
       }
@@ -11679,11 +11594,11 @@ function renderSavings(){
 
     let rightSideFigure = '';
     if(isFullySettled){
-      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">PKR 0 in Vault · Settled</span>`;
+      rightSideFigure = `<span class="badge badge-ok" style="font-size:11px; font-weight:700;">Vault: ${fmt(cur)} · Settled</span>`;
     } else if(isPartiallyTransferred){
-      rightSideFigure = `<span class="text-xs" style="color:var(--ink); font-weight:600;">${fmt(cur)} in Vault</span>`;
+      rightSideFigure = `<span class="badge" style="background:rgba(15,158,147,0.12); color:var(--teal); font-size:11px; font-weight:700;">Vault: ${fmt(cur)} Available</span>`;
     } else if(reached){
-      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">${fmt(cur)} in Vault · Target Met</span>`;
+      rightSideFigure = `<span class="badge badge-ok" style="font-size:11px; font-weight:700;">Vault: ${fmt(cur)} Ready</span>`;
     } else {
       rightSideFigure = `<span class="text-xs muted">${fmt(rem)} remaining</span>`;
     }
@@ -11692,7 +11607,7 @@ function renderSavings(){
     const canReverseTransfer = Boolean(lastTransferOut);
     const canUseSavings = cur > 0;
     const canTransfer = cur > 0;
-    const canExtend = !reached && g.deadline && !isFullySettled;
+    const canExtend = !reached && g.deadline && !isFullySettled && !g.isIndependent;
 
     return `
       <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${cardBorder} ${cardBg}">
@@ -11701,11 +11616,12 @@ function renderSavings(){
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               ${dragHandleHtml()}
               <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
+              ${goalTypeBadge}
               ${statusBadge}
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:12px; color:var(--muted);">
-              ${g.deadline ? `<span>Target Date: <strong style="color:var(--ink);">${escapeHtml(g.deadline)}</strong></span>` : ''}
-              ${g.deadline ? `<span>•</span>` : ''}
+              ${g.deadline ? `<span>Target Date: <strong style="color:var(--ink);">${escapeHtml(g.deadline)}</strong></span>` : '<span>Target: <strong style="color:var(--ink);">Flexible / Open-Ended</strong></span>'}
+              <span>•</span>
               <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
               ${pacingBadgeHtml}
             </div>
@@ -11724,7 +11640,7 @@ function renderSavings(){
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px;">
           <span class="figure">
-            <strong>${fmt(accumulated)}</strong> <span class="muted">/ ${fmt(g.targetAmount)} Target</span>
+            <strong>${fmt(accumulated)}</strong> <span class="muted">/ ${fmt(g.targetAmount)} Target Achieved</span>
           </span>
           ${rightSideFigure}
         </div>
@@ -11741,7 +11657,7 @@ function renderSavings(){
               History
             </button>
             ${canReverseTransfer ? `
-              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--amber); border-color:var(--amber);" title="Reverse transfer and return funds to this goal">↺ Reverse Transfer</button>
+              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--amber); border-color:var(--amber);" title="Reverse transfer and return funds to this goal">[↺ Reverse Transfer]</button>
             ` : ''}
             ${canUseSavings ? `
               <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use savings from this goal for expenses.">
@@ -11766,11 +11682,27 @@ function renderSavings(){
     `;
   }
 
-  // If in 'All Goals' mode: group chronologically by Month/Year with Section Headers
+  // Render Section Headers for Flexible Goals vs Monthly Targets
+  let flexibleSectionHtml = '';
+  if(flexibleGoals.length > 0){
+    flexibleSectionHtml = `
+      <div style="grid-column:1 / -1; margin-top:14px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid var(--line); padding-bottom:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h4 style="margin:0; font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--ink);">Flexible & Long-Term Goals</h4>
+          <span class="badge" style="background:rgba(99,102,241,0.1); color:var(--primary); font-size:11px; font-weight:700;">
+            ${flexibleGoals.length} Active (No Monthly Restriction)
+          </span>
+        </div>
+        <span class="text-xs muted" style="font-weight:600;">Multi-Month & Open-Ended</span>
+      </div>
+    ` + flexibleGoals.map((g, gIdx) => renderSingleGoalCard(g, gIdx)).join('');
+  }
+
+  // If in 'All-Time' mode: group monthly goals chronologically
   if(allGoalsMode){
     const groupsMap = new Map();
-    visibleGoals.forEach(g => {
-      let key = 'Ongoing / Lifetime';
+    monthlyPeriodGoals.forEach(g => {
+      let key = 'Ongoing / Open Targets';
       let sortKey = '0000-00';
       if(g.deadline){
         const parts = g.deadline.split('-');
@@ -11815,9 +11747,24 @@ function renderSavings(){
       `;
       allHtml += groupGoals.map((g, idx) => renderSingleGoalCard(g, idx)).join('');
     });
-    grid.innerHTML = allHtml;
+    grid.innerHTML = flexibleSectionHtml + allHtml;
   } else {
-    grid.innerHTML = visibleGoals.map((g, gIdx) => renderSingleGoalCard(g, gIdx)).join('');
+    let monthlySectionHtml = '';
+    if(monthlyPeriodGoals.length > 0){
+      const monthAchieved = monthlyPeriodGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+      monthlySectionHtml = `
+        <div style="grid-column:1 / -1; margin-top:14px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid var(--line); padding-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h4 style="margin:0; font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--ink);">${MONTH_NAMES[(savingsFilterMonth||1)-1]} ${savingsFilterYear} Targets</h4>
+            <span class="badge ${monthAchieved === monthlyPeriodGoals.length ? 'badge-ok' : 'badge-off'}" style="font-size:11px;">
+              ${monthAchieved} of ${monthlyPeriodGoals.length} Achieved
+            </span>
+          </div>
+          <span class="text-xs muted" style="font-weight:600;">Monthly Milestones</span>
+        </div>
+      ` + monthlyPeriodGoals.map((g, gIdx) => renderSingleGoalCard(g, gIdx)).join('');
+    }
+    grid.innerHTML = flexibleSectionHtml + monthlySectionHtml;
   }
 }
 
@@ -12019,16 +11966,38 @@ function deleteContributionTransaction(txId){
 }
 function openGoalModal(){ document.getElementById('goal-modal-backdrop').classList.remove('hidden'); }
 function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classList.add('hidden'); }
+function onGoalIndependentChange(){
+  const isInd = document.getElementById('goal-is-independent')?.checked;
+  const deadEl = document.getElementById('goal-deadline');
+  if(deadEl){
+    deadEl.required = !isInd;
+  }
+}
+
+function onEditGoalIndependentChange(){
+  const isInd = document.getElementById('edit-goal-is-independent')?.checked;
+  const deadEl = document.getElementById('edit-goal-deadline');
+  if(deadEl){
+    deadEl.required = !isInd;
+  }
+}
+
 function handleAddGoal(e){
   e.preventDefault();
   const name = document.getElementById('goal-name').value.trim();
-  const startDate = document.getElementById('goal-start').value;
+  const isIndependent = document.getElementById('goal-is-independent')?.checked || false;
+  const startDate = document.getElementById('goal-start').value || ymd(new Date());
   const target = parseFloat(document.getElementById('goal-target').value);
   const deadline = document.getElementById('goal-deadline').value;
   const savingIn = document.getElementById('goal-saving-in')?.value || 'Bank Account';
-  if(!name || !startDate || !target || target<=0 || !deadline || deadline < startDate){
+
+  if(!name || !target || target <= 0){
+    showToast('Please enter a valid goal name and target amount', 'error');
+    return;
+  }
+  if(!isIndependent && (!startDate || !deadline || deadline < startDate)){
     if(!deadline){
-      showToast('Please select a deadline date', 'error');
+      showToast('Please select a deadline date for monthly goals', 'error');
     } else if(deadline < startDate){
       showToast('Deadline cannot be earlier than start date', 'error');
     } else {
@@ -12040,12 +12009,26 @@ function handleAddGoal(e){
     showToast(`A savings goal named "${name}" already exists`, 'warning');
     return;
   }
-  DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline, savingIn });
-  saveDB(true); closeGoalModal();
-  document.getElementById('goal-name').value=''; document.getElementById('goal-start').value=''; document.getElementById('goal-target').value=''; document.getElementById('goal-deadline').value='';
+  DB.savingsGoals.push({
+    id: uid(),
+    name,
+    targetAmount: target,
+    currentAmount: 0,
+    startDate,
+    deadline: isIndependent ? (deadline || '') : deadline,
+    savingIn,
+    isIndependent: Boolean(isIndependent)
+  });
+  saveDB(true);
+  closeGoalModal();
+  document.getElementById('goal-name').value = '';
+  document.getElementById('goal-start').value = '';
+  document.getElementById('goal-target').value = '';
+  document.getElementById('goal-deadline').value = '';
+  if(document.getElementById('goal-is-independent')) document.getElementById('goal-is-independent').checked = false;
   if(document.getElementById('goal-saving-in')) document.getElementById('goal-saving-in').value = 'Bank Account';
   renderAllForCurrentPage();
-  showToast(`Created savings goal "${name}"`);
+  showToast(`Created ${isIndependent ? 'flexible' : 'monthly'} savings goal "${name}"`);
 }
 
 function openEditGoalModal(id){
@@ -12056,6 +12039,10 @@ function openEditGoalModal(id){
   document.getElementById('edit-goal-start').value = g.startDate || '';
   document.getElementById('edit-goal-target').value = g.targetAmount || '';
   document.getElementById('edit-goal-deadline').value = g.deadline || '';
+  const indCb = document.getElementById('edit-goal-is-independent');
+  if(indCb){
+    indCb.checked = Boolean(g.isIndependent);
+  }
   const savingInSelect = document.getElementById('edit-goal-saving-in');
   if(savingInSelect){
     savingInSelect.value = g.savingIn || 'Bank Account';
@@ -12066,10 +12053,12 @@ function openEditGoalModal(id){
   }
   document.getElementById('edit-goal-modal-backdrop').classList.remove('hidden');
 }
+
 function closeEditGoalModal(){
   const backdrop = document.getElementById('edit-goal-modal-backdrop');
   if(backdrop) backdrop.classList.add('hidden');
 }
+
 function handleSaveEditGoal(e){
   e.preventDefault();
   const id = document.getElementById('edit-goal-id').value;
@@ -12079,19 +12068,22 @@ function handleSaveEditGoal(e){
     return;
   }
   const newName = document.getElementById('edit-goal-name').value.trim();
-  const startDate = document.getElementById('edit-goal-start').value;
+  const isIndependent = document.getElementById('edit-goal-is-independent')?.checked || false;
+  const startDate = document.getElementById('edit-goal-start').value || ymd(new Date());
   const target = parseFloat(document.getElementById('edit-goal-target').value);
   const deadline = document.getElementById('edit-goal-deadline').value;
   const savingInSelect = document.getElementById('edit-goal-saving-in');
   const savingIn = savingInSelect ? savingInSelect.value : (g.savingIn || 'Bank Account');
 
-  if(!newName || !startDate || !target || target <= 0 || !deadline || deadline < startDate){
+  if(!newName || !target || target <= 0){
+    showToast('Please check the goal fields and enter valid values', 'error');
+    return;
+  }
+  if(!isIndependent && (!startDate || !deadline || deadline < startDate)){
     if(!deadline){
       showToast('Please select a deadline date', 'error');
     } else if(deadline < startDate){
       showToast('Deadline cannot be earlier than start date', 'error');
-    } else {
-      showToast('Please check the goal fields and enter valid values', 'error');
     }
     return;
   }
@@ -12105,8 +12097,9 @@ function handleSaveEditGoal(e){
   g.name = newName;
   g.startDate = startDate;
   g.targetAmount = target;
-  g.deadline = deadline;
+  g.deadline = isIndependent ? (deadline || '') : deadline;
   g.savingIn = savingIn;
+  g.isIndependent = Boolean(isIndependent);
 
   if(oldName !== newName){
     (DB.transactions || []).forEach(tx => {
@@ -12125,24 +12118,25 @@ function handleSaveEditGoal(e){
 
 /* ---------------- render: investments ---------------- */
 let invCategoryFilter = 'all';
-let simStartingCapital = 0;
-let simMonthlyContrib = 0;
-let simAnnualReturn = 10.0;
-let simHorizonYears = 10;
-let chartInvestmentProjection = null;
 let chartAssetAllocation = null;
 
 const ASSET_CLASSES = [
-  { id: 'Provident Fund / VPS', label: 'Provident Fund / VPS', color: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE', isRecurring: true, depositLabel: 'Log Monthly Deposit', noSell: true },
-  { id: 'Stocks', label: 'Stocks', color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
-  { id: 'PSX Stocks', label: 'PSX Stocks', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
-  { id: 'ETFs & Index Funds', label: 'ETFs & Index Funds', color: '#10B981', bg: '#ECFDF5', border: '#A7F3D0' },
-  { id: 'Crypto', label: 'Crypto', color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A' },
-  { id: 'Real Estate', label: 'Real Estate', color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE', depositLabel: 'Log Rental Income', noSell: true },
-  { id: 'Bonds / Fixed Income', label: 'Bonds / Fixed Income', color: '#06B6D4', bg: '#ECFEFF', border: '#A5F3FC', depositLabel: 'Log Coupon Payment' },
-  { id: 'Gold & Commodities', label: 'Gold & Commodities', color: '#D97706', bg: '#FEF3C7', border: '#FDE68A' },
-  { id: 'Mutual Funds', label: 'Mutual Funds', color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8', isRecurring: true, depositLabel: 'Log Monthly Investment' },
-  { id: 'Other', label: 'Other', color: '#64748B', bg: '#F8FAFC', border: '#E2E8F0' },
+  { id: 'National Savings (NSS)', label: 'National Savings (NSS)', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0', depositLabel: 'Log Profit / Dividend', noSell: true },
+  { id: 'Treasury Bills & Sukuk', label: 'Treasury Bills & Sukuk', color: '#0891B2', bg: '#ECFEFF', border: '#A5F3FC', depositLabel: 'Log Coupon / Profit' },
+  { id: 'Term Deposits (TDR / Fixed)', label: 'Term Deposits (TDR / Fixed)', color: '#4338CA', bg: '#EEF2FF', border: '#C7D2FE', depositLabel: 'Log Interest / Profit', noSell: true },
+  { id: 'Cash & Liquid Reserves', label: 'Cash & Liquid Reserves', color: '#475569', bg: '#F8FAFC', border: '#E2E8F0', depositLabel: 'Log Yield / Interest' },
+  { id: 'Foreign Currency (Forex)', label: 'Foreign Currency (Forex)', color: '#D97706', bg: '#FEF3C7', border: '#FDE68A', depositLabel: 'Revalue Currency' },
+  { id: 'Private Business Equity', label: 'Private Business Equity', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', depositLabel: 'Log Profit Distribution', noSell: true },
+  { id: 'Islamic Mutual Funds', label: 'Islamic Mutual Funds', color: '#0D9488', bg: '#F0FDFA', border: '#99F6E4', isRecurring: true, depositLabel: 'Log Dividend / Reinvest' },
+  { id: 'Provident Fund / VPS', label: 'Provident Fund / VPS', color: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE', isRecurring: true, depositLabel: 'Log Payday Deposit', noSell: true },
+  { id: 'Stocks', label: 'Stocks (Global Equities)', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', depositLabel: 'Log Dividend' },
+  { id: 'PSX Stocks', label: 'PSX Stocks', color: '#0284C7', bg: '#F0F9FF', border: '#BAE6FD', depositLabel: 'Log Dividend' },
+  { id: 'ETFs & Index Funds', label: 'ETFs & Index Funds', color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', depositLabel: 'Log Distribution' },
+  { id: 'Crypto', label: 'Crypto & Digital Assets', color: '#EA580C', bg: '#FFF7ED', border: '#FFEDD5', depositLabel: 'Log Staking Yield' },
+  { id: 'Real Estate', label: 'Real Estate (Property)', color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE', depositLabel: 'Log Rental Income', noSell: true },
+  { id: 'Bonds / Fixed Income', label: 'Bonds & Corporate Debt', color: '#E11D48', bg: '#FFF1F2', border: '#FECDD3', depositLabel: 'Log Coupon Payment' },
+  { id: 'Gold & Commodities', label: 'Gold & Commodities', color: '#CA8A04', bg: '#FEFCE8', border: '#FEF08A', depositLabel: 'Update Metal Valuation' },
+  { id: 'Other', label: 'Other Alternative Assets', color: '#52525B', bg: '#F4F4F5', border: '#E4E4E7', depositLabel: 'Log Income / Expense' }
 ];
 
 /* --- Returns whether this asset type should use Deposit workflow vs Sell workflow --- */
@@ -12160,86 +12154,19 @@ function assetTypeDepositLabel(assetType){
 }
 
 function getAssetClassMeta(type){
-  const found = ASSET_CLASSES.find(c => c.id.toLowerCase() === (type || '').toLowerCase());
-  if(found) return found;
-  return {
-    id: type || 'Other',
-    label: type || 'Other',
-    color: '#0D9488',
-    bg: '#F0FDFA',
-    border: '#CCFBF1'
+  if(!type) return ASSET_CLASSES[ASSET_CLASSES.length - 1];
+  const aliasMap = {
+    'Mutual Funds': 'Islamic Mutual Funds',
+    'Bonds / Fixed Income': 'Bonds / Fixed Income',
+    'Real Estate': 'Real Estate',
+    'Crypto': 'Crypto',
+    'Bonds': 'Bonds / Fixed Income',
+    'Property': 'Real Estate'
   };
+  const lookup = aliasMap[type] || type;
+  const found = ASSET_CLASSES.find(c => c.id.toLowerCase() === lookup.toLowerCase() || c.label.toLowerCase() === lookup.toLowerCase());
+  return found || { id: type, label: type, color: '#64748B', bg: '#F8FAFC', border: '#E2E8F0', depositLabel: 'Log Deposit' };
 }
-
-function calculateInvestmentProjections(principal, monthly, annualRatePct, years){
-  const r = (annualRatePct || 0) / 100;
-  const monthlyRate = r / 12;
-  const labels = [];
-  const fvPoints = [];
-  const principalPoints = [];
-  const gainsPoints = [];
-
-  for(let y = 0; y <= years; y++){
-    const months = y * 12;
-    const totalPrincipal = principal + (monthly * months);
-    let fv = totalPrincipal;
-    if(r > 0 && months > 0){
-      fv = (principal * Math.pow(1 + monthlyRate, months)) + 
-           (monthly * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
-    }
-    labels.push(y === 0 ? 'Today' : `Year ${y}`);
-    fvPoints.push(Math.round(fv));
-    principalPoints.push(Math.round(totalPrincipal));
-    gainsPoints.push(Math.round(Math.max(0, fv - totalPrincipal)));
-  }
-
-  const finalFV = fvPoints[fvPoints.length - 1] || 0;
-  const finalPrincipal = principalPoints[principalPoints.length - 1] || 0;
-  const finalGain = Math.max(0, finalFV - finalPrincipal);
-  const multiple = finalPrincipal > 0 ? (finalFV / finalPrincipal) : 1;
-  const doublingYears = annualRatePct > 0 ? (72 / annualRatePct).toFixed(1) : 'N/A';
-  const monthlyPassive = Math.round((finalFV * 0.04) / 12);
-
-  return {
-    labels,
-    fvPoints,
-    principalPoints,
-    gainsPoints,
-    finalFV,
-    finalPrincipal,
-    finalGain,
-    multiple,
-    doublingYears,
-    monthlyPassive
-  };
-}
-
-function calculateMilestones(principal, monthly, annualRatePct){
-  const milestones = [25000, 50000, 100000, 250000, 500000, 1000000, 2000000];
-  const r = (annualRatePct || 0) / 100;
-  const monthlyRate = r / 12;
-
-  return milestones.map(target => {
-    if(principal >= target){
-      return { target, reached: true, yearsText: 'Achieved!' };
-    }
-    if(monthly <= 0 && r <= 0){
-      return { target, reached: false, yearsText: 'Needs contributions' };
-    }
-    let cur = principal;
-    let m = 0;
-    while(cur < target && m <= 600){
-      m++;
-      cur = cur * (1 + monthlyRate) + monthly;
-    }
-    if(m > 600){
-      return { target, reached: false, yearsText: '50+ yrs' };
-    }
-    const yrs = (m / 12).toFixed(1);
-    return { target, reached: false, yearsText: `in ~${yrs} yrs` };
-  });
-}
-
 
 function toggleVPSEngine(active){
   if(!DB.vpsSettings) DB.vpsSettings = {};
@@ -12359,241 +12286,12 @@ function renderInvestments(){
       </div>`).join('');
   }
 
-  // Init / sync simulator defaults if first load
-  if(totalValue > 0 && list.length > 0 && simStartingCapital === 0){
-    simStartingCapital = Math.round(totalValue);
-    simMonthlyContrib = 0;
-    simAnnualReturn = 14.0;
-  } else if(list.length === 0 && simStartingCapital === 0){
-    simStartingCapital = 0;
-    simMonthlyContrib = 0;
-  }
-
-  // Update simulator input elements
-  const inputP = document.getElementById('sim-input-principal');
-  if(inputP) inputP.value = simStartingCapital;
-  const dispP = document.getElementById('sim-disp-principal');
-  if(dispP) dispP.textContent = fmt(simStartingCapital);
-
-  const inputM = document.getElementById('sim-input-monthly');
-  if(inputM) inputM.value = simMonthlyContrib;
-  const dispM = document.getElementById('sim-disp-monthly');
-  if(dispM) dispM.textContent = `${fmt(simMonthlyContrib)}/mo`;
-
-  const sliderR = document.getElementById('sim-slider-rate');
-  if(sliderR) sliderR.value = simAnnualReturn;
-  const dispR = document.getElementById('sim-disp-rate');
-  if(dispR) dispR.textContent = `${simAnnualReturn.toFixed(1)}% / yr`;
-
-  // Render Simulation & Outcome outputs
-  updateSimulationOutputs();
-
   // Render Asset Allocation
   renderAssetAllocationChart();
 
   // Render Holdings Filters & Table
   renderHoldingsFilters();
   renderHoldingsTable();
-}
-
-function updateSimulationOutputs(){
-  const res = calculateInvestmentProjections(simStartingCapital, simMonthlyContrib, simAnnualReturn, simHorizonYears);
-
-  const fvEl = document.getElementById('sim-result-fv');
-  if(fvEl) fvEl.textContent = fmt(res.finalFV);
-  const gainEl = document.getElementById('sim-result-gain');
-  if(gainEl){
-    gainEl.textContent = `+${fmt(res.finalGain)} (${res.finalPrincipal > 0 ? Math.round((res.finalGain / res.finalPrincipal) * 100) : 0}% ROI)`;
-  }
-  const prinEl = document.getElementById('sim-result-principal');
-  if(prinEl) prinEl.textContent = fmt(res.finalPrincipal);
-  const pureGainEl = document.getElementById('sim-result-pure-gain');
-  if(pureGainEl) pureGainEl.textContent = `+${fmt(res.finalGain)}`;
-  const rateEl = document.getElementById('sim-result-rate');
-  if(rateEl) rateEl.textContent = `${simAnnualReturn.toFixed(1)}% / yr`;
-  const multEl = document.getElementById('sim-result-multiple');
-  if(multEl) multEl.textContent = `${res.multiple.toFixed(2)}x Return`;
-  const dblEl = document.getElementById('sim-result-doubling');
-  if(dblEl) dblEl.textContent = res.doublingYears !== 'N/A' ? `~${res.doublingYears} yrs` : 'N/A';
-  const passEl = document.getElementById('sim-result-passive');
-  if(passEl) passEl.textContent = `~${fmt(res.monthlyPassive)}/mo`;
-
-  renderInvestmentProjectionChart(res);
-  renderMilestones(simStartingCapital, simMonthlyContrib, simAnnualReturn);
-}
-
-function onSimInputChange(type, val){
-  val = parseFloat(val) || 0;
-  if(type === 'principal'){
-    simStartingCapital = Math.max(0, val);
-    const disp = document.getElementById('sim-disp-principal');
-    if(disp) disp.textContent = fmt(simStartingCapital);
-  } else if(type === 'monthly'){
-    simMonthlyContrib = Math.max(0, val);
-    const disp = document.getElementById('sim-disp-monthly');
-    if(disp) disp.textContent = `${fmt(simMonthlyContrib)}/mo`;
-  } else if(type === 'rate'){
-    simAnnualReturn = Math.max(0.5, Math.min(30, val));
-    const disp = document.getElementById('sim-disp-rate');
-    if(disp) disp.textContent = `${simAnnualReturn.toFixed(1)}% / yr`;
-    [6, 10, 14, 18].forEach(p => {
-      const btn = document.getElementById('preset-rate-' + p);
-      if(btn) btn.classList.toggle('active', Math.abs(simAnnualReturn - p) < 0.25);
-    });
-  }
-  updateSimulationOutputs();
-}
-
-function setSimRatePreset(pct){
-  simAnnualReturn = pct;
-  const slider = document.getElementById('sim-slider-rate');
-  if(slider) slider.value = pct;
-  onSimInputChange('rate', pct);
-}
-
-function setSimHorizon(years){
-  simHorizonYears = years;
-  document.querySelectorAll('#sim-horizon-chips .btn-chip').forEach(btn => btn.classList.remove('active'));
-  const activeBtn = document.getElementById('horizon-chip-' + years);
-  if(activeBtn) activeBtn.classList.add('active');
-  const titleEl = document.getElementById('sim-horizon-title');
-  if(titleEl) titleEl.textContent = `Projected Wealth in ${years} Years`;
-  updateSimulationOutputs();
-}
-
-function syncSimWithPortfolio(){
-  const list = DB.investments || [];
-  const totalVal = list.reduce((s, inv) => s + (inv.currentValue || 0), 0);
-
-  simStartingCapital = Math.round(totalVal);
-  simMonthlyContrib = 0;
-  simAnnualReturn = 14.0;
-
-  const inputP = document.getElementById('sim-input-principal');
-  if(inputP) inputP.value = simStartingCapital;
-  const inputM = document.getElementById('sim-input-monthly');
-  if(inputM) inputM.value = simMonthlyContrib;
-  const sliderR = document.getElementById('sim-slider-rate');
-  if(sliderR) sliderR.value = simAnnualReturn;
-
-  onSimInputChange('principal', simStartingCapital);
-  onSimInputChange('monthly', simMonthlyContrib);
-  onSimInputChange('rate', simAnnualReturn);
-  showToast(list.length > 0 ? 'Simulator synced with your active portfolio' : 'Portfolio is empty (0 starting capital)');
-}
-
-function renderInvestmentProjectionChart(res){
-  const canvas = document.getElementById('investment-projection-chart');
-  const emptyEl = document.getElementById('sim-chart-empty');
-  if(!canvas || typeof Chart === 'undefined') return;
-
-  if(chartInvestmentProjection){
-    chartInvestmentProjection.destroy();
-    chartInvestmentProjection = null;
-  }
-
-  const list = DB.investments || [];
-  const isZeroSimulation = (!res.fvPoints || res.fvPoints.every(p => p <= 0));
-  if(emptyEl){
-    if(list.length === 0 && isZeroSimulation){
-      canvas.style.display = 'none';
-      emptyEl.style.display = 'flex';
-      return;
-    } else {
-      canvas.style.display = 'block';
-      emptyEl.style.display = 'none';
-    }
-  }
-
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
-  const axisColor = isDark ? '#CBD5E1' : '#334155';
-  const legendColor = isDark ? '#F1F5F9' : '#0F172A';
-
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
-  gradient.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
-  gradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
-
-  chartInvestmentProjection = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels: res.labels,
-      datasets: [
-        {
-          label: 'Total Projected Wealth',
-          data: res.fvPoints,
-          borderColor: '#10B981',
-          borderWidth: 2.8,
-          backgroundColor: gradient,
-          fill: true,
-          tension: 0.35,
-          pointRadius: res.fvPoints.length > 20 ? 0 : 3,
-          pointHoverRadius: 6,
-          pointBackgroundColor: '#10B981',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 1.5,
-        },
-        {
-          label: 'Contributed Capital (Principal)',
-          data: res.principalPoints,
-          borderColor: isDark ? '#64748B' : '#94A3B8',
-          borderWidth: 2,
-          borderDash: [5, 5],
-          fill: false,
-          pointRadius: 0,
-          tension: 0.1,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-          legend: {
-            display: false
-          },
-        tooltip: {
-          backgroundColor: '#0F172A',
-          titleColor: '#F8FAFC',
-          titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '700' },
-          bodyColor: '#F1F5F9',
-          bodyFont: { family: 'JetBrains Mono', size: 12, weight: '600' },
-          padding: 12,
-          cornerRadius: 8,
-          callbacks: {
-            label: function(ctx){
-              return ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`;
-            },
-            afterBody: function(items){
-              if(items.length >= 2){
-                const fv = items[0].parsed.y;
-                const p = items[1].parsed.y;
-                const gain = Math.max(0, fv - p);
-                return ` Pure Growth: +${fmt(gain)}`;
-              }
-              return '';
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' }, color: axisColor }
-        },
-        y: {
-          grid: { color: gridColor },
-          ticks: {
-            font: { family: 'JetBrains Mono', size: 12, weight: '600' },
-            color: axisColor,
-            callback: function(val){ return fmt(val); }
-          }
-        }
-      }
-    }
-  });
 }
 
 function renderAssetAllocationChart(){
@@ -12628,7 +12326,7 @@ function renderAssetAllocationChart(){
   }
 
   canvas.style.display = 'block';
-  const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#D97706', '#64748B'];
+  const colors = ['#059669', '#0891B2', '#4338CA', '#475569', '#D97706', '#7C3AED', '#0D9488', '#4F46E5', '#2563EB', '#0284C7', '#16A34A', '#EA580C', '#8B5CF6', '#E11D48', '#CA8A04', '#52525B'];
   const labels = keys;
   const data = keys.map(k => classTotals[k]);
   const bgColors = keys.map((k, idx) => {
@@ -12689,38 +12387,6 @@ function renderAssetAllocationChart(){
     }).join('');
   }
 }
-
-function renderMilestones(principal, monthly, annualRatePct){
-  const container = document.getElementById('inv-milestones-list');
-  if(!container) return;
-
-  const list = DB.investments || [];
-  if(list.length === 0 && principal <= 0 && monthly <= 0){
-    container.innerHTML = `
-      <div style="padding:22px 14px; text-align:center; border:1px dashed var(--line); border-radius:10px; background:var(--surface-2);">
-        <p class="text-xs muted" style="margin:0;">Milestones will be projected once investments or monthly deposits are added.</p>
-      </div>`;
-    return;
-  }
-
-  const milestones = calculateMilestones(principal, monthly, annualRatePct);
-  container.innerHTML = milestones.map(m => {
-    return `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; border-radius:8px; background:${m.reached ? '#ECFDF5' : 'var(--surface-2)'}; border:1px solid ${m.reached ? '#A7F3D0' : 'var(--line-soft)'}; font-size:12px;">
-        <div style="display:flex; align-items:center; gap:7px;">
-          <span>${m.reached 
-            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' 
-            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>'}</span>
-          <strong class="figure" style="color:${m.reached ? '#059669' : 'var(--ink)'}; font-size:13px;">${fmt(m.target)}</strong>
-        </div>
-        <span class="badge" style="font-size:11px; font-weight:600; padding:2px 7px; border-radius:6px; background:${m.reached ? '#D1FAE5' : 'transparent'}; color:${m.reached ? '#065F46' : 'var(--muted)'};">
-          ${m.yearsText}
-        </span>
-      </div>`;
-  }).join('');
-}
-
-/* (duplicate renderHoldingsFilters removed - see definition after setInvHoldingTab) */
 
 let invHoldingTab = 'active';
 
@@ -13228,21 +12894,7 @@ function onEditInvTypeChange(val){
   if(wrap) wrap.classList.toggle('hidden', val !== 'Provident Fund / VPS');
 }
 
-function toggleSimDrawer(){
-  const drawer = document.getElementById('inv-sim-drawer');
-  const btn = document.getElementById('btn-toggle-sim');
-  if(!drawer) return;
-  const isHidden = drawer.classList.contains('hidden');
-  drawer.classList.toggle('hidden', !isHidden);
-  if(btn){
-    btn.innerHTML = isHidden
-      ? `Hide Simulator <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 15l-6-6-6 6"/></svg>`
-      : `Expand Simulator <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>`;
-  }
-  if(isHidden && typeof chartInvestmentProjection !== 'undefined' && chartInvestmentProjection){
-    setTimeout(() => chartInvestmentProjection.resize(), 100);
-  }
-}
+
 
 function openInvestmentModal(){
   populateInvestmentCategorySelects();
