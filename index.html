@@ -1335,13 +1335,96 @@
   .tx-cat-pill { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .tx-cat-name { font-weight: 600; color: var(--ink); line-height: 1.35; }
 
-  /* --- Dedicated Warning Signs Page --- */
+  /* --- Settings Warning Signs Rule Cards --- */
   .warning-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; transition: all .15s ease; }
   .warning-card:hover { border-color: var(--line-strong, #CBD5E1); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
   .warning-card.priority-danger { border-left: 4px solid var(--rose); background: rgba(225,29,72,0.02); }
   .warning-card.priority-amber { border-left: 4px solid var(--amber); background: rgba(217,119,6,0.02); }
   .warning-card.priority-teal { border-left: 4px solid var(--teal); background: rgba(15,158,147,0.02); }
   .warning-card.priority-primary { border-left: 4px solid var(--primary); background: rgba(99,102,241,0.02); }
+
+  /* --- Dashboard 4-Card Summary Row Uniform Alignment & Typography --- */
+  #dashboard-bottom-grid .dash-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 14px;
+    min-height: 40px;
+  }
+  #dashboard-bottom-grid .dash-card-head-copy {
+    min-width: 0;
+    flex: 1;
+  }
+  #dashboard-bottom-grid .dash-card-head .section-title {
+    font-family: var(--font-display);
+    font-size: 15.5px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #dashboard-bottom-grid .dash-card-head .section-sub {
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--muted);
+    margin: 2px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #dashboard-bottom-grid .dash-card-head .btn-small {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 6px;
+  }
+  .dash-card-kpi-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    min-height: 28px;
+    flex-wrap: nowrap;
+  }
+  .dash-card-kpi-val {
+    font-family: var(--font-display);
+    font-size: clamp(16.5px, 1.3vw, 19.5px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+  .dash-card-kpi-badge {
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    padding: 3px 8px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .dash-card-item-name {
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media(max-width: 1180px){
+    #dashboard-bottom-grid.grid-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+  @media(max-width: 640px){
+    #dashboard-bottom-grid.grid-4 {
+      grid-template-columns: 1fr !important;
+    }
+  }
 
   /* --- Mobile Settings Tabs & Layout Improvements --- */
   .settings-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 4px; margin-bottom: 18px; max-width: 100%; }
@@ -1746,12 +1829,12 @@
       <!-- High-level Overview Grid -->
       <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
         <div class="card" style="padding:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-            <div>
+          <div class="dash-card-head">
+            <div class="dash-card-head-copy">
               <h2 class="section-title">Top Expenses</h2>
               <p class="section-sub">Highest categories</p>
             </div>
-            <button type="button" onclick="goToApp('reports')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">View Reports</button>
+            <button type="button" onclick="goToApp('reports')" class="btn-ghost btn-small">View Reports</button>
           </div>
           <div style="position:relative; height:120px; width:100%; margin-bottom:12px; display:none;" id="wrap-chart-top-expenses">
             <canvas id="dashboard-chart-top-expenses"></canvas>
@@ -1760,12 +1843,12 @@
         </div>
 
         <div class="card" style="padding:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-            <div>
+          <div class="dash-card-head">
+            <div class="dash-card-head-copy">
               <h2 class="section-title">Budget Overview</h2>
               <p class="section-sub" id="budget-perf-sub">Monthly limits</p>
             </div>
-            <button type="button" onclick="goToApp('budgets')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">Manage Budgets</button>
+            <button type="button" onclick="goToApp('budgets')" class="btn-ghost btn-small">Manage Budgets</button>
           </div>
           <div style="position:relative; height:110px; width:100%; margin-bottom:10px; display:none;" id="wrap-chart-budget">
             <canvas id="dashboard-chart-budget"></canvas>
@@ -1775,24 +1858,24 @@
 
         <div class="card" style="padding:20px;">
           <div>
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-              <div>
+            <div class="dash-card-head">
+              <div class="dash-card-head-copy">
                 <h2 class="section-title">Savings Goals</h2>
                 <p class="section-sub">Goal progress</p>
               </div>
-              <button type="button" onclick="goToApp('savings')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">All Goals</button>
+              <button type="button" onclick="goToApp('savings')" class="btn-ghost btn-small">All Goals</button>
             </div>
             <div id="dash-savings-body" style="height:100%;"></div>
           </div>
         </div>
 
         <div class="card" style="padding:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-            <div>
+          <div class="dash-card-head">
+            <div class="dash-card-head-copy">
               <h2 class="section-title">Investments</h2>
               <p class="section-sub">Portfolio &amp; wealth</p>
             </div>
-            <button type="button" onclick="goToApp('investments')" class="btn-ghost btn-small" style="font-size:11px; padding:3px 9px; border-radius:6px;">Holdings</button>
+            <button type="button" onclick="goToApp('investments')" class="btn-ghost btn-small">Holdings</button>
           </div>
           <div id="dash-investments-body"></div>
         </div>
@@ -2143,9 +2226,16 @@
           <h2 class="section-title" style="margin:0; font-size:16.5px;">Active Savings Targets</h2>
           <p class="text-xs muted" id="savings-count-label" style="margin:2px 0 0;">Target milestones and accumulated balances.</p>
         </div>
-        <button onclick="openGoalModal()" class="btn-primary" style="padding:6px 16px; font-size:12.5px; display:inline-flex; align-items:center; gap:6px;">
-          + Create Goal
-        </button>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <button type="button" onclick="openPlannedGoalsModal()" class="btn-ghost" style="padding:6px 14px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <span>Planned Goals</span>
+            <span id="planned-goals-btn-badge" class="badge badge-off" style="font-size:10.5px; padding:1px 6px;">0</span>
+          </button>
+          <button type="button" onclick="openGoalModal()" class="btn-primary" style="padding:6px 16px; font-size:12.5px; display:inline-flex; align-items:center; gap:6px;">
+            + Create Goal
+          </button>
+        </div>
       </div>
       <div class="grid grid-2" id="savings-grid"></div>
     </section>
@@ -2224,39 +2314,7 @@
       </div>
     </section>
 
-    <!-- ---- WARNING SIGNS & SYSTEM ALERTS ---- -->
-    <section id="page-warnings" class="page hidden">
-      <div class="topbar">
-        <div>
-          <h1>Warning Signs &amp; Alerts</h1>
-          <p>Centralized monitoring for budget limits, savings milestones, income health, and category hygiene.</p>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
-          </button>
-          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
-        </div>
-      </div>
 
-      <!-- Warning Filter Chips & Quick Stats Bar -->
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
-        <div class="chip-row" id="warnings-filter-chips" style="flex-wrap:wrap;">
-          <button type="button" class="btn-chip active" id="wf-all" onclick="setWarningsFilter('all')">All Warnings</button>
-          <button type="button" class="btn-chip" id="wf-budget" onclick="setWarningsFilter('budget')">Budgets &amp; Expenses</button>
-          <button type="button" class="btn-chip" id="wf-savings" onclick="setWarningsFilter('savings')">Savings Goals</button>
-          <button type="button" class="btn-chip" id="wf-benefits" onclick="setWarningsFilter('benefits')">Income &amp; Benefits</button>
-          <button type="button" class="btn-chip" id="wf-categories" onclick="setWarningsFilter('categories')">Categories</button>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="badge badge-ok" id="warnings-active-count" style="font-size:11.5px; font-weight:700;">0 Active</span>
-        </div>
-      </div>
-
-      <!-- Warning List Container -->
-      <div id="warnings-page-list"></div>
-    </section>
 
     <!-- ---- SETTINGS ---- -->
     <section id="page-settings" class="page hidden">
@@ -2367,6 +2425,10 @@
           <p class="text-xs muted" style="margin:0 0 14px;">Deleted items are kept for 30 days before permanent removal.</p>
           <div id="recycle-bin-list"></div>
         </div>
+      </div>
+
+      <div id="settings-warnings" class="hidden">
+        <div id="settings-warnings-container"></div>
       </div>
     </section>
   </main>
@@ -2855,6 +2917,118 @@
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditGoalModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Planned / Future Savings Goals Modal -->
+<div id="planned-goals-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closePlannedGoalsModal()">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="closePlannedGoalsModal()" aria-label="Close">✕</button>
+    <div style="margin-bottom:14px;">
+      <h2 style="margin:0; font-size:18px;">Planned &amp; Future Savings Goals</h2>
+      <p class="text-xs muted" style="margin:4px 0 0;">Save draft goals for upcoming months so you never forget them. They remain inactive until you set dates and activate them.</p>
+    </div>
+
+    <form onsubmit="handleSavePlannedGoal(event)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:16px;">
+      <input type="hidden" id="planned-goal-edit-id" value="">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:10px;">
+        <div>
+          <label class="field-label" for="planned-goal-name">Goal Name</label>
+          <input type="text" id="planned-goal-name" class="field-input" placeholder="e.g. Gym 3-Month Fee" required autocomplete="off">
+        </div>
+        <div>
+          <label class="field-label" for="planned-goal-target">Target Amount</label>
+          <input type="number" min="1" step="any" id="planned-goal-target" class="field-input figure" placeholder="e.g. 15000" required>
+        </div>
+        <div>
+          <label class="field-label" for="planned-goal-saving-in">Saving In</label>
+          <select id="planned-goal-saving-in" class="field-input">
+            <option value="Bank Account">Bank Account</option>
+            <option value="Personal Safe / Cash">Personal Safe / Cash</option>
+            <option value="Digital Wallet">Digital Wallet</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <span class="text-xs muted" id="planned-goal-form-mode-note">Add a future goal to your unactivated list.</span>
+        <div style="display:flex; gap:6px;">
+          <button type="button" id="planned-goal-cancel-edit-btn" class="btn-ghost hidden" style="padding:5px 12px; font-size:12px;" onclick="resetPlannedGoalForm()">Cancel Edit</button>
+          <button type="submit" id="planned-goal-submit-btn" class="btn-dark" style="padding:6px 14px; font-size:12px;">+ Add Planned Goal</button>
+        </div>
+      </div>
+    </form>
+
+    <div style="max-height:320px; overflow-y:auto; margin-bottom:14px;">
+      <div id="planned-goals-modal-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid var(--line-soft);">
+      <span class="text-xs muted" id="planned-goals-modal-count">0 planned goals</span>
+      <button type="button" onclick="closePlannedGoalsModal()" class="btn-ghost" style="padding:6px 16px; font-size:12.5px;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Warning Rule Edit / Create Modal -->
+<div id="warning-rule-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeWarningRuleModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeWarningRuleModal()" aria-label="Close">✕</button>
+    <h2 id="warning-rule-modal-title" style="margin:0 0 4px; font-size:18px;">Customize Warning Sign</h2>
+    <p class="text-xs muted" style="margin:0 0 16px;">Rename this warning sign, edit its description, or assign a different click action.</p>
+    <form onsubmit="handleSaveWarningRule(event)">
+      <input type="hidden" id="warning-rule-id">
+      <label class="field-label" for="warning-rule-name">Warning Rule Title</label>
+      <input type="text" id="warning-rule-name" class="field-input mb-3" placeholder="e.g. Budget Limit Exceeded" required autocomplete="off">
+
+      <label class="field-label" for="warning-rule-badge">Badge Label (Displayed on Cards &amp; Rows)</label>
+      <input type="text" id="warning-rule-badge" class="field-input mb-3" placeholder="e.g. Over Budget" required autocomplete="off">
+
+      <label class="field-label" for="warning-rule-subhead">One-Line Subheading / Description</label>
+      <input type="text" id="warning-rule-subhead" class="field-input mb-3" placeholder="Short one-line explanation of this warning sign" required autocomplete="off">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;" class="mb-3">
+        <div>
+          <label class="field-label" for="warning-rule-section">Dashboard Section</label>
+          <select id="warning-rule-section" class="field-input">
+            <option value="Budgets & Expenses">Budgets &amp; Expenses</option>
+            <option value="Savings Goals">Savings Goals</option>
+            <option value="Categories & Transactions">Categories &amp; Transactions</option>
+            <option value="Income & Benefits">Income &amp; Benefits</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="warning-rule-color">Color &amp; Severity</label>
+          <select id="warning-rule-color" class="field-input">
+            <option value="danger">Critical (Rose)</option>
+            <option value="amber">Warning (Amber)</option>
+            <option value="teal">Actionable (Teal)</option>
+            <option value="primary">Info (Indigo)</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="field-label" for="warning-rule-action">Click Action Behavior</label>
+      <select id="warning-rule-action" class="field-input mb-4">
+        <option value="adjust_budget">Open Edit Budget Modal</option>
+        <option value="view_expenses">View Transactions Page</option>
+        <option value="extend_goal">Open Extend Goal Deadline Modal</option>
+        <option value="contribute_goal">Open Goal Contribute Input</option>
+        <option value="transfer_goal">Open Savings Transfer Modal</option>
+        <option value="use_savings">Use Goal Savings for Expense</option>
+        <option value="edit_tx">Open Edit Transaction Modal</option>
+        <option value="filter_unassigned">Filter Unassigned Subcategories</option>
+        <option value="transfer_benefit">Open Benefit Surplus Transfer Modal</option>
+        <option value="open_budgets">Navigate to Budgets Page</option>
+        <option value="open_savings">Navigate to Savings Goals Page</option>
+        <option value="open_settings">Navigate to Settings Page</option>
+      </select>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeWarningRuleModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Warning Sign</button>
       </div>
     </form>
   </div>
@@ -3874,7 +4048,6 @@ const NAV_BOTTOM = [
   { id: "budgets", label: "Budgets" },
   { id: "savings", label: "Savings Goals" },
   { id: "investments", label: "Investments" },
-  { id: "warnings", label: "Warning Signs" },
 ];
 const NAV_SETTINGS = [
   { id: "settings", label: "Settings" },
@@ -4654,6 +4827,8 @@ function sanitizeLoadedDB(parsed){
   parsed.transactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
   parsed.budgets = Array.isArray(parsed.budgets) ? parsed.budgets : [];
   parsed.savingsGoals = Array.isArray(parsed.savingsGoals) ? parsed.savingsGoals : [];
+  parsed.plannedSavingsGoals = Array.isArray(parsed.plannedSavingsGoals) ? parsed.plannedSavingsGoals : [];
+  parsed.warningRules = ensureWarningRules(parsed.warningRules);
   parsed.investments = Array.isArray(parsed.investments) ? parsed.investments : [];
   parsed.soldInvestments = Array.isArray(parsed.soldInvestments) ? parsed.soldInvestments : [];
   parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
@@ -4692,9 +4867,15 @@ function sanitizeLoadedDB(parsed){
       return true;
     });
 
-    // Deduplicate any repeated rollover in transactions caused by button hang
+    // Deduplicate any duplicate transaction IDs or repeated rollover-in records
+    const seenTxIds = new Set();
     const seenRollIn = new Set();
     parsed.transactions = parsed.transactions.filter(t => {
+      if(!t || typeof t !== 'object') return false;
+      if(t.id){
+        if(seenTxIds.has(t.id)) return false;
+        seenTxIds.add(t.id);
+      }
       if(t.isGoalRolloverIn && t.fromMonth && t.fromYear && t.toMonth && t.toYear && t.goalId){
         const rollKey = t.type + '_' + t.goalId + '_' + t.fromYear + '-' + t.fromMonth + '_' + t.toYear + '-' + t.toMonth + '_' + t.amount;
         if(seenRollIn.has(rollKey)){
@@ -6300,7 +6481,11 @@ function changeCurrencyFromSettings(){
   renderAllForCurrentPage();
 }
 function goToApp(page){
-  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'warnings', 'settings'];
+  if(page === 'warnings'){
+    page = 'settings';
+    settingsTab = 'warnings';
+  }
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'settings'];
   if(!validPages.includes(page)) page = 'dashboard';
 
   const pageTitles = {
@@ -6310,7 +6495,6 @@ function goToApp(page){
     budgets: 'Budgets – WealthNest',
     savings: 'Savings Goals – WealthNest',
     investments: 'Investments & Projections – WealthNest',
-    warnings: 'Warning Signs & Alerts – WealthNest',
     settings: 'Settings – WealthNest'
   };
   document.title = pageTitles[page] || 'WealthNest';
@@ -8468,9 +8652,9 @@ function renderDashboardTopExpenses(periodTxs, totals){
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
-            <span class="badge badge-ok" style="font-size:11px; font-weight:700;">No Spending</span>
+          <div class="dash-card-kpi-row">
+            <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(0)}</span>
+            <span class="badge badge-ok dash-card-kpi-badge">No Spending</span>
           </div>
           <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
           <p class="muted text-xs" style="margin:20px 0; text-align:center;">No expenses recorded for this period.</p>
@@ -8487,9 +8671,9 @@ function renderDashboardTopExpenses(periodTxs, totals){
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-          <span class="figure" style="font-size:22px; font-weight:800; color:var(--rose);">${fmt(totalExpense)}</span>
-          <span class="badge ${expRatio > 90 ? 'badge-over' : 'badge-off'}" style="font-size:11px; font-weight:700;">${expRatio > 0 ? expRatio + '% of Income' : 'Outflow'}</span>
+        <div class="dash-card-kpi-row">
+          <span class="dash-card-kpi-val" style="color:var(--rose);">${fmt(totalExpense)}</span>
+          <span class="badge ${expRatio > 90 ? 'badge-over' : 'badge-off'} dash-card-kpi-badge">${expRatio > 0 ? expRatio + '% of Income' : 'Outflow'}</span>
         </div>
         <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
           <div style="width:${Math.min(100, expRatio)}%; height:100%; background:var(--rose); border-radius:999px;"></div>
@@ -8503,9 +8687,9 @@ function renderDashboardTopExpenses(periodTxs, totals){
                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
                   <div style="display:flex; align-items:center; gap:7px; min-width:0; flex:1;">
                     <span style="width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
-                    <span style="font-weight:700; color:var(--ink); word-break:break-word;">${escapeHtml(cat.category)}</span>
+                    <span class="dash-card-item-name" title="${escapeHtml(cat.category)}">${escapeHtml(cat.category)}</span>
                   </div>
-                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:12px; flex-shrink:0;">${fmt(cat.amount)} <span style="font-weight:500; color:var(--muted); font-size:10.5px;">(${pct}%)</span></span>
+                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11.5px; flex-shrink:0; white-space:nowrap;">${fmt(cat.amount)} <span style="font-weight:500; color:var(--muted); font-size:10.5px;">(${pct}%)</span></span>
                 </div>
                 <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
                   <div style="width:${pct}%; height:100%; background:${color}; border-radius:999px;"></div>
@@ -8532,7 +8716,7 @@ function renderDashboardBudgetSummary(period, totals){
 
   const subEl = document.getElementById('budget-perf-sub');
   if(subEl){
-    subEl.textContent = budgeted > 0 ? `${fmt(spent)} of ${fmt(budgeted)} Limit` : 'Monthly spending caps';
+    subEl.textContent = budgeted > 0 ? `Limit: ${fmt(budgeted)}` : 'Monthly limits';
   }
 
   const container = document.getElementById('dashboard-budget-summary');
@@ -8545,9 +8729,9 @@ function renderDashboardBudgetSummary(period, totals){
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
-            <span class="badge badge-off" style="font-size:11px; font-weight:700;">No Budget</span>
+          <div class="dash-card-kpi-row">
+            <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(0)}</span>
+            <span class="badge badge-off dash-card-kpi-badge">No Budget</span>
           </div>
           <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
           <p class="muted text-xs" style="margin:20px 0; text-align:center;">No category budgets configured for this month.</p>
@@ -8561,15 +8745,15 @@ function renderDashboardBudgetSummary(period, totals){
   }
 
   const statusBadge = isOver
-    ? `<span class="badge badge-over" style="font-size:11px; font-weight:700;">Over by ${fmt(spent - budgeted)}</span>`
-    : `<span class="badge badge-ok" style="font-size:11px; font-weight:700;">${fmt(remaining)} Left (${percent}%)</span>`;
+    ? `<span class="badge badge-over dash-card-kpi-badge">Over ${fmt(spent - budgeted)}</span>`
+    : `<span class="badge badge-ok dash-card-kpi-badge">${fmt(remaining)} Left</span>`;
 
   const topThree = categoryRows.slice(0, 3);
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-          <span class="figure" style="font-size:22px; font-weight:800; color:var(--ink);">${fmt(spent)}</span>
+        <div class="dash-card-kpi-row">
+          <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(spent)}</span>
           ${statusBadge}
         </div>
         <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
@@ -8583,8 +8767,8 @@ function renderDashboardBudgetSummary(period, totals){
             return `
               <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
-                  <span style="font-weight:700; color:var(--ink); word-break:break-word; flex:1;">${escapeHtml(c.category)}</span>
-                  <span class="figure" style="font-weight:700; color:${cColor}; font-size:11.5px; flex-shrink:0;">${fmt(c.spent)} <span class="muted" style="font-weight:400; font-size:10.5px;">/ ${fmt(c.budgetAmount)}</span></span>
+                  <span class="dash-card-item-name" style="flex:1;" title="${escapeHtml(c.category)}">${escapeHtml(c.category)}</span>
+                  <span class="figure" style="font-weight:700; color:${cColor}; font-size:11.5px; flex-shrink:0; white-space:nowrap;">${fmt(c.spent)} <span class="muted" style="font-weight:400; font-size:10.5px;">/ ${fmt(c.budgetAmount)}</span></span>
                 </div>
                 <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
                   <div style="width:${Math.min(100, cPct)}%; height:100%; background:${cColor}; border-radius:999px;"></div>
@@ -8625,9 +8809,9 @@ function renderDashboardSavings(period, totals){
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(monthlySaved)}</span>
-            <span class="badge badge-off" style="font-size:11px; font-weight:700;">No Goals</span>
+          <div class="dash-card-kpi-row">
+            <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(monthlySaved)}</span>
+            <span class="badge badge-off dash-card-kpi-badge">No Goals</span>
           </div>
           <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
           <p class="muted text-xs" style="margin:20px 0; text-align:center;">No savings targets active for this period.</p>
@@ -8644,9 +8828,9 @@ function renderDashboardSavings(period, totals){
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-          <span class="figure" style="font-size:22px; font-weight:800; color:var(--teal);">${fmt(monthlySaved)}</span>
-          <span class="badge ${achievedCount > 0 ? 'badge-ok' : 'badge-off'}" style="font-size:11px; font-weight:700;">${achievedCount} of ${filteredGoals.length} Achieved</span>
+        <div class="dash-card-kpi-row">
+          <span class="dash-card-kpi-val" style="color:var(--teal);">${fmt(monthlySaved)}</span>
+          <span class="badge ${achievedCount > 0 ? 'badge-ok' : 'badge-off'} dash-card-kpi-badge">${achievedCount} of ${filteredGoals.length} Met</span>
         </div>
         <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
           <div style="width:${overallPct}%; height:100%; background:var(--teal); border-radius:999px; transition:width 0.4s ease;"></div>
@@ -8655,17 +8839,15 @@ function renderDashboardSavings(period, totals){
           ${topGoals.map(g => {
             const gAcc = getGoalAccumulatedDeposits(g);
             const gTgt = Number(g.targetAmount) || 0;
-            const gCur = getGoalCurrentAmount(g);
             const gPct = gTgt > 0 ? Math.min(100, Math.round((gAcc / gTgt) * 100)) : 0;
             const gReached = gAcc >= gTgt && gTgt > 0;
             return `
               <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
                   <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
-                    <span style="font-weight:700; color:var(--ink); word-break:break-word;">${escapeHtml(g.name)}</span>
-                    ${g.isIndependent ? '<span class="badge" style="font-size:9.5px; padding:1px 4px; background:rgba(99,102,241,0.08); color:var(--primary);">Flexible</span>' : ''}
+                    <span class="dash-card-item-name" title="${escapeHtml(g.name)}">${escapeHtml(g.name)}</span>
                   </div>
-                  <span class="figure" style="font-weight:700; color:var(--teal); font-size:11.5px; flex-shrink:0;">${fmt(gAcc)} <span class="muted" style="font-weight:400; font-size:10.5px;">/ ${fmt(gTgt)} (${gPct}%)</span></span>
+                  <span class="figure" style="font-weight:700; color:var(--teal); font-size:11.5px; flex-shrink:0; white-space:nowrap;">${fmt(gAcc)} <span class="muted" style="font-weight:400; font-size:10.5px;">/ ${fmt(gTgt)}</span></span>
                 </div>
                 <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
                   <div style="width:${gPct}%; height:100%; background:${gReached ? 'var(--teal)' : 'var(--primary)'}; border-radius:999px;"></div>
@@ -8692,9 +8874,9 @@ function renderDashboardInvestments(){
     body.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-            <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(0)}</span>
-            <span class="badge ${vpsActive ? 'badge-ok' : 'badge-off'}" style="font-size:11px; font-weight:700;">VPS ${vpsActive ? 'Active' : 'Paused'}</span>
+          <div class="dash-card-kpi-row">
+            <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(0)}</span>
+            <span class="badge ${vpsActive ? 'badge-ok' : 'badge-off'} dash-card-kpi-badge">VPS ${vpsActive ? 'Active' : 'Paused'}</span>
           </div>
           <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
           <p class="muted text-xs" style="margin:20px 0; text-align:center;">Track stocks, mutual funds, gold, and VPS assets in real-time.</p>
@@ -8716,9 +8898,9 @@ function renderDashboardInvestments(){
   body.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-          <span class="figure" style="font-size:22px; font-weight:800; color:var(--ink);">${fmt(totalVal)}</span>
-          <span class="badge ${totalGain >= 0 ? 'badge-ok' : 'badge-over'}" style="font-size:11px; font-weight:700;">${roiSign}${roi.toFixed(1)}% Return</span>
+        <div class="dash-card-kpi-row">
+          <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(totalVal)}</span>
+          <span class="badge ${totalGain >= 0 ? 'badge-ok' : 'badge-over'} dash-card-kpi-badge">${roiSign}${roi.toFixed(1)}% Return</span>
         </div>
         <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
           <div style="width:${Math.min(100, Math.max(10, Math.round(roi + 50)))}%; height:100%; background:${totalGain >= 0 ? 'var(--teal)' : 'var(--rose)'}; border-radius:999px;"></div>
@@ -8735,9 +8917,9 @@ function renderDashboardInvestments(){
                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
                   <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
                     <span style="width:8px; height:8px; border-radius:50%; background:${meta.color || 'var(--primary)'}; flex-shrink:0;"></span>
-                    <span style="font-weight:700; color:var(--ink); word-break:break-word;">${escapeHtml(inv.name)}</span>
+                    <span class="dash-card-item-name" title="${escapeHtml(inv.name)}">${escapeHtml(inv.name)}</span>
                   </div>
-                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11.5px; flex-shrink:0;">${fmt(invVal)} <span style="font-weight:500; color:${invGain>=0?'var(--teal)':'var(--rose)'}; font-size:10.5px;">(${invGain>=0?'+':''}${invRoi.toFixed(1)}%)</span></span>
+                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11.5px; flex-shrink:0; white-space:nowrap;">${fmt(invVal)} <span style="font-weight:500; color:${invGain>=0?'var(--teal)':'var(--rose)'}; font-size:10.5px;">(${invGain>=0?'+':''}${invRoi.toFixed(1)}%)</span></span>
                 </div>
                 <div style="font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between;">
                   <span>${escapeHtml(meta.label || inv.assetType || 'Asset')}</span>
@@ -9868,7 +10050,7 @@ function renderTransactions(){
     if(showSubcat){
       if(t.type === 'expense'){
         if(!t.subCategory || !t.subCategory.trim()){
-          subcatContent = `<span class="badge-subcat-none" title="No subcategory assigned"><span class="rect-sign-red"></span>None</span>`;
+          subcatContent = renderMissingSubcatBadgeHtml(t);
         } else if(isSubCategoryDeleted){
           subcatContent = `<span class="badge-subcat-none" title="Subcategory '${escapeHtml(t.subCategory)}' was deleted"><span class="rect-sign-red"></span>${escapeHtml(t.subCategory)} <span style="font-size:9.5px; opacity:0.85;">(Deleted)</span></span>`;
         } else {
@@ -10697,7 +10879,7 @@ function renderBudgets(){
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             ${dragHandleHtml()}
             <span class="bbc-title" title="${escapeHtml(b.category)}">${escapeHtml(b.category)}</span>
-            ${isCatOver ? '<span class="badge badge-over">Over</span>' : (isCatZero ? '<span class="badge badge-off">Limit Reached</span>' : '<span class="badge badge-ok">On track</span>')}
+            ${renderBudgetWarningBadgeHtml(b)}
           </div>
           <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
             ${b.hasMainBudget ? `
@@ -11255,16 +11437,73 @@ function onSavingsFilterChange(){
   savingsFilterYear=parseInt(document.getElementById('savings-filter-year').value,10);
   renderSavings();
 }
-function goalActiveInPeriod(goal,month,year){
-  if(!goal) return false;
-  if(goal.isAssumption) return false;
+function parseYmFromDateStr(dStr){
+  if(!dStr || typeof dStr !== 'string') return null;
+  const parts = dStr.split('-');
+  if(parts.length < 2) return null;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if(isNaN(y) || isNaN(m)) return null;
+  return { year: y, month: m, ym: y * 12 + m };
+}
+
+function isMultiMonthGoal(goal){
+  if(!goal || !goal.startDate || !goal.deadline) return false;
+  const s = parseYmFromDateStr(goal.startDate);
+  const e = parseYmFromDateStr(goal.deadline);
+  return Boolean(s && e && e.ym > s.ym);
+}
+
+function getGoalEffectiveMonthYear(goal){
+  if(!goal || goal.isAssumption || goal.isIndependent) return null;
   if(goal.assignedMonth && goal.assignedYear){
-    return goal.assignedMonth === month && goal.assignedYear === year;
+    return { month: Number(goal.assignedMonth), year: Number(goal.assignedYear) };
   }
-  if(goal.isIndependent) return false;
-  const periodStart = `${year}-${String(month).padStart(2,'0')}-01`;
-  const periodEnd = ymd(new Date(year,month,0));
-  return (!goal.startDate || goal.startDate <= periodEnd) && (!goal.deadline || goal.deadline >= periodStart);
+  const s = parseYmFromDateStr(goal.startDate);
+  const e = parseYmFromDateStr(goal.deadline);
+  if(s && e){
+    if(s.ym >= e.ym){
+      return { month: e.month, year: e.year };
+    }
+    // Multi-month goal (e.g., 3-month Gym fee Jan-Mar, or 5-month Trip plan):
+    // Automatically advances month-by-month up to its deadline, and stays in the final/deadline month once complete or settled.
+    const acc = getGoalAccumulatedDeposits(goal);
+    const cur = getGoalCurrentAmount(goal);
+    const target = Number(goal.targetAmount) || 0;
+    const reached = target > 0 && acc >= target;
+    const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
+    const transferredOut = rollList.filter(r => !(r.targetGoalId && r.targetGoalId === goal.id) && (r.goalId ? r.goalId === goal.id : r.goalName === goal.name)).reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+    const isSettled = transferredOut > 0 && cur === 0;
+
+    if(reached || isSettled){
+      return { month: e.month, year: e.year };
+    }
+
+    const now = new Date();
+    const nowYm = now.getFullYear() * 12 + (now.getMonth() + 1);
+    let latestTxYm = s.ym;
+    (DB.transactions || []).forEach(t => {
+      if(t && t.type === 'savings' && (t.goalId === goal.id || t.category === goal.name)){
+        const td = parseYmFromDateStr(t.date);
+        if(td && td.ym > latestTxYm) latestTxYm = td.ym;
+      }
+    });
+    const effYm = Math.min(e.ym, Math.max(s.ym, nowYm, latestTxYm));
+    const effYear = Math.floor((effYm - 1) / 12);
+    const effMonth = ((effYm - 1) % 12) + 1;
+    return { month: effMonth, year: effYear };
+  }
+  if(e) return { month: e.month, year: e.year };
+  if(s) return { month: s.month, year: s.year };
+  const now = new Date();
+  return { month: now.getMonth() + 1, year: now.getFullYear() };
+}
+
+function goalActiveInPeriod(goal,month,year){
+  if(!goal || goal.isAssumption || goal.isIndependent) return false;
+  const eff = getGoalEffectiveMonthYear(goal);
+  if(!eff) return false;
+  return eff.month === Number(month) && eff.year === Number(year);
 }
 
 function shiftDateByMonth(dateValue){
@@ -11452,6 +11691,7 @@ function toggleSavingsAllGoals(forceState){
 
 function renderSavings(){
   initSavingsFilters();
+  updatePlannedGoalsButtonBadge();
   const allGoalsMode = (savingsViewMode === 'all');
   const allGoalsList = DB.savingsGoals || [];
   const visibleGoals = allGoalsMode
@@ -11492,7 +11732,14 @@ function renderSavings(){
   const now = new Date();
   const curM = savingsFilterMonth || (now.getMonth() + 1);
   const curY = savingsFilterYear || now.getFullYear();
-  const monthSaved = (DB.transactions || []).filter(t => t.type === 'savings' && !t.isGoalRolloverIn && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const monthSaved = (DB.transactions || []).filter(t => {
+    if(t.type !== 'savings' || t.isGoalRolloverIn) return false;
+    const linkedGoal = (DB.savingsGoals || []).find(g => (t.goalId && g.id === t.goalId) || g.name === t.category);
+    if(linkedGoal && isMultiMonthGoal(linkedGoal)){
+      return goalActiveInPeriod(linkedGoal, curM, curY);
+    }
+    return inMonth(t, curM, curY);
+  }).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthIncome = (DB.transactions || []).filter(t => t.type === 'income' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthExpense = (DB.transactions || []).filter(t => t.type === 'expense' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const rawRemaining = monthIncome - monthExpense - monthSaved;
@@ -11614,9 +11861,14 @@ function renderSavings(){
     } else if(isPartiallyTransferred){
       statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">Partially Transferred</span>`;
     } else if(reached){
-      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">100% Achieved</span>';
+      statusBadge = renderGoalWarningBadgeHtml('goal_achieved', g, '100% Achieved');
     } else if(isExpired){
-      statusBadge = '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>';
+      statusBadge = renderGoalWarningBadgeHtml('goal_deadline_passed', g, 'Deadline Passed');
+    } else if(g.deadline){
+      const dDiff = Math.ceil((new Date(g.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      if(dDiff >= 0 && dDiff <= 7){
+        statusBadge = renderGoalWarningBadgeHtml('goal_deadline_near', g, 'Due Soon');
+      }
     }
 
     // Multi-month pacing calculation
@@ -13407,7 +13659,8 @@ const SETTINGS_SUBTITLES = {
   'notifications': 'Configure alert email, desktop push notifications, and reminder preferences.',
   'backup': 'Download complete offline snapshots, export CSV spreadsheets, or restore data.',
   'activity': 'Audit log of recently deleted records and system changes.',
-  'recycle': 'Review, restore, or permanently purge soft-deleted transactions and items.'
+  'recycle': 'Review, restore, or permanently purge soft-deleted transactions and items.',
+  'warnings': 'Activate, rename, customize colors, and assign actions for dashboard warning signs.'
 };
 
 let settingsDomain = 'structure';
@@ -13459,6 +13712,7 @@ function renderSettingsTabs(){
   document.getElementById('settings-notifications')?.classList.toggle('hidden', settingsTab!=='notifications');
   document.getElementById('settings-backup')?.classList.toggle('hidden', settingsTab!=='backup');
   document.getElementById('settings-recycle')?.classList.toggle('hidden', settingsTab!=='recycle');
+  document.getElementById('settings-warnings')?.classList.toggle('hidden', settingsTab!=='warnings');
   const actEl = document.getElementById('settings-activity');
   if(actEl) actEl.classList.toggle('hidden', settingsTab!=='activity');
 }
@@ -13469,14 +13723,11 @@ function triggerSettingsTabAction(t){
   if(t==='notifications') renderNotificationSettings();
   if(t==='backup') renderBackupSettings();
   if(t==='recycle') renderRecycleBin();
+  if(t==='warnings') renderWarningSignsSettings();
   if(t==='activity') renderActivityLog();
 }
 
 function setSettingsTab(t){
-  if(t === 'warnings'){
-    goToApp('warnings');
-    return;
-  }
   settingsTab = t;
   renderSettingsTabs();
   triggerSettingsTabAction(t);
@@ -13610,11 +13861,14 @@ function requestDesktopNotificationPermission(){
   }
 }
 
+let hasManualTestNotification = false;
 function sendTestNotification(){
+  hasManualTestNotification = true;
   showToast('Test alert dispatched! Check your notification drawer & desktop.', 'success');
-  if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-    new Notification('WealthNest Alert', { body: 'This is a test notification from WealthNest.', icon: '/favicon.ico' });
-  }
+  dispatchDesktopNotification('WealthNest Test Alert', {
+    body: 'Desktop push notifications and in-app financial alerts are active and working properly.'
+  });
+  renderNotifications();
   openNotificationDrawer();
 }
 
@@ -14560,6 +14814,7 @@ function renderSettings(){
   renderBackupSettings();
   renderActivityLog();
   renderRecycleBin();
+  renderWarningSignsSettings();
 }
 function renderActivityLog(){
   const container=document.getElementById('activity-log');
@@ -14833,7 +15088,6 @@ function renderPage(page){
   else if(page==='budgets') renderBudgets();
   else if(page==='savings') renderSavings();
   else if(page==='investments') renderInvestments();
-  else if(page==='warnings') renderWarningsPage();
   else if(page==='settings') renderSettings();
 }
 
@@ -14959,6 +15213,21 @@ function getSystemNotifications(targetMonth, targetYear){
   const cfg = DB.notificationSettings || {};
   const dismissed = new Set(DB.dismissedNotifications || []);
   const list = [];
+  if(typeof hasManualTestNotification !== 'undefined' && hasManualTestNotification){
+    list.push({
+      id: 'notif-manual-test-alert',
+      type: 'alert',
+      priority: 'info',
+      title: 'Test Notification Active',
+      desc: 'Your in-app notification drawer and desktop push alerts are configured and working properly.',
+      date: ymd(now),
+      month: m,
+      year: y,
+      read: false,
+      actionLabel: 'Dismiss Test',
+      actionFn: 'hasManualTestNotification=false; renderNotifications();'
+    });
+  }
 
   const isCurrentOrFuture = (y > now.getFullYear()) || (y === now.getFullYear() && m >= now.getMonth() + 1);
 
@@ -16263,6 +16532,10 @@ window.addEventListener('keydown', (e) => {
     if (goalEl && !goalEl.classList.contains('hidden')) closeGoalModal();
     const editGoalEl = document.getElementById('edit-goal-modal-backdrop');
     if (editGoalEl && !editGoalEl.classList.contains('hidden')) closeEditGoalModal();
+    const plannedGoalsEl = document.getElementById('planned-goals-modal-backdrop');
+    if (plannedGoalsEl && !plannedGoalsEl.classList.contains('hidden')) closePlannedGoalsModal();
+    const warningRuleEl = document.getElementById('warning-rule-modal-backdrop');
+    if (warningRuleEl && !warningRuleEl.classList.contains('hidden')) closeWarningRuleModal();
     const goalContribEl = document.getElementById('goal-contributions-modal-backdrop');
     if (goalContribEl && !goalContribEl.classList.contains('hidden')) closeGoalContributionsModal();
     const rolloverGoalEl = document.getElementById('rollover-goal-modal-backdrop');
@@ -16314,6 +16587,698 @@ window.addEventListener('resize', () => {
   }
 });
 
+/* ---------------- Settings -> Warning Signs Rule & Action Manager ---------------- */
+function getDefaultWarningRules(){
+  return [
+    {
+      id: 'budget_over',
+      section: 'Budgets & Expenses',
+      name: 'Budget Limit Exceeded',
+      badgeLabel: 'Over Budget',
+      subhead: 'Triggered when monthly category spending exceeds its configured budget limit.',
+      color: 'danger',
+      actionType: 'adjust_budget',
+      active: true,
+      isDefault: true
+    },
+    {
+      id: 'budget_near',
+      section: 'Budgets & Expenses',
+      name: 'Approaching Budget Cap (85%)',
+      badgeLabel: 'Near Limit (85%)',
+      subhead: 'Triggered when monthly category spending reaches 85% to 99% of its monthly cap.',
+      color: 'amber',
+      actionType: 'adjust_budget',
+      active: true,
+      isDefault: true
+    },
+    {
+      id: 'budget_zero',
+      section: 'Budgets & Expenses',
+      name: 'Limit Reached / Zero Remaining',
+      badgeLabel: 'Limit Reached',
+      subhead: 'Triggered when a category budget has zero remaining balance left for the month.',
+      color: 'amber',
+      actionType: 'view_expenses',
+      active: true,
+      isDefault: true
+    },
+    {
+      id: 'goal_deadline_passed',
+      section: 'Savings Goals',
+      name: 'Savings Goal Deadline Passed',
+      badgeLabel: 'Deadline Passed',
+      subhead: 'Triggered when a savings goal target date passes before reaching 100% completion.',
+      color: 'danger',
+      actionType: 'extend_goal',
+      active: true,
+      isDefault: true
+    },
+    {
+      id: 'goal_deadline_near',
+      section: 'Savings Goals',
+      name: 'Savings Goal Due Within 7 Days',
+      badgeLabel: 'Due Soon',
+      subhead: 'Triggered when an incomplete savings goal is within 7 days of its target deadline.',
+      color: 'amber',
+      actionType: 'contribute_goal',
+      active: true,
+      isDefault: true
+    },
+    {
+      id: 'goal_achieved',
+      section: 'Savings Goals',
+      name: 'Savings Target 100% Achieved',
+      badgeLabel: '100% Achieved',
+      subhead: 'Triggered when accumulated deposits reach 100% of the savings goal target.',
+      color: 'teal',
+      actionType: 'transfer_goal',
+      active: true,
+      isDefault: true
+    },
+    {
+      id: 'tx_missing_subcat',
+      section: 'Categories & Transactions',
+      name: 'Unassigned Expense Subcategory',
+      badgeLabel: 'None',
+      subhead: 'Flags expense transactions recorded without a specific subcategory assigned.',
+      color: 'danger',
+      actionType: 'edit_tx',
+      active: true,
+      isDefault: true
+    },
+    {
+      id: 'benefit_surplus',
+      section: 'Income & Benefits',
+      name: 'Company Benefit Quota Alert',
+      badgeLabel: 'Quota Available',
+      subhead: 'Flags company benefit accounts with unspent balance available to claim or transfer.',
+      color: 'teal',
+      actionType: 'transfer_benefit',
+      active: true,
+      isDefault: true
+    }
+  ];
+}
+
+function getWarningActionLabels(){
+  return {
+    adjust_budget: 'Open Edit Budget Modal',
+    view_expenses: 'View Transactions Page',
+    extend_goal: 'Open Extend Goal Deadline Modal',
+    contribute_goal: 'Open Goal Contribute Input',
+    transfer_goal: 'Open Savings Transfer Modal',
+    use_savings: 'Use Goal Savings for Expense',
+    edit_tx: 'Open Edit Transaction Modal',
+    filter_unassigned: 'Filter Unassigned Subcategories',
+    transfer_benefit: 'Open Benefit Surplus Transfer Modal',
+    open_budgets: 'Navigate to Budgets Page',
+    open_savings: 'Navigate to Savings Goals Page',
+    open_settings: 'Navigate to Settings Page'
+  };
+}
+
+function ensureWarningRules(existingRules){
+  const defaults = getDefaultWarningRules();
+  const list = Array.isArray(existingRules) ? [...existingRules] : [];
+  const byId = new Map(list.filter(r => r && r.id).map(r => [r.id, r]));
+  const merged = [];
+  defaults.forEach(def => {
+    if(byId.has(def.id)){
+      const cur = byId.get(def.id);
+      merged.push({
+        ...def,
+        ...cur,
+        active: cur.active !== undefined ? Boolean(cur.active) : true,
+        isDefault: true
+      });
+      byId.delete(def.id);
+    } else {
+      merged.push({ ...def });
+    }
+  });
+  byId.forEach(customRule => {
+    merged.push({
+      ...customRule,
+      active: customRule.active !== undefined ? Boolean(customRule.active) : true
+    });
+  });
+  return merged;
+}
+
+function getWarningRule(ruleId){
+  if(!DB.warningRules || !Array.isArray(DB.warningRules)){
+    DB.warningRules = ensureWarningRules([]);
+  }
+  return DB.warningRules.find(r => r.id === ruleId) || getDefaultWarningRules().find(r => r.id === ruleId) || null;
+}
+
+function getWarningBadgeClass(color){
+  if(color === 'danger') return 'badge-over';
+  if(color === 'amber') return 'badge-amber';
+  if(color === 'teal') return 'badge-ok';
+  return 'badge-off';
+}
+
+function executeWarningRuleAction(ruleId, ctxStr){
+  const rule = getWarningRule(ruleId);
+  if(!rule || !rule.active) return;
+  let ctx = {};
+  if(ctxStr){
+    try { ctx = typeof ctxStr === 'string' ? JSON.parse(decodeURIComponent(ctxStr)) : ctxStr; } catch(e){}
+  }
+  const act = rule.actionType || 'open_budgets';
+  if(act === 'adjust_budget'){
+    if(ctx.budgetId){
+      openEditBudgetModal(ctx.budgetId);
+    } else {
+      goToApp('budgets');
+    }
+  } else if(act === 'view_expenses'){
+    goToApp('transactions');
+  } else if(act === 'extend_goal'){
+    if(ctx.goalId){
+      openRolloverGoalModal(ctx.goalId);
+    } else {
+      goToApp('savings');
+    }
+  } else if(act === 'contribute_goal'){
+    if(ctx.goalId){
+      goToApp('savings');
+      setTimeout(() => showContributeRow(ctx.goalId), 60);
+    } else {
+      goToApp('savings');
+    }
+  } else if(act === 'transfer_goal'){
+    if(ctx.goalId){
+      openSavingsTransferModal(ctx.goalId);
+    } else {
+      goToApp('savings');
+    }
+  } else if(act === 'use_savings'){
+    if(ctx.goalName){
+      openTxModalWithGoal(ctx.goalName);
+    } else {
+      goToApp('savings');
+    }
+  } else if(act === 'edit_tx'){
+    if(ctx.txId){
+      openTxModal(ctx.txId);
+    } else {
+      goToApp('transactions');
+    }
+  } else if(act === 'filter_unassigned'){
+    goToApp('transactions');
+    if(!txFilterUnassignedOnly) toggleUnassignedSubcatFilter();
+  } else if(act === 'transfer_benefit'){
+    const accs = (getAllowanceAccounts() || []).filter(a => a.active);
+    if(ctx.allowanceId){
+      openTransferAllowanceModal(ctx.allowanceId);
+    } else if(accs.length){
+      openTransferAllowanceModal(accs[0].id);
+    } else {
+      goToApp('settings');
+      setSettingsTab('allowances');
+    }
+  } else if(act === 'open_budgets'){
+    goToApp('budgets');
+  } else if(act === 'open_savings'){
+    goToApp('savings');
+  } else if(act === 'open_settings'){
+    goToApp('settings');
+  }
+}
+
+function renderBudgetWarningBadgeHtml(b){
+  const isCatOver = b.budgetAmount > 0 && b.spent > b.budgetAmount;
+  const isCatZero = b.budgetAmount > 0 && b.remaining === 0;
+  const isCatNear = !isCatOver && !isCatZero && b.budgetAmount > 0 && b.percent >= 85;
+  const ctxEncoded = encodeURIComponent(JSON.stringify({ budgetId: b.id || (b.subRows && b.subRows[0] ? b.subRows[0].id : ''), category: b.category }));
+
+  if(isCatOver){
+    const r = getWarningRule('budget_over');
+    if(!r || !r.active) return '';
+    return `<span class="badge ${getWarningBadgeClass(r.color)}" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('budget_over','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+  }
+  if(isCatZero){
+    const r = getWarningRule('budget_zero');
+    if(!r || !r.active) return '<span class="badge badge-off">Limit Reached</span>';
+    return `<span class="badge ${getWarningBadgeClass(r.color)}" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('budget_zero','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+  }
+  if(isCatNear){
+    const r = getWarningRule('budget_near');
+    if(r && r.active){
+      return `<span class="badge ${getWarningBadgeClass(r.color)}" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('budget_near','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+    }
+  }
+  return '<span class="badge badge-ok">On track</span>';
+}
+
+function renderGoalWarningBadgeHtml(ruleId, g, fallbackText){
+  const r = getWarningRule(ruleId);
+  if(!r || !r.active){
+    return `<span class="badge badge-off">${escapeHtml(fallbackText)}</span>`;
+  }
+  const ctxEncoded = encodeURIComponent(JSON.stringify({ goalId: g.id, goalName: g.name }));
+  return `<span class="badge ${getWarningBadgeClass(r.color)}" style="font-weight:700; cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('${ruleId}','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+}
+
+function renderMissingSubcatBadgeHtml(t){
+  const r = getWarningRule('tx_missing_subcat');
+  if(!r || !r.active){
+    return '<span style="color:var(--muted-2);">-</span>';
+  }
+  const ctxEncoded = encodeURIComponent(JSON.stringify({ txId: t.id }));
+  const dotColor = r.color === 'amber' ? 'var(--amber)' : (r.color === 'teal' ? 'var(--teal)' : (r.color === 'primary' ? 'var(--primary)' : 'var(--rose)'));
+  return `<span class="badge-subcat-none" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('tx_missing_subcat','${ctxEncoded}')"><span class="rect-sign-red" style="background:${dotColor};"></span>${escapeHtml(r.badgeLabel || 'None')}</span>`;
+}
+
+var settingsWarningsFilter = 'all';
+
+function setSettingsWarningsFilter(filter){
+  settingsWarningsFilter = filter;
+  renderWarningSignsSettings();
+}
+
+function renderWarningSignsSettings(){
+  const container = document.getElementById('settings-warnings-container');
+  if(!container) return;
+
+  DB.warningRules = ensureWarningRules(DB.warningRules);
+  const allRules = DB.warningRules;
+  const activeCount = allRules.filter(r => r.active).length;
+  const actionLabels = getWarningActionLabels();
+
+  const filteredRules = (!settingsWarningsFilter || settingsWarningsFilter === 'all')
+    ? allRules
+    : allRules.filter(r => r.section === settingsWarningsFilter);
+
+  const colorLabels = {
+    danger: 'Critical / Rose',
+    amber: 'Warning / Amber',
+    teal: 'Actionable / Teal',
+    primary: 'Info / Indigo'
+  };
+
+  container.innerHTML = `
+    <div class="card" style="padding:22px; margin-bottom:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h2 class="section-title" style="margin:0;">Warning Signs &amp; Action Rules</h2>
+            <span class="badge badge-ok" style="font-size:11px; font-weight:700;">${activeCount} of ${allRules.length} Active</span>
+          </div>
+          <p class="text-xs muted" style="margin:4px 0 0;">Activate, rename, change colors, or assign custom click actions for warning signs across Budgets, Savings Goals, Transactions, and Benefits.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-ghost" style="padding:6px 12px; font-size:12px;" onclick="handleResetWarningRules()">Reset Defaults</button>
+          <button type="button" class="btn-primary" style="padding:6px 14px; font-size:12px;" onclick="openWarningRuleModal()">+ Add Warning Sign</button>
+        </div>
+      </div>
+
+      <div class="chip-row" style="margin-bottom:16px; flex-wrap:wrap;">
+        <button type="button" class="btn-chip ${(!settingsWarningsFilter || settingsWarningsFilter === 'all') ? 'active' : ''}" onclick="setSettingsWarningsFilter('all')">All Rules (${allRules.length})</button>
+        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Budgets & Expenses' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Budgets & Expenses')">Budgets &amp; Expenses</button>
+        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Savings Goals' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Savings Goals')">Savings Goals</button>
+        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Categories & Transactions' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Categories & Transactions')">Categories &amp; Transactions</button>
+        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Income & Benefits' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Income & Benefits')">Income &amp; Benefits</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${filteredRules.map(r => {
+          const badgeClass = getWarningBadgeClass(r.color);
+          const actionLabel = actionLabels[r.actionType] || 'Navigate to Page';
+          const colorMeta = colorLabels[r.color] || 'Warning / Amber';
+          return `
+            <div class="warning-card priority-${escapeHtml(r.color || 'amber')}" style="margin-bottom:0; opacity:${r.active ? '1' : '0.62'};">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                <div style="flex:1; min-width:220px;">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                    <span class="badge ${badgeClass}" style="font-size:11px; font-weight:700;">${escapeHtml(r.badgeLabel)}</span>
+                    <strong style="font-size:14px; color:var(--ink);">${escapeHtml(r.name)}</strong>
+                    <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:10.5px; color:var(--muted);">${escapeHtml(r.section)}</span>
+                    <span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-size:10.5px; font-weight:600;">Action: ${escapeHtml(actionLabel)}</span>
+                    <span class="text-xs muted" style="font-size:11px;">• ${escapeHtml(colorMeta)}</span>
+                  </div>
+                  <p style="margin:0; font-size:12.5px; color:var(--muted); line-height:1.4;">${escapeHtml(r.subhead)}</p>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                  <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:${r.active ? 'var(--teal)' : 'var(--muted)'}; cursor:pointer; user-select:none; padding:4px 8px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line-soft);">
+                    <input type="checkbox" ${r.active ? 'checked' : ''} onchange="toggleWarningRuleActive('${escapeHtml(r.id)}', this.checked)" style="width:15px; height:15px; cursor:pointer;">
+                    <span>${r.active ? 'Active' : 'Off'}</span>
+                  </label>
+                  <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" onclick="openWarningRuleModal('${escapeHtml(r.id)}')">Edit / Rename</button>
+                  ${!r.isDefault ? `<button type="button" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" onclick="deleteCustomWarningRule('${escapeHtml(r.id)}')">Delete</button>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function toggleWarningRuleActive(ruleId, isActive){
+  DB.warningRules = ensureWarningRules(DB.warningRules);
+  const rule = DB.warningRules.find(r => r.id === ruleId);
+  if(!rule) return;
+  rule.active = Boolean(isActive);
+  saveDB(true);
+  renderWarningSignsSettings();
+  renderAllForCurrentPage();
+  showToast(`Warning sign "${rule.badgeLabel}" ${rule.active ? 'activated' : 'deactivated'}`);
+}
+
+function openWarningRuleModal(ruleId){
+  const backdrop = document.getElementById('warning-rule-modal-backdrop');
+  if(!backdrop) return;
+  DB.warningRules = ensureWarningRules(DB.warningRules);
+  const titleEl = document.getElementById('warning-rule-modal-title');
+  const idInput = document.getElementById('warning-rule-id');
+  const nameInput = document.getElementById('warning-rule-name');
+  const badgeInput = document.getElementById('warning-rule-badge');
+  const subheadInput = document.getElementById('warning-rule-subhead');
+  const secSelect = document.getElementById('warning-rule-section');
+  const colSelect = document.getElementById('warning-rule-color');
+  const actSelect = document.getElementById('warning-rule-action');
+
+  if(ruleId){
+    const rule = DB.warningRules.find(r => r.id === ruleId);
+    if(!rule) return;
+    if(titleEl) titleEl.textContent = 'Edit Warning Sign';
+    idInput.value = rule.id;
+    nameInput.value = rule.name || '';
+    badgeInput.value = rule.badgeLabel || '';
+    subheadInput.value = rule.subhead || '';
+    secSelect.value = rule.section || 'Budgets & Expenses';
+    colSelect.value = rule.color || 'amber';
+    actSelect.value = rule.actionType || 'adjust_budget';
+  } else {
+    if(titleEl) titleEl.textContent = 'New Warning Sign';
+    idInput.value = '';
+    nameInput.value = '';
+    badgeInput.value = '';
+    subheadInput.value = '';
+    secSelect.value = 'Budgets & Expenses';
+    colSelect.value = 'amber';
+    actSelect.value = 'adjust_budget';
+  }
+  backdrop.classList.remove('hidden');
+}
+
+function closeWarningRuleModal(){
+  const backdrop = document.getElementById('warning-rule-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function handleSaveWarningRule(e){
+  e.preventDefault();
+  DB.warningRules = ensureWarningRules(DB.warningRules);
+  const ruleId = document.getElementById('warning-rule-id').value.trim();
+  const name = document.getElementById('warning-rule-name').value.trim();
+  const badgeLabel = document.getElementById('warning-rule-badge').value.trim();
+  const subhead = document.getElementById('warning-rule-subhead').value.trim();
+  const section = document.getElementById('warning-rule-section').value;
+  const color = document.getElementById('warning-rule-color').value;
+  const actionType = document.getElementById('warning-rule-action').value;
+
+  if(!name || !badgeLabel || !subhead) return;
+
+  if(ruleId){
+    const existing = DB.warningRules.find(r => r.id === ruleId);
+    if(existing){
+      existing.name = name;
+      existing.badgeLabel = badgeLabel;
+      existing.subhead = subhead;
+      existing.section = section;
+      existing.color = color;
+      existing.actionType = actionType;
+    }
+  } else {
+    DB.warningRules.push({
+      id: 'custom_warn_' + uid(),
+      name,
+      badgeLabel,
+      subhead,
+      section,
+      color,
+      actionType,
+      active: true,
+      isDefault: false
+    });
+  }
+
+  saveDB(true);
+  closeWarningRuleModal();
+  renderWarningSignsSettings();
+  renderAllForCurrentPage();
+  showToast(`Saved warning sign "${badgeLabel}"`);
+}
+
+function deleteCustomWarningRule(ruleId){
+  DB.warningRules = (DB.warningRules || []).filter(r => r.id !== ruleId || r.isDefault);
+  saveDB(true);
+  renderWarningSignsSettings();
+  renderAllForCurrentPage();
+  showToast('Removed custom warning sign');
+}
+
+function handleResetWarningRules(){
+  DB.warningRules = getDefaultWarningRules().map(r => ({ ...r }));
+  saveDB(true);
+  renderWarningSignsSettings();
+  renderAllForCurrentPage();
+  showToast('All warning signs reset to active defaults');
+}
+
+/* ---------------- Planned / Future Savings Goals Manager ---------------- */
+var activatingPlannedGoalId = null;
+
+function updatePlannedGoalsButtonBadge(){
+  const badge = document.getElementById('planned-goals-btn-badge');
+  if(!badge) return;
+  const count = Array.isArray(DB.plannedSavingsGoals) ? DB.plannedSavingsGoals.length : 0;
+  badge.textContent = String(count);
+  badge.className = 'badge ' + (count > 0 ? 'badge-ok' : 'badge-off');
+}
+
+function openPlannedGoalsModal(){
+  const backdrop = document.getElementById('planned-goals-modal-backdrop');
+  if(!backdrop) return;
+  activatingPlannedGoalId = null;
+  resetPlannedGoalForm();
+  renderPlannedGoalsModalList();
+  backdrop.classList.remove('hidden');
+}
+
+function closePlannedGoalsModal(){
+  const backdrop = document.getElementById('planned-goals-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+  activatingPlannedGoalId = null;
+}
+
+function resetPlannedGoalForm(){
+  const editIdEl = document.getElementById('planned-goal-edit-id');
+  const nameEl = document.getElementById('planned-goal-name');
+  const targetEl = document.getElementById('planned-goal-target');
+  const savingInEl = document.getElementById('planned-goal-saving-in');
+  const submitBtn = document.getElementById('planned-goal-submit-btn');
+  const cancelBtn = document.getElementById('planned-goal-cancel-edit-btn');
+  const noteEl = document.getElementById('planned-goal-form-mode-note');
+
+  if(editIdEl) editIdEl.value = '';
+  if(nameEl) nameEl.value = '';
+  if(targetEl) targetEl.value = '';
+  if(savingInEl) savingInEl.value = 'Bank Account';
+  if(submitBtn) submitBtn.textContent = '+ Add Planned Goal';
+  if(cancelBtn) cancelBtn.classList.add('hidden');
+  if(noteEl) noteEl.textContent = 'Add a future goal to your unactivated list.';
+}
+
+function handleSavePlannedGoal(e){
+  e.preventDefault();
+  if(!Array.isArray(DB.plannedSavingsGoals)) DB.plannedSavingsGoals = [];
+  const editId = document.getElementById('planned-goal-edit-id').value.trim();
+  const name = document.getElementById('planned-goal-name').value.trim();
+  const targetAmount = parseFloat(document.getElementById('planned-goal-target').value);
+  const savingIn = document.getElementById('planned-goal-saving-in').value || 'Bank Account';
+
+  if(!name || isNaN(targetAmount) || targetAmount <= 0){
+    showToast('Please enter a valid goal name and target amount', 'error');
+    return;
+  }
+
+  if(editId){
+    const item = DB.plannedSavingsGoals.find(g => g.id === editId);
+    if(item){
+      item.name = name;
+      item.targetAmount = targetAmount;
+      item.savingIn = savingIn;
+      showToast(`Updated planned goal "${name}"`);
+    }
+  } else {
+    DB.plannedSavingsGoals.unshift({
+      id: 'plan_' + uid(),
+      name,
+      targetAmount,
+      savingIn,
+      createdAt: new Date().toISOString()
+    });
+    showToast(`Saved "${name}" to Planned Goals`);
+  }
+
+  saveDB(true);
+  resetPlannedGoalForm();
+  renderPlannedGoalsModalList();
+  updatePlannedGoalsButtonBadge();
+}
+
+function editPlannedGoalItem(id){
+  const item = (DB.plannedSavingsGoals || []).find(g => g.id === id);
+  if(!item) return;
+  document.getElementById('planned-goal-edit-id').value = item.id;
+  document.getElementById('planned-goal-name').value = item.name || '';
+  document.getElementById('planned-goal-target').value = item.targetAmount || '';
+  document.getElementById('planned-goal-saving-in').value = item.savingIn || 'Bank Account';
+  const submitBtn = document.getElementById('planned-goal-submit-btn');
+  const cancelBtn = document.getElementById('planned-goal-cancel-edit-btn');
+  const noteEl = document.getElementById('planned-goal-form-mode-note');
+  if(submitBtn) submitBtn.textContent = 'Save Changes';
+  if(cancelBtn) cancelBtn.classList.remove('hidden');
+  if(noteEl) noteEl.textContent = `Editing planned goal "${item.name}"`;
+}
+
+function deletePlannedGoalItem(id){
+  if(!Array.isArray(DB.plannedSavingsGoals)) return;
+  const item = DB.plannedSavingsGoals.find(g => g.id === id);
+  DB.plannedSavingsGoals = DB.plannedSavingsGoals.filter(g => g.id !== id);
+  saveDB(true);
+  renderPlannedGoalsModalList();
+  updatePlannedGoalsButtonBadge();
+  if(item) showToast(`Removed planned goal "${item.name}"`);
+}
+
+function promptActivatePlannedGoal(id){
+  activatingPlannedGoalId = (activatingPlannedGoalId === id) ? null : id;
+  renderPlannedGoalsModalList();
+}
+
+function confirmActivatePlannedGoal(id){
+  const item = (DB.plannedSavingsGoals || []).find(g => g.id === id);
+  if(!item) return;
+  const startInput = document.getElementById('activate-plan-start-' + id);
+  const endInput = document.getElementById('activate-plan-end-' + id);
+  const startDate = startInput ? startInput.value : '';
+  const deadline = endInput ? endInput.value : '';
+
+  if(!startDate || !deadline){
+    showToast('Please select both a Start Date and Deadline to activate this goal', 'error');
+    return;
+  }
+  if(deadline < startDate){
+    showToast('Deadline must be on or after the Start Date', 'error');
+    return;
+  }
+
+  const newGoal = {
+    id: uid(),
+    name: item.name,
+    targetAmount: Number(item.targetAmount) || 0,
+    currentAmount: 0,
+    startDate,
+    deadline,
+    savingIn: item.savingIn || 'Bank Account'
+  };
+
+  if(!Array.isArray(DB.savingsGoals)) DB.savingsGoals = [];
+  DB.savingsGoals.push(newGoal);
+
+  if(DB.categories && Array.isArray(DB.categories.savings) && !DB.categories.savings.includes(newGoal.name)){
+    DB.categories.savings.push(newGoal.name);
+  }
+
+  DB.plannedSavingsGoals = (DB.plannedSavingsGoals || []).filter(g => g.id !== id);
+  activatingPlannedGoalId = null;
+
+  // Switch savings filter to the newly activated goal's effective month so user sees it immediately
+  const eff = getGoalEffectiveMonthYear(newGoal);
+  if(eff){
+    savingsFilterMonth = eff.month;
+    savingsFilterYear = eff.year;
+  }
+
+  saveDB(true);
+  renderPlannedGoalsModalList();
+  renderAllForCurrentPage();
+  showToast(`Activated "${newGoal.name}" into active Savings Goals!`);
+}
+
+function renderPlannedGoalsModalList(){
+  const listEl = document.getElementById('planned-goals-modal-list');
+  const countEl = document.getElementById('planned-goals-modal-count');
+  if(!listEl) return;
+
+  const list = Array.isArray(DB.plannedSavingsGoals) ? DB.plannedSavingsGoals : [];
+  if(countEl){
+    countEl.textContent = `${list.length} planned goal${list.length === 1 ? '' : 's'} (inactive until activated)`;
+  }
+
+  if(!list.length){
+    listEl.innerHTML = `
+      <div style="text-align:center; padding:28px 16px; background:var(--surface-2); border:1px dashed var(--line); border-radius:10px;">
+        <p style="margin:0 0 4px; font-size:13.5px; font-weight:700; color:var(--ink);">No Planned Goals Saved Yet</p>
+        <p class="text-xs muted" style="margin:0 auto; max-width:380px;">Use the form above to jot down future goals for next month. Activate any goal whenever you are ready to assign its Start Date and Deadline.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const now = new Date();
+  const nextMonthStart = ymd(new Date(now.getFullYear(), now.getMonth() + 1, 1));
+  const nextMonthEnd = ymd(new Date(now.getFullYear(), now.getMonth() + 2, 0));
+
+  listEl.innerHTML = list.map(item => {
+    const isActivating = activatingPlannedGoalId === item.id;
+    return `
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="min-width:0; flex:1;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <strong style="font-size:14px; color:var(--ink);">${escapeHtml(item.name)}</strong>
+              <span class="badge badge-off" style="font-size:10px;">Unactivated</span>
+              <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:10.5px; color:var(--muted);">${escapeHtml(item.savingIn || 'Bank Account')}</span>
+            </div>
+            <div class="figure" style="font-size:13px; font-weight:700; color:var(--primary); margin-top:3px;">Target: ${fmt(item.targetAmount)}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            <button type="button" class="btn-primary" style="padding:5px 12px; font-size:11.5px; height:28px;" onclick="promptActivatePlannedGoal('${escapeHtml(item.id)}')">${isActivating ? 'Cancel' : 'Activate'}</button>
+            <button type="button" class="btn-ghost" style="padding:4px 9px; font-size:11.5px; height:28px;" onclick="editPlannedGoalItem('${escapeHtml(item.id)}')">Edit</button>
+            <button type="button" class="btn-ghost" style="padding:4px 9px; font-size:11.5px; height:28px; color:var(--rose);" onclick="deletePlannedGoalItem('${escapeHtml(item.id)}')">Delete</button>
+          </div>
+        </div>
+        ${isActivating ? `
+          <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); background:var(--surface-2); padding:10px 12px; border-radius:8px;">
+            <p class="text-xs" style="margin:0 0 8px; font-weight:600; color:var(--ink);">Set Start Date &amp; Deadline to Activate as a Live Savings Goal:</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end;">
+              <div>
+                <label class="field-label" style="font-size:11px;">Start Date</label>
+                <input type="date" id="activate-plan-start-${escapeHtml(item.id)}" class="field-input" value="${nextMonthStart}" style="height:32px; font-size:12px;">
+              </div>
+              <div>
+                <label class="field-label" style="font-size:11px;">End Date (Deadline)</label>
+                <input type="date" id="activate-plan-end-${escapeHtml(item.id)}" class="field-input" value="${nextMonthEnd}" style="height:32px; font-size:12px;">
+              </div>
+              <button type="button" class="btn-dark" style="height:32px; padding:0 14px; font-size:12px; white-space:nowrap;" onclick="confirmActivatePlannedGoal('${escapeHtml(item.id)}')">Confirm &amp; Activate</button>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+
 sanitizePaymentMethods();
 initSidebar();
 injectLogos();
@@ -16351,214 +17316,6 @@ window.addEventListener('beforeunload', () => {
 });
 
 initAuth();
-
-/* ============================================================
-   WARNING SIGNS & ALERTS SYSTEM ENGINE
-   ============================================================ */
-let warningsFilterMode = 'all';
-
-function setWarningsFilter(mode){
-  warningsFilterMode = mode;
-  document.querySelectorAll('#warnings-filter-chips .btn-chip').forEach(b => {
-    b.classList.toggle('active', b.id === 'wf-' + mode);
-  });
-  renderWarningsPage();
-}
-
-function getActiveWarningsList(){
-  const now = new Date();
-  const curM = (notifSelMonth !== undefined) ? notifSelMonth : (now.getMonth() + 1);
-  const curY = (notifSelYear !== undefined) ? notifSelYear : now.getFullYear();
-  const warnings = [];
-
-  // 1. Budget Overruns and Warnings (Expenses)
-  const monthBudgets = (DB.budgets || []).filter(b => b.month === curM && b.year === curY);
-  const monthTxs = (DB.transactions || []).filter(t => inMonth(t, curM, curY) && t.type === 'expense');
-
-  monthBudgets.forEach(b => {
-    const spent = monthTxs.filter(t => t.category === b.category && (!b.subCategory || t.subCategory === b.subCategory))
-                          .reduce((s, t) => s + (t.amount || 0), 0);
-    const limit = Number(b.amount || b.budgetAmount) || 0;
-    if(limit > 0){
-      if(spent > limit){
-        warnings.push({
-          id: 'warn-budget-over-' + b.id,
-          category: 'budget',
-          priority: 'danger',
-          title: 'Budget Exceeded: ' + b.category + (b.subCategory ? ' (' + b.subCategory + ')' : ''),
-          subhead: 'Spent ' + fmt(spent) + ' of ' + fmt(limit) + ' limit (' + fmt(spent - limit) + ' over budget).',
-          section: 'Budgets & Expenses',
-          actionLabel: 'Adjust Budget',
-          actionFn: "goToApp('budgets')"
-        });
-      } else if((spent / limit) >= 0.85){
-        warnings.push({
-          id: 'warn-budget-watch-' + b.id,
-          category: 'budget',
-          priority: 'amber',
-          title: 'Approaching Limit: ' + b.category + (b.subCategory ? ' (' + b.subCategory + ')' : ''),
-          subhead: 'Reached ' + Math.round((spent / limit) * 100) + '% (' + fmt(spent) + ' of ' + fmt(limit) + ' monthly cap).',
-          section: 'Budgets & Expenses',
-          actionLabel: 'View Expenses',
-          actionFn: "goToApp('transactions')"
-        });
-      }
-    }
-  });
-
-  // 2. Savings Goal Deadlines & Milestones
-  (DB.savingsGoals || []).forEach(g => {
-    const cur = getGoalCurrentAmount(g);
-    const acc = getGoalAccumulatedDeposits(g);
-    const target = Number(g.targetAmount) || 0;
-    const reached = acc >= target && target > 0;
-    const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
-    const totalTransferredOut = rollList.filter(r => !(r.targetGoalId && r.targetGoalId === g.id) && (r.goalId ? r.goalId === g.id : r.goalName === g.name)).reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
-    const isSettled = totalTransferredOut > 0 && cur === 0;
-
-    if(!reached && !isSettled && g.deadline){
-      const daysDiff = Math.ceil((new Date(g.deadline).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      if(daysDiff < 0){
-        warnings.push({
-          id: 'warn-goal-passed-' + g.id,
-          category: 'savings',
-          priority: 'danger',
-          title: 'Deadline Passed: ' + g.name,
-          subhead: 'Target date (' + g.deadline + ') passed with ' + fmt(Math.max(0, target - acc)) + ' remaining to goal.',
-          section: 'Savings Goals',
-          actionLabel: 'Extend or Contribute',
-          actionFn: "goToApp('savings')"
-        });
-      } else if(daysDiff <= 7){
-        warnings.push({
-          id: 'warn-goal-soon-' + g.id,
-          category: 'savings',
-          priority: 'amber',
-          title: 'Deadline Approaching: ' + g.name,
-          subhead: 'Due in ' + daysDiff + ' day' + (daysDiff===1?'':'s') + ' (' + g.deadline + ') with ' + fmt(Math.max(0, target - acc)) + ' remaining.',
-          section: 'Savings Goals',
-          actionLabel: 'Contribute',
-          actionFn: "goToApp('savings')"
-        });
-      }
-    } else if(reached && cur > 0){
-      warnings.push({
-        id: 'warn-goal-ready-' + g.id,
-        category: 'savings',
-        priority: 'teal',
-        title: 'Goal Achieved: ' + g.name,
-        subhead: fmt(cur) + ' available in vault ready to use or transfer.',
-        section: 'Savings Goals',
-        actionLabel: 'Manage Vault',
-        actionFn: "goToApp('savings')"
-      });
-    }
-  });
-
-  // 3. Income & Company Benefits Surplus
-  const monthIncome = (DB.transactions || []).filter(t => inMonth(t, curM, curY) && t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0);
-  const monthExpenseTotal = monthTxs.reduce((s, t) => s + (t.amount || 0), 0);
-  if(monthIncome === 0 && monthExpenseTotal > 0){
-    warnings.push({
-      id: 'warn-no-income-' + curM + '-' + curY,
-      category: 'benefits',
-      priority: 'amber',
-      title: 'No Income Logged for ' + MONTH_NAMES[curM - 1] + ' ' + curY,
-      subhead: fmt(monthExpenseTotal) + ' in expenses recorded without any logged monthly income.',
-      section: 'Income & Benefits',
-      actionLabel: 'Log Income',
-      actionFn: "goToApp('transactions'); openTxModal('income');"
-    });
-  }
-
-  (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
-    const avail = computeAllowanceAvailable(acc);
-    if(avail > 0){
-      warnings.push({
-        id: 'warn-benefit-surplus-' + acc.id,
-        category: 'benefits',
-        priority: 'teal',
-        title: 'Unspent Benefit Quota: ' + acc.name,
-        subhead: fmt(avail) + ' remaining allowance available to transfer into Income or Savings.',
-        section: 'Income & Benefits',
-        actionLabel: 'Transfer Surplus',
-        actionFn: "openTransferAllowanceModal('" + acc.id + "')"
-      });
-    }
-  });
-
-  // 4. Category Hygiene (Unassigned Subcategories)
-  const unassignedCount = monthTxs.filter(t => !t.subCategory || !t.subCategory.trim()).length;
-  if(unassignedCount > 0){
-    warnings.push({
-      id: 'warn-unassigned-subcats-' + curM + '-' + curY,
-      category: 'categories',
-      priority: 'amber',
-      title: unassignedCount + ' Expense' + (unassignedCount===1?'':'s') + ' Missing Subcategory',
-      subhead: 'Assign subcategories to keep your monthly expense reports and category breakdowns accurate.',
-      section: 'Categories',
-      actionLabel: 'Review Transactions',
-      actionFn: "goToApp('transactions'); toggleUnassignedSubcatFilter();"
-    });
-  }
-
-  return warnings;
-}
-
-function renderWarningsPage(){
-  const container = document.getElementById('warnings-page-list');
-  const countBadge = document.getElementById('warnings-active-count');
-  if(!container) return;
-
-  const allWarnings = getActiveWarningsList();
-  const filtered = warningsFilterMode === 'all' 
-    ? allWarnings 
-    : allWarnings.filter(w => w.category === warningsFilterMode);
-
-  if(countBadge){
-    countBadge.textContent = allWarnings.length + ' Active Alert' + (allWarnings.length===1?'':'s');
-    countBadge.className = 'badge ' + (allWarnings.length > 0 ? 'badge-over' : 'badge-ok');
-  }
-
-  if(!filtered.length){
-    container.innerHTML = `
-      <div class="card" style="padding:48px 24px; text-align:center;">
-        <div style="width:48px; height:48px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; color:var(--teal);">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <h3 style="margin:0 0 6px; font-size:18px;">All Clear — No Active Warning Signs</h3>
-        <p class="text-xs muted" style="margin:0 auto; max-width:400px; line-height:1.5;">Your spending is within configured budget limits, savings goals are on track, and no urgent actions require your attention.</p>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="warning-grid">
-      ${filtered.map(w => {
-        const priorityColors = {
-          danger: { badge: 'badge-over', tag: 'Critical / Overrun' },
-          amber: { badge: 'badge-amber', tag: 'Warning / Watch' },
-          teal: { badge: 'badge-ok', tag: 'Actionable / Ready' }
-        };
-        const pMeta = priorityColors[w.priority] || priorityColors.amber;
-        return `
-          <div class="warning-card priority-${w.priority}">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                <span class="badge ${pMeta.badge}" style="font-size:11px; font-weight:700;">${pMeta.tag}</span>
-                <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:11px; font-weight:600; color:var(--muted);">${w.section}</span>
-                <h3 style="margin:0; font-size:14.5px; font-weight:700; color:var(--ink);">${escapeHtml(w.title)}</h3>
-              </div>
-              <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px;" onclick="${w.actionFn}">${w.actionLabel}</button>
-            </div>
-            <p style="margin:0; font-size:12.5px; color:var(--muted); line-height:1.4;">${escapeHtml(w.subhead)}</p>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
 
 // Push Notification Helper
 function dispatchDesktopNotification(title, options){
