@@ -1324,13 +1324,11 @@
   .cat-chevron { transition: transform .2s ease; flex-shrink: 0; }
   .cat-chevron.open { transform: rotate(90deg) !important; }
 
-  /* --- Sidebar Centered Alignment (Collapsed Mode) --- */
-  #sidebar.collapsed .brand-header { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; width: 100% !important; gap: 8px !important; padding: 0 0 12px 0 !important; }
-  #sidebar.collapsed .brand { display: flex !important; justify-content: center !important; width: 100% !important; margin: 0 auto !important; }
-  #sidebar.collapsed .brand-mark { margin: 0 auto !important; }
-  #sidebar.collapsed #sidebar-toggle-btn { margin: 0 auto !important; width: 28px !important; height: 24px !important; padding: 2px !important; display: flex !important; align-items: center !important; justify-content: center !important; }
-  #sidebar.collapsed .nav-link { justify-content: center !important; width: 100% !important; padding: 10px 0 !important; margin: 2px 0 !important; }
-  #sidebar.collapsed .nav-link svg { margin: 0 auto !important; }
+  /* --- Sidebar Clean Horizontal Header Alignment (Collapsed Mode) --- */
+  #sidebar.collapsed .brand-header { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 2px !important; padding: 2px 0 !important; margin-bottom: 24px !important; }
+  #sidebar.collapsed .brand { display: flex !important; align-items: center !important; gap: 0 !important; margin: 0 !important; }
+  #sidebar.collapsed #sidebar-toggle-btn { padding: 4px !important; margin: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; }
+  #sidebar.collapsed .nav-link { justify-content: center !important; width: 100% !important; padding: 10px 0 !important; }
 
   /* --- Transaction Category Cell & Dot Alignment --- */
   .tx-cat-cell { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; min-width: 0; }
@@ -1346,9 +1344,9 @@
   .warning-card.priority-primary { border-left: 4px solid var(--primary); background: rgba(99,102,241,0.02); }
 
   /* --- Mobile Settings Tabs & Layout Improvements --- */
+  .settings-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 4px; margin-bottom: 18px; max-width: 100%; }
   @media(max-width: 768px){
-    .settings-tabs { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; padding-bottom: 6px !important; margin-bottom: 14px !important; }
-    .settings-tabs .btn-chip { flex-shrink: 0 !important; }
+    .settings-tabs { display: flex !important; flex-wrap: wrap !important; overflow-x: visible !important; gap: 4px !important; padding: 5px !important; margin-bottom: 14px !important; }
     .cat-block-head { padding: 10px 12px !important; }
     .subcat-row { padding: 8px 10px !important; font-size: 12.5px !important; }
   }
@@ -2224,14 +2222,43 @@
         </div>
         <div id="asset-allocation-legend" style="margin-top:14px; display:flex; flex-direction:column; gap:6px;"></div>
       </div>
-    </div>
+    </section>
 
+    <!-- ---- WARNING SIGNS & SYSTEM ALERTS ---- -->
+    <section id="page-warnings" class="page hidden">
+      <div class="topbar">
+        <div>
+          <h1>Warning Signs &amp; Alerts</h1>
+          <p>Centralized monitoring for budget limits, savings milestones, income health, and category hygiene.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
+      </div>
+
+      <!-- Warning Filter Chips & Quick Stats Bar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+        <div class="chip-row" id="warnings-filter-chips" style="flex-wrap:wrap;">
+          <button type="button" class="btn-chip active" id="wf-all" onclick="setWarningsFilter('all')">All Warnings</button>
+          <button type="button" class="btn-chip" id="wf-budget" onclick="setWarningsFilter('budget')">Budgets &amp; Expenses</button>
+          <button type="button" class="btn-chip" id="wf-savings" onclick="setWarningsFilter('savings')">Savings Goals</button>
+          <button type="button" class="btn-chip" id="wf-benefits" onclick="setWarningsFilter('benefits')">Income &amp; Benefits</button>
+          <button type="button" class="btn-chip" id="wf-categories" onclick="setWarningsFilter('categories')">Categories</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge badge-ok" id="warnings-active-count" style="font-size:11.5px; font-weight:700;">0 Active</span>
+        </div>
+      </div>
+
+      <!-- Warning List Container -->
+      <div id="warnings-page-list"></div>
     </section>
 
     <!-- ---- SETTINGS ---- -->
-    
-    
-
     <section id="page-settings" class="page hidden">
       <div class="topbar"><div><h1>Settings</h1><p>Manage categories, currency, and preferences.</p></div><div style="display:flex; align-items:center; gap:10px;">
           <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
@@ -2241,8 +2268,8 @@
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
         </div></div>
 
-      <!-- Clean & Simple Settings Tabs (Single-Tier, Professional & Uncluttered) -->
-      <div class="settings-tabs" id="settings-tabs" style="margin-bottom:20px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+      <!-- Clean & Simple Settings Tabs -->
+      <div class="settings-tabs" id="settings-tabs"></div>
 
       <div id="settings-categories">
         <div class="card" style="padding:22px; margin-bottom:18px;">
@@ -2272,11 +2299,9 @@
             </form>
           </div>
         </div>
-
-        </div>
       </div>
 
-      <div id="settings-payment-methods"ethods" class="hidden">
+      <div id="settings-payment-methods" class="hidden">
         <div class="card" style="padding:22px; margin-bottom:18px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
             <div>
@@ -2710,123 +2735,132 @@
   </div>
 </div>
 <div id="goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeGoalModal()">
-  <div class="modal" style="max-width:390px;">
+  <div class="modal" style="max-width:360px;">
     <button class="modal-close" onclick="closeGoalModal()">✕</button>
-    <h2 style="font-size:18px; margin-bottom:14px;">New Savings Goal</h2>
+    <h2>New Savings Goal</h2>
     <form onsubmit="handleAddGoal(event)">
-      <!-- Goal Type Selector: Active Target vs. Planned/Assumption Pool -->
-      <div style="margin-bottom:14px;">
-        <label class="field-label" style="font-weight:700; margin-bottom:6px; display:block;">Goal Mode</label>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <label id="lbl-goal-type-active" style="display:flex; flex-direction:column; padding:10px 12px; border:2px solid var(--primary); border-radius:10px; background:rgba(124,58,237,0.05); cursor:pointer; transition:all .15s ease;">
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-              <input type="radio" name="goal-type-choice" id="goal-type-active" value="active" checked onchange="onGoalTypeChoiceChange('active')" style="accent-color:var(--primary); cursor:pointer;">
-              <strong style="font-size:12.5px; color:var(--ink);">Active Target</strong>
-            </div>
-            <span style="font-size:11px; color:var(--muted); line-height:1.3;">Assigned to monthly savings plan</span>
-          </label>
-          <label id="lbl-goal-type-planned" style="display:flex; flex-direction:column; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); cursor:pointer; transition:all .15s ease;">
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-              <input type="radio" name="goal-type-choice" id="goal-type-planned" value="planned" onchange="onGoalTypeChoiceChange('planned')" style="accent-color:var(--primary); cursor:pointer;">
-              <strong style="font-size:12.5px; color:var(--ink);">Planned Pool</strong>
-            </div>
-            <span style="font-size:11px; color:var(--muted); line-height:1.3;">Assumption goal (allot to month later)</span>
-          </label>
-        </div>
-      </div>
-
       <label class="field-label">Goal Name</label>
-      <input type="text" id="goal-name" placeholder="e.g. Car, Emergency Fund, Laptop" class="field-input mb-3" required autocomplete="off">
-
+      <input type="text" id="goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
+      <label class="field-label">Start Date</label>
+      <input type="date" id="goal-start" class="field-input mb-3" required>
       <label class="field-label">Target Amount</label>
       <input type="number" min="0" step="any" id="goal-target" placeholder="1000" class="field-input figure mb-3" required>
-
       <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
       <select id="goal-saving-in" class="field-input mb-3">
         <option value="Bank Account">Bank Account</option>
         <option value="Personal Safe / Cash">Personal Safe / Cash</option>
         <option value="Digital Wallet">Digital Wallet</option>
-        <option value="Gold / Assets">Gold / Assets</option>
+        <option value="Other">Other</option>
       </select>
+      <label class="field-label">Deadline <span style="color:var(--rose);">*</span></label>
+      <input type="date" id="goal-deadline" class="field-input mb-5" required>
+      <button type="submit" class="btn-primary" style="width:100%;">Create Goal</button>
+    </form>
+  </div>
+</div>
 
-      <!-- Date Fields: Conditional for Active Monthly Target -->
-      <div id="goal-monthly-dates-wrap">
-        <label class="field-label">Start Date</label>
-        <input type="date" id="goal-start" class="field-input mb-3">
-        <label class="field-label">Target Deadline <span style="color:var(--rose);">*</span></label>
-        <input type="date" id="goal-deadline" class="field-input mb-3">
+<div id="subcat-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSubcatModal()">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeSubcatModal()">✕</button>
+    <h2>Subcategories <span id="subcat-modal-parent" class="breadcrumb-tag"></span></h2>
+    <div id="subcat-modal-list" style="margin-bottom:14px;"></div>
+    <form onsubmit="handleAddSubcategoryModal(event)" style="display:flex; gap:10px;">
+      <input type="text" id="subcat-modal-input" placeholder="New subcategory..." class="field-input" required>
+      <button type="submit" class="btn-dark" style="white-space:nowrap;">Add</button>
+    </form>
+  </div>
+</div>
+
+<div id="budget-subcat-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeBudgetSubcatModal()">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeBudgetSubcatModal()">✕</button>
+    <h2>Add Subcategory Budget <span id="budget-subcat-modal-parent" class="breadcrumb-tag"></span></h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <label class="field-label" style="margin:0;">Select Subcategories <span class="text-xs muted">(Select one or more)</span></label>
+      <div style="display:flex; gap:8px;">
+        <button type="button" onclick="selectAllBudgetSubcats(true)" class="link-sm" style="font-size:11px; color:var(--primary); background:none; border:none; cursor:pointer; font-weight:600;">Select All</button>
+        <span class="muted" style="font-size:11px;">|</span>
+        <button type="button" onclick="selectAllBudgetSubcats(false)" class="link-sm" style="font-size:11px; color:var(--muted); background:none; border:none; cursor:pointer; font-weight:600;">Clear</button>
       </div>
+    </div>
+    <div id="budget-subcat-checkbox-group" style="max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:14px; background:var(--surface);"></div>
+    <label class="field-label">Monthly Limit</label>
+    <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="e.g. 5000" class="field-input figure mb-4">
+    <button onclick="handleAddSubcatBudget()" class="btn-primary" style="width:100%;">+ Add Subcategory Budget</button>
+  </div>
+</div>
 
-      <div id="goal-planned-note" class="hidden" style="padding:10px 12px; background:var(--surface-2); border:1px dashed var(--line); border-radius:8px; margin-bottom:14px;">
-        <p class="text-xs muted" style="margin:0; line-height:1.45;">
-          <strong>Assumption / Planned Goal:</strong> This goal will be added to your unallotted Planned Goals Pool. You can create as many assumptions as you like, and allot them into the next month or any specific period whenever you are ready.
-        </p>
+<div id="edit-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditBudgetModal()">
+  <div class="modal" style="max-width:390px;">
+    <button class="modal-close" onclick="closeEditBudgetModal()" aria-label="Close">✕</button>
+    <h2>Edit Budget</h2>
+    <p id="edit-budget-title" class="text-sm muted" style="margin:-6px 0 16px; font-weight:500;"></p>
+    <form onsubmit="handleSaveEditBudget(event)">
+      <input type="hidden" id="edit-budget-id">
+      <label class="field-label" for="edit-budget-category">Category</label>
+      <select id="edit-budget-category" class="field-input mb-3" onchange="onEditBudgetCategoryChange()" required></select>
+      <label class="field-label" for="edit-budget-subcategory">Subcategory</label>
+      <select id="edit-budget-subcategory" class="field-input mb-3"></select>
+      <label class="field-label" id="edit-budget-amount-label" for="edit-budget-amount">Monthly Limit</label>
+      <input type="text" inputmode="decimal" id="edit-budget-amount" class="field-input figure mb-2" placeholder="e.g. 5000" required oninput="const m=document.getElementById('edit-budget-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <span id="edit-budget-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditBudgetModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
       </div>
+    </form>
+  </div>
+</div>
 
-      <div class="modal-footer" style="margin-top:14px;">
-        <button type="button" class="btn-ghost" onclick="closeGoalModal()">Cancel</button>
-        <button type="submit" class="btn-primary" id="goal-submit-btn" style="min-width:120px;">Create Goal</button>
+<div id="edit-category-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditCategoryModal()">
+  <div class="modal" style="max-width:390px;">
+    <button class="modal-close" onclick="closeEditCategoryModal()" aria-label="Close">✕</button>
+    <h2>Edit Category</h2>
+    <p id="edit-category-type-label" class="text-sm muted" style="margin:-6px 0 16px; font-weight:500;"></p>
+    <form onsubmit="handleSaveEditCategory(event)">
+      <input type="hidden" id="edit-category-type">
+      <input type="hidden" id="edit-category-old-name">
+      <label class="field-label" for="edit-category-name">Category Name</label>
+      <input type="text" id="edit-category-name" class="field-input mb-2" placeholder="e.g. Housing" required autocomplete="off" oninput="const m=document.getElementById('edit-category-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <span id="edit-category-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditCategoryModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
       </div>
     </form>
   </div>
 </div>
 
 <div id="edit-goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditGoalModal()">
-  <div class="modal" style="max-width:390px;">
+  <div class="modal" style="max-width:380px;">
     <button class="modal-close" onclick="closeEditGoalModal()">✕</button>
-    <h2 style="font-size:18px; margin-bottom:14px;">Edit Savings Goal</h2>
+    <h2>Edit Savings Goal</h2>
     <form onsubmit="handleSaveEditGoal(event)">
       <input type="hidden" id="edit-goal-id">
-
-      <div style="margin-bottom:14px;">
-        <label class="field-label" style="font-weight:700; margin-bottom:6px; display:block;">Goal Mode</label>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <label id="lbl-edit-goal-type-active" style="display:flex; flex-direction:column; padding:10px 12px; border:2px solid var(--primary); border-radius:10px; background:rgba(124,58,237,0.05); cursor:pointer; transition:all .15s ease;">
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-              <input type="radio" name="edit-goal-type-choice" id="edit-goal-type-active" value="active" checked onchange="onEditGoalTypeChoiceChange('active')" style="accent-color:var(--primary); cursor:pointer;">
-              <strong style="font-size:12.5px; color:var(--ink);">Active Target</strong>
-            </div>
-            <span style="font-size:11px; color:var(--muted); line-height:1.3;">Assigned to month</span>
-          </label>
-          <label id="lbl-edit-goal-type-planned" style="display:flex; flex-direction:column; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); cursor:pointer; transition:all .15s ease;">
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-              <input type="radio" name="edit-goal-type-choice" id="edit-goal-type-planned" value="planned" onchange="onEditGoalTypeChoiceChange('planned')" style="accent-color:var(--primary); cursor:pointer;">
-              <strong style="font-size:12.5px; color:var(--ink);">Planned Pool</strong>
-            </div>
-            <span style="font-size:11px; color:var(--muted); line-height:1.3;">Assumption pool</span>
-          </label>
-        </div>
-      </div>
-
       <label class="field-label">Goal Name</label>
-      <input type="text" id="edit-goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required autocomplete="off">
-
+      <input type="text" id="edit-goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
+      <label class="field-label">Start Date</label>
+      <input type="date" id="edit-goal-start" class="field-input mb-3" required>
       <label class="field-label" id="edit-goal-target-label">Target Amount</label>
       <input type="number" min="0" step="any" id="edit-goal-target" placeholder="1000" class="field-input figure mb-3" required>
-
       <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
       <select id="edit-goal-saving-in" class="field-input mb-3">
         <option value="Bank Account">Bank Account</option>
         <option value="Personal Safe / Cash">Personal Safe / Cash</option>
         <option value="Digital Wallet">Digital Wallet</option>
-        <option value="Gold / Assets">Gold / Assets</option>
+        <option value="Other">Other</option>
       </select>
-
-      <div id="edit-goal-monthly-dates-wrap">
-        <label class="field-label">Start Date</label>
-        <input type="date" id="edit-goal-start" class="field-input mb-3">
-        <label class="field-label">Target Deadline</label>
-        <input type="date" id="edit-goal-deadline" class="field-input mb-3">
-      </div>
-
-      <div class="modal-footer" style="margin-top:14px;">
-        <button type="button" class="btn-ghost" onclick="closeEditGoalModal()">Cancel</button>
-        <button type="submit" class="btn-primary" style="min-width:120px;">Save Changes</button>
+      <label class="field-label">Deadline <span style="color:var(--rose);">*</span></label>
+      <input type="date" id="edit-goal-deadline" class="field-input mb-5" required>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeEditGoalModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
       </div>
     </form>
   </div>
 </div>
 
+<!-- Goal Contributions History & Edit Modal -->
 <div id="goal-contributions-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeGoalContributionsModal()">
   <div class="modal" style="max-width:520px;">
     <button class="modal-close" onclick="closeGoalContributionsModal()" aria-label="Close">✕</button>
@@ -3827,6 +3861,7 @@ const ICONS = {
   budgets: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h4M7 16h8"/></svg>',
   savings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
   investments: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 7-7 7-4-4-5 5"/><circle cx="19" cy="7" r="2"/></svg>',
+  warnings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   settings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
 };
 
@@ -3839,6 +3874,7 @@ const NAV_BOTTOM = [
   { id: "budgets", label: "Budgets" },
   { id: "savings", label: "Savings Goals" },
   { id: "investments", label: "Investments" },
+  { id: "warnings", label: "Warning Signs" },
 ];
 const NAV_SETTINGS = [
   { id: "settings", label: "Settings" },
@@ -6264,7 +6300,7 @@ function changeCurrencyFromSettings(){
   renderAllForCurrentPage();
 }
 function goToApp(page){
-  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'settings'];
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'warnings', 'settings'];
   if(!validPages.includes(page)) page = 'dashboard';
 
   const pageTitles = {
@@ -6274,6 +6310,7 @@ function goToApp(page){
     budgets: 'Budgets – WealthNest',
     savings: 'Savings Goals – WealthNest',
     investments: 'Investments & Projections – WealthNest',
+    warnings: 'Warning Signs & Alerts – WealthNest',
     settings: 'Settings – WealthNest'
   };
   document.title = pageTitles[page] || 'WealthNest';
@@ -11417,59 +11454,69 @@ function renderSavings(){
   initSavingsFilters();
   const allGoalsMode = (savingsViewMode === 'all');
   const allGoalsList = DB.savingsGoals || [];
-
-  const curM = savingsFilterMonth || (new Date().getMonth() + 1);
-  const curY = savingsFilterYear || new Date().getFullYear();
-  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const curMonthName = SHORT_MONTHS[curM - 1];
-
-  // Distinguish Active Monthly Goals from Unallotted Planned/Assumption Pool
-  const plannedGoals = allGoalsList.filter(g => g.isAssumption || g.isIndependent || !g.assignedMonth);
-  const monthlyActiveGoals = allGoalsList.filter(g => !g.isAssumption && !g.isIndependent && goalActiveInPeriod(g, curM, curY));
+  const visibleGoals = allGoalsMode
+    ? [...allGoalsList]
+    : allGoalsList.filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
 
   const allGoalsBtn = document.getElementById('btn-savings-all-goals');
   if(allGoalsBtn){
-    allGoalsBtn.className = allGoalsMode ? 'btn-primary' : 'btn-ghost';
-    allGoalsBtn.textContent = allGoalsMode ? 'Showing All-Time' : 'All-Time';
+    if(allGoalsMode){
+      allGoalsBtn.className = 'btn-primary';
+      allGoalsBtn.textContent = 'Showing All-Time';
+    } else {
+      allGoalsBtn.className = 'btn-ghost';
+      allGoalsBtn.textContent = 'All-Time';
+    }
+  }
+
+  const noteEl = document.getElementById('savings-filter-note');
+  if(noteEl && allGoalsMode){
+    noteEl.textContent = 'Showing all goals grouped chronologically by month.';
   }
 
   const countLabel = document.getElementById('savings-count-label');
   if(countLabel){
     countLabel.textContent = allGoalsMode
-      ? `${allGoalsList.length} total goal${allGoalsList.length===1?'':'s'} on record (${plannedGoals.length} in Planned Pool)`
-      : `${monthlyActiveGoals.length} active in ${curMonthName} ${curY} · ${plannedGoals.length} in Planned Pool`;
+      ? `${visibleGoals.length} total goal${visibleGoals.length===1?'':'s'} on record`
+      : `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'} for this period`;
   }
 
-  // 1. Calculate All-Time Cumulative Unspent Savings
+  // 1. Calculate All-Time Cumulative Unspent Savings (deposits minus funded expenses and income drawdowns)
   const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings' && !t.isGoalRolloverIn);
   const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const allDrawdownsToIncome = (DB.goalRollovers || []).filter(r => r.type === 'goal_to_income').reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
   const netTotalSavingsAllTime = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed - allDrawdownsToIncome) * 100) / 100);
 
-  // 2. Selected Period Savings & Cash Flow
+  // 2. Selected Period Savings & Remaining Balance
+  const now = new Date();
+  const curM = savingsFilterMonth || (now.getMonth() + 1);
+  const curY = savingsFilterYear || now.getFullYear();
   const monthSaved = (DB.transactions || []).filter(t => t.type === 'savings' && !t.isGoalRolloverIn && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthIncome = (DB.transactions || []).filter(t => t.type === 'income' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthExpense = (DB.transactions || []).filter(t => t.type === 'expense' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const rawRemaining = monthIncome - monthExpense - monthSaved;
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const curMonthName = SHORT_MONTHS[curM - 1];
+
+  // Check if carry-forward is already active for this month
   const activeCf = (DB.carryForwards || []).find(cf => cf.fromMonth === curM && cf.fromYear === curY && (DB.transactions || []).some(t => t.id === cf.txId));
 
-  // 3. Goals Achieved KPI
-  const monthGoalsCount = monthlyActiveGoals.length;
-  const monthGoalsAchieved = monthlyActiveGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
-  const allAchievedCount = allGoalsList.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+  // 3. Goals Achieved KPI (based on accumulated savings reached target!)
+  const monthGoalsCount = visibleGoals.length;
+  const monthGoalsAchieved = visibleGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
 
-  // 4. Update goal current amounts
-  allGoalsList.forEach(g => {
+  // 4. Update goal currentAmounts
+  visibleGoals.forEach(g => {
     g.currentAmount = getGoalCurrentAmount(g);
   });
 
-  // 5. Render 4 KPI Overview Cards
+  // 5. Render 4-card Summary KPI Grid with Embedded Actions
   const summaryGrid = document.getElementById('savings-summary-grid');
   if(summaryGrid){
     const remainTone = activeCf ? 'pos' : (rawRemaining >= 0 ? 'pos' : 'neg');
     const remainLabel = activeCf ? 'Rolled over to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget');
-    const goalsTone = (allGoalsMode ? allAchievedCount : monthGoalsAchieved) > 0 ? 'pos' : 'neu';
+    const goalsTone = monthGoalsAchieved > 0 ? 'pos' : 'neu';
     const goalsLabel = allGoalsMode ? 'All-time achieved' : (monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName);
     summaryGrid.innerHTML = `
       <div class="card ov-card">
@@ -11498,182 +11545,255 @@ function renderSavings(){
       </div>
       <div class="card ov-card">
         <div class="ov-top"><span class="label-eyebrow">Goals Achieved</span><div class="ov-icon accent-rose">${miniIcon('trophy')}</div></div>
-        <p class="ov-amount">${allGoalsMode ? allAchievedCount + ' of ' + allGoalsList.length : monthGoalsAchieved + ' of ' + monthGoalsCount}</p>
+        <p class="ov-amount">${monthGoalsAchieved} of ${monthGoalsCount}</p>
         <div class="ov-change"><span class="kpi-trend-badge trend-${goalsTone}">${goalsLabel}</span></div>
         <div style="margin-top:6px;"><button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">${allGoalsMode ? 'Show Monthly' : 'All-Time'}</button></div>
       </div>
     `;
   }
 
+  const cfBtnContainer = document.getElementById('savings-carry-forward-btn-wrap');
+  if(cfBtnContainer) cfBtnContainer.innerHTML = '';
+
   const grid = document.getElementById('savings-grid');
   if(!grid) return;
 
   const todayStr = ymd(new Date());
 
-  // Function to render an individual goal card
-  function renderGoalItem(g, isPlannedCard){
+  if(visibleGoals.length === 0){
+    grid.innerHTML = `
+      <div style="grid-column:1 / -1; text-align:center; padding:32px 18px; background:var(--surface-2); border:1px dashed var(--line); border-radius:12px; margin-bottom:12px;">
+        <div style="width:40px; height:40px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </div>
+        <p style="font-size:14px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Savings Goals for ${allGoalsMode ? 'All-Time' : curMonthName + ' ' + curY}</p>
+        <p class="text-xs muted" style="margin:0 auto; max-width:380px; line-height:1.5;">You haven't created a savings target for this period yet. Click "+ Create Goal" to set a target milestone.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Render a single goal card cleanly
+  function renderSingleGoalCard(g, gIdx){
     const accumulated = getGoalAccumulatedDeposits(g);
     const cur = getGoalCurrentAmount(g);
     const targetAmt = Number(g.targetAmount) || 0;
     const reached = accumulated >= targetAmt && targetAmt > 0;
-    const pct = reached ? 100 : (targetAmt > 0 ? Math.min(100, Math.round((accumulated / targetAmt) * 100)) : 0);
+
+    // Check if goal funds were transferred out via rollover
+    const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
+    const transferOutRecords = rollList.filter(r => {
+      if(r.targetGoalId && r.targetGoalId === g.id) return false;
+      return r.goalId ? (r.goalId === g.id) : (r.goalName === g.name);
+    });
+    const totalTransferredOut = transferOutRecords.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+    const lastTransferOut = transferOutRecords[transferOutRecords.length - 1];
+
+    const isFullySettled = totalTransferredOut > 0 && cur === 0;
+    const isPartiallyTransferred = totalTransferredOut > 0 && cur > 0;
+    const isExpired = !isFullySettled && !reached && Boolean(g.deadline && g.deadline < todayStr);
+
+    const pct = reached ? 100 : (targetAmt > 0 ? Math.min(100, (accumulated / targetAmt) * 100) : 0);
     const rem = reached ? 0 : Math.max(0, targetAmt - accumulated);
     const savingInLabel = g.savingIn || 'Bank Account';
 
-    if(isPlannedCard){
-      return `
-        <div class="card" style="border:1px dashed var(--line-strong, #CBD5E1); background:var(--surface); border-radius:12px; padding:18px 20px; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px;">
-              <div>
-                <span class="badge" style="font-size:10px; font-weight:700; background:rgba(99,102,241,0.08); color:var(--primary); padding:2px 7px;">Planned Pool</span>
-                <h3 style="margin:6px 0 2px; font-size:16px; font-weight:700; color:var(--ink);">${escapeHtml(g.name)}</h3>
-                <span class="text-xs muted">${escapeHtml(savingInLabel)}</span>
-              </div>
-              <div style="text-align:right;">
-                <span class="figure" style="font-size:16px; font-weight:800; color:var(--ink);">${fmt(targetAmt)}</span>
-                <span class="muted text-xs" style="display:block;">Target Amount</span>
-              </div>
-            </div>
-
-            <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin:10px 0 6px;">
-              <div style="width:${pct}%; height:100%; background:var(--primary); border-radius:999px;"></div>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-bottom:14px;">
-              <span>Saved in Vault: <strong style="color:var(--teal);">${fmt(cur)}</strong></span>
-              <span>${pct}% of target</span>
-            </div>
-          </div>
-
-          <!-- Allotment Action Controls -->
-          <div style="border-top:1px solid var(--line-soft); padding-top:10px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:6px;">
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button type="button" class="btn-primary" style="padding:4px 10px; font-size:11px; height:26px; border-radius:6px; font-weight:600;" onclick="allotGoalToMonth('${g.id}', ${curM}, ${curY})" title="Activate goal in ${curMonthName} ${curY}">Allot to This Month</button>
-              <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:11px; height:26px; border-radius:6px; font-weight:600;" onclick="allotGoalToNextMonth('${g.id}')" title="Schedule goal to begin in next month">Allot to Next Month</button>
-              <button type="button" class="excel-filter-text-btn" style="font-size:11px; padding:3px 6px;" onclick="promptScheduleGoal('${g.id}')">Schedule...</button>
-            </div>
-            <div style="display:flex; align-items:center; gap:4px;">
-              <button class="icon-btn icon-btn-edit" onclick="openEditGoalModal('${g.id}')" title="Edit goal"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-              <button class="icon-btn icon-btn-delete" onclick="requestDelete('goal','${g.id}','${g.name.replace(/'/g,"\\\'")}');" title="Delete goal"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-            </div>
-          </div>
-        </div>
-      `;
+    let cardBorder = '';
+    let cardBg = '';
+    if(isFullySettled){
+      cardBorder = 'border-color:rgba(15,158,147,0.35);';
+      cardBg = 'background:rgba(15,158,147,0.02);';
+    } else if(reached){
+      cardBorder = 'border-color:var(--teal);';
+    } else if(isExpired){
+      cardBorder = 'border-color:var(--rose);';
     }
 
-    // Active Monthly Goal Card
-    const deadlineStr = g.deadline ? g.deadline : 'No deadline';
+    let statusBadge = '<span class="badge badge-off">In Progress</span>';
+    if(isFullySettled){
+      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">Settled</span>';
+    } else if(isPartiallyTransferred){
+      statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">Partially Transferred</span>`;
+    } else if(reached){
+      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">100% Achieved</span>';
+    } else if(isExpired){
+      statusBadge = '<span class="badge badge-over" style="font-weight:600;">Deadline Passed</span>';
+    }
+
+    // Multi-month pacing calculation
+    const monthsRemaining = getGoalMonthsRemaining(g);
+    const monthlyPacing = getGoalMonthlyPacing(g);
+    let pacingBadgeHtml = '';
+    if(!reached && !isFullySettled && g.deadline && monthlyPacing > 0){
+      if(monthsRemaining > 1){
+        pacingBadgeHtml = `<span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px;">Pacing: ${fmt(monthlyPacing)} / mo · ${monthsRemaining} mos left</span>`;
+      } else {
+        pacingBadgeHtml = `<span class="badge" style="background:rgba(217,119,6,0.1); color:var(--amber); font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px;">Final Month · ${fmt(monthlyPacing)} left</span>`;
+      }
+    }
+
+    let transferBannerHtml = '';
+    if(lastTransferOut){
+      const destLabel = lastTransferOut.type === 'goal_to_income' ? 'Income' : (escapeHtml(lastTransferOut.targetGoalName || 'Savings'));
+      const destDateLabel = MONTH_NAMES[lastTransferOut.toMonth - 1] + ' ' + lastTransferOut.toYear;
+      if(isFullySettled){
+        transferBannerHtml = `
+          <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
+            <span style="font-size:13px; font-weight:700;">↳</span>
+            <span><strong>Settled:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}).</span>
+          </div>
+        `;
+      } else if(isPartiallyTransferred){
+        transferBannerHtml = `
+          <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
+            <span style="font-size:13px; font-weight:700;">↳</span>
+            <span><strong>Partial Transfer:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}). <strong>${fmt(cur)}</strong> remaining in vault.</span>
+          </div>
+        `;
+      }
+    }
+
+    let rightSideFigure = '';
+    if(isFullySettled){
+      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">${fmt(0)} in Vault · Settled</span>`;
+    } else if(isPartiallyTransferred){
+      rightSideFigure = `<span class="text-xs" style="color:var(--ink); font-weight:600;">${fmt(cur)} in Vault</span>`;
+    } else if(reached){
+      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">${fmt(cur)} in Vault · Target Met</span>`;
+    } else {
+      rightSideFigure = `<span class="text-xs muted">${fmt(rem)} remaining</span>`;
+    }
+
+    const canContribute = !reached && !isFullySettled;
+    const canReverseTransfer = Boolean(lastTransferOut);
+    const canUseSavings = cur > 0;
+    const canTransfer = cur > 0;
+    const canExtend = !reached && g.deadline && !isFullySettled;
+
     return `
-      <div class="card" style="background:var(--surface); border:1px solid ${reached ? 'rgba(15,158,147,0.4)' : 'var(--line)'}; border-radius:12px; padding:18px 20px; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px;">
-            <div>
-              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <span class="badge ${reached ? 'badge-ok' : 'badge-off'}" style="font-size:10px; font-weight:700; padding:2px 7px;">
-                  ${reached ? 'Goal Achieved' : ('Active · ' + curMonthName + ' ' + curY)}
-                </span>
-                <span class="text-xs muted">${escapeHtml(savingInLabel)}</span>
-              </div>
-              <h3 style="margin:6px 0 2px; font-size:16px; font-weight:700; color:var(--ink);">${escapeHtml(g.name)}</h3>
-              <span class="text-xs muted">Deadline: ${deadlineStr}</span>
+      <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${cardBorder} ${cardBg}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              ${dragHandleHtml()}
+              <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
+              ${statusBadge}
             </div>
-            <div style="text-align:right;">
-              <span class="figure" style="font-size:16px; font-weight:800; color:var(--ink);">${fmt(targetAmt)}</span>
-              <span class="muted text-xs" style="display:block;">Target</span>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:12px; color:var(--muted);">
+              ${g.deadline ? `<span>Target Date: <strong style="color:var(--ink);">${escapeHtml(g.deadline)}</strong></span>` : ''}
+              ${g.deadline ? `<span>•</span>` : ''}
+              <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
+              ${pacingBadgeHtml}
             </div>
+            ${transferBannerHtml}
           </div>
-
-          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin:10px 0 6px;">
-            <div style="width:${pct}%; height:100%; background:${reached ? 'var(--teal)' : 'var(--primary)'}; border-radius:999px;"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-bottom:14px;">
-            <span>Saved in Vault: <strong style="color:var(--teal);">${fmt(cur)}</strong></span>
-            <span>${reached ? 'Target Met' : fmt(rem) + ' remaining'} (${pct}%)</span>
+          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            <span class="figure" style="font-size:18px; font-weight:700; color:${reached || isFullySettled ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
+            <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
+            <button type="button" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" title="Delete goal">Delete</button>
           </div>
         </div>
 
-        <div style="border-top:1px solid var(--line-soft); padding-top:10px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:6px;">
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            ${reached ? `
-              <button type="button" class="btn-primary" style="padding:4px 10px; font-size:11px; height:26px; border-radius:6px; font-weight:600;" onclick="openSavingsTransferModal('${g.id}')">Use Savings</button>
-            ` : `
-              <button type="button" class="btn-primary" style="padding:4px 10px; font-size:11px; height:26px; border-radius:6px; font-weight:600;" onclick="showContributeRow('${g.id}')">+ Contribute</button>
-              <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:11px; height:26px; border-radius:6px; font-weight:600;" onclick="carryForwardGoalToNextMonth('${g.id}')" title="Carry forward to next month">Move to Next Month</button>
-              <button type="button" class="excel-filter-text-btn" style="font-size:11px; padding:3px 6px;" onclick="returnGoalToPlannedPool('${g.id}')" title="Unallot back to pool">To Pool</button>
-            `}
-          </div>
-          <div style="display:flex; align-items:center; gap:4px;">
-            <button class="icon-btn icon-btn-edit" onclick="openEditGoalModal('${g.id}')" title="Edit goal"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-            <button class="icon-btn icon-btn-delete" onclick="requestDelete('goal','${g.id}','${g.name.replace(/'/g,"\\\'")}');" title="Delete goal"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-          </div>
+        <div class="progress-track" style="height:8px; border-radius:999px; overflow:hidden; margin-top:12px;">
+          <div class="progress-fill ${reached || isFullySettled ? 'fill-teal' : 'fill-primary'}" style="width:${pct}%; transition:width 0.4s ease;"></div>
         </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px;">
+          <span class="figure">
+            <strong>${fmt(accumulated)}</strong> <span class="muted">/ ${fmt(g.targetAmount)} Target</span>
+          </span>
+          ${rightSideFigure}
+        </div>
+
+        <!-- Clean Action Buttons with Transfer & Use Savings Options -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            ${canContribute ? `
+              <button type="button" onclick="showContributeRow('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px;">
+                Contribute
+              </button>
+            ` : ''}
+            <button type="button" onclick="openGoalContributionsModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px;">
+              History
+            </button>
+            ${canReverseTransfer ? `
+              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--amber); border-color:var(--amber);" title="Reverse transfer and return funds to this goal">Reverse Transfer</button>
+            ` : ''}
+            ${canUseSavings ? `
+              <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use savings from this goal for expenses.">
+                Use Savings
+              </button>
+            ` : ''}
+            ${canTransfer ? `
+              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Transfer savings to another month or directly into income (current balance: ${fmt(cur)})">
+                Transfer
+              </button>
+            ` : ''}
+          </div>
+          ${canExtend ? `
+            <button type="button" onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="font-size:11.5px; color:var(--muted); background:none; border:none; cursor:pointer;">
+              Extend Date
+            </button>
+          ` : ''}
+        </div>
+
         <div id="contribute-row-${g.id}" style="margin-top:10px;"></div>
       </div>
     `;
   }
 
-  // Render Grid Content
+  // If in 'All-Time' mode: group chronologically by Month/Year with Section Headers
   if(allGoalsMode){
-    grid.innerHTML = `
-      <div style="grid-column:1 / -1; margin-bottom:4px;">
-        <h2 style="font-size:16px; font-weight:700; color:var(--ink); margin:0 0 2px;">All-Time Savings Goals History</h2>
-        <p class="text-xs muted" style="margin:0 0 12px;">Complete record of all active, planned, and achieved goals.</p>
-      </div>
-      ${allGoalsList.length ? allGoalsList.map(g => renderGoalItem(g, Boolean(g.isAssumption || !g.assignedMonth))).join('') : '<p class="empty-note" style="grid-column:1 / -1;">No savings goals on record.</p>'}
-    `;
-    return;
-  }
+    const groupsMap = new Map();
+    visibleGoals.forEach(g => {
+      let key = 'Ongoing / Lifetime';
+      let sortKey = '0000-00';
+      if(g.deadline){
+        const parts = g.deadline.split('-');
+        if(parts.length >= 2){
+          const y = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10);
+          key = MONTH_NAMES[m - 1] + ' ' + y;
+          sortKey = parts[0] + '-' + parts[1];
+        }
+      } else if(g.startDate){
+        const parts = g.startDate.split('-');
+        if(parts.length >= 2){
+          const y = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10);
+          key = MONTH_NAMES[m - 1] + ' ' + y;
+          sortKey = parts[0] + '-' + parts[1];
+        }
+      }
+      if(!groupsMap.has(key)){
+        groupsMap.set(key, { sortKey, label: key, goals: [] });
+      }
+      groupsMap.get(key).goals.push(g);
+    });
 
-  // Monthly View: Active Targets Section + Planned Pool Section
-  let contentHtml = '';
+    const sortedGroups = Array.from(groupsMap.values()).sort((a,b) => b.sortKey.localeCompare(a.sortKey));
 
-  // Active Monthly Goals Section
-  contentHtml += `
-    <div style="grid-column:1 / -1; margin-bottom:4px; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
-      <div>
-        <h2 style="font-size:16px; font-weight:700; color:var(--ink); margin:0 0 2px;">Active Goals for ${curMonthName} ${curY}</h2>
-        <p class="text-xs muted" style="margin:0;">Goals assigned to your current monthly savings plan.</p>
-      </div>
-      <button type="button" onclick="openGoalModal()" class="btn-primary" style="font-size:12px; padding:4px 12px; height:28px;">+ Add Goal</button>
-    </div>
-  `;
-
-  if(monthlyActiveGoals.length){
-    contentHtml += monthlyActiveGoals.map(g => renderGoalItem(g, false)).join('');
-  } else {
-    contentHtml += `
-      <div style="grid-column:1 / -1; text-align:center; padding:28px 18px; background:var(--surface); border:1px dashed var(--line); border-radius:12px; margin-bottom:14px;">
-        <p style="font-size:14px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Active Savings Goals for ${curMonthName} ${curY}</p>
-        <p class="text-xs muted" style="margin:0 auto; max-width:400px; line-height:1.5;">You can allot a goal from your Planned Pool below, or click "+ Add Goal" to start a new savings target.</p>
-      </div>
-    `;
-  }
-
-  // Planned & Assumption Goals Pool Section
-  contentHtml += `
-    <div style="grid-column:1 / -1; margin-top:20px; padding-top:16px; border-top:1px solid var(--line); margin-bottom:4px; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
-      <div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <h2 style="font-size:16px; font-weight:700; color:var(--ink); margin:0;">Planned &amp; Assumption Pool</h2>
-          <span class="badge" style="font-size:11px; padding:2px 8px; background:rgba(99,102,241,0.08); color:var(--primary); font-weight:700;">${plannedGoals.length} Ready to Allot</span>
+    let allHtml = '';
+    sortedGroups.forEach(grp => {
+      const groupGoals = grp.goals;
+      const groupTotalTgt = groupGoals.reduce((s, g) => s + (Number(g.targetAmount) || 0), 0);
+      const groupAchievedCount = groupGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+      allHtml += `
+        <div style="grid-column:1 / -1; margin-top:14px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid var(--line); padding-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h4 style="margin:0; font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--ink);">${grp.label}</h4>
+            <span class="badge ${groupAchievedCount === groupGoals.length ? 'badge-ok' : 'badge-off'}" style="font-size:11px;">
+              ${groupAchievedCount} of ${groupGoals.length} Achieved
+            </span>
+          </div>
+          <span class="text-xs muted" style="font-weight:600;">${fmt(groupTotalTgt)} Target</span>
         </div>
-        <p class="text-xs muted" style="margin:2px 0 0;">Brainstormed assumption goals waiting to be scheduled or allotted into upcoming months.</p>
-      </div>
-    </div>
-  `;
-
-  if(plannedGoals.length){
-    contentHtml += plannedGoals.map(g => renderGoalItem(g, true)).join('');
+      `;
+      allHtml += groupGoals.map((g, idx) => renderSingleGoalCard(g, idx)).join('');
+    });
+    grid.innerHTML = allHtml;
   } else {
-    contentHtml += `
-      <div style="grid-column:1 / -1; text-align:center; padding:24px 18px; background:var(--surface-2); border:1px dashed var(--line); border-radius:12px;">
-        <p style="font-size:13.5px; font-weight:600; color:var(--ink); margin:0 0 4px;">Your Planned Pool is Empty</p>
-        <p class="text-xs muted" style="margin:0 auto; max-width:420px; line-height:1.45;">Create assumption goals anytime without deadlines (e.g. Car, Laptop, Emergency Fund) and allot them whenever you are ready.</p>
-      </div>
-    `;
+    grid.innerHTML = visibleGoals.map((g, gIdx) => renderSingleGoalCard(g, gIdx)).join('');
   }
-
-  grid.innerHTML = contentHtml;
 }
 
 function showContributeRow(id){
@@ -11767,7 +11887,7 @@ function openGoalContributionsModal(goalId){
   document.getElementById('goal-contrib-saved-figure').textContent = fmt(currentSaved);
   document.getElementById('goal-contrib-progress-bar').style.width = `${percent}%`;
   document.getElementById('goal-contrib-target-figure').textContent = `Target: ${fmt(goal.targetAmount)}`;
-  document.getElementById('goal-contrib-remaining-figure').textContent = reached ? '✓ Goal Achieved' : `${fmt(remaining)} remaining`;
+  document.getElementById('goal-contrib-remaining-figure').textContent = reached ? 'Goal Achieved' : `${fmt(remaining)} remaining`;
 
   // Fetch linked transactions
   const txs = (DB.transactions || [])
@@ -11872,178 +11992,100 @@ function deleteContributionTransaction(txId){
   if(activeGoalContribId) openGoalContributionsModal(activeGoalContribId);
   showToast(`Deleted contribution of ${fmt(tx.amount)}`);
 }
-function openGoalModal(){
-  document.getElementById('goal-modal-backdrop').classList.remove('hidden');
-  const now = new Date();
-  const today = ymd(now);
-  const startEl = document.getElementById('goal-start');
-  if(startEl) startEl.value = today;
-  onGoalTypeChoiceChange('active');
-}
 
-function closeGoalModal(){
-  document.getElementById('goal-modal-backdrop').classList.add('hidden');
-  const nameEl = document.getElementById('goal-name');
-  if(nameEl) nameEl.value = '';
-  const targetEl = document.getElementById('goal-target');
-  if(targetEl) targetEl.value = '';
-  const deadEl = document.getElementById('goal-deadline');
-  if(deadEl) deadEl.value = '';
-}
-
-function onGoalTypeChoiceChange(choice){
-  const activeRadio = document.getElementById('goal-type-active');
-  const plannedRadio = document.getElementById('goal-type-planned');
-  const lblActive = document.getElementById('lbl-goal-type-active');
-  const lblPlanned = document.getElementById('lbl-goal-type-planned');
-  const datesWrap = document.getElementById('goal-monthly-dates-wrap');
-  const noteWrap = document.getElementById('goal-planned-note');
-  const deadEl = document.getElementById('goal-deadline');
-  const submitBtn = document.getElementById('goal-submit-btn');
-
-  if(choice === 'planned'){
-    if(plannedRadio) plannedRadio.checked = true;
-    if(lblActive){ lblActive.style.borderColor = 'var(--line)'; lblActive.style.background = 'var(--surface)'; }
-    if(lblPlanned){ lblPlanned.style.borderColor = 'var(--primary)'; lblPlanned.style.background = 'rgba(124,58,237,0.05)'; }
-    if(datesWrap) datesWrap.classList.add('hidden');
-    if(noteWrap) noteWrap.classList.remove('hidden');
-    if(deadEl) deadEl.required = false;
-    if(submitBtn) submitBtn.textContent = 'Save to Planned Pool';
-  } else {
-    if(activeRadio) activeRadio.checked = true;
-    if(lblActive){ lblActive.style.borderColor = 'var(--primary)'; lblActive.style.background = 'rgba(124,58,237,0.05)'; }
-    if(lblPlanned){ lblPlanned.style.borderColor = 'var(--line)'; lblPlanned.style.background = 'var(--surface)'; }
-    if(datesWrap) datesWrap.classList.remove('hidden');
-    if(noteWrap) noteWrap.classList.add('hidden');
-    if(deadEl) deadEl.required = true;
-    if(submitBtn) submitBtn.textContent = 'Create Active Goal';
-  }
-}
-
-function onEditGoalTypeChoiceChange(choice){
-  const activeRadio = document.getElementById('edit-goal-type-active');
-  const plannedRadio = document.getElementById('edit-goal-type-planned');
-  const lblActive = document.getElementById('lbl-edit-goal-type-active');
-  const lblPlanned = document.getElementById('lbl-edit-goal-type-planned');
-  const datesWrap = document.getElementById('edit-goal-monthly-dates-wrap');
-  const deadEl = document.getElementById('edit-goal-deadline');
-
-  if(choice === 'planned'){
-    if(plannedRadio) plannedRadio.checked = true;
-    if(lblActive){ lblActive.style.borderColor = 'var(--line)'; lblActive.style.background = 'var(--surface)'; }
-    if(lblPlanned){ lblPlanned.style.borderColor = 'var(--primary)'; lblPlanned.style.background = 'rgba(124,58,237,0.05)'; }
-    if(datesWrap) datesWrap.classList.add('hidden');
-    if(deadEl) deadEl.required = false;
-  } else {
-    if(activeRadio) activeRadio.checked = true;
-    if(lblActive){ lblActive.style.borderColor = 'var(--primary)'; lblActive.style.background = 'rgba(124,58,237,0.05)'; }
-    if(lblPlanned){ lblPlanned.style.borderColor = 'var(--line)'; lblPlanned.style.background = 'var(--surface)'; }
-    if(datesWrap) datesWrap.classList.remove('hidden');
-    if(deadEl) deadEl.required = false;
-  }
-}
+function openGoalModal(){ document.getElementById('goal-modal-backdrop').classList.remove('hidden'); }
+function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classList.add('hidden'); }
 
 function handleAddGoal(e){
   e.preventDefault();
   const name = document.getElementById('goal-name').value.trim();
-  const isPlanned = document.getElementById('goal-type-planned')?.checked;
-  const startDate = document.getElementById('goal-start')?.value || ymd(new Date());
+  const startDate = document.getElementById('goal-start').value;
   const target = parseFloat(document.getElementById('goal-target').value);
-  const deadline = document.getElementById('goal-deadline')?.value || '';
+  const deadline = document.getElementById('goal-deadline').value;
   const savingIn = document.getElementById('goal-saving-in')?.value || 'Bank Account';
-
-  if(!name || !target || target <= 0){
-    showToast('Please enter a valid goal name and target amount', 'error');
+  if(!name || !startDate || !target || target<=0 || !deadline || deadline < startDate){
+    if(!deadline){
+      showToast('Please select a deadline date', 'error');
+    } else if(deadline < startDate){
+      showToast('Deadline cannot be earlier than start date', 'error');
+    } else {
+      showToast('Please enter valid savings goal details', 'error');
+    }
     return;
   }
-  if(!isPlanned && deadline && deadline < startDate){
-    showToast('Deadline cannot be earlier than start date', 'error');
-    return;
-  }
-  if((DB.savingsGoals || []).some(g => g.name.toLowerCase() === name.toLowerCase())){
+  if(DB.savingsGoals.some(g => g.name.toLowerCase() === name.toLowerCase())){
     showToast(`A savings goal named "${name}" already exists`, 'warning');
     return;
   }
-
-  const curM = savingsFilterMonth || (new Date().getMonth() + 1);
-  const curY = savingsFilterYear || new Date().getFullYear();
-
-  if(!DB.savingsGoals) DB.savingsGoals = [];
-  DB.savingsGoals.push({
-    id: uid(),
-    name,
-    targetAmount: target,
-    currentAmount: 0,
-    startDate: isPlanned ? ymd(new Date()) : startDate,
-    deadline: isPlanned ? '' : deadline,
-    savingIn,
-    isAssumption: Boolean(isPlanned),
-    isIndependent: Boolean(isPlanned),
-    assignedMonth: isPlanned ? null : curM,
-    assignedYear: isPlanned ? null : curY
-  });
-  saveDB(true);
-  closeGoalModal();
-  renderSavings();
-  showToast(isPlanned ? `Added assumption goal "${name}" to Planned Pool` : `Created active savings goal "${name}" for ${MONTH_NAMES[curM-1]} ${curY}`, 'success');
+  DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline, savingIn });
+  saveDB(true); closeGoalModal();
+  document.getElementById('goal-name').value=''; document.getElementById('goal-start').value=''; document.getElementById('goal-target').value=''; document.getElementById('goal-deadline').value='';
+  if(document.getElementById('goal-saving-in')) document.getElementById('goal-saving-in').value = 'Bank Account';
+  renderAllForCurrentPage();
+  showToast(`Created savings goal "${name}"`);
 }
 
 function openEditGoalModal(id){
-  const g = (DB.savingsGoals || []).find(item => item.id === id);
+  const g = DB.savingsGoals.find(item => item.id === id);
   if(!g) return;
   document.getElementById('edit-goal-id').value = id;
   document.getElementById('edit-goal-name').value = g.name || '';
-  document.getElementById('edit-goal-target').value = g.targetAmount || 0;
   document.getElementById('edit-goal-start').value = g.startDate || '';
+  document.getElementById('edit-goal-target').value = g.targetAmount || '';
   document.getElementById('edit-goal-deadline').value = g.deadline || '';
   const savingInSelect = document.getElementById('edit-goal-saving-in');
-  if(savingInSelect) savingInSelect.value = g.savingIn || 'Bank Account';
-
-  const isPlanned = Boolean(g.isAssumption || g.isIndependent || !g.assignedMonth);
-  onEditGoalTypeChoiceChange(isPlanned ? 'planned' : 'active');
+  if(savingInSelect){
+    savingInSelect.value = g.savingIn || 'Bank Account';
+  }
+  const labelEl = document.getElementById('edit-goal-target-label');
+  if(labelEl){
+    labelEl.textContent = `Target Amount (${currencySymbol()})`;
+  }
   document.getElementById('edit-goal-modal-backdrop').classList.remove('hidden');
 }
 
 function closeEditGoalModal(){
-  document.getElementById('edit-goal-modal-backdrop').classList.add('hidden');
+  const backdrop = document.getElementById('edit-goal-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
 }
 
 function handleSaveEditGoal(e){
   e.preventDefault();
   const id = document.getElementById('edit-goal-id').value;
-  const g = (DB.savingsGoals || []).find(item => item.id === id);
+  const g = DB.savingsGoals.find(item => item.id === id);
   if(!g){
     closeEditGoalModal();
     return;
   }
   const newName = document.getElementById('edit-goal-name').value.trim();
-  const isPlanned = document.getElementById('edit-goal-type-planned')?.checked;
-  const startDate = document.getElementById('edit-goal-start').value || ymd(new Date());
+  const startDate = document.getElementById('edit-goal-start').value;
   const target = parseFloat(document.getElementById('edit-goal-target').value);
-  const deadline = document.getElementById('edit-goal-deadline').value || '';
+  const deadline = document.getElementById('edit-goal-deadline').value;
   const savingInSelect = document.getElementById('edit-goal-saving-in');
   const savingIn = savingInSelect ? savingInSelect.value : (g.savingIn || 'Bank Account');
 
-  if(!newName || !target || target <= 0){
-    showToast('Please check the goal fields and enter valid values', 'error');
+  if(!newName || !startDate || !target || target <= 0 || !deadline || deadline < startDate){
+    if(!deadline){
+      showToast('Please select a deadline date', 'error');
+    } else if(deadline < startDate){
+      showToast('Deadline cannot be earlier than start date', 'error');
+    } else {
+      showToast('Please check the goal fields and enter valid values', 'error');
+    }
+    return;
+  }
+
+  if(newName.toLowerCase() !== g.name.toLowerCase() && DB.savingsGoals.some(item => item.id !== id && item.name.toLowerCase() === newName.toLowerCase())){
+    showToast(`A savings goal named "${newName}" already exists`, 'warning');
     return;
   }
 
   const oldName = g.name;
   g.name = newName;
-  g.targetAmount = target;
-  g.savingIn = savingIn;
   g.startDate = startDate;
-  g.deadline = isPlanned ? '' : deadline;
-  g.isAssumption = Boolean(isPlanned);
-  g.isIndependent = Boolean(isPlanned);
-  if(isPlanned){
-    g.assignedMonth = null;
-    g.assignedYear = null;
-  } else if(!g.assignedMonth){
-    g.assignedMonth = savingsFilterMonth || (new Date().getMonth() + 1);
-    g.assignedYear = savingsFilterYear || new Date().getFullYear();
-  }
+  g.targetAmount = target;
+  g.deadline = deadline;
+  g.savingIn = savingIn;
 
   if(oldName !== newName){
     (DB.transactions || []).forEach(tx => {
@@ -12056,93 +12098,8 @@ function handleSaveEditGoal(e){
 
   saveDB(true);
   closeEditGoalModal();
-  renderSavings();
-  showToast(`Updated savings goal "${newName}"`, 'success');
-}
-
-/* ============================================================
-   GOAL ALLOTMENT, CARRY-FORWARD & ASSUMPTION POOL ENGINE
-   ============================================================ */
-
-function allotGoalToMonth(goalId, month, year){
-  const g = (DB.savingsGoals || []).find(item => item.id === goalId);
-  if(!g) return;
-  const targetM = Number(month) || (savingsFilterMonth || (new Date().getMonth() + 1));
-  const targetY = Number(year) || (savingsFilterYear || new Date().getFullYear());
-  g.assignedMonth = targetM;
-  g.assignedYear = targetY;
-  g.isAssumption = false;
-  g.isIndependent = false;
-  saveDB(true);
-  renderSavings();
-  showToast(`Allotted "${g.name}" to ${MONTH_NAMES[targetM - 1]} ${targetY}`, 'success');
-}
-
-function allotGoalToNextMonth(goalId){
-  const now = new Date();
-  const curM = savingsFilterMonth || (now.getMonth() + 1);
-  const curY = savingsFilterYear || now.getFullYear();
-  let nextM = curM + 1;
-  let nextY = curY;
-  if(nextM > 12){
-    nextM = 1;
-    nextY += 1;
-  }
-  allotGoalToMonth(goalId, nextM, nextY);
-}
-
-function promptScheduleGoal(goalId){
-  const g = (DB.savingsGoals || []).find(item => item.id === goalId);
-  if(!g) return;
-  const now = new Date();
-  const curY = savingsFilterYear || now.getFullYear();
-  const monthPrompt = prompt(`Enter target month (1-12) for "${g.name}":`, String(savingsFilterMonth || (now.getMonth() + 1)));
-  if(!monthPrompt) return;
-  const targetM = parseInt(monthPrompt, 10);
-  if(isNaN(targetM) || targetM < 1 || targetM > 12){
-    showToast('Invalid month number (must be 1 to 12)', 'error');
-    return;
-  }
-  const yearPrompt = prompt(`Enter target year for "${g.name}":`, String(curY));
-  if(!yearPrompt) return;
-  const targetY = parseInt(yearPrompt, 10);
-  if(isNaN(targetY) || targetY < 2000 || targetY > 2100){
-    showToast('Invalid year', 'error');
-    return;
-  }
-  allotGoalToMonth(goalId, targetM, targetY);
-}
-
-function returnGoalToPlannedPool(goalId){
-  const g = (DB.savingsGoals || []).find(item => item.id === goalId);
-  if(!g) return;
-  g.isAssumption = true;
-  g.isIndependent = true;
-  g.assignedMonth = null;
-  g.assignedYear = null;
-  saveDB(true);
-  renderSavings();
-  showToast(`Returned "${g.name}" back to Planned Goals Pool`, 'info');
-}
-
-function carryForwardGoalToNextMonth(goalId){
-  const g = (DB.savingsGoals || []).find(item => item.id === goalId);
-  if(!g) return;
-  const curM = g.assignedMonth || savingsFilterMonth || (new Date().getMonth() + 1);
-  const curY = g.assignedYear || savingsFilterYear || new Date().getFullYear();
-  let nextM = curM + 1;
-  let nextY = curY;
-  if(nextM > 12){
-    nextM = 1;
-    nextY += 1;
-  }
-  g.assignedMonth = nextM;
-  g.assignedYear = nextY;
-  g.isAssumption = false;
-  g.isIndependent = false;
-  saveDB(true);
-  renderSavings();
-  showToast(`Carried forward "${g.name}" to ${MONTH_NAMES[nextM - 1]} ${nextY}`, 'success');
+  renderAllForCurrentPage();
+  showToast(`Updated savings goal "${newName}"`);
 }
 
 /* ---------------- render: investments ---------------- */
@@ -13479,7 +13436,8 @@ function renderSettingsTabs(){
     {id:'account', label:'Account'},
     {id:'notifications', label:'Notifications'},
     {id:'backup', label:'Backup & Data'},
-    {id:'recycle', label:'Recycle Bin'}
+    {id:'recycle', label:'Recycle Bin'},
+    {id:'warnings', label:'Warning Signs'}
   ];
 
   const container = document.getElementById('settings-tabs');
@@ -13515,6 +13473,10 @@ function triggerSettingsTabAction(t){
 }
 
 function setSettingsTab(t){
+  if(t === 'warnings'){
+    goToApp('warnings');
+    return;
+  }
   settingsTab = t;
   renderSettingsTabs();
   triggerSettingsTabAction(t);
@@ -14251,7 +14213,7 @@ function renderCategoryList(){
       <div class="cat-block draggable-item" draggable="true" data-reorder-group="settings-cat-expense" data-reorder-key="${escapeHtml(c.name)}">
         <div class="cat-block-head" onclick="toggleSettingsCategory('${c.name.replace(/'/g,"\\'")}')">
           <div style="display:flex; align-items:center; gap:10px;">
-            <span class="drag-handle" title="Drag to reorder" onclick="event.stopPropagation()">${dragHandleHtml()}</span>
+            ${dragHandleHtml()}
             <svg class="cat-chevron ${isOpen ? 'open' : ''}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transform:rotate(${isOpen?90:0}deg); transition:transform .2s ease; color:var(--muted);"><polyline points="9 18 15 12 9 6"/></svg>
             <span style="font-weight:600; font-size:14.5px; color:var(--ink);">${escapeHtml(c.name)}</span>
             <span class="badge" style="font-size:11px; padding:2px 8px; background:var(--surface-2); border:1px solid var(--line-soft); color:var(--muted); font-weight:600;">${subList.length} sub-categor${subList.length===1?'y':'ies'}</span>
@@ -14871,6 +14833,7 @@ function renderPage(page){
   else if(page==='budgets') renderBudgets();
   else if(page==='savings') renderSavings();
   else if(page==='investments') renderInvestments();
+  else if(page==='warnings') renderWarningsPage();
   else if(page==='settings') renderSettings();
 }
 
@@ -16408,7 +16371,7 @@ function getActiveWarningsList(){
   const curY = (notifSelYear !== undefined) ? notifSelYear : now.getFullYear();
   const warnings = [];
 
-  // 1. Budget Overruns and Warnings
+  // 1. Budget Overruns and Warnings (Expenses)
   const monthBudgets = (DB.budgets || []).filter(b => b.month === curM && b.year === curY);
   const monthTxs = (DB.transactions || []).filter(t => inMonth(t, curM, curY) && t.type === 'expense');
 
@@ -16423,8 +16386,8 @@ function getActiveWarningsList(){
           category: 'budget',
           priority: 'danger',
           title: 'Budget Exceeded: ' + b.category + (b.subCategory ? ' (' + b.subCategory + ')' : ''),
-          subhead: 'Spending (' + fmt(spent) + ') exceeded your ' + fmt(limit) + ' monthly cap by ' + fmt(spent - limit) + '.',
-          section: 'Budgets',
+          subhead: 'Spent ' + fmt(spent) + ' of ' + fmt(limit) + ' limit (' + fmt(spent - limit) + ' over budget).',
+          section: 'Budgets & Expenses',
           actionLabel: 'Adjust Budget',
           actionFn: "goToApp('budgets')"
         });
@@ -16433,10 +16396,10 @@ function getActiveWarningsList(){
           id: 'warn-budget-watch-' + b.id,
           category: 'budget',
           priority: 'amber',
-          title: 'Budget Warning: ' + b.category + (b.subCategory ? ' (' + b.subCategory + ')' : ''),
-          subhead: 'Spending (' + fmt(spent) + ') has reached ' + Math.round((spent / limit) * 100) + '% of your ' + fmt(limit) + ' cap.',
-          section: 'Budgets',
-          actionLabel: 'View Transactions',
+          title: 'Approaching Limit: ' + b.category + (b.subCategory ? ' (' + b.subCategory + ')' : ''),
+          subhead: 'Reached ' + Math.round((spent / limit) * 100) + '% (' + fmt(spent) + ' of ' + fmt(limit) + ' monthly cap).',
+          section: 'Budgets & Expenses',
+          actionLabel: 'View Expenses',
           actionFn: "goToApp('transactions')"
         });
       }
@@ -16444,14 +16407,16 @@ function getActiveWarningsList(){
   });
 
   // 2. Savings Goal Deadlines & Milestones
-  const todayStr = ymd(now);
   (DB.savingsGoals || []).forEach(g => {
     const cur = getGoalCurrentAmount(g);
     const acc = getGoalAccumulatedDeposits(g);
     const target = Number(g.targetAmount) || 0;
     const reached = acc >= target && target > 0;
+    const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
+    const totalTransferredOut = rollList.filter(r => !(r.targetGoalId && r.targetGoalId === g.id) && (r.goalId ? r.goalId === g.id : r.goalName === g.name)).reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+    const isSettled = totalTransferredOut > 0 && cur === 0;
 
-    if(!reached && g.deadline && !g.isIndependent){
+    if(!reached && !isSettled && g.deadline){
       const daysDiff = Math.ceil((new Date(g.deadline).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       if(daysDiff < 0){
         warnings.push({
@@ -16459,9 +16424,9 @@ function getActiveWarningsList(){
           category: 'savings',
           priority: 'danger',
           title: 'Deadline Passed: ' + g.name,
-          subhead: 'Target date (' + g.deadline + ') passed with ' + fmt(cur) + ' saved in vault (' + fmt(Math.max(0, target - acc)) + ' remaining).',
-          section: 'Savings',
-          actionLabel: 'Extend or Settle',
+          subhead: 'Target date (' + g.deadline + ') passed with ' + fmt(Math.max(0, target - acc)) + ' remaining to goal.',
+          section: 'Savings Goals',
+          actionLabel: 'Extend or Contribute',
           actionFn: "goToApp('savings')"
         });
       } else if(daysDiff <= 7){
@@ -16469,9 +16434,9 @@ function getActiveWarningsList(){
           id: 'warn-goal-soon-' + g.id,
           category: 'savings',
           priority: 'amber',
-          title: 'Goal Deadline Approaching: ' + g.name,
-          subhead: 'Target date is in ' + daysDiff + ' day' + (daysDiff===1?'':'s') + ' (' + g.deadline + '). ' + fmt(Math.max(0, target - acc)) + ' remaining.',
-          section: 'Savings',
+          title: 'Deadline Approaching: ' + g.name,
+          subhead: 'Due in ' + daysDiff + ' day' + (daysDiff===1?'':'s') + ' (' + g.deadline + ') with ' + fmt(Math.max(0, target - acc)) + ' remaining.',
+          section: 'Savings Goals',
           actionLabel: 'Contribute',
           actionFn: "goToApp('savings')"
         });
@@ -16481,16 +16446,31 @@ function getActiveWarningsList(){
         id: 'warn-goal-ready-' + g.id,
         category: 'savings',
         priority: 'teal',
-        title: 'Goal 100% Achieved: ' + g.name,
-        subhead: 'Target met! You have ' + fmt(cur) + ' ready to use for expenses or transfer.',
-        section: 'Savings',
-        actionLabel: 'Use Savings',
+        title: 'Goal Achieved: ' + g.name,
+        subhead: fmt(cur) + ' available in vault ready to use or transfer.',
+        section: 'Savings Goals',
+        actionLabel: 'Manage Vault',
         actionFn: "goToApp('savings')"
       });
     }
   });
 
-  // 3. Company Benefits Quota Surplus
+  // 3. Income & Company Benefits Surplus
+  const monthIncome = (DB.transactions || []).filter(t => inMonth(t, curM, curY) && t.type === 'income').reduce((s, t) => s + (t.amount || 0), 0);
+  const monthExpenseTotal = monthTxs.reduce((s, t) => s + (t.amount || 0), 0);
+  if(monthIncome === 0 && monthExpenseTotal > 0){
+    warnings.push({
+      id: 'warn-no-income-' + curM + '-' + curY,
+      category: 'benefits',
+      priority: 'amber',
+      title: 'No Income Logged for ' + MONTH_NAMES[curM - 1] + ' ' + curY,
+      subhead: fmt(monthExpenseTotal) + ' in expenses recorded without any logged monthly income.',
+      section: 'Income & Benefits',
+      actionLabel: 'Log Income',
+      actionFn: "goToApp('transactions'); openTxModal('income');"
+    });
+  }
+
   (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
     const avail = computeAllowanceAvailable(acc);
     if(avail > 0){
@@ -16498,14 +16478,29 @@ function getActiveWarningsList(){
         id: 'warn-benefit-surplus-' + acc.id,
         category: 'benefits',
         priority: 'teal',
-        title: 'Unspent Allowance: ' + acc.name,
-        subhead: 'You have ' + fmt(avail) + ' unspent quota available to transfer to personal cash flow.',
-        section: 'Benefits',
-        actionLabel: 'Claim Surplus',
+        title: 'Unspent Benefit Quota: ' + acc.name,
+        subhead: fmt(avail) + ' remaining allowance available to transfer into Income or Savings.',
+        section: 'Income & Benefits',
+        actionLabel: 'Transfer Surplus',
         actionFn: "openTransferAllowanceModal('" + acc.id + "')"
       });
     }
   });
+
+  // 4. Category Hygiene (Unassigned Subcategories)
+  const unassignedCount = monthTxs.filter(t => !t.subCategory || !t.subCategory.trim()).length;
+  if(unassignedCount > 0){
+    warnings.push({
+      id: 'warn-unassigned-subcats-' + curM + '-' + curY,
+      category: 'categories',
+      priority: 'amber',
+      title: unassignedCount + ' Expense' + (unassignedCount===1?'':'s') + ' Missing Subcategory',
+      subhead: 'Assign subcategories to keep your monthly expense reports and category breakdowns accurate.',
+      section: 'Categories',
+      actionLabel: 'Review Transactions',
+      actionFn: "goToApp('transactions'); toggleUnassignedSubcatFilter();"
+    });
+  }
 
   return warnings;
 }
@@ -16531,7 +16526,7 @@ function renderWarningsPage(){
         <div style="width:48px; height:48px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; color:var(--teal);">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
-        <h3 style="margin:0 0 6px; font-size:18px;">All Clear - No Active Warning Signs</h3>
+        <h3 style="margin:0 0 6px; font-size:18px;">All Clear — No Active Warning Signs</h3>
         <p class="text-xs muted" style="margin:0 auto; max-width:400px; line-height:1.5;">Your spending is within configured budget limits, savings goals are on track, and no urgent actions require your attention.</p>
       </div>
     `;
@@ -16542,22 +16537,22 @@ function renderWarningsPage(){
     <div class="warning-grid">
       ${filtered.map(w => {
         const priorityColors = {
-          danger: { badge: 'badge-over', tag: 'Danger / Overrun' },
-          amber: { badge: 'badge-off', tag: 'Warning / Watch' },
-          teal: { badge: 'badge-ok', tag: 'Actionable / Surplus' }
+          danger: { badge: 'badge-over', tag: 'Critical / Overrun' },
+          amber: { badge: 'badge-amber', tag: 'Warning / Watch' },
+          teal: { badge: 'badge-ok', tag: 'Actionable / Ready' }
         };
         const pMeta = priorityColors[w.priority] || priorityColors.amber;
         return `
           <div class="warning-card priority-${w.priority}">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span class="badge ${pMeta.badge}" style="font-size:11px; font-weight:700;">${pMeta.tag}</span>
                 <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:11px; font-weight:600; color:var(--muted);">${w.section}</span>
-                <h3 style="margin:0; font-size:15px; font-weight:700; color:var(--ink);">${escapeHtml(w.title)}</h3>
+                <h3 style="margin:0; font-size:14.5px; font-weight:700; color:var(--ink);">${escapeHtml(w.title)}</h3>
               </div>
               <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px;" onclick="${w.actionFn}">${w.actionLabel}</button>
             </div>
-            <p style="margin:0; font-size:13px; color:var(--ink); line-height:1.4;">${escapeHtml(w.subhead)}</p>
+            <p style="margin:0; font-size:12.5px; color:var(--muted); line-height:1.4;">${escapeHtml(w.subhead)}</p>
           </div>
         `;
       }).join('')}
