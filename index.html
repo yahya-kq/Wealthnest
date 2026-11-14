@@ -4530,19 +4530,13 @@ function renderExcelFilterList(type){
   container.innerHTML = options.map(opt => {
     const isChecked = selected.includes(opt.value);
     const valEscaped = String(opt.value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, "\\'");
-    const deleteBtn = (type === 'tx-modal-subcategory')
-      ? `<button type="button" class="excel-filter-only-btn" style="color:var(--rose); padding:2px 7px; margin-left:4px; font-weight:700;" onclick="deleteSubcategoryFromModal('${valEscaped}', event)" title="Delete subcategory permanently">✕</button>`
-      : '';
     return `
       <div class="excel-filter-item ${isChecked ? 'selected' : ''}" onclick="onExcelRowClick('${type}', '${valEscaped}', event)">
         <div class="excel-filter-item-left">
           <input type="checkbox" value="${valEscaped}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation()" onchange="onExcelToggle('${type}', '${valEscaped}', this.checked)">
           <span>${escapeHtml(opt.label)}</span>
         </div>
-        <div style="display:flex; align-items:center; gap:2px;">
-          <button type="button" class="excel-filter-only-btn" onclick="onExcelSelectOnly('${type}', '${valEscaped}', event)">Only</button>
-          ${deleteBtn}
-        </div>
+        <button type="button" class="excel-filter-only-btn" onclick="onExcelSelectOnly('${type}', '${valEscaped}', event)">Only</button>
       </div>
     `;
   }).join('');
@@ -10708,9 +10702,6 @@ function renderTxModalSubcatItemizedFields(existingBreakdown = null){
         <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
           <span style="width:6px; height:6px; border-radius:50%; background:var(--primary); flex-shrink:0;"></span>
           <span style="font-size:12.5px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${valEscaped}">${valEscaped}</span>
-          <button type="button" onclick="editTxModalSubcategoryName('${subJsEscaped}')" style="border:none; background:transparent; padding:2px; color:var(--muted-2); cursor:pointer; display:inline-flex; align-items:center; border-radius:4px;" title="Rename subcategory" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted-2)'">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
         </div>
         <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
           <div style="position:relative; display:flex; align-items:center;">
@@ -10733,89 +10724,6 @@ function removeTxItemizedSubcategory(sub){
   renderModalSubcategories(selectedModalSubcategories);
   renderTxModalSubcatItemizedFields();
   onTxSubcatItemizedAmountChange();
-  showToast(`Removed "${sub}" from itemized list`, 'info');
-}
-
-function editTxModalSubcategoryName(oldSub){
-  const cat = document.getElementById('tx-category')?.value;
-  if(!cat){
-    showToast('Please select a category first', 'warning');
-    return;
-  }
-  const catObj = findExpenseCategory(cat);
-  if(!catObj){
-    showToast('Category not found', 'error');
-    return;
-  }
-
-  const promptVal = prompt(`Rename subcategory "${oldSub}":`, oldSub);
-  if(!promptVal || !promptVal.trim()) return;
-  const trimmed = promptVal.trim();
-  const newName = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
-  if(newName === oldSub) return;
-
-  if((catObj.subcategories || []).some(s => s.toLowerCase() === newName.toLowerCase() && s !== oldSub)){
-    showToast(`Subcategory "${newName}" already exists in ${cat}`, 'warning');
-    return;
-  }
-
-  // Preserve existing entered values
-  const currentBreakdown = {};
-  document.querySelectorAll('.tx-subcat-amount-input').forEach(inp => {
-    const sName = inp.getAttribute('data-subcat');
-    if(sName === oldSub){
-      currentBreakdown[newName] = inp.value;
-    } else if(sName){
-      currentBreakdown[sName] = inp.value;
-    }
-  });
-
-  // Update in category definitions
-  catObj.subcategories = (catObj.subcategories || []).map(s => s === oldSub ? newName : s);
-
-  // Update in current modal selections
-  selectedModalSubcategories = (selectedModalSubcategories || []).map(s => s === oldSub ? newName : s);
-
-  // Update in past transactions under this category
-  (DB.transactions || []).forEach(t => {
-    if(t.category === cat && t.subCategory){
-      const parts = t.subCategory.split(',').map(s => s.trim());
-      if(parts.includes(oldSub)){
-        t.subCategory = parts.map(s => s === oldSub ? newName : s).join(', ');
-      }
-      if(t.subCategoryBreakdown && t.subCategoryBreakdown[oldSub] !== undefined){
-        t.subCategoryBreakdown[newName] = t.subCategoryBreakdown[oldSub];
-        delete t.subCategoryBreakdown[oldSub];
-      }
-    }
-  });
-
-  saveDB(true);
-  renderModalSubcategories(selectedModalSubcategories);
-  renderTxModalSubcatItemizedFields(currentBreakdown);
-  showToast(`Renamed subcategory to "${newName}"`, 'success');
-}
-
-function deleteSubcategoryFromModal(subName, event){
-  if(event){
-    event.stopPropagation();
-    event.preventDefault();
-  }
-  const cat = document.getElementById('tx-category')?.value;
-  if(!cat) return;
-  const catObj = findExpenseCategory(cat);
-  if(!catObj) return;
-
-  const confirmed = confirm(`Permanently remove subcategory "${subName}" from "${cat}"?`);
-  if(!confirmed) return;
-
-  catObj.subcategories = (catObj.subcategories || []).filter(s => s !== subName);
-  selectedModalSubcategories = (selectedModalSubcategories || []).filter(s => s !== subName);
-
-  saveDB(true);
-  renderModalSubcategories(selectedModalSubcategories);
-  renderTxModalSubcatItemizedFields();
-  showToast(`Removed subcategory "${subName}"`, 'info');
 }
 
 function clearTxSubcatItemizedAmounts(){
