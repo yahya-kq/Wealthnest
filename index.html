@@ -1434,6 +1434,23 @@
     .subcat-row { padding: 8px 10px !important; font-size: 12.5px !important; }
   }
 
+
+/* Mobile Modal and Sidebar Z-Index Fix */
+@media(max-width:768px){
+  .modal-backdrop { z-index: 1050 !important; padding: 12px !important; align-items: center !important; }
+  .modal { width: calc(100% - 16px) !important; max-width: 500px !important; margin: 16px auto !important; max-height: calc(100vh - 32px) !important; overflow-y: auto !important; }
+  #sidebar { z-index: 99 !important; }
+}
+@media(min-width:1025px){
+  #investment-kpi-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+}
+@media(max-width:1024px) and (min-width:641px){
+  #investment-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media(max-width:640px){
+  #investment-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
 </style>
 </head>
 <body>
@@ -2272,7 +2289,7 @@
       </div>
 
       <!-- Top Dynamic KPI Grid (6 Metric Cards) -->
-      <div class="grid mb-4" id="investment-kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;"></div>
+      <div class="grid mb-4" id="investment-kpi-grid" style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px;"></div>
 
       <!-- Main Portfolio Section (Front & Center) -->
       <div class="card mb-4" style="padding:22px;">
@@ -2503,6 +2520,17 @@
         <input type="text" id="tx-description" placeholder="Optional note" class="field-input">
       </div>
 
+      
+      <!-- Optional Multi-Subcategory Itemization Container -->
+      <div id="tx-subcat-itemized-wrap" class="hidden" style="margin-bottom:12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px; padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:12px; font-weight:700; color:var(--ink);">Itemize Amounts per Subcategory <span class="muted" style="font-weight:normal; font-size:11px;">(Optional)</span></span>
+          <button type="button" class="excel-filter-text-btn" style="font-size:11px;" onclick="clearTxSubcatItemizedAmounts()">Clear Itemized</button>
+        </div>
+        <div id="tx-subcat-itemized-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <div id="tx-subcat-itemized-total-note" class="text-xs" style="margin-top:6px; font-weight:600; color:var(--teal);"></div>
+      </div>
+
       <!-- Dedicated Company Allowance Option (Expense Transactions Only) -->
       <div id="tx-allowance-field-wrap" style="margin-bottom:12px;">
         <label class="field-label" for="tx-allowance">Company Allowance / Benefit</label>
@@ -2563,6 +2591,88 @@
       </div>
       <button type="submit" id="tx-modal-submit" class="btn-primary" style="width:100%;">Save Transaction</button>
     </form>
+  </div>
+</div>
+
+
+<!-- Dismiss Savings Goal Modal -->
+<div id="dismiss-goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeDismissGoalModal()">
+  <div class="modal" style="max-width:480px; padding:22px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="width:34px; height:34px; border-radius:8px; background:rgba(239,68,68,0.1); color:var(--rose); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <div>
+          <h2 style="margin:0; font-size:17px; color:var(--ink);">Dismiss Savings Goal</h2>
+          <p class="text-xs muted" style="margin:2px 0 0;" id="dismiss-goal-sub"></p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeDismissGoalModal()" aria-label="Close" style="position:static;">✕</button>
+    </div>
+
+    <input type="hidden" id="dismiss-goal-id">
+
+    <div class="card" style="padding:12px; background:var(--surface-2); border:1px solid var(--line-soft); margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="label-eyebrow" style="font-size:10.5px;">Currently Saved Balance</span>
+          <p id="dismiss-goal-saved-amount" class="figure" style="font-size:18px; font-weight:700; margin:2px 0 0; color:var(--teal);">PKR 0</p>
+        </div>
+        <span class="badge badge-ok" id="dismiss-goal-status-badge">Active</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label class="field-label" style="font-weight:700; margin-bottom:8px;">Choose an Action for this Goal:</label>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:10px; border:1px solid var(--line); border-radius:8px; cursor:pointer;" id="dismiss-opt-transfer-label">
+          <input type="radio" name="dismiss-goal-action" value="transfer" checked onchange="toggleDismissGoalAction('transfer')" style="margin-top:3px;">
+          <div>
+            <strong style="font-size:13px; color:var(--ink); display:block;">Transfer Funds Now</strong>
+            <span class="text-xs muted">Move the saved money directly to your Bank Account or another active savings goal.</span>
+          </div>
+        </label>
+
+        <label style="display:flex; align-items:flex-start; gap:10px; padding:10px; border:1px solid var(--line); border-radius:8px; cursor:pointer;" id="dismiss-opt-leave-label">
+          <input type="radio" name="dismiss-goal-action" value="leave" onchange="toggleDismissGoalAction('leave')" style="margin-top:3px;">
+          <div>
+            <strong style="font-size:13px; color:var(--ink); display:block;">Leave Funds &amp; Just Dismiss</strong>
+            <span class="text-xs muted">Mark the goal as Dismissed. Money stays safely in this vault until you decide to transfer it later.</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Transfer destination options (shown when transfer selected) -->
+    <div id="dismiss-goal-transfer-wrap" style="margin-bottom:16px; padding:12px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px;">
+      <label class="field-label" style="font-size:11.5px; margin-bottom:6px;">Transfer Funds To:</label>
+      <div style="display:flex; gap:16px; margin-bottom:10px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; cursor:pointer;">
+          <input type="radio" name="dismiss-transfer-dest" value="bank" checked onchange="toggleDismissTransferDest('bank')">
+          <span>Bank Account (Income)</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; cursor:pointer;">
+          <input type="radio" name="dismiss-transfer-dest" value="goal" onchange="toggleDismissTransferDest('goal')">
+          <span>Another Savings Goal</span>
+        </label>
+      </div>
+
+      <div id="dismiss-transfer-bank-wrap">
+        <label class="field-label" for="dismiss-dest-account">Deposit Account</label>
+        <select id="dismiss-dest-account" class="field-input"></select>
+      </div>
+
+      <div id="dismiss-transfer-goal-wrap" class="hidden">
+        <label class="field-label" for="dismiss-dest-goal">Target Savings Goal</label>
+        <select id="dismiss-dest-goal" class="field-input"></select>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button type="button" class="btn-ghost" onclick="closeDismissGoalModal()">Cancel</button>
+      <button type="button" class="btn-primary" style="background:var(--rose); border-color:var(--rose);" onclick="handleConfirmDismissGoal()">Confirm Dismissal</button>
+    </div>
   </div>
 </div>
 
@@ -3196,7 +3306,7 @@
     </div>
     <form onsubmit="handleAddInvestment(event)">
       <label class="field-label" for="inv-name">Asset Name <span style="color:var(--rose);">*</span></label>
-      <input type="text" id="inv-name" placeholder="e.g. Company VPS, Bitcoin, Stocks" class="field-input mb-3" required autocomplete="off">
+      <input type="text" id="inv-name" placeholder="Asset name" class="field-input mb-3" required autocomplete="off">
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
@@ -3210,7 +3320,7 @@
         </div>
         <div>
           <label class="field-label" for="inv-location">Platform</label>
-          <input type="text" id="inv-location" placeholder="e.g. Meezan Bank, CDC, Broker" class="field-input" autocomplete="off">
+          <input type="text" id="inv-location" placeholder="Platform or institution" class="field-input" autocomplete="off">
         </div>
       </div>
 
@@ -3239,9 +3349,7 @@
             <input type="number" min="0" max="200" step="1" id="inv-vps-match-pct" value="10" placeholder="10" class="field-input figure" oninput="updateInvVpsPreviewNote()">
           </div>
         </div>
-        <div id="inv-vps-preview-note" style="font-size:11.5px; color:var(--primary); font-weight:600; margin-top:8px; line-height:1.4;">
-          Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
-        </div>
+        <div id="inv-vps-preview-note" style="display:none;"></div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
@@ -3303,7 +3411,7 @@
         </div>
         <div>
           <label class="field-label" for="edit-inv-location">Platform</label>
-          <input type="text" id="edit-inv-location" placeholder="e.g. Meezan Bank, CDC, Broker" class="field-input" autocomplete="off">
+          <input type="text" id="edit-inv-location" placeholder="Platform or institution" class="field-input" autocomplete="off">
         </div>
       </div>
 
@@ -3332,9 +3440,7 @@
             <input type="number" min="0" max="200" step="1" id="edit-inv-vps-match-pct" value="10" placeholder="10" class="field-input figure" oninput="updateEditInvVpsPreviewNote()">
           </div>
         </div>
-        <div id="edit-inv-vps-preview-note" style="font-size:11.5px; color:var(--primary); font-weight:600; margin-top:8px; line-height:1.4;">
-          Example: On Rs. 80,000 salary → You contribute Rs. 8,000, Company adds Rs. 8,000 → Total Rs. 16,000/mo into fund.
-        </div>
+        <div id="edit-inv-vps-preview-note" style="display:none;"></div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
@@ -3918,7 +4024,7 @@
         </div>
         <div>
           <label class="field-label" for="transfer-allowance-date">Date</label>
-          <input type="date" id="transfer-allowance-date" class="field-input figure" required>
+          <input type="date" id="transfer-allowance-date" class="field-input figure" required onchange="onTransferAllowanceDateChange()">
         </div>
       </div>
 
@@ -4660,6 +4766,9 @@ function updateExcelFilterUI(type){
         summaryEl.textContent = selected.join(', ');
       } else {
         summaryEl.textContent = `${selected.length} Subcategories Selected`;
+      }
+      if(typeof renderTxModalSubcatItemizedFields === 'function'){
+        renderTxModalSubcatItemizedFields();
       }
     } else if(type === 'tx-modal-payment'){
       if(selected.length === 0){
@@ -6134,10 +6243,60 @@ function deleteAllowanceAccount(id){
 }
 
 /* --- Allowance Surplus Transfer Flow --- */
+function onTransferAllowanceDateChange(){
+  var id = document.getElementById('transfer-allowance-id')?.value;
+  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  var dateVal = document.getElementById('transfer-allowance-date')?.value || ymd(new Date());
+  if(acc){
+    var avail = computeAllowanceAvailable ? computeAllowanceAvailable(acc, dateVal) : (acc.limit || 0);
+    var availEl = document.getElementById('transfer-allowance-available');
+    if(availEl) availEl.textContent = fmt(avail);
+    var amtInp = document.getElementById('transfer-allowance-amount');
+    if(amtInp) amtInp.max = avail;
+  }
+  var parts = dateVal.split('-');
+  var targetYear = parseInt(parts[0], 10);
+  var targetMonth = parseInt(parts[1], 10);
+  populateTransferSavingsGoals(targetMonth, targetYear);
+}
+
+function populateTransferSavingsGoals(targetMonth, targetYear){
+  var goalSel = document.getElementById('transfer-allowance-dest-goal');
+  if(!goalSel) return;
+  var allGoals = DB.savingsGoals || [];
+  
+  // Filter goals that are active for the target month & year and not dismissed
+  var activeGoals = allGoals.filter(function(g){
+    if(g.dismissed) return false;
+    if(typeof goalActiveInPeriod === 'function'){
+      return goalActiveInPeriod(g, targetMonth, targetYear);
+    }
+    return true;
+  });
+
+  // Fallback to active non-dismissed goals if none strictly match the month
+  if(!activeGoals.length){
+    activeGoals = allGoals.filter(function(g){ return !g.dismissed; });
+  }
+
+  if(!activeGoals.length){
+    goalSel.innerHTML = '<option value="">(No active goals found)</option>';
+    return;
+  }
+
+  goalSel.innerHTML = activeGoals.map(function(g){
+    var cur = (typeof getGoalCurrentAmount === 'function') ? getGoalCurrentAmount(g) : (g.currentAmount || 0);
+    return '<option value="' + escapeHtml(g.name) + '" data-goal-id="' + escapeHtml(g.id) + '">' 
+      + escapeHtml(g.name) + ' (Target: ' + fmt(g.targetAmount) + ' &bull; Saved: ' + fmt(cur) + ')'
+      + '</option>';
+  }).join('');
+}
+
 function openTransferAllowanceModal(id){
   var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
   if(!acc) return;
-  var avail = computeAllowanceAvailable(acc);
+  var todayVal = ymd(new Date());
+  var avail = computeAllowanceAvailable ? computeAllowanceAvailable(acc, todayVal) : (acc.limit || 0);
   if(avail <= 0){
     showToast('No remaining quota available to transfer for ' + acc.name, 'warning');
     return;
@@ -6151,7 +6310,7 @@ function openTransferAllowanceModal(id){
     amtInp.max = avail;
   }
   var dateInp = document.getElementById('transfer-allowance-date');
-  if(dateInp) dateInp.value = ymd(new Date());
+  if(dateInp) dateInp.value = todayVal;
 
   // Populate deposit account options
   var accSel = document.getElementById('transfer-allowance-dest-account');
@@ -6160,12 +6319,9 @@ function openTransferAllowanceModal(id){
     accSel.innerHTML = methods.map(function(m){ return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>'; }).join('');
   }
 
-  // Populate savings goals options
-  var goalSel = document.getElementById('transfer-allowance-dest-goal');
-  if(goalSel){
-    var goals = DB.savingsGoals || [];
-    goalSel.innerHTML = goals.length ? goals.map(function(g){ return '<option value="' + escapeHtml(g.name) + '">' + escapeHtml(g.name) + '</option>'; }).join('') : '<option value="">(No active goals)</option>';
-  }
+  // Populate savings goals filtered by the selected date's month/year
+  var parts = todayVal.split('-');
+  populateTransferSavingsGoals(parseInt(parts[1], 10), parseInt(parts[0], 10));
 
   // Reset destination to income
   var radios = document.querySelectorAll('input[name="transfer-allowance-dest-type"]');
@@ -6205,8 +6361,9 @@ function handleConfirmTransferAllowance(e){
   var id = document.getElementById('transfer-allowance-id').value;
   var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
   if(!acc) return;
+  var transferDate = document.getElementById('transfer-allowance-date').value || ymd(new Date());
   var amount = parseFloat(document.getElementById('transfer-allowance-amount').value);
-  var avail = computeAllowanceAvailable(acc);
+  var avail = computeAllowanceAvailable ? computeAllowanceAvailable(acc, transferDate) : (acc.limit || 0);
   if(isNaN(amount) || amount <= 0){
     showToast('Please enter a valid transfer amount', 'error');
     return;
@@ -6215,7 +6372,6 @@ function handleConfirmTransferAllowance(e){
     showToast('Amount exceeds available quota of ' + fmt(avail), 'error');
     return;
   }
-  var transferDate = document.getElementById('transfer-allowance-date').value || ymd(new Date());
   var destType = document.querySelector('input[name="transfer-allowance-dest-type"]:checked')?.value || 'income';
 
   if(destType === 'income'){
@@ -6235,17 +6391,27 @@ function handleConfirmTransferAllowance(e){
     });
     showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' to ' + destAccount + ' as Income!', 'success');
   } else {
-    var goalName = document.getElementById('transfer-allowance-dest-goal')?.value;
+    var goalSel = document.getElementById('transfer-allowance-dest-goal');
+    var goalName = goalSel?.value;
     if(!goalName){
       showToast('Please select a valid savings goal', 'error');
       return;
     }
-    var holdingAccount = document.getElementById('transfer-allowance-dest-holding')?.value || 'Bank Account';
+    var selOpt = goalSel.options[goalSel.selectedIndex];
+    var selGoalId = selOpt?.getAttribute('data-goal-id');
+    var goal = (DB.savingsGoals || []).find(function(g){ return (selGoalId && g.id === selGoalId) || g.name === goalName; });
+    var holdingAccount = document.getElementById('transfer-allowance-dest-holding')?.value || (goal ? goal.savingIn : 'Bank Account') || 'Bank Account';
+    
+    if(goal){
+      goal.currentAmount = (parseFloat(goal.currentAmount) || 0) + amount;
+    }
+
     DB.transactions.unshift({
       id: uid(),
       date: transferDate,
       type: 'savings',
       category: goalName,
+      goalId: goal ? goal.id : undefined,
       savingIn: holdingAccount,
       description: 'Allowance surplus transfer from ' + acc.name,
       amount: amount,
@@ -6253,10 +6419,6 @@ function handleConfirmTransferAllowance(e){
       isAllowanceTransfer: true,
       createdAt: new Date().toISOString()
     });
-    var goal = (DB.savingsGoals || []).find(function(g){ return g.name === goalName; });
-    if(goal && typeof getGoalCurrentAmount === 'function'){
-      goal.currentAmount = getGoalCurrentAmount(goal);
-    }
     showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' into "' + goalName + '"!', 'success');
   }
 
@@ -6661,7 +6823,27 @@ function spentFor(txs, month, year, category, subCategory){
       return budgetedSubs.some(bs => subs.includes(bs));
     }
     return true;
-  }).reduce((s,t)=>s + getTransactionPersonalAmount(t), 0);
+  }).reduce((s,t)=>{
+    if(subCategory && t.subCategoryBreakdown && typeof t.subCategoryBreakdown === 'object'){
+      const budgetedSubs = subCategory.split(',').map(s => s.trim().toLowerCase());
+      let matchedAmt = 0;
+      let hasMatch = false;
+      Object.entries(t.subCategoryBreakdown).forEach(([k, v]) => {
+        if(budgetedSubs.includes(k.trim().toLowerCase())){
+          matchedAmt += (parseFloat(v) || 0);
+          hasMatch = true;
+        }
+      });
+      if(hasMatch){
+        if(t.companyCovered && t.amount > 0){
+          const personal = getTransactionPersonalAmount(t);
+          return s + (matchedAmt * (personal / t.amount));
+        }
+        return s + matchedAmt;
+      }
+    }
+    return s + getTransactionPersonalAmount(t);
+  }, 0);
 }
 function budgetProgress(txs, budgets, month, year){
   return budgets.filter(b=>b.month===month && b.year===year).map(b=>{
@@ -7046,7 +7228,23 @@ function renderReportCharts(month, year){
     if(!categorySubBreakdown[t.category]) categorySubBreakdown[t.category] = {};
     const subName = (t.subCategory && t.subCategory.trim()) ? t.subCategory.trim() : 'General';
     const subs = subName.split(',').map(s => s.trim()).filter(Boolean);
-    if(subs.length > 1){
+    if(t.subCategoryBreakdown && typeof t.subCategoryBreakdown === 'object'){
+      let accountedSum = 0;
+      subs.forEach(s => {
+        const itemAmt = parseFloat(t.subCategoryBreakdown[s]) || 0;
+        if(itemAmt > 0){
+          categorySubBreakdown[t.category][s] = (categorySubBreakdown[t.category][s] || 0) + itemAmt;
+          accountedSum += itemAmt;
+        }
+      });
+      const unassignedSubs = subs.filter(s => !(parseFloat(t.subCategoryBreakdown[s]) > 0));
+      if(unassignedSubs.length > 0 && t.amount > accountedSum){
+        const remPerSub = (t.amount - accountedSum) / unassignedSubs.length;
+        unassignedSubs.forEach(s => {
+          categorySubBreakdown[t.category][s] = (categorySubBreakdown[t.category][s] || 0) + remPerSub;
+        });
+      }
+    } else if(subs.length > 1){
       const perSub = t.amount / subs.length;
       subs.forEach(s => {
         categorySubBreakdown[t.category][s] = (categorySubBreakdown[t.category][s] || 0) + perSub;
@@ -10471,6 +10669,98 @@ function onTxSavingsGoalSelectChange(){
   }
 }
 
+
+/* --- Optional Multi-Subcategory Itemization Engine --- */
+function renderTxModalSubcatItemizedFields(existingBreakdown = null){
+  const wrap = document.getElementById('tx-subcat-itemized-wrap');
+  const list = document.getElementById('tx-subcat-itemized-list');
+  const totalNote = document.getElementById('tx-subcat-itemized-total-note');
+  if(!wrap || !list) return;
+
+  if(!selectedModalSubcategories || selectedModalSubcategories.length <= 1){
+    wrap.classList.add('hidden');
+    list.innerHTML = '';
+    if(totalNote) totalNote.textContent = '';
+    return;
+  }
+
+  wrap.classList.remove('hidden');
+  let html = '';
+  selectedModalSubcategories.forEach(sub => {
+    let preVal = '';
+    if(existingBreakdown && existingBreakdown[sub] !== undefined){
+      preVal = existingBreakdown[sub];
+    }
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; background:var(--surface); padding:6px 10px; border-radius:6px; border:1px solid var(--line-soft);">
+        <span style="font-size:12.5px; font-weight:600; color:var(--ink);">${escapeHtml(sub)}</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px; color:var(--muted); font-family:var(--font-mono);">${currencySymbol()}</span>
+          <input type="number" step="any" min="0" placeholder="0.00" class="field-input figure tx-subcat-amount-input" data-subcat="${escapeHtml(sub)}" value="${preVal !== '' ? preVal : ''}" style="width:110px; height:28px; font-size:12.5px; padding:3px 8px; text-align:right;" oninput="onTxSubcatItemizedAmountChange()">
+        </div>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
+  onTxSubcatItemizedAmountChange();
+}
+
+function clearTxSubcatItemizedAmounts(){
+  const inputs = document.querySelectorAll('.tx-subcat-amount-input');
+  inputs.forEach(inp => { inp.value = ''; });
+  const totalNote = document.getElementById('tx-subcat-itemized-total-note');
+  if(totalNote) totalNote.textContent = '';
+  const allwSelVal = document.getElementById('tx-allowance')?.value;
+  if(!allwSelVal){
+    const amtInput = document.getElementById('tx-amount');
+    if(amtInput) amtInput.value = '';
+  }
+}
+
+function onTxSubcatItemizedAmountChange(){
+  const inputs = document.querySelectorAll('.tx-subcat-amount-input');
+  let sum = 0;
+  let hasAny = false;
+  inputs.forEach(inp => {
+    const val = parseFloat(inp.value);
+    if(!isNaN(val) && val > 0){
+      sum += val;
+      hasAny = true;
+    }
+  });
+
+  const totalNote = document.getElementById('tx-subcat-itemized-total-note');
+  if(hasAny && sum > 0){
+    if(totalNote) totalNote.innerHTML = `<span>Itemized Total: <strong style="color:var(--teal); font-family:var(--font-mono);">${fmt(sum)}</strong></span>`;
+    
+    // Auto-update total transaction amount
+    const allwSelVal = document.getElementById('tx-allowance')?.value;
+    if(!allwSelVal){
+      const amtInput = document.getElementById('tx-amount');
+      if(amtInput) amtInput.value = sum;
+    } else {
+      // If company benefit is selected, update company covered / personal share accordingly
+      const acc = (getAllowanceAccounts ? getAllowanceAccounts() : []).find(a => a.id === allwSelVal);
+      const dateVal = document.getElementById('tx-date')?.value || ymd(new Date());
+      const avail = acc && computeAllowanceAvailable ? computeAllowanceAvailable(acc, dateVal, editingTxId) : 0;
+      const covInput = document.getElementById('tx-allowance-covered-input');
+      const persInput = document.getElementById('tx-allowance-personal-input');
+      if(covInput && persInput){
+        if(sum <= avail){
+          covInput.value = sum;
+          persInput.value = '0';
+        } else {
+          covInput.value = avail;
+          persInput.value = (sum - avail).toFixed(2).replace(/\.00$/, '');
+        }
+        if(typeof onTxAllowanceAmountChange === 'function') onTxAllowanceAmountChange();
+      }
+    }
+  } else {
+    if(totalNote) totalNote.textContent = '';
+  }
+}
+
 function openTxModal(editId = null){
   editingTxId = editId || null;
   const modalTitle = document.getElementById('tx-modal-title');
@@ -10488,6 +10778,7 @@ function openTxModal(editId = null){
       
       const subVals = tx.subCategory ? tx.subCategory.split(',').map(s => s.trim()).filter(Boolean) : [];
       renderModalSubcategories(subVals);
+      renderTxModalSubcatItemizedFields(tx.subCategoryBreakdown || null);
 
       const payVals = tx.paymentMethod ? tx.paymentMethod.split(',').map(s => s.trim()).filter(Boolean) : ['Cash'];
       renderModalPaymentMethods(payVals);
@@ -10522,6 +10813,9 @@ function closeTxModal(){
   selectedModalPaymentMethods = ['Cash'];
   closeExcelFilter('tx-modal-subcategory');
   closeExcelFilter('tx-modal-payment');
+  clearTxSubcatItemizedAmounts();
+  const itemWrap = document.getElementById('tx-subcat-itemized-wrap');
+  if(itemWrap) itemWrap.classList.add('hidden');
   document.getElementById('tx-modal-backdrop').classList.add('hidden');
 }
 
@@ -10764,6 +11058,25 @@ function handleSaveTransaction(e){
     finalAmount = covVal + persVal;
   }
 
+  // Collect Optional Multi-Subcategory Itemized Breakdown
+  let subCategoryBreakdown = undefined;
+  if(txType === 'expense' && selectedModalSubcategories && selectedModalSubcategories.length > 1){
+    const itemizedInputs = document.querySelectorAll('.tx-subcat-amount-input');
+    let breakdownMap = {};
+    let hasAnyItemized = false;
+    itemizedInputs.forEach(inp => {
+      const subName = inp.getAttribute('data-subcat');
+      const val = parseFloat(inp.value);
+      if(subName && !isNaN(val) && val > 0){
+        breakdownMap[subName] = val;
+        hasAnyItemized = true;
+      }
+    });
+    if(hasAnyItemized){
+      subCategoryBreakdown = breakdownMap;
+    }
+  }
+
   let payVal;
   if(selectedModalPaymentMethods && selectedModalPaymentMethods.length > 0){
     payVal = selectedModalPaymentMethods.join(', ');
@@ -10796,6 +11109,7 @@ function handleSaveTransaction(e){
         companyCovered: Boolean(txType === 'expense' && allwAcc && finalCoveredAmt > 0),
         companyCoveredAmount: (txType === 'expense' && allwAcc ? finalCoveredAmt : 0),
         personalShare: (txType === 'expense' && allwAcc ? finalPersonalShare : 0),
+        subCategoryBreakdown: subCategoryBreakdown || undefined,
         amount: finalAmount
       };
       DB.transactions[index] = updatedTx;
@@ -10817,6 +11131,7 @@ function handleSaveTransaction(e){
       companyCovered: Boolean(txType === 'expense' && allwAcc && finalCoveredAmt > 0),
       companyCoveredAmount: (txType === 'expense' && allwAcc ? finalCoveredAmt : 0),
       personalShare: (txType === 'expense' && allwAcc ? finalPersonalShare : 0),
+      subCategoryBreakdown: subCategoryBreakdown || undefined,
       amount: finalAmount,
       createdAt: new Date().toISOString()
     };
@@ -11868,8 +12183,9 @@ function renderSavings(){
   const activeCf = (DB.carryForwards || []).find(cf => cf.fromMonth === curM && cf.fromYear === curY && (DB.transactions || []).some(t => t.id === cf.txId));
 
   // 3. Goals Achieved KPI (based on accumulated savings reached target!)
-  const monthGoalsCount = visibleGoals.length;
-  const monthGoalsAchieved = visibleGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+  const activeVisibleGoals = visibleGoals.filter(g => !g.dismissed);
+  const monthGoalsCount = activeVisibleGoals.length;
+  const monthGoalsAchieved = activeVisibleGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
 
   // 4. Update goal currentAmounts
   visibleGoals.forEach(g => {
@@ -11974,7 +12290,10 @@ function renderSavings(){
     }
 
     let statusBadge = '<span class="badge badge-off">In Progress</span>';
-    if(isFullySettled){
+    if(g.dismissed){
+      statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.12); color:var(--rose); font-weight:700; border:1px solid rgba(239,68,68,0.25);">Goal Dismissed</span>';
+      cardBorder = 'border-color:rgba(239,68,68,0.3);';
+    } else if(isFullySettled){
       statusBadge = '<span class="badge badge-ok" style="font-weight:700;">Settled</span>';
     } else if(isPartiallyTransferred){
       statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">Partially Transferred</span>`;
@@ -12058,7 +12377,12 @@ function renderSavings(){
           </div>
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
             <span class="figure" style="font-size:18px; font-weight:700; color:${reached || isFullySettled ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
-            <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
+            ${g.dismissed ? `
+              <button type="button" onclick="reactivateGoal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--teal);" title="Reactivate Goal">Reactivate</button>
+            ` : `
+              <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
+              <button type="button" onclick="openDismissGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--muted-2);" title="Dismiss goal mid-way">Dismiss</button>
+            `}
             <button type="button" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" title="Delete goal">Delete</button>
           </div>
         </div>
@@ -12395,6 +12719,146 @@ function handleAddGoal(e){
   showToast(`Created savings goal "${name}"`);
 }
 
+
+/* --- Savings Goal Dismissal Workflow Engine --- */
+function openDismissGoalModal(id){
+  const g = (DB.savingsGoals || []).find(item => item.id === id);
+  if(!g) return;
+  document.getElementById('dismiss-goal-id').value = id;
+  const subEl = document.getElementById('dismiss-goal-sub');
+  if(subEl) subEl.textContent = `${g.name} • Target: ${fmt(g.targetAmount)}`;
+  
+  const cur = typeof getGoalCurrentAmount === 'function' ? getGoalCurrentAmount(g) : (g.currentAmount || 0);
+  const savedAmtEl = document.getElementById('dismiss-goal-saved-amount');
+  if(savedAmtEl) savedAmtEl.textContent = fmt(cur);
+
+  const badgeEl = document.getElementById('dismiss-goal-status-badge');
+  if(badgeEl){
+    badgeEl.textContent = g.dismissed ? 'Already Dismissed' : 'Active';
+    badgeEl.className = 'badge ' + (g.dismissed ? 'badge-off' : 'badge-ok');
+  }
+
+  // Populate deposit account options for bank transfer
+  const accSel = document.getElementById('dismiss-dest-account');
+  if(accSel){
+    const methods = getPaymentMethods();
+    accSel.innerHTML = methods.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+  }
+
+  // Populate target goals for transfer (excluding this goal and dismissed goals)
+  const destGoalSel = document.getElementById('dismiss-dest-goal');
+  if(destGoalSel){
+    const otherGoals = (DB.savingsGoals || []).filter(item => item.id !== id && !item.dismissed);
+    if(otherGoals.length){
+      destGoalSel.innerHTML = otherGoals.map(item => {
+        const otherCur = typeof getGoalCurrentAmount === 'function' ? getGoalCurrentAmount(item) : (item.currentAmount || 0);
+        return `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (Target: ${fmt(item.targetAmount)} • Saved: ${fmt(otherCur)})</option>`;
+      }).join('');
+    } else {
+      destGoalSel.innerHTML = '<option value="">(No other active goals)</option>';
+    }
+  }
+
+  // If cur <= 0, default to leave / dismiss without transfer
+  const radios = document.querySelectorAll('input[name="dismiss-goal-action"]');
+  if(cur <= 0){
+    radios.forEach(r => { if(r.value === 'leave') r.checked = true; });
+    toggleDismissGoalAction('leave');
+  } else {
+    radios.forEach(r => { if(r.value === 'transfer') r.checked = true; });
+    toggleDismissGoalAction('transfer');
+  }
+
+  const destRadios = document.querySelectorAll('input[name="dismiss-transfer-dest"]');
+  destRadios.forEach(r => { if(r.value === 'bank') r.checked = true; });
+  toggleDismissTransferDest('bank');
+
+  const backdrop = document.getElementById('dismiss-goal-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeDismissGoalModal(){
+  const backdrop = document.getElementById('dismiss-goal-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function toggleDismissGoalAction(action){
+  const wrap = document.getElementById('dismiss-goal-transfer-wrap');
+  if(wrap) wrap.classList.toggle('hidden', action !== 'transfer');
+}
+
+function toggleDismissTransferDest(dest){
+  const bankWrap = document.getElementById('dismiss-transfer-bank-wrap');
+  const goalWrap = document.getElementById('dismiss-transfer-goal-wrap');
+  if(bankWrap) bankWrap.classList.toggle('hidden', dest !== 'bank');
+  if(goalWrap) goalWrap.classList.toggle('hidden', dest !== 'goal');
+}
+
+function handleConfirmDismissGoal(){
+  const id = document.getElementById('dismiss-goal-id')?.value;
+  const g = (DB.savingsGoals || []).find(item => item.id === id);
+  if(!g) return;
+
+  const action = document.querySelector('input[name="dismiss-goal-action"]:checked')?.value || 'leave';
+  const cur = typeof getGoalCurrentAmount === 'function' ? getGoalCurrentAmount(g) : (g.currentAmount || 0);
+
+  if(action === 'transfer' && cur > 0){
+    const dest = document.querySelector('input[name="dismiss-transfer-dest"]:checked')?.value || 'bank';
+    if(dest === 'bank'){
+      const destAccount = document.getElementById('dismiss-dest-account')?.value || 'Bank Account';
+      DB.transactions.unshift({
+        id: uid(),
+        date: ymd(new Date()),
+        type: 'income',
+        category: 'Savings Return',
+        subCategory: 'Dismissed Goal Payout',
+        paymentMethod: destAccount,
+        description: `Transferred funds from dismissed goal "${g.name}"`,
+        amount: cur,
+        createdAt: new Date().toISOString()
+      });
+      g.currentAmount = 0;
+      showToast(`Transferred ${fmt(cur)} from "${g.name}" to ${destAccount} as Income!`, 'success');
+    } else {
+      const targetGoalId = document.getElementById('dismiss-dest-goal')?.value;
+      const targetGoal = (DB.savingsGoals || []).find(item => item.id === targetGoalId);
+      if(!targetGoal){
+        showToast('Please select a valid destination savings goal', 'error');
+        return;
+      }
+      targetGoal.currentAmount = (parseFloat(targetGoal.currentAmount) || 0) + cur;
+      DB.transactions.unshift({
+        id: uid(),
+        date: ymd(new Date()),
+        type: 'savings',
+        category: targetGoal.name,
+        goalId: targetGoal.id,
+        savingIn: targetGoal.savingIn || 'Bank Account',
+        description: `Transferred funds from dismissed goal "${g.name}"`,
+        amount: cur,
+        createdAt: new Date().toISOString()
+      });
+      g.currentAmount = 0;
+      showToast(`Transferred ${fmt(cur)} from "${g.name}" into "${targetGoal.name}"!`, 'success');
+    }
+  }
+
+  g.dismissed = true;
+  saveDB(true);
+  closeDismissGoalModal();
+  renderAllForCurrentPage();
+  showToast(`Goal "${g.name}" has been marked as Dismissed.`, 'info');
+}
+
+function reactivateGoal(id){
+  const g = (DB.savingsGoals || []).find(item => item.id === id);
+  if(!g) return;
+  g.dismissed = false;
+  saveDB(true);
+  renderAllForCurrentPage();
+  showToast(`Goal "${g.name}" has been reactivated!`, 'success');
+}
+
 function openEditGoalModal(id){
   const g = DB.savingsGoals.find(item => item.id === id);
   if(!g) return;
@@ -12665,10 +13129,9 @@ function renderInvestments(){
     const kpis = [
       { label: 'Total Invested', amount: fmt(totalInvested), change: 'Cost basis', tone: 'neu', accent: 'primary', icon: 'wallet' },
       { label: 'Portfolio Value', amount: fmt(totalValue), change: filteredList.length + ' active holding' + (filteredList.length === 1 ? '' : 's'), tone: 'neu', accent: 'teal', icon: 'piggy' },
-      { label: 'Total Withdrawals', amount: fmt(totalWithdrawals), change: 'Redemptions & sales', tone: 'neu', accent: 'amber', icon: 'scale' },
       { label: 'Total Returns', amount: (totalReturns >= 0 ? '+' : '') + fmt(totalReturns), change: (totalReturns >= 0 ? '+' : '') + unrealizedRoi.toFixed(1) + '% ROI', tone: totalReturns >= 0 ? 'pos' : 'neg', accent: 'teal', icon: 'up' },
-      { label: 'Realized Profit', amount: (totalRealized >= 0 ? '+' : '') + fmt(totalRealized), change: filteredSold.length + ' closed trade' + (filteredSold.length === 1 ? '' : 's'), tone: totalRealized >= 0 ? 'pos' : 'neg', accent: 'rose', icon: 'scale' },
-      { label: 'Overall Performance', amount: (overallRoi >= 0 ? '+' : '') + overallRoi.toFixed(1) + '%', change: (netProfit >= 0 ? '+' : '') + fmt(netProfit) + ' net gain', tone: overallRoi >= 0 ? 'pos' : 'neg', accent: 'primary', icon: 'up' }
+      { label: 'Total Withdrawals', amount: fmt(totalWithdrawals), change: 'Redemptions & sales', tone: 'neu', accent: 'amber', icon: 'scale' },
+      { label: 'Realized Profit', amount: (totalRealized >= 0 ? '+' : '') + fmt(totalRealized), change: filteredSold.length + ' closed trade' + (filteredSold.length === 1 ? '' : 's'), tone: totalRealized >= 0 ? 'pos' : 'neg', accent: 'rose', icon: 'scale' }
     ];
     invKpiGrid.innerHTML = kpis.map(c => 
       '<div class="card ov-card">' +
