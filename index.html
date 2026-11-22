@@ -1840,8 +1840,8 @@
       </div>
 
       <!-- High-level Overview Grid -->
-      <!-- Company Benefits & Allowances Live Quota Tracker -->
-      <div id="allowance-tracker-widget" class="mb-4 hidden"></div>
+      <!-- Pending Claims Alert Banner (Auto-dismisses when all recovered) -->
+      <div id="dashboard-claims-alert-container" class="mb-4 hidden"></div>
 
       <!-- High-level Overview Grid -->
       <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
@@ -2352,20 +2352,34 @@
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
         </div></div>
 
-      <!-- Clean & Simple Settings Tabs -->
+      <!-- Clean Settings Tabs (5 Headings) -->
       <div class="settings-tabs" id="settings-tabs"></div>
+
+      <!-- Sub-tabs for Rules (Warning Signs | Tags) -->
+      <div class="chip-row mb-4 hidden" id="settings-rules-subtabs" style="display:flex; gap:8px;">
+        <button type="button" class="btn-chip active" id="subtab-rules-warnings" onclick="setRulesSubTab('warnings')">Warning Signs</button>
+        <button type="button" class="btn-chip" id="subtab-rules-tags" onclick="setRulesSubTab('tags')">Tags</button>
+      </div>
+
+      <!-- Sub-tabs for System (Account | Alerts | Backup & Data | Recycle Bin) -->
+      <div class="chip-row mb-4 hidden" id="settings-system-subtabs" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn-chip active" id="subtab-system-account" onclick="setSystemSubTab('account')">Account</button>
+        <button type="button" class="btn-chip" id="subtab-system-notifications" onclick="setSystemSubTab('notifications')">Alerts</button>
+        <button type="button" class="btn-chip" id="subtab-system-backup" onclick="setSystemSubTab('backup')">Backup &amp; Data</button>
+        <button type="button" class="btn-chip" id="subtab-system-recycle" onclick="setSystemSubTab('recycle')">Recycle Bin</button>
+      </div>
 
       <div id="settings-categories">
         <div class="card" style="padding:22px; margin-bottom:18px;">
           <h2 class="section-title">Categories &amp; Subcategories</h2>
-          <p class="text-xs muted" style="margin:6px 0 16px;">Organize your income, expense, and savings categories.</p>
+          
           <div class="chip-row" id="cat-type-chips" style="margin-bottom:16px;"></div>
           <label class="field-label" for="category-search">Search Categories</label>
           <input type="search" id="category-search" class="field-input" placeholder="Search categories..." oninput="renderCategoryList()" style="margin-bottom:16px;">
           <div id="cat-list"></div>
           <div class="settings-add-section">
             <h3 class="section-title">Add Category</h3>
-            <p class="text-xs muted">Create a new category.</p>
+            
             <form onsubmit="handleAddCategory(event)" class="settings-add-form">
               <input type="text" id="new-cat-name" placeholder="Category Name" class="field-input" autocomplete="off" required oninput="const m=document.getElementById('category-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
               <span id="category-add-message" class="text-xs muted settings-add-message"></span>
@@ -2374,7 +2388,7 @@
           </div>
           <div class="settings-add-section" id="settings-add-subcat-section">
             <h3 class="section-title">Add Subcategory</h3>
-            <p class="text-xs muted">Assign a subcategory to a parent category.</p>
+            
             <form onsubmit="handleAddLinkedSubcategory(event)" class="settings-add-form">
               <select id="new-subcategory-parent" class="field-input" required></select>
               <input type="text" id="new-subcategory-name" placeholder="Subcategory Name" class="field-input" autocomplete="off" required oninput="subcatDrafts['__top_subcat__']=this.value; const m=document.getElementById('subcategory-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
@@ -2390,7 +2404,7 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
             <div>
               <h2 class="section-title">Payment Methods</h2>
-              <p class="text-xs muted" style="margin:4px 0 0;">Manage your available payment options for transactions and savings contributions.</p>
+              
             </div>
             <span class="badge badge-ok" id="payment-methods-count-badge">Active</span>
           </div>
@@ -2399,7 +2413,7 @@
 
           <div class="settings-add-section" style="margin-top:16px;">
             <h3 class="section-title">Add Payment Method</h3>
-            <p class="text-xs muted">Add a custom payment method (e.g. SadaPay, Nayapay, JazzCash, PayPal, or Crypto Wallet).</p>
+            
             <form onsubmit="handleAddPaymentMethod(event)" class="settings-add-form">
               <input type="text" id="new-payment-method-name" placeholder="Payment Method Name (e.g. SadaPay)" class="field-input" autocomplete="off" required oninput="const m=document.getElementById('payment-method-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
               <span id="payment-method-add-message" class="text-xs muted settings-add-message"></span>
@@ -2418,7 +2432,7 @@
         <div class="grid grid-2">
           <div class="card" style="padding:22px;">
             <h2 class="section-title" style="margin-bottom:14px;">Currency</h2>
-            <p class="text-xs muted" style="margin:0 0 14px;">App-wide display currency.</p>
+            
             <select id="settings-currency-select" class="field-input" onchange="changeCurrencyFromSettings()"></select>
           </div>
         </div>
@@ -2438,7 +2452,7 @@
       <div id="settings-activity" class="hidden">
         <div class="card" style="padding:22px;">
           <h2 class="section-title" style="margin-bottom:4px;">Recent Changes</h2>
-          <p class="text-xs muted" style="margin:0 0 14px;">Audit log of deleted items.</p>
+          
           <div id="activity-log"></div>
         </div>
       </div>
@@ -2448,13 +2462,16 @@
       <div id="settings-recycle" class="hidden">
         <div class="card" style="padding:22px;">
           <h2 class="section-title" style="margin-bottom:4px;">Recycle Bin</h2>
-          <p class="text-xs muted" style="margin:0 0 14px;">Deleted items are kept for 30 days before permanent removal.</p>
+          
           <div id="recycle-bin-list"></div>
         </div>
       </div>
 
       <div id="settings-warnings" class="hidden">
         <div id="settings-warnings-container"></div>
+      </div>
+      <div id="settings-tags" class="hidden">
+        <div id="settings-tags-container"></div>
       </div>
     </section>
   </main>
@@ -2922,6 +2939,11 @@
     <button class="modal-close" onclick="closeGoalModal()">✕</button>
     <h2>New Savings Goal</h2>
     <form onsubmit="handleAddGoal(event)">
+      <label class="field-label">Goal Purpose</label>
+      <select id="goal-purpose" class="field-input mb-3">
+        <option value="wealth_vault">Wealth Vault (Emergency, House, Gold, Long-Term)</option>
+        <option value="bill_reserve">Bill Reserve (Gym, Electricity, Subscriptions, Sinking Fund)</option>
+      </select>
       <label class="field-label">Goal Name</label>
       <input type="text" id="goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
       <label class="field-label">Start Date</label>
@@ -3020,6 +3042,11 @@
     <h2>Edit Savings Goal</h2>
     <form onsubmit="handleSaveEditGoal(event)">
       <input type="hidden" id="edit-goal-id">
+      <label class="field-label">Goal Purpose</label>
+      <select id="edit-goal-purpose" class="field-input mb-3">
+        <option value="wealth_vault">Wealth Vault (Emergency, House, Gold, Long-Term)</option>
+        <option value="bill_reserve">Bill Reserve (Gym, Electricity, Subscriptions, Sinking Fund)</option>
+      </select>
       <label class="field-label">Goal Name</label>
       <input type="text" id="edit-goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
       <label class="field-label">Start Date</label>
@@ -4237,7 +4264,14 @@ const DEFAULT_INCOME_CATEGORIES = [
   "Refund Received",
   "Other Income"
 ];
-const DEFAULT_SAVINGS_CATEGORIES = ["Emergency Fund", "Vacation Fund", "General Savings", "Monthly Savings", "Goal Savings", "Retirement Savings"];
+const DEFAULT_TAGS = [
+  { id: 'tag-opd', name: 'OPD', color: '#0D9488', isReimbursement: true },
+  { id: 'tag-ipd', name: 'IPD', color: '#2563EB', isReimbursement: true },
+  { id: 'tag-claim', name: 'Claim', color: '#D97706', isReimbursement: true },
+  { id: 'tag-fuel', name: 'Fuel', color: '#7C3AED', isReimbursement: true },
+  { id: 'tag-office', name: 'Office', color: '#4F46E5', isReimbursement: true }
+];
+const DEFAULT_SAVINGS_CATEGORIES = ["Emergency Fund", "Vacation Fund", "General Savings", "Retirement Savings"];
 const DEFAULT_INVESTMENT_CATEGORIES = [
   "Stock Market",
   "Money Market",
@@ -4854,7 +4888,7 @@ function buildSeed(){
     { id: 'health-ins', name: 'Health Insurance', limit: 50000, period: 'year', active: true, color: '#10B981' },
     { id: 'mobile-allow', name: 'Mobile / Internet Allowance', limit: 5000, period: 'month', active: true, color: '#6366F1' }
   ];
-  return { transactions, budgets, yearlyBudget, savingsGoals, investments, soldInvestments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[], allowanceAccounts };
+  return { transactions, budgets, yearlyBudget, savingsGoals, investments, soldInvestments, categories, currency, currencyMigrationDone:true, paymentMethods:[...DEFAULT_PAYMENT_METHODS], activityLog:[], recycleBin:[], allowanceAccounts, tags:[...DEFAULT_TAGS] };
 }
 
 function mergeDefaultCategories(cats){
@@ -4995,6 +5029,10 @@ function sanitizeLoadedDB(parsed){
   parsed.savingsGoals = Array.isArray(parsed.savingsGoals) ? parsed.savingsGoals : [];
   parsed.plannedSavingsGoals = Array.isArray(parsed.plannedSavingsGoals) ? parsed.plannedSavingsGoals : [];
   parsed.warningRules = ensureWarningRules(parsed.warningRules);
+  parsed.tags = Array.isArray(parsed.tags) && parsed.tags.length ? parsed.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
+  if(parsed.categories && Array.isArray(parsed.categories.savings)){
+    parsed.categories.savings = parsed.categories.savings.filter(c => c !== 'Monthly Savings' && c !== 'Monthly Savings Allocation (General)' && c !== 'Monthly Savings Pool');
+  }
   parsed.investments = Array.isArray(parsed.investments) ? parsed.investments : [];
   parsed.soldInvestments = Array.isArray(parsed.soldInvestments) ? parsed.soldInvestments : [];
   parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
@@ -6110,74 +6148,88 @@ function renderAllowancesSettings(){
     + '<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:36px; padding:0 20px;">+ Add First Benefit</button>'
     + '</div>';
 
+    // Pending Claims Hub
+  var openClaims = (DB.transactions || []).filter(function(t){
+    return t.isReimbursable && t.recoveryStatus !== 'settled';
+  });
+
+  var claimsHtml = '';
+  if(!openClaims.length){
+    claimsHtml = '<div style="text-align:center; padding:32px 20px; color:var(--muted-2); background:var(--surface); border:1px dashed var(--line); border-radius:12px;">'
+      + '<div style="font-weight:600; font-size:14px; color:var(--ink); margin-bottom:4px;">No Pending Claims</div>'
+      + '<p style="font-size:12.5px; color:var(--muted); margin:0;">All reimbursable out-of-pocket expenses are settled.</p>'
+      + '</div>';
+  } else {
+    var claimsRows = openClaims.map(function(t){
+      var billAmt = parseFloat(t.amount) || 0;
+      var claimable = t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0 ? parseFloat(t.claimableAmount) : billAmt;
+      var recovered = parseFloat(t.recoveredAmount) || 0;
+      var pending = Math.max(0, claimable - recovered);
+      var tagBadge = t.tag ? '<span class="badge" style="font-size:11px; font-weight:600; background:rgba(99,102,241,0.1); color:var(--primary);">' + escapeHtml(t.tag) + '</span>' : '';
+      var noteText = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
+
+      return '<tr style="border-bottom:1px solid var(--line-soft);">'
+        + '<td style="padding:10px 12px; font-size:12.5px; color:var(--muted); white-space:nowrap;">' + formatTxDateDisplay(t.date) + '</td>'
+        + '<td style="padding:10px 12px; font-size:13px; font-weight:600; color:var(--ink);">' + noteText + '</td>'
+        + '<td style="padding:10px 12px;">' + (tagBadge || '<span style="color:var(--muted-2); font-size:12px;">-</span>') + '</td>'
+        + '<td style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--muted); text-align:right;">' + fmt(billAmt) + '</td>'
+        + '<td style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--ink); text-align:right;">' + fmt(claimable) + '</td>'
+        + '<td style="padding:10px 12px; font-size:13px; font-weight:700; color:var(--rose); text-align:right;">' + fmt(pending) + '</td>'
+        + '<td style="padding:10px 12px; text-align:right; white-space:nowrap;">'
+        + '  <button type="button" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')" class="btn-primary" style="height:28px; font-size:12px; padding:0 12px; display:inline-flex; align-items:center; gap:5px;">'
+        + '    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Log Recovery'
+        + '  </button>'
+        + '</td>'
+        + '</tr>';
+    }).join('');
+
+    claimsHtml = '<div style="overflow-x:auto;">'
+      + '<table style="width:100%; border-collapse:collapse; text-align:left;">'
+      + '<thead>'
+      + '  <tr style="border-bottom:1px solid var(--line); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);">'
+      + '    <th style="padding:8px 12px;">Date</th>'
+      + '    <th style="padding:8px 12px;">Note / Details</th>'
+      + '    <th style="padding:8px 12px;">Tag</th>'
+      + '    <th style="padding:8px 12px; text-align:right;">Bill Total</th>'
+      + '    <th style="padding:8px 12px; text-align:right;">Claimable</th>'
+      + '    <th style="padding:8px 12px; text-align:right;">Pending Balance</th>'
+      + '    <th style="padding:8px 12px; text-align:right;">Action</th>'
+      + '  </tr>'
+      + '</thead>'
+      + '<tbody>' + claimsRows + '</tbody>'
+      + '</table>'
+      + '</div>';
+  }
+
+  var claimsSection = '<div class="card" style="padding:22px; margin-top:18px;">'
+    + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">'
+    + '  <div>'
+    + '    <h3 class="section-title" style="margin:0 0 2px;">Pending Claims &amp; Reimbursements</h3>'
+    + '  </div>'
+    + '  <span class="badge ' + (openClaims.length ? 'badge-warn' : 'badge-ok') + '" style="font-size:11px;">'
+    +      openClaims.length + (openClaims.length === 1 ? ' Pending Claim' : ' Pending Claims')
+    + '  </span>'
+    + '</div>'
+    + claimsHtml
+    + '</div>';
+
   el.innerHTML = '<div class="card" style="padding:22px; margin-bottom:18px;">'
     + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">'
     + '  <div>'
-    + '    <h2 class="section-title">Company Benefits &amp; Allowances</h2>'
-    + '    <p class="text-xs muted" style="margin:4px 0 0;">Manage company-provided allowances and transfer surplus funds.</p>'
+    + '    <h2 class="section-title">Company Benefit</h2>'
     + '  </div>'
     + '  <button onclick="openAddAllowanceModal()" class="btn-primary" style="height:34px; padding:0 14px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">'
     + '    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Benefit'
     + '  </button>'
     + '</div>'
     + '<div style="display:flex; flex-direction:column; gap:0;">' + cardsHtml + '</div>'
-    + '</div>';
+    + '</div>'
+    + claimsSection;
 }
 
 function renderAllowanceTrackerWidget(){
-  var container = document.getElementById('allowance-tracker-widget');
-  if(!container) return;
-  var accounts = getActiveAllowanceAccounts();
-  if(!accounts.length){ container.classList.add('hidden'); return; }
-  container.classList.remove('hidden');
-  var now = new Date();
-  var m = now.getMonth()+1, y = now.getFullYear();
-
-  var rows = accounts.map(function(acc, idx){
-    var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
-    var available = Math.max(0, acc.limit - used);
-    var pct = acc.limit > 0 ? Math.min(100, Math.round((used/acc.limit)*100)) : 0;
-    var isOver = used > acc.limit, isWarn = pct >= 85 && !isOver;
-    var barColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : 'var(--primary)');
-    var badgeClass = isOver ? 'badge-over' : (isWarn ? 'badge-warn' : 'badge-ok');
-    var badgeText = isOver ? 'Over Limit' : (isWarn ? 'Near Limit' : 'Within Quota');
-
-    return '<div class="draggable-item" draggable="true" data-reorder-group="allowances" data-reorder-key="' + escapeHtml(acc.id) + '" style="padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">'
-      + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">'
-      + '  <div style="display:flex; align-items:center; gap:8px;">'
-      +      dragHandleHtml()
-      + '    <span style="font-size:14px; font-weight:700; color:var(--ink);">' + escapeHtml(acc.name) + '</span>'
-      + '    <span class="badge ' + badgeClass + '" style="font-size:10.5px; padding:2px 7px;">' + badgeText + '</span>'
-      + '  </div>'
-      + '  <div style="display:flex; align-items:center; gap:8px;">'
-      +      reorderArrowsHtml('allowances', acc.id, idx === 0, idx === accounts.length - 1)
-      + '    <span style="font-size:12px; font-family:var(--font-mono); font-weight:600; color:' + barColor + ';">' + pct + '%</span>'
-      + '    <button type="button" onclick="openTransferAllowanceModal(\'' + acc.id + '\')" class="btn-ghost" style="height:28px; font-size:11.5px; padding:0 10px; border:1px solid var(--line); border-radius:6px; color:var(--teal); font-weight:600; display:inline-flex; align-items:center; gap:4px;" ' + (available <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : '') + '>'
-      + '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Transfer'
-      + '    </button>'
-      + '  </div>'
-      + '</div>'
-      + '<div style="height:7px; background:var(--surface-2); border-radius:6px; overflow:hidden; margin-bottom:8px;">'
-      + '  <div style="width:' + pct + '%; height:100%; background:' + barColor + '; border-radius:6px; transition:width .4s;"></div>'
-      + '</div>'
-      + '<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted-2);">'
-      + '  <span>Limit: <strong style="color:var(--ink); font-family:var(--font-mono);">' + fmt(acc.limit) + '</strong></span>'
-      + '  <span>Used: <strong style="color:var(--rose); font-family:var(--font-mono);">' + fmt(used) + '</strong></span>'
-      + '  <span>Available: <strong style="color:var(--teal); font-family:var(--font-mono);">' + fmt(available) + '</strong></span>'
-      + '</div>'
-      + '</div>';
-  }).join('');
-
-  container.innerHTML = '<div class="card" style="padding:18px 20px;">'
-    + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">'
-    + '  <div>'
-    + '    <h3 class="section-title" style="margin:0 0 2px;">Company Benefits &amp; Allowances</h3>'
-    + '    <p class="text-xs muted" style="margin:0;">Active benefit quotas &mdash; ' + MONTH_NAMES[m-1] + ' ' + y + '</p>'
-    + '  </div>'
-    + '  <span class="badge badge-ok" style="font-size:11px;">' + accounts.length + ' Active</span>'
-    + '</div>'
-    + '<div style="display:flex; flex-direction:column; gap:10px;">' + rows + '</div>'
-    + '</div>';
+  // Decoupled from dashboard; company benefits live strictly inside Settings -> Company Benefit
+  return;
 }
 
 var _editAllowanceId = null;
@@ -6818,6 +6870,7 @@ function expenseByCategory(txs){
 function spentFor(txs, month, year, category, subCategory){
   return txs.filter(t=>{
     if(!inMonth(t,month,year) || t.type!=='expense') return false;
+    if(t.fundedFromReserve) return false; // Pre-funded from sinking fund reserve; does not count against monthly limit
     if(t.category!==category) return false;
     if(subCategory){
       if(!t.subCategory) return false;
@@ -8831,6 +8884,50 @@ function dashboardBudgetRows(period){
 let chartDashboardTopExpenses = null;
 let chartDashboardBudget = null;
 
+
+function renderDashboardClaimsAlert(){
+  const container = document.getElementById('dashboard-claims-alert-container');
+  if(!container) return;
+
+  const pendingTxs = (DB.transactions || []).filter(t => t.isReimbursable && t.recoveryStatus !== 'settled');
+  const pendingTotal = pendingTxs.reduce((sum, t) => {
+    const claimable = parseFloat(t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount !== '' ? t.claimableAmount : t.amount) || 0;
+    const recovered = parseFloat(t.recoveredAmount) || 0;
+    return sum + Math.max(0, claimable - recovered);
+  }, 0);
+
+  if(pendingTxs.length === 0 || pendingTotal <= 0){
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = `
+    <div style="background:rgba(217,119,6,0.07); border:1px solid rgba(217,119,6,0.25); border-radius:12px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:34px; height:34px; border-radius:8px; background:rgba(217,119,6,0.15); color:#D97706; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px; font-weight:700; color:var(--ink);">Pending Reimbursements: ${fmt(pendingTotal)}</div>
+          <div class="text-xs muted" style="margin-top:2px;">${pendingTxs.length} claim${pendingTxs.length === 1 ? '' : 's'} awaiting recovery from your company or insurance policy.</div>
+        </div>
+      </div>
+      <button type="button" onclick="goToCompanyBenefitsClaims()" class="btn-primary" style="font-size:12px; padding:5px 14px; height:32px; border-radius:7px; font-weight:600;">View in Company Benefit</button>
+    </div>
+  `;
+}
+
+function goToCompanyBenefitsClaims(){
+  setPage('settings');
+  setSettingsTab('allowances');
+  const claimsSection = document.getElementById('company-benefits-pending-claims-section');
+  if(claimsSection){
+    claimsSection.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
 function renderDashboard(){
   initDashboardSelectors();
   updateDashFilterNavUI();
@@ -8881,7 +8978,7 @@ function renderDashboard(){
   renderDashboardBudgetSummary(period, totals);
   renderDashboardSavings(period, totals);
   renderDashboardInvestments();
-  renderAllowanceTrackerWidget();
+  renderDashboardClaimsAlert();
   renderDashboardTrendChart(period);
 }
 
@@ -10362,6 +10459,8 @@ function renderTransactions(){
           <span class="tx-cat-pill" style="background:${getCategoryColor(t.category, t.type)};"></span>
           <span class="tx-cat-name">${escapeHtml(t.category)}</span>
           ${catDeletedBadge}
+          ${t.tag ? `<span class="badge" style="font-size:10px; font-weight:600; padding:1px 6px; background:rgba(99,102,241,0.08); color:var(--primary); border:1px solid rgba(99,102,241,0.2);">${escapeHtml(t.tag)}</span>` : ''}
+          ${t.isReimbursable ? (t.recoveryStatus === 'settled' ? `<span class="badge badge-ok" style="font-size:10px; padding:1px 6px;">Reimbursed</span>` : `<span class="badge badge-warn" style="font-size:10px; padding:1px 6px; cursor:pointer;" onclick="goToCompanyBenefitsClaims()" title="Pending reimbursement claim">Pending Claim</span>`) : ''}
         </div>
       </td>
       ${subcatCell}
@@ -10787,6 +10886,132 @@ function onTxSubcatItemizedAmountChange(){
     if(totalNote) totalNote.textContent = '';
   }
 }
+
+
+/* ---------------- Tag & Claim Helper Functions ---------------- */
+function populateTxTagSelect(selectedTag = ''){
+  const tagSel = document.getElementById('tx-tag');
+  if(!tagSel) return;
+  const tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : DEFAULT_TAGS;
+  tagSel.innerHTML = '<option value="">None</option>' + tags.map(t =>
+    `<option value="${escapeHtml(t.name)}" ${t.name === selectedTag ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
+  ).join('');
+  onTxTagChange();
+}
+
+function onTxTagChange(){
+  const tagSel = document.getElementById('tx-tag');
+  const claimWrap = document.getElementById('tx-claimable-wrap');
+  if(!tagSel || !claimWrap) return;
+  const val = tagSel.value;
+  if(val && txType === 'expense'){
+    claimWrap.classList.remove('hidden');
+  } else {
+    claimWrap.classList.add('hidden');
+  }
+}
+
+/* ---------------- Reimbursement Log Recovery Workflow ---------------- */
+function openLogRecoveryModal(txId){
+  const tx = (DB.transactions || []).find(t => t.id === txId);
+  if(!tx) return;
+
+  const claimable = parseFloat(tx.claimableAmount !== undefined && tx.claimableAmount !== null && tx.claimableAmount !== '' ? tx.claimableAmount : tx.amount) || 0;
+  const recovered = parseFloat(tx.recoveredAmount) || 0;
+  const remaining = Math.max(0, claimable - recovered);
+
+  document.getElementById('recovery-tx-id').value = tx.id;
+  document.getElementById('recovery-amount').value = remaining > 0 ? remaining : claimable;
+  document.getElementById('recovery-date').value = ymd(new Date());
+  document.getElementById('recovery-note').value = '';
+
+  const summaryEl = document.getElementById('recovery-claim-summary');
+  if(summaryEl){
+    summaryEl.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span class="muted">Original Bill (${escapeHtml(tx.date || '')}):</span>
+        <strong>${fmt(tx.amount || 0)}</strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span class="muted">Claimable Tag / Portion:</span>
+        <span style="font-weight:600; color:var(--teal);">${escapeHtml(tx.tag || 'Claim')} &bull; ${fmt(claimable)}</span>
+      </div>
+      ${recovered > 0 ? `
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--muted);">
+        <span>Already Recovered:</span>
+        <span>${fmt(recovered)}</span>
+      </div>` : ''}
+      <div style="display:flex; justify-content:space-between; padding-top:4px; border-top:1px solid var(--line-soft);">
+        <span class="muted">Pending Claim Balance:</span>
+        <strong style="color:var(--amber);">${fmt(remaining)}</strong>
+      </div>
+    `;
+  }
+
+  const backdrop = document.getElementById('log-recovery-modal-backdrop');
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeLogRecoveryModal(){
+  const backdrop = document.getElementById('log-recovery-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function handleConfirmRecovery(e){
+  e.preventDefault();
+  const txId = document.getElementById('recovery-tx-id').value;
+  const amt = parseFloat(document.getElementById('recovery-amount').value);
+  const recDate = document.getElementById('recovery-date').value || ymd(new Date());
+  const recAccount = document.getElementById('recovery-account').value || 'Bank Account';
+  const recNote = document.getElementById('recovery-note').value.trim();
+
+  if(isNaN(amt) || amt <= 0){
+    showToast('Please enter a valid recovery amount', 'error');
+    return;
+  }
+
+  const txIndex = (DB.transactions || []).findIndex(t => t.id === txId);
+  if(txIndex === -1){
+    showToast('Transaction not found', 'error');
+    return;
+  }
+
+  const origTx = DB.transactions[txIndex];
+  const claimable = parseFloat(origTx.claimableAmount !== undefined && origTx.claimableAmount !== null && origTx.claimableAmount !== '' ? origTx.claimableAmount : origTx.amount) || 0;
+  const prevRecovered = parseFloat(origTx.recoveredAmount) || 0;
+  const newRecovered = prevRecovered + amt;
+
+  // 1. Create matching Income transaction
+  const incTx = {
+    id: uid(),
+    date: recDate,
+    type: 'income',
+    category: 'Insurance Claim Recovery',
+    amount: amt,
+    paymentMethod: recAccount,
+    description: 'Reimbursement: ' + (origTx.category || 'Medical') + (origTx.tag ? ' [' + origTx.tag + ']' : '') + (recNote ? ' - ' + recNote : ''),
+    linkedExpenseId: origTx.id,
+    createdAt: new Date().toISOString()
+  };
+  DB.transactions.unshift(incTx);
+
+  // 2. Update original expense transaction status
+  origTx.recoveredAmount = newRecovered;
+  origTx.recoveryStatus = newRecovered >= claimable ? 'settled' : 'partial';
+  origTx.recoveryNotes = Array.isArray(origTx.recoveryNotes) ? origTx.recoveryNotes : [];
+  origTx.recoveryNotes.push({
+    date: recDate,
+    amount: amt,
+    account: recAccount,
+    note: recNote
+  });
+
+  saveDB(true);
+  closeLogRecoveryModal();
+  renderAllForCurrentPage();
+  showToast(`Reimbursement recorded! ${fmt(amt)} added to Income and ${recAccount}.`, 'success');
+}
+
 
 function openTxModal(editId = null){
   editingTxId = editId || null;
@@ -12194,10 +12419,6 @@ function renderSavings(){
   const curY = savingsFilterYear || now.getFullYear();
   const monthSaved = (DB.transactions || []).filter(t => {
     if(t.type !== 'savings' || t.isGoalRolloverIn) return false;
-    const linkedGoal = (DB.savingsGoals || []).find(g => (t.goalId && g.id === t.goalId) || g.name === t.category);
-    if(linkedGoal && isMultiMonthGoal(linkedGoal)){
-      return goalActiveInPeriod(linkedGoal, curM, curY);
-    }
     return inMonth(t, curM, curY);
   }).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthIncome = (DB.transactions || []).filter(t => t.type === 'income' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
@@ -12392,6 +12613,7 @@ function renderSavings(){
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               ${dragHandleHtml()}
               <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
+              ${g.purpose === 'bill_reserve' ? '<span class="badge" style="background:rgba(59,130,246,0.1); color:#2563EB; font-weight:600; font-size:11px; padding:2px 7px;">Bill Reserve</span>' : ''}
               ${statusBadge}
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:12px; color:var(--muted);">
@@ -12444,9 +12666,14 @@ function renderSavings(){
                 Use Savings
               </button>
             ` : ''}
+            ${(g.purpose === 'bill_reserve' && !isFullySettled && cur > 0) ? `
+              <button type="button" onclick="payBillFromReserve('${g.id}')" class="btn-primary" style="padding:5px 12px; font-size:12px; height:30px; background:#2563EB; border-color:#2563EB;" title="Pay upcoming bill using accumulated reserve (Zero budget deficit)">
+                Pay Bill from Reserve
+              </button>
+            ` : ''}
             ${canTransfer ? `
-              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Transfer savings to another month or directly into income (current balance: ${fmt(cur)})">
-                Transfer
+              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Reallocate funds to income, another goal, or roll over (current balance: ${fmt(cur)})">
+                Reallocate Funds
               </button>
             ` : ''}
           </div>
@@ -12719,6 +12946,7 @@ function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classL
 
 function handleAddGoal(e){
   e.preventDefault();
+  const purpose = document.getElementById('goal-purpose')?.value || 'wealth_vault';
   const name = document.getElementById('goal-name').value.trim();
   const startDate = document.getElementById('goal-start').value;
   const target = parseFloat(document.getElementById('goal-target').value);
@@ -12738,7 +12966,7 @@ function handleAddGoal(e){
     showToast(`A savings goal named "${name}" already exists`, 'warning');
     return;
   }
-  DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline, savingIn });
+  DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline, savingIn, purpose });
   saveDB(true); closeGoalModal();
   document.getElementById('goal-name').value=''; document.getElementById('goal-start').value=''; document.getElementById('goal-target').value=''; document.getElementById('goal-deadline').value='';
   if(document.getElementById('goal-saving-in')) document.getElementById('goal-saving-in').value = 'Bank Account';
@@ -12892,6 +13120,7 @@ function openEditGoalModal(id){
   document.getElementById('edit-goal-id').value = id;
   document.getElementById('edit-goal-name').value = g.name || '';
   document.getElementById('edit-goal-start').value = g.startDate || '';
+  if(document.getElementById('edit-goal-purpose')) document.getElementById('edit-goal-purpose').value = g.purpose || 'wealth_vault';
   document.getElementById('edit-goal-target').value = g.targetAmount || '';
   document.getElementById('edit-goal-deadline').value = g.deadline || '';
   const savingInSelect = document.getElementById('edit-goal-saving-in');
@@ -12924,6 +13153,8 @@ function handleSaveEditGoal(e){
   const deadline = document.getElementById('edit-goal-deadline').value;
   const savingInSelect = document.getElementById('edit-goal-saving-in');
   const savingIn = savingInSelect ? savingInSelect.value : (g.savingIn || 'Bank Account');
+  const purpose = document.getElementById('edit-goal-purpose')?.value || g.purpose || 'wealth_vault';
+  g.purpose = purpose;
 
   if(!newName || !startDate || !target || target <= 0 || !deadline || deadline < startDate){
     if(!deadline){
@@ -14551,16 +14782,17 @@ function setSettingsDomainAndTab(dom, tabId){
   triggerSettingsTabAction(tabId);
 }
 
+let settingsRulesSubTab = 'warnings';
+let settingsSystemSubTab = 'account';
+
 function renderSettingsTabs(){
+  // 5 Clean One-Word Headings
   const tabs = [
     {id:'categories', label:'Categories'},
-    {id:'allowances', label:'Company Benefits'},
+    {id:'allowances', label:'Company Benefit'},
     {id:'payment-methods', label:'Payment Methods'},
-    {id:'account', label:'Account'},
-    {id:'notifications', label:'Notifications'},
-    {id:'backup', label:'Backup & Data'},
-    {id:'recycle', label:'Recycle Bin'},
-    {id:'warnings', label:'Warning Signs'}
+    {id:'rules', label:'Rules'},
+    {id:'system', label:'System'}
   ];
 
   const container = document.getElementById('settings-tabs');
@@ -14571,36 +14803,105 @@ function renderSettingsTabs(){
   }
 
   const topbarSub = document.querySelector('#page-settings .topbar p');
-  if(topbarSub && SETTINGS_SUBTITLES[settingsTab]){
-    topbarSub.textContent = SETTINGS_SUBTITLES[settingsTab];
+  if(topbarSub){
+    const subTitles = {
+      'categories': 'Organize your income, expense, and savings categories.',
+      'allowances': 'Manage company benefits, quotas, and pending claims.',
+      'payment-methods': 'Active payment methods for transactions.',
+      'rules': 'Financial health warning signs and short transaction tags.',
+      'system': 'Account profile, alerts, backup, and recovery.'
+    };
+    if(subTitles[settingsTab]) topbarSub.textContent = subTitles[settingsTab];
   }
 
+  // Toggle main sections
   document.getElementById('settings-categories')?.classList.toggle('hidden', settingsTab!=='categories');
   document.getElementById('settings-allowances')?.classList.toggle('hidden', settingsTab!=='allowances');
   document.getElementById('settings-payment-methods')?.classList.toggle('hidden', settingsTab!=='payment-methods');
-  document.getElementById('settings-account')?.classList.toggle('hidden', settingsTab!=='account');
-  document.getElementById('settings-notifications')?.classList.toggle('hidden', settingsTab!=='notifications');
-  document.getElementById('settings-backup')?.classList.toggle('hidden', settingsTab!=='backup');
-  document.getElementById('settings-recycle')?.classList.toggle('hidden', settingsTab!=='recycle');
-  document.getElementById('settings-warnings')?.classList.toggle('hidden', settingsTab!=='warnings');
+
+  // Subtabs toggles
+  const rulesSubBar = document.getElementById('settings-rules-subtabs');
+  const systemSubBar = document.getElementById('settings-system-subtabs');
+  if(rulesSubBar) rulesSubBar.classList.toggle('hidden', settingsTab!=='rules');
+  if(systemSubBar) systemSubBar.classList.toggle('hidden', settingsTab!=='system');
+
+  // Rules views
+  if(settingsTab === 'rules'){
+    document.getElementById('settings-warnings')?.classList.toggle('hidden', settingsRulesSubTab!=='warnings');
+    document.getElementById('settings-tags')?.classList.toggle('hidden', settingsRulesSubTab!=='tags');
+    document.getElementById('subtab-rules-warnings')?.classList.toggle('active', settingsRulesSubTab==='warnings');
+    document.getElementById('subtab-rules-tags')?.classList.toggle('active', settingsRulesSubTab==='tags');
+  } else {
+    document.getElementById('settings-warnings')?.classList.add('hidden');
+    document.getElementById('settings-tags')?.classList.add('hidden');
+  }
+
+  // System views
+  if(settingsTab === 'system'){
+    document.getElementById('settings-account')?.classList.toggle('hidden', settingsSystemSubTab!=='account');
+    document.getElementById('settings-notifications')?.classList.toggle('hidden', settingsSystemSubTab!=='notifications');
+    document.getElementById('settings-backup')?.classList.toggle('hidden', settingsSystemSubTab!=='backup');
+    document.getElementById('settings-recycle')?.classList.toggle('hidden', settingsSystemSubTab!=='recycle');
+    document.getElementById('subtab-system-account')?.classList.toggle('active', settingsSystemSubTab==='account');
+    document.getElementById('subtab-system-notifications')?.classList.toggle('active', settingsSystemSubTab==='notifications');
+    document.getElementById('subtab-system-backup')?.classList.toggle('active', settingsSystemSubTab==='backup');
+    document.getElementById('subtab-system-recycle')?.classList.toggle('active', settingsSystemSubTab==='recycle');
+  } else {
+    document.getElementById('settings-account')?.classList.add('hidden');
+    document.getElementById('settings-notifications')?.classList.add('hidden');
+    document.getElementById('settings-backup')?.classList.add('hidden');
+    document.getElementById('settings-recycle')?.classList.add('hidden');
+  }
+
   const actEl = document.getElementById('settings-activity');
-  if(actEl) actEl.classList.toggle('hidden', settingsTab!=='activity');
+  if(actEl) actEl.classList.add('hidden');
+}
+
+function setRulesSubTab(sub){
+  settingsRulesSubTab = sub;
+  settingsTab = 'rules';
+  renderSettingsTabs();
+  if(sub === 'warnings') renderWarningSignsSettings();
+  if(sub === 'tags') renderTagsSettings();
+}
+
+function setSystemSubTab(sub){
+  settingsSystemSubTab = sub;
+  settingsTab = 'system';
+  renderSettingsTabs();
+  if(sub === 'account') renderSettingsAccount();
+  if(sub === 'notifications') renderNotificationSettings();
+  if(sub === 'backup') renderBackupSettings();
+  if(sub === 'recycle') renderRecycleBin();
 }
 
 function triggerSettingsTabAction(t){
   if(t==='allowances') renderAllowancesSettings();
   if(t==='payment-methods') renderPaymentMethodsSettings();
-  if(t==='notifications') renderNotificationSettings();
-  if(t==='backup') renderBackupSettings();
-  if(t==='recycle') renderRecycleBin();
-  if(t==='warnings') renderWarningSignsSettings();
-  if(t==='activity') renderActivityLog();
+  if(t==='rules'){
+    if(settingsRulesSubTab === 'warnings') renderWarningSignsSettings();
+    if(settingsRulesSubTab === 'tags') renderTagsSettings();
+  }
+  if(t==='system'){
+    if(settingsSystemSubTab === 'account') renderSettingsAccount();
+    if(settingsSystemSubTab === 'notifications') renderNotificationSettings();
+    if(settingsSystemSubTab === 'backup') renderBackupSettings();
+    if(settingsSystemSubTab === 'recycle') renderRecycleBin();
+  }
 }
 
 function setSettingsTab(t){
-  settingsTab = t;
+  if(t === 'warnings' || t === 'tags'){
+    settingsTab = 'rules';
+    settingsRulesSubTab = t;
+  } else if(t === 'account' || t === 'notifications' || t === 'backup' || t === 'recycle'){
+    settingsTab = 'system';
+    settingsSystemSubTab = t;
+  } else {
+    settingsTab = t;
+  }
   renderSettingsTabs();
-  triggerSettingsTabAction(t);
+  triggerSettingsTabAction(settingsTab);
 }
 
 function renderNotificationSettings(){
@@ -14613,76 +14914,197 @@ function renderNotificationSettings(){
 
   container.innerHTML = `
     <div class="card" style="padding:22px; margin-bottom:18px;">
-      <h2 class="section-title" style="margin:0 0 4px;">In-App Alert Triggers</h2>
-      <p class="text-xs muted" style="margin:0 0 16px;">Configure which automated financial alerts appear in your Notifications drawer.</p>
+      <h2 class="section-title" style="margin:0 0 16px;">In-App Alerts</h2>
       
       <div style="display:flex; flex-direction:column; gap:14px; max-width:620px;">
-        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
-          <input type="checkbox" id="notif-trig-budget" ${cfg.budgetAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
-          <div>
-            <strong style="font-size:13.5px; color:var(--ink); display:block;">Budget Over-Limit &amp; 85% Warnings</strong>
-            <span class="text-xs muted">Alert when category spending exceeds or approaches 85% of your budgeted threshold.</span>
-          </div>
+        <label style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; padding:6px 0; border-bottom:1px solid var(--line-soft);">
+          <span style="font-size:13.5px; font-weight:600; color:var(--ink);">Budget Limits &amp; 85% Warnings</span>
+          <input type="checkbox" id="notif-trig-budget" ${cfg.budgetAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="width:17px; height:17px; cursor:pointer;">
         </label>
 
-        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
-          <input type="checkbox" id="notif-trig-benefits" ${cfg.benefitsAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
-          <div>
-            <strong style="font-size:13.5px; color:var(--ink); display:block;">Company Allowance Surplus &amp; Cycle Expiry</strong>
-            <span class="text-xs muted">Alert when an allowance cycle ends with unspent quota available to transfer to personal Income or Savings.</span>
-          </div>
+        <label style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; padding:6px 0; border-bottom:1px solid var(--line-soft);">
+          <span style="font-size:13.5px; font-weight:600; color:var(--ink);">Company Benefit Cycle Alerts</span>
+          <input type="checkbox" id="notif-trig-benefits" ${cfg.benefitsAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="width:17px; height:17px; cursor:pointer;">
         </label>
 
-        <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
-          <input type="checkbox" id="notif-trig-goals" ${cfg.goalsAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="margin-top:3px; width:17px; height:17px;">
-          <div>
-            <strong style="font-size:13.5px; color:var(--ink); display:block;">Savings Goal Milestones &amp; 7-Day Deadlines</strong>
-            <span class="text-xs muted">Notice 7 days before a savings target deadline and upon reaching 100% completion.</span>
-          </div>
+        <label style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; padding:6px 0;">
+          <span style="font-size:13.5px; font-weight:600; color:var(--ink);">Savings Goal Milestones &amp; Due Dates</span>
+          <input type="checkbox" id="notif-trig-goals" ${cfg.goalsAlerts !== false ? 'checked' : ''} onchange="saveNotificationToggles()" style="width:17px; height:17px; cursor:pointer;">
         </label>
       </div>
     </div>
 
     <div class="card" style="padding:22px; margin-bottom:18px;">
-      <h2 class="section-title" style="margin:0 0 4px;">Monthly Savings Carry-Forward Preference</h2>
-      <p class="text-xs muted" style="margin:0 0 16px;">Choose how unspent previous month savings and surplus are handled.</p>
+      <h2 class="section-title" style="margin:0 0 14px;">Surplus Carry-Forward Preference</h2>
       
-      <div style="display:flex; flex-direction:column; gap:12px; max-width:620px;">
-        <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1px solid ${cfg.rolloverMode==='prompt'?'var(--primary)':'var(--line)'}; border-radius:8px; cursor:pointer; background:var(--surface);">
-          <input type="radio" name="notif-rollover-mode" value="prompt" ${cfg.rolloverMode==='prompt'?'checked':''} onchange="saveRolloverMode('prompt')" style="margin-top:3px;">
-          <div>
-            <strong style="font-size:13.5px; color:var(--ink); display:block;">Always Ask Me (Recommended)</strong>
-            <span class="text-xs muted">Displays an actionable prompt in Notifications and Savings allowing you to decide whether to carry forward unspent balance to next month's Income or allocate it to a Savings Goal.</span>
-          </div>
+      <div style="display:flex; flex-direction:column; gap:10px; max-width:620px;">
+        <label style="display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid ${cfg.rolloverMode==='prompt'?'var(--primary)':'var(--line)'}; border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="notif-rollover-mode" value="prompt" ${cfg.rolloverMode==='prompt'?'checked':''} onchange="saveRolloverMode('prompt')">
+          <span style="font-size:13.5px; font-weight:600; color:var(--ink);">Always Prompt Me (Recommended)</span>
         </label>
         
-        <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1px solid ${cfg.rolloverMode==='off'?'var(--primary)':'var(--line)'}; border-radius:8px; cursor:pointer; background:var(--surface);">
-          <input type="radio" name="notif-rollover-mode" value="off" ${cfg.rolloverMode==='off'?'checked':''} onchange="saveRolloverMode('off')" style="margin-top:3px;">
-          <div>
-            <strong style="font-size:13.5px; color:var(--ink); display:block;">Off (Do Not Carry Forward)</strong>
-            <span class="text-xs muted">Do not prompt or carry forward unspent monthly balances.</span>
-          </div>
+        <label style="display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid ${cfg.rolloverMode==='off'?'var(--primary)':'var(--line)'}; border-radius:8px; cursor:pointer; background:var(--surface);">
+          <input type="radio" name="notif-rollover-mode" value="off" ${cfg.rolloverMode==='off'?'checked':''} onchange="saveRolloverMode('off')">
+          <span style="font-size:13.5px; font-weight:600; color:var(--ink);">Do Not Prompt or Carry Forward</span>
         </label>
       </div>
     </div>
 
     <div class="card" style="padding:22px;">
-      <h2 class="section-title" style="margin:0 0 4px;">Browser Desktop Push Notifications</h2>
-      <p class="text-xs muted" style="margin:0 0 16px;">Receive native desktop alerts even when WealthNest is running in the background.</p>
+      <h2 class="section-title" style="margin:0 0 14px;">Desktop Push Notifications</h2>
       
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:14px 16px;">
-        <div>
-          <div style="font-weight:600; font-size:13.5px; color:var(--ink);">Desktop Toast Status</div>
-          <span class="badge ${hasDesktopPerm ? 'badge-ok' : 'badge-off'}" style="margin-top:4px;">${hasDesktopPerm ? 'Permission Granted' : 'Permission Not Enabled'}</span>
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="badge ${hasDesktopPerm ? 'badge-ok' : 'badge-off'}">${hasDesktopPerm ? 'Active' : 'Disabled'}</span>
+          <span style="font-weight:600; font-size:13px; color:var(--ink);">Native Browser Alerts</span>
         </div>
         <div style="display:flex; gap:8px;">
-          ${!hasDesktopPerm ? `<button type="button" class="btn-primary" onclick="requestDesktopNotificationPermission()" style="font-size:12px; padding:8px 14px;">Enable Desktop Notifications</button>` : ''}
-          <button type="button" class="btn-ghost" onclick="sendTestNotification()" style="font-size:12px; padding:8px 14px;">Send Test Alert</button>
+          ${!hasDesktopPerm ? `<button type="button" class="btn-primary" onclick="requestDesktopNotificationPermission()" style="font-size:12px; padding:6px 12px; height:30px;">Enable</button>` : ''}
+          <button type="button" class="btn-ghost" onclick="sendTestNotification()" style="font-size:12px; padding:6px 12px; height:30px;">Test Alert</button>
         </div>
       </div>
     </div>
   `;
 }
+
+
+/* ---------------- Short Tags Manager ---------------- */
+function renderTagsSettings(){
+  const container = document.getElementById('settings-tags-container');
+  if(!container) return;
+  const tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : DEFAULT_TAGS;
+
+  container.innerHTML = `
+    <div class="card" style="padding:22px; margin-bottom:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 class="section-title" style="margin:0;">Short Tags</h2>
+        <span class="badge badge-ok">${tags.length} Active</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;" id="settings-tags-list">
+        ${tags.map(tag => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${tag.color || '#0D9488'};"></span>
+              <span style="font-weight:700; font-size:13.5px; color:var(--ink);">${escapeHtml(tag.name)}</span>
+              ${tag.isReimbursement ? '<span class="badge" style="background:rgba(13,148,136,0.12); color:var(--teal); font-size:11px; padding:2px 7px;">Reimbursable</span>' : ''}
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button type="button" onclick="promptRenameTag('${tag.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;">Rename</button>
+              <button type="button" onclick="deleteTag('${tag.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);">Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="settings-add-section" style="margin-top:16px;">
+        <h3 class="section-title" style="margin-bottom:8px;">Add Tag</h3>
+        <form onsubmit="handleAddTag(event)" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input type="text" id="new-tag-name" placeholder="Tag name (e.g. OPD)" class="field-input" style="flex:1; min-width:160px;" required maxlength="16" autocomplete="off">
+          <select id="new-tag-color" class="field-input" style="width:130px;">
+            <option value="#0D9488">Teal</option>
+            <option value="#2563EB">Blue</option>
+            <option value="#7C3AED">Purple</option>
+            <option value="#D97706">Amber</option>
+            <option value="#E11D48">Rose</option>
+          </select>
+          <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink); cursor:pointer;">
+            <input type="checkbox" id="new-tag-reimbursable" checked style="width:15px; height:15px;">
+            Reimbursable
+          </label>
+          <button type="submit" class="btn-dark" style="white-space:nowrap; padding:0 18px; height:38px;">+ Add Tag</button>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+function handleAddTag(e){
+  e.preventDefault();
+  const input = document.getElementById('new-tag-name');
+  const colorSel = document.getElementById('new-tag-color');
+  const reimbInput = document.getElementById('new-tag-reimbursable');
+  if(!input) return;
+
+  const rawName = input.value.trim();
+  if(!rawName){
+    showToast('Please enter a tag name', 'error');
+    return;
+  }
+  // Single-word check
+  const name = rawName.split(/\s+/)[0];
+  if(!name){
+    showToast('Invalid tag name', 'error');
+    return;
+  }
+
+  DB.tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
+  if(DB.tags.some(t => t.name.toLowerCase() === name.toLowerCase())){
+    showToast(`Tag "${name}" already exists`, 'warning');
+    return;
+  }
+
+  DB.tags.push({
+    id: 'tag-' + uid(),
+    name: name,
+    color: colorSel ? colorSel.value : '#0D9488',
+    isReimbursement: reimbInput ? reimbInput.checked : true
+  });
+
+  saveDB(true);
+  renderTagsSettings();
+  input.value = '';
+  showToast(`Tag "${name}" added successfully`, 'success');
+}
+
+function promptRenameTag(tagId){
+  DB.tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
+  const tag = DB.tags.find(t => t.id === tagId);
+  if(!tag) return;
+
+  const newName = prompt('Enter new tag name (single word):', tag.name);
+  if(!newName) return;
+  const cleanName = newName.trim().split(/\s+/)[0];
+  if(!cleanName) return;
+
+  if(cleanName.toLowerCase() !== tag.name.toLowerCase() && DB.tags.some(t => t.name.toLowerCase() === cleanName.toLowerCase())){
+    showToast(`Tag "${cleanName}" already exists`, 'warning');
+    return;
+  }
+
+  const oldName = tag.name;
+  tag.name = cleanName;
+
+  // Update associated transactions
+  (DB.transactions || []).forEach(tx => {
+    if(tx.tag === oldName) tx.tag = cleanName;
+  });
+
+  saveDB(true);
+  renderTagsSettings();
+  showToast(`Renamed tag to "${cleanName}"`, 'success');
+}
+
+function deleteTag(tagId){
+  DB.tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
+  const tag = DB.tags.find(t => t.id === tagId);
+  if(!tag) return;
+
+  if(!confirm(`Delete tag "${tag.name}"? Transactions using this tag will be untagged.`)) return;
+
+  DB.tags = DB.tags.filter(t => t.id !== tagId);
+  (DB.transactions || []).forEach(tx => {
+    if(tx.tag === tag.name){
+      delete tx.tag;
+      delete tx.isReimbursable;
+    }
+  });
+
+  saveDB(true);
+  renderTagsSettings();
+  showToast(`Deleted tag "${tag.name}"`, 'success');
+}
+
 
 function saveNotificationToggles(){
   if(!DB.notificationSettings) DB.notificationSettings = {};
@@ -17175,9 +17597,63 @@ function renderAll(){
   renderAllForCurrentPage();
 }
 
+function payBillFromReserve(goalId){
+  const g = (DB.savingsGoals || []).find(item => item.id === goalId);
+  if(!g) return;
+  const cur = typeof getGoalCurrentAmount === 'function' ? getGoalCurrentAmount(g) : (g.currentAmount || 0);
+  if(cur <= 0){
+    showToast('No accumulated funds in this reserve to pay the bill', 'warning');
+    return;
+  }
+  if(!confirm('Pay bill of ' + fmt(cur) + ' from "' + g.name + '" reserve?\n\nThis will settle the bill and will NOT blow up your monthly spending budget.')){
+    return;
+  }
+
+  const todayStr = ymd(new Date());
+  const now = new Date();
+  const curM = now.getMonth() + 1, curY = now.getFullYear();
+
+  const tx = {
+    id: uid(),
+    type: 'expense',
+    category: g.name,
+    subCategory: 'Bill Reserve Payment',
+    amount: cur,
+    date: todayStr,
+    paymentMethod: g.savingIn || 'Bank Account',
+    description: 'Bill paid from ' + g.name + ' reserve',
+    fundedFromReserve: true,
+    linkedGoalId: g.id,
+    createdAt: new Date().toISOString()
+  };
+  DB.transactions = DB.transactions || [];
+  DB.transactions.unshift(tx);
+
+  if(!DB.goalRollovers) DB.goalRollovers = [];
+  const rollRecord = {
+    id: uid(),
+    type: 'bill_reserve_paid',
+    goalId: g.id,
+    goalName: g.name,
+    targetGoalName: 'Bill Payment: ' + g.name,
+    amount: cur,
+    fromMonth: curM,
+    fromYear: curY,
+    toMonth: curM,
+    toYear: curY,
+    inTxId: tx.id,
+    date: new Date().toISOString()
+  };
+  DB.goalRollovers.push(rollRecord);
+  g.isBillPaid = true;
+
+  saveDB(true);
+  renderAllForCurrentPage();
+  showToast('Paid ' + fmt(cur) + ' for ' + g.name + ' from reserve! Budget remains balanced.', 'success');
+}
+
 function executeSavingsTransfer(){
   const btn = document.getElementById('btn-confirm-savings-transfer');
-  if(btn){ btn.disabled = true; btn.textContent = 'Transferring...'; }
 
   try {
     const goal = (DB.savingsGoals || []).find(g => g.id === _rollGoalId);
@@ -17191,8 +17667,21 @@ function executeSavingsTransfer(){
       showToast('Please enter a valid amount up to ' + fmt(_rollGoalCurAmount), 'error');
       return;
     }
-
     const dest = document.querySelector('input[name="savings-transfer-dest"]:checked')?.value || 'savings';
+    let targetLabel = dest === 'savings' ? 'destination savings' : 'Income';
+    if(dest === 'savings'){
+      const destGoalSelect = document.getElementById('roll-goal-dest-goal');
+      if(destGoalSelect && destGoalSelect.value !== '__general__' && destGoalSelect.value !== '__new_goal__'){
+        const tg = (DB.savingsGoals || []).find(item => item.id === destGoalSelect.value);
+        if(tg) targetLabel = tg.name;
+      }
+    }
+
+    if(!confirm('Are you sure you want to transfer ' + fmt(amt) + ' from "' + goal.name + '" to ' + targetLabel + '?')){
+      return;
+    }
+
+    if(btn){ btn.disabled = true; btn.textContent = 'Transferring...'; }
     const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const sourceMonthName = SHORT_MONTHS[_rollGoalSourceM - 1];
     const destMonthName = SHORT_MONTHS[_rollGoalDestM - 1];
@@ -18191,5 +18680,54 @@ function dispatchDesktopNotification(title, options){
 
 
 </script>
+
+<!-- Log Recovery Modal (Reimbursement Settlement) -->
+<div id="log-recovery-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeLogRecoveryModal()">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeLogRecoveryModal()">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:18px;">Log Reimbursement Recovery</h2>
+      </div>
+    </div>
+    
+    <div id="recovery-claim-summary" style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px;"></div>
+
+    <form onsubmit="handleConfirmRecovery(event)">
+      <input type="hidden" id="recovery-tx-id">
+      
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="recovery-amount">Amount Recovered (PKR) <span style="color:var(--rose);">*</span></label>
+        <input type="number" min="0" step="any" id="recovery-amount" class="field-input figure" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="recovery-date">Date Received</label>
+          <input type="date" id="recovery-date" class="field-input" required>
+        </div>
+        <div>
+          <label class="field-label" for="recovery-account">Deposit Account</label>
+          <select id="recovery-account" class="field-input">
+            <option value="Bank Account" selected>Bank Account</option>
+            <option value="Cash">Cash</option>
+            <option value="Digital Wallet">Digital Wallet</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="field-label" for="recovery-note">Short Note</label>
+        <input type="text" id="recovery-note" placeholder="e.g. Doctor fee and prescribed tests approved" class="field-input" autocomplete="off">
+      </div>
+
+      <button type="submit" class="btn-primary" style="width:100%; height:38px; font-weight:700;">Confirm Recovery &amp; Add to Income</button>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>
