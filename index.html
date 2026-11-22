@@ -1656,6 +1656,7 @@
       <div class="topbar">
         <div><h1 id="dash-greeting">Overview</h1><p id="dash-date"></p></div>
         <div style="display:flex; align-items:center; gap:10px;">
+          <div id="dash-claims-chip-wrap" class="hidden"></div>
           <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
@@ -1839,10 +1840,6 @@
           </div>
         </div>
       </div>
-
-      <!-- High-level Overview Grid -->
-      <!-- Pending Claims Alert Banner (Auto-dismisses when all recovered) -->
-      <div id="dashboard-claims-alert-container" class="mb-4 hidden"></div>
 
       <!-- High-level Overview Grid -->
       <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
@@ -2554,7 +2551,7 @@
       <!-- Row 1: Date (Compact) -->
       <div style="margin-bottom:8px;">
         <label class="field-label" style="margin-bottom:3px;">Date</label>
-        <input type="date" id="tx-date" class="field-input" style="padding:6px 10px;" required>
+        <input type="date" id="tx-date" class="field-input" style="padding:6px 10px;" onchange="onTxDateChange()" required>
       </div>
 
       <!-- Row 2: Category & Subcategory / Saving In -->
@@ -3034,32 +3031,63 @@
   </div>
 </div>
 <div id="goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeGoalModal()">
-  <div class="modal" style="max-width:360px;">
+  <div class="modal" style="max-width:400px;">
     <button class="modal-close" onclick="closeGoalModal()">✕</button>
-    <h2>New Savings Goal</h2>
+    <h2>New Goal</h2>
     <form onsubmit="handleAddGoal(event)">
-      <label class="field-label">Goal Purpose</label>
-      <select id="goal-purpose" class="field-input mb-3">
-        <option value="Savings">Savings</option>
-        <option value="Household">Household</option>
-        <option value="Personal">Personal</option>
-        <option value="Emergency">Emergency</option>
-      </select>
-      <label class="field-label">Goal Name <span class="text-xs muted">(Optional)</span></label>
-      <input type="text" id="goal-name" class="field-input mb-3">
-      <label class="field-label">Start Date</label>
-      <input type="date" id="goal-start" class="field-input mb-3" required>
-      <label class="field-label">Target Amount</label>
-      <input type="number" min="0" step="any" id="goal-target" class="field-input figure mb-3" required>
-      <label class="field-label">Saving In</label>
-      <select id="goal-saving-in" class="field-input mb-3">
-        <option value="Bank Account">Bank Account</option>
-        <option value="Personal Safe / Cash">Personal Safe / Cash</option>
-        <option value="Digital Wallet">Digital Wallet</option>
-        <option value="Other">Other</option>
-      </select>
-      <label class="field-label">Deadline <span style="color:var(--rose);">*</span></label>
-      <input type="date" id="goal-deadline" class="field-input mb-5" required>
+      <!-- Goal Type Toggle (Strictly 2 short options: Bill vs Savings) -->
+      <div style="margin-bottom:12px;">
+        <label class="field-label" style="margin-bottom:4px;">Goal Type</label>
+        <div class="chip-row" style="width:100%; display:grid; grid-template-columns:1fr 1fr; gap:8px;" id="goal-type-chips">
+          <button type="button" class="btn-chip active" id="goal-type-btn-bill" style="border:1px solid var(--line); justify-content:center;" onclick="setGoalTypeChoice('bill')">Bill</button>
+          <button type="button" class="btn-chip" id="goal-type-btn-savings" style="border:1px solid var(--line); justify-content:center;" onclick="setGoalTypeChoice('savings')">Savings</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;" id="goal-category-wrap">
+        <label class="field-label" id="goal-category-label">Category <span style="color:var(--rose);">*</span></label>
+        <select id="goal-category" class="field-input" onchange="onGoalCategoryChange()" required></select>
+      </div>
+
+      <div style="margin-bottom:12px;" id="goal-subcategory-wrap">
+        <label class="field-label">Subcategory <span class="breadcrumb-tag">Optional</span></label>
+        <select id="goal-subcategory" class="field-input">
+          <option value="">All Subcategories</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label class="field-label">Goal Name <span style="color:var(--rose);">*</span></label>
+        <input type="text" id="goal-name" class="field-input" placeholder="" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label">Start Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="goal-start" class="field-input" required>
+        </div>
+        <div>
+          <label class="field-label">Target Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="goal-deadline" class="field-input" required>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;">
+        <div>
+          <label class="field-label">Target Amount <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="1" step="any" id="goal-target" class="field-input figure" placeholder="" required>
+        </div>
+        <div>
+          <label class="field-label">Saving In</label>
+          <select id="goal-saving-in" class="field-input">
+            <option value="Bank Account">Bank Account</option>
+            <option value="Personal Safe / Cash">Personal Safe / Cash</option>
+            <option value="Digital Wallet">Digital Wallet</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
       <button type="submit" class="btn-primary" style="width:100%;">Create Goal</button>
     </form>
   </div>
@@ -3138,36 +3166,117 @@
 </div>
 
 <div id="edit-goal-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditGoalModal()">
-  <div class="modal" style="max-width:380px;">
+  <div class="modal" style="max-width:400px;">
     <button class="modal-close" onclick="closeEditGoalModal()">✕</button>
-    <h2>Edit Savings Goal</h2>
+    <h2>Edit Goal</h2>
     <form onsubmit="handleSaveEditGoal(event)">
       <input type="hidden" id="edit-goal-id">
-      <label class="field-label">Goal Purpose</label>
-      <select id="edit-goal-purpose" class="field-input mb-3">
-        <option value="Savings">Savings</option>
-        <option value="Household">Household</option>
-        <option value="Personal">Personal</option>
-        <option value="Emergency">Emergency</option>
-      </select>
-      <label class="field-label">Goal Name <span class="text-xs muted">(Optional)</span></label>
-      <input type="text" id="edit-goal-name" class="field-input mb-3">
-      <label class="field-label">Start Date</label>
-      <input type="date" id="edit-goal-start" class="field-input mb-3" required>
-      <label class="field-label" id="edit-goal-target-label">Target Amount</label>
-      <input type="number" min="0" step="any" id="edit-goal-target" class="field-input figure mb-3" required>
-      <label class="field-label">Saving In</label>
-      <select id="edit-goal-saving-in" class="field-input mb-3">
-        <option value="Bank Account">Bank Account</option>
-        <option value="Personal Safe / Cash">Personal Safe / Cash</option>
-        <option value="Digital Wallet">Digital Wallet</option>
-        <option value="Other">Other</option>
-      </select>
-      <label class="field-label">Deadline <span style="color:var(--rose);">*</span></label>
-      <input type="date" id="edit-goal-deadline" class="field-input mb-5" required>
+
+      <div style="margin-bottom:12px;">
+        <label class="field-label" style="margin-bottom:4px;">Goal Type</label>
+        <div class="chip-row" style="width:100%; display:grid; grid-template-columns:1fr 1fr; gap:8px;" id="edit-goal-type-chips">
+          <button type="button" class="btn-chip" id="edit-goal-type-btn-bill" style="border:1px solid var(--line); justify-content:center;" onclick="setEditGoalTypeChoice('bill')">Bill</button>
+          <button type="button" class="btn-chip" id="edit-goal-type-btn-savings" style="border:1px solid var(--line); justify-content:center;" onclick="setEditGoalTypeChoice('savings')">Savings</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;" id="edit-goal-category-wrap">
+        <label class="field-label" id="edit-goal-category-label">Category <span style="color:var(--rose);">*</span></label>
+        <select id="edit-goal-category" class="field-input" onchange="onEditGoalCategoryChange()" required></select>
+      </div>
+
+      <div style="margin-bottom:12px;" id="edit-goal-subcategory-wrap">
+        <label class="field-label">Subcategory <span class="breadcrumb-tag">Optional</span></label>
+        <select id="edit-goal-subcategory" class="field-input">
+          <option value="">All Subcategories</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label class="field-label">Goal Name <span style="color:var(--rose);">*</span></label>
+        <input type="text" id="edit-goal-name" class="field-input" placeholder="" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label class="field-label">Start Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="edit-goal-start" class="field-input" required>
+        </div>
+        <div>
+          <label class="field-label">Target Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="edit-goal-deadline" class="field-input" required>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;">
+        <div>
+          <label class="field-label">Target Amount <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="1" step="any" id="edit-goal-target" class="field-input figure" placeholder="" required>
+        </div>
+        <div>
+          <label class="field-label">Saving In</label>
+          <select id="edit-goal-saving-in" class="field-input">
+            <option value="Bank Account">Bank Account</option>
+            <option value="Personal Safe / Cash">Personal Safe / Cash</option>
+            <option value="Digital Wallet">Digital Wallet</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditGoalModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Pay Goal Bill Modal Backdrop -->
+<div id="pay-goal-bill-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closePayGoalBillModal()">
+  <div class="modal" style="max-width:420px; padding:22px;">
+    <button class="modal-close" onclick="closePayGoalBillModal()" aria-label="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <div style="width:36px; height:36px; border-radius:8px; background:rgba(15,158,147,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div>
+        <h2 style="margin:0; font-size:17px; color:var(--ink);">Pay Goal Bill</h2>
+        <p class="text-xs muted" style="margin:2px 0 0;" id="pay-goal-bill-sub"></p>
+      </div>
+    </div>
+
+    <input type="hidden" id="pay-goal-bill-id">
+
+    <div class="card" style="padding:14px; background:var(--surface-2); border:1px solid var(--line-soft); margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span class="text-xs muted" style="text-transform:uppercase; font-weight:600;">Bill Amount</span>
+        <span class="figure" id="pay-goal-bill-amount" style="font-size:18px; font-weight:700; color:var(--ink);">PKR 0</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="text-xs muted">Expense Category</span>
+        <span id="pay-goal-bill-category-label" style="font-size:13px; font-weight:600; color:var(--primary);"></span>
+      </div>
+    </div>
+
+    <form onsubmit="handleExecutePayGoalBill(event)">
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="pay-goal-bill-date">Payment Date <span style="color:var(--rose);">*</span></label>
+        <input type="date" id="pay-goal-bill-date" class="field-input" required>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="field-label" for="pay-goal-bill-method">Payment Method</label>
+        <select id="pay-goal-bill-method" class="field-input"></select>
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px;">
+          <input type="checkbox" id="pay-goal-bill-renew" checked style="accent-color:var(--primary); width:16px; height:16px;">
+          <span>Start next cycle for this bill automatically</span>
+        </label>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closePayGoalBillModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary" style="background:var(--teal); border-color:var(--teal);">Confirm Payment</button>
       </div>
     </form>
   </div>
@@ -9034,8 +9143,8 @@ let chartDashboardBudget = null;
 
 
 function renderDashboardClaimsAlert(){
-  const container = document.getElementById('dashboard-claims-alert-container');
-  if(!container) return;
+  const chipWrap = document.getElementById('dash-claims-chip-wrap');
+  if(!chipWrap) return;
 
   const pendingTxs = (DB.transactions || []).filter(t => t.isReimbursable && t.recoveryStatus !== 'settled');
   const pendingTotal = pendingTxs.reduce((sum, t) => {
@@ -9045,25 +9154,17 @@ function renderDashboardClaimsAlert(){
   }, 0);
 
   if(pendingTxs.length === 0 || pendingTotal <= 0){
-    container.classList.add('hidden');
-    container.innerHTML = '';
+    chipWrap.classList.add('hidden');
+    chipWrap.innerHTML = '';
     return;
   }
 
-  container.classList.remove('hidden');
-  container.innerHTML = `
-    <div style="background:rgba(217,119,6,0.07); border:1px solid rgba(217,119,6,0.25); border-radius:12px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div style="width:34px; height:34px; border-radius:8px; background:rgba(217,119,6,0.15); color:#D97706; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div>
-          <div style="font-size:14px; font-weight:700; color:var(--ink);">Pending Reimbursements: ${fmt(pendingTotal)}</div>
-          <div class="text-xs muted" style="margin-top:2px;">${pendingTxs.length} claim${pendingTxs.length === 1 ? '' : 's'} awaiting recovery from your company or insurance policy.</div>
-        </div>
-      </div>
-      <button type="button" onclick="goToCompanyBenefitsClaims()" class="btn-primary" style="font-size:12px; padding:5px 14px; height:32px; border-radius:7px; font-weight:600;">View in Company Benefit</button>
-    </div>
+  chipWrap.classList.remove('hidden');
+  chipWrap.innerHTML = `
+    <button type="button" onclick="goToCompanyBenefitsClaims()" class="badge-chip" style="background:rgba(217,119,6,0.12); border:1px solid rgba(217,119,6,0.3); color:#D97706; font-size:12px; font-weight:700; padding:5px 12px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="View pending insurance recovery claims">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>${fmt(pendingTotal)} Pending Claim${pendingTxs.length === 1 ? '' : 's'}</span>
+    </button>
   `;
 }
 
@@ -11243,16 +11344,70 @@ function evaluateTxAmountInput(input){
   return isNaN(val) ? 0 : val;
 }
 
+
+/* ---------- Goal Architecture & Monthly Active Helper ---------- */
+function isGoalActiveInMonthYear(goal, month, year){
+  if(!goal || goal.dismissed || goal.paid) return false;
+  const acc = typeof getGoalAccumulatedDeposits === 'function' ? getGoalAccumulatedDeposits(goal) : (goal.currentAmount || 0);
+  const target = Number(goal.targetAmount) || 0;
+  if(target > 0 && acc >= target) return false;
+
+  const targetYm = Number(year) * 12 + Number(month);
+  let startYm = targetYm;
+  if(goal.startDate){
+    const sParts = String(goal.startDate).split('-');
+    if(sParts.length >= 2){
+      startYm = parseInt(sParts[0], 10) * 12 + parseInt(sParts[1], 10);
+    }
+  }
+  let endYm = startYm;
+  const deadlineStr = goal.targetDate || goal.deadline;
+  if(deadlineStr){
+    const eParts = String(deadlineStr).split('-');
+    if(eParts.length >= 2){
+      endYm = parseInt(eParts[0], 10) * 12 + parseInt(eParts[1], 10);
+    }
+  }
+  return targetYm >= startYm && targetYm <= endYm;
+}
+
+function getTxActiveGoals(txDateStr){
+  let d = txDateStr ? new Date(txDateStr + 'T00:00:00') : new Date();
+  if(isNaN(d.getTime())) d = new Date();
+  const m = d.getMonth() + 1;
+  const y = d.getFullYear();
+  return (DB.savingsGoals || []).filter(g => isGoalActiveInMonthYear(g, m, y));
+}
+
+function onTxDateChange(){
+  if(typeof txType !== 'undefined' && txType === 'savings'){
+    setTxType('savings');
+  }
+}
+
 function setTxType(t){
   txType = t;
-  const labels={income:'Income',expense:'Expense',savings:'Savings goal'};
+  const labels={income:'Income',expense:'Expense',savings:'Savings Goal'};
   document.getElementById('tx-type-chips').innerHTML = ['income','expense','savings'].map(x => `<button type="button" class="btn-chip ${x===txType?'active':''}" style="border:1px solid var(--line);" onclick="setTxType('${x}')">${labels[x]}</button>`).join('');
-  document.getElementById('tx-category-label').textContent = t==='income' ? 'Income category' : t==='expense' ? 'Expense category' : 'Savings goal';
-  let cats = [];
-  if(t==='income') cats = DB.categories.income;
-  else if(t==='savings') cats = (DB.savingsGoals||[]).map(goal=>goal.name);
-  else cats = DB.categories.expense.map(c=>c.name);
-  document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  document.getElementById('tx-category-label').textContent = t==='income' ? 'Income Category' : t==='expense' ? 'Expense Category' : 'Goal Name';
+  if(t==='income'){
+    const cats = DB.categories.income || [];
+    document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  } else if(t==='savings'){
+    const txDateVal = document.getElementById('tx-date')?.value;
+    const activeGoals = getTxActiveGoals(txDateVal);
+    if(activeGoals.length){
+      document.getElementById('tx-category').innerHTML = activeGoals.map(g => {
+        const catBadge = g.category ? ` (${g.category})` : '';
+        return `<option value="${escapeHtml(g.name)}">${escapeHtml(g.name)}${escapeHtml(catBadge)}</option>`;
+      }).join('');
+    } else {
+      document.getElementById('tx-category').innerHTML = '<option value="">No active goals in selected month</option>';
+    }
+  } else {
+    const cats = (DB.categories.expense || []).map(c=>c.name || c);
+    document.getElementById('tx-category').innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  }
 
   const subWrap = document.getElementById('tx-subcategory-wrap');
   const savingInWrap = document.getElementById('tx-saving-in-wrap');
@@ -13031,8 +13186,8 @@ function renderSavings(){
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               ${dragHandleHtml()}
               <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
-              ${(g.purpose === 'Household' || g.purpose === 'Personal' || g.purpose === 'bill_reserve') ? `<span class="badge" style="background:rgba(59,130,246,0.1); color:#2563EB; font-weight:600; font-size:11px; padding:2px 7px;">${escapeHtml(g.purpose === 'bill_reserve' ? 'Household' : g.purpose)}</span>` : ''}
-              ${statusBadge}
+              <span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-weight:600; font-size:11px; padding:2px 7px;">${escapeHtml((g.type === 'bill' ? 'Bill · ' : 'Savings · ') + (g.category || 'General'))}</span>
+              ${g.paid ? '<span class="badge badge-ok" style="font-weight:700;">Paid</span>' : statusBadge}
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:12px; color:var(--muted);">
               ${g.deadline ? `<span>Target Date: <strong style="color:var(--ink);">${escapeHtml(g.deadline)}</strong></span>` : ''}
@@ -13068,7 +13223,12 @@ function renderSavings(){
         <!-- Clean Action Buttons with Transfer & Use Savings Options -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            ${canContribute ? `
+            ${(g.type === 'bill' && reached && !g.paid) ? `
+              <button type="button" onclick="openPayGoalBillModal('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px; background:var(--teal); border-color:var(--teal);">
+                Pay Expense
+              </button>
+            ` : ''}
+            ${canContribute && !g.paid ? `
               <button type="button" onclick="showContributeRow('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px;">
                 Contribute
               </button>
@@ -13383,39 +13543,126 @@ function syncGoalPurposeSelectors(selectedVal = null){
   });
 }
 
+let currentGoalType = 'bill';
+
+function setGoalTypeChoice(t){
+  currentGoalType = t;
+  const btnBill = document.getElementById('goal-type-btn-bill');
+  const btnSavings = document.getElementById('goal-type-btn-savings');
+  if(btnBill && btnSavings){
+    if(t === 'bill'){
+      btnBill.classList.add('active');
+      btnSavings.classList.remove('active');
+    } else {
+      btnSavings.classList.add('active');
+      btnBill.classList.remove('active');
+    }
+  }
+  const catSel = document.getElementById('goal-category');
+  const catLabel = document.getElementById('goal-category-label');
+  const subWrap = document.getElementById('goal-subcategory-wrap');
+  if(!catSel) return;
+
+  if(t === 'bill'){
+    if(catLabel) catLabel.innerHTML = 'Expense Category <span style="color:var(--rose);">*</span>';
+    if(subWrap) subWrap.classList.remove('hidden');
+    const cats = (DB.categories && DB.categories.expense) ? DB.categories.expense : [];
+    catSel.innerHTML = cats.map(c => `<option value="${escapeHtml(c.name || c)}">${escapeHtml(c.name || c)}</option>`).join('');
+    onGoalCategoryChange();
+  } else {
+    if(catLabel) catLabel.innerHTML = 'Savings Category <span style="color:var(--rose);">*</span>';
+    if(subWrap) subWrap.classList.add('hidden');
+    const cats = (DB.categories && DB.categories.savings) ? DB.categories.savings : ['Emergency Fund', 'General Savings', 'Vacation Fund', 'Retirement Savings', 'Goal Savings'];
+    catSel.innerHTML = cats.map(c => `<option value="${escapeHtml(c.name || c)}">${escapeHtml(c.name || c)}</option>`).join('');
+  }
+}
+
+function onGoalCategoryChange(){
+  if(currentGoalType !== 'bill') return;
+  const catSel = document.getElementById('goal-category');
+  const subSel = document.getElementById('goal-subcategory');
+  if(!catSel || !subSel) return;
+  const catName = catSel.value;
+  const catObj = findExpenseCategory(catName);
+  const subs = (catObj && Array.isArray(catObj.subcategories)) ? catObj.subcategories : [];
+  let html = '<option value="">All Subcategories</option>';
+  subs.forEach(s => {
+    html += `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`;
+  });
+  subSel.innerHTML = html;
+}
+
 function openGoalModal(){
-  syncGoalPurposeSelectors(); document.getElementById('goal-modal-backdrop').classList.remove('hidden'); }
-function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classList.add('hidden'); }
+  setGoalTypeChoice('bill');
+  const startInput = document.getElementById('goal-start');
+  const deadlineInput = document.getElementById('goal-deadline');
+  const today = ymd(new Date());
+  if(startInput && !startInput.value) startInput.value = today;
+  if(deadlineInput && !deadlineInput.value) deadlineInput.value = shiftDateByMonth(today);
+  const modal = document.getElementById('goal-modal-backdrop');
+  if(modal) modal.classList.remove('hidden');
+}
+
+function closeGoalModal(){
+  const modal = document.getElementById('goal-modal-backdrop');
+  if(modal) modal.classList.add('hidden');
+}
 
 function handleAddGoal(e){
   e.preventDefault();
-  const purpose = document.getElementById('goal-purpose')?.value || 'Savings';
-  let name = document.getElementById('goal-name').value.trim();
-  if(!name) name = purpose;
+  const name = (document.getElementById('goal-name')?.value || '').trim();
+  const catSel = document.getElementById('goal-category');
+  const subSel = document.getElementById('goal-subcategory');
+  const category = catSel ? catSel.value : 'General';
+  const subCategory = (currentGoalType === 'bill' && subSel && subSel.value) ? subSel.value.trim() : null;
   const startDate = document.getElementById('goal-start').value;
   const target = parseFloat(document.getElementById('goal-target').value);
   const deadline = document.getElementById('goal-deadline').value;
   const savingIn = document.getElementById('goal-saving-in')?.value || 'Bank Account';
-  if(!startDate || !target || target<=0 || !deadline || deadline < startDate){
+
+  if(!name){
+    showToast('Please enter a goal name', 'error');
+    return;
+  }
+  if(!startDate || !target || target <= 0 || !deadline || deadline < startDate){
     if(!deadline){
-      showToast('Please select a deadline date', 'error');
+      showToast('Please select a target date', 'error');
     } else if(deadline < startDate){
-      showToast('Deadline cannot be earlier than start date', 'error');
+      showToast('Target date cannot be earlier than start date', 'error');
     } else {
-      showToast('Please enter valid savings goal details', 'error');
+      showToast('Please enter valid goal details', 'error');
     }
     return;
   }
+  if(!Array.isArray(DB.savingsGoals)) DB.savingsGoals = [];
   if(DB.savingsGoals.some(g => g.name.toLowerCase() === name.toLowerCase())){
-    showToast(`A savings goal named "${name}" already exists`, 'warning');
+    showToast(`A goal named "${name}" already exists`, 'warning');
     return;
   }
-  DB.savingsGoals.push({ id:uid(), name, targetAmount:target, currentAmount:0, startDate, deadline, savingIn, purpose });
-  saveDB(true); closeGoalModal();
-  document.getElementById('goal-name').value=''; document.getElementById('goal-start').value=''; document.getElementById('goal-target').value=''; document.getElementById('goal-deadline').value='';
-  if(document.getElementById('goal-saving-in')) document.getElementById('goal-saving-in').value = 'Bank Account';
+
+  DB.savingsGoals.push({
+    id: uid(),
+    type: currentGoalType,
+    name,
+    category,
+    subCategory,
+    targetAmount: target,
+    currentAmount: 0,
+    startDate,
+    deadline,
+    targetDate: deadline,
+    savingIn,
+    purpose: category
+  });
+
+  saveDB(true);
+  closeGoalModal();
+  document.getElementById('goal-name').value = '';
+  document.getElementById('goal-start').value = '';
+  document.getElementById('goal-target').value = '';
+  document.getElementById('goal-deadline').value = '';
   renderAllForCurrentPage();
-  showToast(`Created savings goal "${name}"`);
+  showToast(`Created ${currentGoalType === 'bill' ? 'bill goal' : 'savings goal'} "${name}"`);
 }
 
 
@@ -13558,25 +13805,78 @@ function reactivateGoal(id){
   showToast(`Goal "${g.name}" has been reactivated!`, 'success');
 }
 
+let currentEditGoalType = 'bill';
+
+function setEditGoalTypeChoice(t){
+  currentEditGoalType = t;
+  const btnBill = document.getElementById('edit-goal-type-btn-bill');
+  const btnSavings = document.getElementById('edit-goal-type-btn-savings');
+  if(btnBill && btnSavings){
+    if(t === 'bill'){
+      btnBill.classList.add('active');
+      btnSavings.classList.remove('active');
+    } else {
+      btnSavings.classList.add('active');
+      btnBill.classList.remove('active');
+    }
+  }
+  const catSel = document.getElementById('edit-goal-category');
+  const catLabel = document.getElementById('edit-goal-category-label');
+  const subWrap = document.getElementById('edit-goal-subcategory-wrap');
+  if(!catSel) return;
+
+  if(t === 'bill'){
+    if(catLabel) catLabel.innerHTML = 'Expense Category <span style="color:var(--rose);">*</span>';
+    if(subWrap) subWrap.classList.remove('hidden');
+    const cats = (DB.categories && DB.categories.expense) ? DB.categories.expense : [];
+    catSel.innerHTML = cats.map(c => `<option value="${escapeHtml(c.name || c)}">${escapeHtml(c.name || c)}</option>`).join('');
+    onEditGoalCategoryChange();
+  } else {
+    if(catLabel) catLabel.innerHTML = 'Savings Category <span style="color:var(--rose);">*</span>';
+    if(subWrap) subWrap.classList.add('hidden');
+    const cats = (DB.categories && DB.categories.savings) ? DB.categories.savings : ['Emergency Fund', 'General Savings', 'Vacation Fund', 'Retirement Savings', 'Goal Savings'];
+    catSel.innerHTML = cats.map(c => `<option value="${escapeHtml(c.name || c)}">${escapeHtml(c.name || c)}</option>`).join('');
+  }
+}
+
+function onEditGoalCategoryChange(){
+  if(currentEditGoalType !== 'bill') return;
+  const catSel = document.getElementById('edit-goal-category');
+  const subSel = document.getElementById('edit-goal-subcategory');
+  if(!catSel || !subSel) return;
+  const catName = catSel.value;
+  const catObj = findExpenseCategory(catName);
+  const subs = (catObj && Array.isArray(catObj.subcategories)) ? catObj.subcategories : [];
+  let html = '<option value="">All Subcategories</option>';
+  subs.forEach(s => {
+    html += `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`;
+  });
+  subSel.innerHTML = html;
+}
+
 function openEditGoalModal(id){
   const g = DB.savingsGoals.find(item => item.id === id);
   if(!g) return;
-  syncGoalPurposeSelectors(g.purpose || '');
   document.getElementById('edit-goal-id').value = id;
+  const goalType = g.type || (g.purpose === 'Household' || g.purpose === 'Personal' || g.purpose === 'bill_reserve' ? 'bill' : 'savings');
+  setEditGoalTypeChoice(goalType);
+
+  const catSel = document.getElementById('edit-goal-category');
+  if(catSel && g.category) catSel.value = g.category;
+  onEditGoalCategoryChange();
+
+  const subSel = document.getElementById('edit-goal-subcategory');
+  if(subSel && g.subCategory) subSel.value = g.subCategory;
+
   document.getElementById('edit-goal-name').value = g.name || '';
   document.getElementById('edit-goal-start').value = g.startDate || '';
-  if(document.getElementById('edit-goal-purpose')) document.getElementById('edit-goal-purpose').value = g.purpose || 'wealth_vault';
   document.getElementById('edit-goal-target').value = g.targetAmount || '';
-  document.getElementById('edit-goal-deadline').value = g.deadline || '';
-  const savingInSelect = document.getElementById('edit-goal-saving-in');
-  if(savingInSelect){
-    savingInSelect.value = g.savingIn || 'Bank Account';
-  }
-  const labelEl = document.getElementById('edit-goal-target-label');
-  if(labelEl){
-    labelEl.textContent = `Target Amount (${currencySymbol()})`;
-  }
-  document.getElementById('edit-goal-modal-backdrop').classList.remove('hidden');
+  document.getElementById('edit-goal-deadline').value = g.targetDate || g.deadline || '';
+  const savingInSel = document.getElementById('edit-goal-saving-in');
+  if(savingInSel) savingInSel.value = g.savingIn || 'Bank Account';
+
+  const modal = document.getElementById('edit-goal-modal-backdrop');
+  if(modal) modal.classList.remove('hidden');
 }
 
 function closeEditGoalModal(){
@@ -13592,38 +13892,46 @@ function handleSaveEditGoal(e){
     closeEditGoalModal();
     return;
   }
-  const newName = document.getElementById('edit-goal-name').value.trim();
+  const newName = (document.getElementById('edit-goal-name')?.value || '').trim();
+  const catSel = document.getElementById('edit-goal-category');
+  const subSel = document.getElementById('edit-goal-subcategory');
+  const category = catSel ? catSel.value : 'General';
+  const subCategory = (currentEditGoalType === 'bill' && subSel && subSel.value) ? subSel.value.trim() : null;
   const startDate = document.getElementById('edit-goal-start').value;
   const target = parseFloat(document.getElementById('edit-goal-target').value);
   const deadline = document.getElementById('edit-goal-deadline').value;
-  const savingInSelect = document.getElementById('edit-goal-saving-in');
-  const savingIn = savingInSelect ? savingInSelect.value : (g.savingIn || 'Bank Account');
-  const purpose = document.getElementById('edit-goal-purpose')?.value || g.purpose || 'Savings';
-  if(!newName) newName = purpose;
-  g.name = newName;
-  g.purpose = purpose;
+  const savingInSel = document.getElementById('edit-goal-saving-in');
+  const savingIn = savingInSel ? savingInSel.value : (g.savingIn || 'Bank Account');
 
+  if(!newName){
+    showToast('Please enter a goal name', 'error');
+    return;
+  }
   if(!startDate || !target || target <= 0 || !deadline || deadline < startDate){
     if(!deadline){
-      showToast('Please select a deadline date', 'error');
+      showToast('Please select a target date', 'error');
     } else if(deadline < startDate){
-      showToast('Deadline cannot be earlier than start date', 'error');
+      showToast('Target date cannot be earlier than start date', 'error');
     } else {
       showToast('Please check the goal fields and enter valid values', 'error');
     }
     return;
   }
-
   if(newName.toLowerCase() !== g.name.toLowerCase() && DB.savingsGoals.some(item => item.id !== id && item.name.toLowerCase() === newName.toLowerCase())){
-    showToast(`A savings goal named "${newName}" already exists`, 'warning');
+    showToast(`A goal named "${newName}" already exists`, 'warning');
     return;
   }
 
   const oldName = g.name;
+  g.type = currentEditGoalType;
   g.name = newName;
+  g.category = category;
+  g.subCategory = subCategory;
+  g.purpose = category;
   g.startDate = startDate;
   g.targetAmount = target;
   g.deadline = deadline;
+  g.targetDate = deadline;
   g.savingIn = savingIn;
 
   if(oldName !== newName){
@@ -13638,7 +13946,107 @@ function handleSaveEditGoal(e){
   saveDB(true);
   closeEditGoalModal();
   renderAllForCurrentPage();
-  showToast(`Updated savings goal "${newName}"`);
+  showToast(`Updated goal "${newName}"`);
+}
+
+/* ---------- Pay Goal Bill Workflow ---------- */
+function openPayGoalBillModal(id){
+  const g = DB.savingsGoals.find(item => item.id === id);
+  if(!g) return;
+  document.getElementById('pay-goal-bill-id').value = id;
+  const subEl = document.getElementById('pay-goal-bill-sub');
+  if(subEl) subEl.textContent = `${g.name} • Target: ${fmt(g.targetAmount)}`;
+
+  const amtEl = document.getElementById('pay-goal-bill-amount');
+  if(amtEl) amtEl.textContent = fmt(g.targetAmount);
+
+  const catLabel = document.getElementById('pay-goal-bill-category-label');
+  if(catLabel) catLabel.textContent = `${g.category || 'Fitness'}${g.subCategory ? ` / ${g.subCategory}` : ''}`;
+
+  const dateInput = document.getElementById('pay-goal-bill-date');
+  if(dateInput) dateInput.value = ymd(new Date());
+
+  const methodSel = document.getElementById('pay-goal-bill-method');
+  if(methodSel){
+    const methods = (DB.paymentMethods && DB.paymentMethods.length) ? DB.paymentMethods : [
+      { name: 'Bank Transfer' }, { name: 'Cash' }, { name: 'Credit Card' }, { name: 'Debit Card' }
+    ];
+    methodSel.innerHTML = methods.map(m => `<option value="${escapeHtml(m.name || m)}">${escapeHtml(m.name || m)}</option>`).join('');
+  }
+
+  const modal = document.getElementById('pay-goal-bill-modal-backdrop');
+  if(modal) modal.classList.remove('hidden');
+}
+
+function closePayGoalBillModal(){
+  const modal = document.getElementById('pay-goal-bill-modal-backdrop');
+  if(modal) modal.classList.add('hidden');
+}
+
+function handleExecutePayGoalBill(e){
+  e.preventDefault();
+  const id = document.getElementById('pay-goal-bill-id').value;
+  const g = DB.savingsGoals.find(item => item.id === id);
+  if(!g) return;
+
+  const date = document.getElementById('pay-goal-bill-date').value;
+  const method = document.getElementById('pay-goal-bill-method').value;
+  const renew = document.getElementById('pay-goal-bill-renew')?.checked;
+
+  if(!date){
+    showToast('Please select a payment date', 'error');
+    return;
+  }
+
+  // Create expense transaction
+  const expTx = {
+    id: uid(),
+    date,
+    type: 'expense',
+    category: g.category || 'Fitness',
+    subCategory: g.subCategory || null,
+    amount: g.targetAmount,
+    paymentMethod: method,
+    paymentMethods: [method],
+    note: `Paid from ${g.name} Goal`,
+    description: `Bill paid: ${g.name}`
+  };
+  if(!Array.isArray(DB.transactions)) DB.transactions = [];
+  DB.transactions.unshift(expTx);
+
+  g.paid = true;
+  g.paidDate = date;
+
+  if(renew){
+    let days = 90;
+    if(g.startDate && g.deadline){
+      const diff = Math.max(30, Math.ceil((new Date(g.deadline).getTime() - new Date(g.startDate).getTime()) / (1000 * 60 * 60 * 24)));
+      days = diff;
+    }
+    const nextStart = date;
+    const nextEndDate = new Date(new Date(date).getTime() + days * 24 * 60 * 60 * 1000);
+    const nextDeadline = ymd(nextEndDate);
+
+    DB.savingsGoals.push({
+      id: uid(),
+      type: 'bill',
+      name: g.name,
+      category: g.category,
+      subCategory: g.subCategory,
+      targetAmount: g.targetAmount,
+      currentAmount: 0,
+      startDate: nextStart,
+      deadline: nextDeadline,
+      targetDate: nextDeadline,
+      savingIn: g.savingIn,
+      purpose: g.category
+    });
+  }
+
+  saveDB(true);
+  closePayGoalBillModal();
+  renderAllForCurrentPage();
+  showToast(`Recorded ${fmt(g.targetAmount)} payment for "${g.name}" under ${g.category}`);
 }
 
 /* ---------------- render: investments ---------------- */
