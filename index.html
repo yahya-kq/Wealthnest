@@ -1615,7 +1615,74 @@
         </div>
       </div>
     </div>
-  </main>
+  
+<!-- Set Budget Modal Backdrop -->
+<div id="set-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSetBudgetModal()">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeSetBudgetModal()" aria-label="Close">✕</button>
+    <h2 style="margin:0 0 14px; font-size:18px;">Set Budget</h2>
+    <form onsubmit="handleSaveSetBudget(event)">
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="set-budget-category">Category <span style="color:var(--rose);">*</span></label>
+        <select id="set-budget-category" class="field-input" onchange="onSetBudgetCategoryChange()" required></select>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="set-budget-subcategory">Subcategory <span class="breadcrumb-tag">Optional</span></label>
+        <select id="set-budget-subcategory" class="field-input">
+          <option value="">All Subcategories (Category Budget)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="field-label" for="set-budget-amount">Monthly Limit <span style="color:var(--rose);">*</span></label>
+        <input type="number" min="1" step="any" id="set-budget-amount" placeholder="" class="field-input figure" required>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeSetBudgetModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">+ Set Budget</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Copy Budget Modal Backdrop (Strictly 2 Words) -->
+<div id="copy-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeCopyBudgetModal()">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeCopyBudgetModal()" aria-label="Close">✕</button>
+    <h2 style="margin:0 0 12px; font-size:18px;">Copy Budget</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px;">
+      <div>
+        <span class="text-xs muted" style="text-transform:uppercase; font-weight:600; letter-spacing:0.04em;">Copy From</span>
+        <div id="copy-budget-source-label" style="font-weight:700; font-size:14px; color:var(--ink); margin-top:2px;"></div>
+      </div>
+      <div>
+        <span class="text-xs muted" style="text-transform:uppercase; font-weight:600; letter-spacing:0.04em;">Copy To</span>
+        <div style="display:flex; gap:6px; margin-top:2px;">
+          <select id="copy-budget-dest-month" class="field-input" style="padding:4px 8px; font-size:13px; height:32px;"></select>
+          <select id="copy-budget-dest-year" class="field-input" style="padding:4px 8px; font-size:13px; height:32px;"></select>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:13px; font-weight:700; color:var(--ink);">Review Categories &amp; Limits:</span>
+      <span class="text-xs muted" id="copy-budget-count-label">0 categories</span>
+    </div>
+
+    <div id="copy-budget-rows-container" style="max-height:260px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:16px; background:var(--surface);">
+      <!-- populated dynamically -->
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="text-xs muted" style="line-height:1.4;">Destination month takes effect on the 1st.<br>Past history is 100% untouched.</span>
+      <div style="display:flex; gap:10px;">
+        <button type="button" onclick="closeCopyBudgetModal()" class="btn-ghost">Cancel</button>
+        <button type="button" onclick="executeCopyBudget()" class="btn-primary">Apply Budget</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
 </div>
 
 <!-- ============ APP SHELL ============ -->
@@ -2146,7 +2213,7 @@
     <!-- ---- BUDGETS ---- -->
     <section id="page-budgets" class="page hidden">
       <div class="topbar">
-        <div><h1>Budgets</h1><p>Independent monthly spending targets.</p></div>
+        <div><h1>Budgets</h1></div>
         <div style="display:flex; align-items:center; gap:10px;">
           <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -2155,6 +2222,8 @@
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
         </div>
       </div>
+
+      <!-- Top Toolbar: Month Picker + Category Filter + Copy Budget + Set Budget -->
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
         <div class="month-nav">
           <button class="icon-circle-btn" onclick="stepBudgetMonth(-1)" title="Previous month">
@@ -2168,45 +2237,42 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span id="budgets-total-label" class="figure text-sm muted"></span></div>
+
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <!-- Category Filter Dropdown -->
+          <select id="budget-category-filter" class="field-input" onchange="onBudgetCategoryFilterChange()" style="width:auto; min-width:170px; height:38px; padding:6px 12px; font-size:13px; font-weight:600;">
+            <option value="all">All Categories</option>
+          </select>
+
+          <!-- Copy Budget Button (Strictly 2 Words) -->
+          <button type="button" class="btn-ghost" onclick="openCopyBudgetModal()" style="height:38px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; border-color:var(--line);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Budget
+          </button>
+
+          <!-- + Set Budget Button -->
+          <button type="button" class="btn-primary" onclick="openSetBudgetModal()" style="height:38px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            + Set Budget
+          </button>
+        </div>
       </div>
 
+      <!-- KPI Summary Cards -->
       <div class="grid grid-4 mb-4" id="budget-summary-grid"></div>
 
+      <!-- Active Category Budgets Card (Clean, No Subtitles, No Caps Badge, No Bottom Form) -->
       <div class="card" style="padding:22px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
           <div>
-            <h2 class="section-title" style="margin-bottom:2px;">Active Category Budgets</h2>
-            <p class="text-xs muted" style="margin:0;">Configured monthly spending limits.</p>
+            <h2 class="section-title" style="margin:0;">Active Category Budgets</h2>
           </div>
-          <span class="badge badge-ok">Monthly Caps</span>
         </div>
         <div id="budgets-rows"></div>
-        <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--line);">
-          <h3 class="section-title" style="font-size:14px; margin-bottom:4px;">+ Set New Category Budget</h3>
-          <p class="text-xs muted" style="margin:0 0 14px;">Choose a category and spending limit.</p>
-          <form onsubmit="handleAddBudget(event)" id="budget-add-form" style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px;">
-            <div style="flex:1; min-width:160px;">
-              <label class="field-label" for="budget-new-category">Category</label>
-              <select id="budget-new-category" class="field-input" onchange="onBudgetCategoryChoice()"></select>
-            </div>
-            <div style="flex:1; min-width:160px;">
-              <label class="field-label" for="budget-new-subcategory">Subcategory <span class="breadcrumb-tag">optional</span></label>
-              <select id="budget-new-subcategory" class="field-input"></select>
-            </div>
-            <div style="width:140px;">
-              <label class="field-label" for="budget-new-amount">Monthly Limit</label>
-              <input type="number" min="1" step="1" id="budget-new-amount" placeholder="" required class="field-input figure">
-            </div>
-            <button type="submit" class="btn-dark" style="padding:10px 18px; height:38px; white-space:nowrap;">+ Set Budget</button>
-          </form>
-          <span id="budget-add-message" class="text-xs muted settings-add-message" style="display:block; margin-top:8px;"></span>
-        </div>
       </div>
 
       <div class="card" style="padding:22px; margin-top:16px;">
         <h2 class="section-title" style="margin-bottom:2px;">Monthly History</h2>
-        <p class="text-xs muted" style="margin:0 0 16px;">Past performance across months.</p>
         <div id="budget-history-rows"></div>
       </div>
     </section>
@@ -2483,24 +2549,24 @@
     <button class="modal-close" onclick="closeTxModal()">✕</button>
     <h2 id="tx-modal-title" style="margin:0 0 12px;">Add Transaction</h2>
     <form onsubmit="handleSaveTransaction(event)">
-      <div class="chip-row" style="width:100%; display:grid; grid-template-columns:repeat(3,1fr); margin-bottom:12px;" id="tx-type-chips"></div>
+      <div class="chip-row" style="width:100%; display:grid; grid-template-columns:repeat(3,1fr); margin-bottom:8px;" id="tx-type-chips"></div>
       
-      <!-- Row 1: Date -->
-      <div style="margin-bottom:10px;">
-        <label class="field-label">Date</label>
-        <input type="date" id="tx-date" class="field-input" required>
+      <!-- Row 1: Date (Compact) -->
+      <div style="margin-bottom:8px;">
+        <label class="field-label" style="margin-bottom:3px;">Date</label>
+        <input type="date" id="tx-date" class="field-input" style="padding:6px 10px;" required>
       </div>
 
       <!-- Row 2: Category & Subcategory / Saving In -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;" id="tx-cat-subcat-row">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;" id="tx-cat-subcat-row">
         <div id="tx-category-field-wrap">
-          <label class="field-label" id="tx-category-label">Expense Category</label>
-          <select id="tx-category" class="field-input" onchange="onTxCategoryChange()"></select>
+          <label class="field-label" id="tx-category-label" style="margin-bottom:3px;">Expense Category</label>
+          <select id="tx-category" class="field-input" style="padding:6px 10px;" onchange="onTxCategoryChange()"></select>
         </div>
         <div id="tx-subcategory-wrap" class="hidden">
-          <label class="field-label" style="margin-bottom:4px;">Subcategory <span style="color:var(--rose);">*</span></label>
+          <label class="field-label" style="margin-bottom:3px;">Subcategory <span style="color:var(--rose);">*</span></label>
           <div class="excel-filter-dropdown-wrap" id="tx-modal-subcategory-filter-wrap" style="width:100%;">
-            <button type="button" id="tx-modal-subcategory-filter-trigger" class="excel-filter-trigger" style="width:100%;" onclick="toggleExcelFilter('tx-modal-subcategory', event)">
+            <button type="button" id="tx-modal-subcategory-filter-trigger" class="excel-filter-trigger" style="width:100%; padding:6px 10px;" onclick="toggleExcelFilter('tx-modal-subcategory', event)">
               <span id="tx-modal-subcategory-filter-summary" class="excel-filter-summary">Select Subcategory</span>
               <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
@@ -2521,8 +2587,8 @@
           </div>
         </div>
         <div id="tx-saving-in-wrap" class="hidden">
-          <label class="field-label" for="tx-saving-in" style="margin-bottom:4px;">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
-          <select id="tx-saving-in" class="field-input">
+          <label class="field-label" for="tx-saving-in" style="margin-bottom:3px;">Saving In</label>
+          <select id="tx-saving-in" class="field-input" style="padding:6px 10px;">
             <option value="Bank Account">Bank Account</option>
             <option value="Personal Safe / Cash">Personal Safe / Cash</option>
             <option value="Digital Wallet">Digital Wallet</option>
@@ -2531,75 +2597,25 @@
         </div>
       </div>
 
-      <!-- Row 3: Note (Optional) -->
-      <div style="margin-bottom:10px;">
-        <label class="field-label">Note (optional)</label>
-        <input type="text" id="tx-description" placeholder="Optional note" class="field-input">
-      </div>
-
-      
-      <!-- Optional Multi-Subcategory Itemization Container -->
-      <div id="tx-subcat-itemized-wrap" class="hidden" style="margin-bottom:12px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--line-soft);">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:12px; font-weight:700; color:var(--ink);">Itemized Breakdown</span>
-            <span class="badge badge-off" style="font-size:10.5px; padding:1px 6px; font-weight:500;">Optional</span>
-          </div>
-          <button type="button" class="excel-filter-text-btn" style="font-size:11px;" onclick="clearTxSubcatItemizedAmounts()" title="Clear all itemized amounts">Clear All</button>
+      <!-- Row 3: Payment Method & Standard Amount (Moved Up Directly Below Categories) -->
+      <div id="tx-split-payment-container" class="hidden" style="margin-bottom:8px; border:1px solid var(--line); border-radius:8px; padding:10px; background:var(--surface);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:11.5px; font-weight:700; color:var(--ink);">Split Payment Breakdown</span>
+          <span id="tx-split-calc-status" class="text-xs" style="font-weight:600; color:var(--teal);">Remaining: PKR 0</span>
         </div>
-        <div id="tx-subcat-itemized-list" style="display:flex; flex-direction:column; gap:6px;"></div>
-        <div id="tx-subcat-itemized-total-note" class="text-xs" style="margin-top:8px; font-weight:600; color:var(--teal); display:flex; justify-content:space-between; align-items:center;"></div>
-      </div>
-
-      <!-- Tag & Out-of-Pocket Reimbursement Claim Row (Expense Only) -->
-      <div id="tx-tag-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-        <div>
-          <label class="field-label" for="tx-tag">Tag</label>
-          <select id="tx-tag" class="field-input" onchange="onTxTagChange()">
-            <option value="">None</option>
-          </select>
-        </div>
-        <div id="tx-claimable-wrap" class="hidden">
-          <label class="field-label" for="tx-claimable-amount">Claimable Amount (PKR)</label>
-          <input type="number" id="tx-claimable-amount" step="any" min="0" class="field-input figure">
+        <div id="tx-split-method-rows" style="display:flex; flex-direction:column; gap:6px;"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px dashed var(--line-soft);">
+          <span class="text-xs muted">Total Split:</span>
+          <span id="tx-split-total-sum" class="figure" style="font-weight:700; font-size:13px; color:var(--ink);">PKR 0</span>
         </div>
       </div>
 
-      <!-- Dedicated Company Allowance Option (Expense Transactions Only) -->
-      <div id="tx-allowance-field-wrap" style="margin-bottom:12px;">
-        <label class="field-label" for="tx-allowance">Company Allowance / Benefit</label>
-        <select id="tx-allowance" class="field-input" onchange="onTxAllowanceChange()">
-          <option value="">None (Personal Expense)</option>
-        </select>
-
-        <!-- Dynamic Company Benefit Box (No duplicate text, editable personal share) -->
-        <div id="tx-allowance-details-box" class="hidden" style="margin-top:10px; background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.25); border-radius:8px; padding:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span id="tx-allowance-card-name" style="font-weight:700; font-size:13px; color:#7C3AED;">Benefit Details</span>
-            <span id="tx-allowance-card-available" class="figure" style="font-size:12.5px; font-weight:700; color:var(--teal);">Available: PKR 0</span>
-          </div>
-          
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:flex-start;">
-            <div>
-              <label class="field-label" style="font-size:11px; margin-bottom:3px;">Company Covered Amount <span style="color:var(--rose);">*</span></label>
-              <input type="number" id="tx-allowance-covered-input" step="any" min="0" placeholder="0.00" class="field-input figure" style="font-size:13px; padding:6px 8px;" oninput="onTxAllowanceAmountChange()">
-            </div>
-            <div>
-              <label class="field-label" style="font-size:11px; margin-bottom:3px;">Your Personal Share</label>
-              <input type="number" id="tx-allowance-personal-input" step="any" min="0" placeholder="0.00" class="field-input figure" style="font-size:13px; padding:6px 8px;" oninput="onTxAllowanceAmountChange()">
-            </div>
-          </div>
-          <div id="tx-allowance-split-note" class="text-xs" style="margin-top:8px; color:#7C3AED; font-weight:500;"></div>
-        </div>
-      </div>
-
-      <!-- Row 4: Payment Method & Standard Amount -->
-      <div id="tx-payment-amount-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+      <div id="tx-payment-amount-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
         <div id="tx-modal-payment-col">
-          <label class="field-label" id="tx-modal-payment-label">Payment Method <span id="tx-modal-payment-req-star" style="color:var(--rose);">*</span></label>
+          <label class="field-label" id="tx-modal-payment-label" style="margin-bottom:3px;">Payment Method <span id="tx-modal-payment-req-star" style="color:var(--rose);">*</span></label>
           <div class="excel-filter-dropdown-wrap" id="tx-modal-payment-filter-wrap" style="width:100%;">
-            <button type="button" id="tx-modal-payment-filter-trigger" class="excel-filter-trigger" style="width:100%;" onclick="toggleExcelFilter('tx-modal-payment', event)">
-              <span id="tx-modal-payment-filter-summary" class="excel-filter-summary">Select Payment Method</span>
+            <button type="button" id="tx-modal-payment-filter-trigger" class="excel-filter-trigger" style="width:100%; padding:6px 10px;" onclick="toggleExcelFilter('tx-modal-payment', event)">
+              <span id="tx-modal-payment-filter-summary" class="excel-filter-summary">Select Method</span>
               <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="excel-filter-popover hidden" id="tx-modal-payment-filter-popover" onclick="event.stopPropagation()">
@@ -2619,12 +2635,81 @@
           </div>
         </div>
         <div id="tx-modal-amount-col">
-          <label class="field-label" id="tx-modal-amount-label">Amount <span style="color:var(--rose);">*</span></label>
-          <input type="text" inputmode="decimal" id="tx-amount" placeholder="0.00" class="field-input figure" required onblur="evaluateTxAmountInput(this); onTxAllowanceChange();" onchange="evaluateTxAmountInput(this); onTxAllowanceChange();" oninput="onTxAllowanceChange();">
+          <label class="field-label" id="tx-modal-amount-label" style="margin-bottom:3px;">Amount <span style="color:var(--rose);">*</span></label>
+          <input type="text" inputmode="decimal" id="tx-amount" placeholder="0.00" class="field-input figure" style="padding:6px 10px;" required onblur="evaluateTxAmountInput(this); onTxAllowanceChange();" onchange="evaluateTxAmountInput(this); onTxAllowanceChange();" oninput="onTxAllowanceChange();">
         </div>
       </div>
-      <button type="submit" id="tx-modal-submit" class="btn-primary" style="width:100%;">Save Transaction</button>
-    </form>
+
+      <!-- Row 4: Tag & Company Benefit Side-by-Side (Single Line, 50%/50%) -->
+      <div id="tx-tag-benefit-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+        <div id="tx-tag-wrap">
+          <label class="field-label" for="tx-tag" style="margin-bottom:3px;">Tag</label>
+          <select id="tx-tag" class="field-input" style="padding:6px 10px;" onchange="onTxTagChange()">
+            <option value="">None</option>
+          </select>
+        </div>
+        <div id="tx-allowance-field-wrap">
+          <label class="field-label" for="tx-allowance" style="margin-bottom:3px;">Company Benefit</label>
+          <select id="tx-allowance" class="field-input" style="padding:6px 10px;" onchange="onTxAllowanceChange()">
+            <option value="">None</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Reimbursable Claimable Amount Row (Revealed when Tag is OPD/Claim/IPD or claim is flagged) -->
+      <div id="tx-claimable-wrap" class="hidden" style="margin-bottom:8px; background:rgba(13,148,136,0.06); border:1px solid rgba(13,148,136,0.25); border-radius:8px; padding:8px 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <label class="field-label" for="tx-claimable-amount" style="font-size:11.5px; margin:0; color:var(--teal);">Claimable Amount (Reimbursable)</label>
+            <span class="text-xs muted" style="font-size:11px;">Will be tracked under Settings → Company Benefit</span>
+          </div>
+          <input type="number" step="any" min="0" id="tx-claimable-amount" placeholder="" class="field-input figure" style="width:130px; padding:4px 8px; font-size:13px;">
+        </div>
+      </div>
+
+      <!-- Dynamic Company Benefit Box (No duplicate text, editable personal share) -->
+      <div id="tx-allowance-details-box" class="hidden" style="margin-bottom:8px; background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.25); border-radius:8px; padding:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span id="tx-allowance-card-name" style="font-weight:700; font-size:12.5px; color:#7C3AED;">Benefit Details</span>
+          <span id="tx-allowance-card-available" class="figure" style="font-size:12px; font-weight:700; color:var(--teal);">Available: PKR 0</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:flex-start;">
+          <div>
+            <label class="field-label" style="font-size:11px; margin-bottom:3px;">Company Covered <span style="color:var(--rose);">*</span></label>
+            <input type="number" id="tx-allowance-covered-input" step="any" min="0" placeholder="0.00" class="field-input figure" style="font-size:12.5px; padding:5px 8px;" oninput="onTxAllowanceAmountChange()">
+          </div>
+          <div>
+            <label class="field-label" style="font-size:11px; margin-bottom:3px;">Your Personal Share</label>
+            <input type="number" id="tx-allowance-personal-input" step="any" min="0" placeholder="0.00" class="field-input figure" style="font-size:12.5px; padding:5px 8px;" oninput="onTxAllowanceAmountChange()">
+          </div>
+        </div>
+        <div id="tx-allowance-split-note" class="text-xs" style="margin-top:6px; color:#7C3AED; font-weight:500;"></div>
+      </div>
+
+      <!-- Row 5: Note (Optional, Compact) -->
+      <div style="margin-bottom:8px;">
+        <label class="field-label" style="margin-bottom:3px;">Note (optional)</label>
+        <input type="text" id="tx-description" placeholder="" class="field-input" style="padding:6px 10px;">
+      </div>
+
+      <!-- Row 6: Itemized Breakdown Container (Collapsible & Compact) -->
+      <div id="tx-subcat-itemized-wrap" class="hidden" style="margin-bottom:10px; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:10px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--line-soft);">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:12px; font-weight:700; color:var(--ink);">Itemized Breakdown</span>
+            <span class="badge badge-off" style="font-size:10px; padding:1px 5px; font-weight:500;">Optional</span>
+          </div>
+          <button type="button" class="excel-filter-text-btn" style="font-size:11px;" onclick="clearTxSubcatItemizedAmounts()" title="Clear all itemized amounts">Clear All</button>
+        </div>
+        <div id="tx-subcat-itemized-fields" style="display:flex; flex-direction:column; gap:6px;"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px dashed var(--line-soft);">
+          <span style="font-size:11.5px; font-weight:600; color:var(--teal);" id="tx-subcat-itemized-total-label">Itemized Total: PKR 0</span>
+          <span style="font-size:11px; color:var(--muted); font-style:italic;">(Auto-synced)</span>
+        </div>
+      </div>
+
+      <button type="submit" id="tx-modal-submit" class="btn-primary" style="width:100%; padding:9px; font-size:14px; border-radius:8px;">Save Transaction</button>
+</form>
   </div>
 </div>
 
@@ -3681,11 +3766,11 @@
           </div>
         </label>
 
-        <!-- Choice 2: Direct Purchase (e.g. Buy Mobile Phone) -->
+        <!-- Choice 2: Direct Purchase -->
         <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; margin:0; padding:8px 10px; border-radius:8px; border:1px solid var(--line-soft); background:var(--surface-2);">
           <input type="radio" name="withdraw-dest-type" value="expense" onchange="toggleWithdrawDestType('expense')" style="margin-top:3px; cursor:pointer;">
           <div style="flex:1;">
-            <strong style="font-size:13px; color:var(--ink); display:block;">Direct Purchase / Expense (e.g. Buy Mobile Phone)</strong>
+            <strong style="font-size:13px; color:var(--ink); display:block;">Direct Purchase / Expense</strong>
             <span class="text-xs muted" style="line-height:1.4;">Funded 100% by investment balance. Zero deduction from your personal bank!</span>
             <div id="withdraw-dest-expense-wrap" class="hidden" style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
               <input type="text" id="withdraw-expense-desc" placeholder="Description" class="field-input" style="height:34px; font-size:12.5px;">
@@ -4343,6 +4428,7 @@ function getPaymentMethods(){
 }
 const PAYMENT_METHODS = DEFAULT_PAYMENT_METHODS;
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function monthName(m){ return (MONTH_NAMES && MONTH_NAMES[m - 1]) ? MONTH_NAMES[m - 1] : ""; }
 const SHORT_MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 /* ---------------- Excel-Style Multi-Select Filter Engine ---------------- */
@@ -5724,28 +5810,7 @@ function renderSettingsAccount(){
         <button onclick="scheduleCloudSync()" class="btn-small" style="padding:8px 14px;">Sync Now</button>
       </div>
 
-      <div style="margin-top:20px; padding:16px 18px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
-        <h4 style="margin:0 0 4px; font-size:13.5px; font-weight:700;">Data Backup &amp; Recovery</h4>
-        <p style="margin:0 0 12px; font-size:12px; color:var(--muted); line-height:1.45;">Safely export a snapshot of your transactions, budgets, goals, and investments, or restore from a previous JSON backup.</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Full Backup (.json)
-          </button>
-          <button type="button" onclick="exportCategoriesJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export categories and subcategories">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            Categories (.json)
-          </button>
-          <button type="button" onclick="exportTransactionsJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export all transactions">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Transactions (.json)
-          </button>
-          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Restore / Import (.json)
-          </button>
-        </div>
-      </div>
+      
 
       <div style="margin-top:24px; padding:16px 18px; border:1px solid rgba(225,29,72,0.25); background:rgba(225,29,72,0.03); border-radius:12px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
@@ -5774,28 +5839,7 @@ function renderSettingsAccount(){
         <button onclick="openAuthModal()" class="btn-dark" style="padding:9px 18px; font-size:13px;">Sign In with Google →</button>
       </div>
 
-      <div style="margin-top:20px; padding:16px 18px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
-        <h4 style="margin:0 0 4px; font-size:13.5px; font-weight:700;">Data Backup &amp; Recovery</h4>
-        <p style="margin:0 0 12px; font-size:12px; color:var(--muted); line-height:1.45;">Safely export your local transactions and budgets to your device, or restore an existing backup file.</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button type="button" onclick="exportFinancesJSON()" class="btn-small" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Full Backup (.json)
-          </button>
-          <button type="button" onclick="exportCategoriesJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export categories and subcategories">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            Categories (.json)
-          </button>
-          <button type="button" onclick="exportTransactionsJSON()" class="btn-ghost" style="padding:7px 10px; display:inline-flex; align-items:center; gap:5px; font-size:12px;" title="Export all transactions">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Transactions (.json)
-          </button>
-          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:7px 12px; display:inline-flex; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Restore / Import (.json)
-          </button>
-        </div>
-      </div>
+      
 
       <div style="margin-top:20px; padding:14px 16px; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
@@ -6509,7 +6553,7 @@ function populateTxAllowanceSelect(selectedId){
   var sel = document.getElementById('tx-allowance');
   if(!sel) return;
   var accounts = getActiveAllowanceAccounts();
-  var html = '<option value="">None (Personal Expense)</option>';
+  var html = '<option value="">None</option>';
   accounts.forEach(function(a){
     html += '<option value="' + escapeHtml(a.id) + '" ' + (a.id === selectedId ? 'selected' : '') + '>'
       + escapeHtml(a.name) + '</option>';
@@ -6589,20 +6633,102 @@ function handleImportFinancesFile(e){
         return;
       }
 
-      // Case 3: Complete A-to-Z Database Backup
+      // Case 3: Complete A-to-Z Database Backup (Smart Merge with Zero Duplication)
       if (!hasMeaningfulFinances(data) && !Array.isArray(data.categories?.income)) {
         showToast("Invalid WealthNest backup file", "error");
         return;
       }
       const txLen = Array.isArray(data.transactions) ? data.transactions.length : 0;
       const bLen = Array.isArray(data.budgets) ? data.budgets.length : 0;
-      if (confirm(`Restore full data from backup? This will load ${txLen} transactions and ${bLen} budgets.`)) {
+      
+      const shouldMerge = confirm(
+        `Restore / Merge data from backup (${txLen} transactions, ${bLen} budgets)?\n\n` +
+        `Click [OK] to Smart Merge (keeps your current data safe, adds missing records with zero duplication).\n` +
+        `Click [Cancel] to abort.`
+      );
+      if (shouldMerge) {
         createLocalDataBackup('pre_import');
-        DB = data;
+        
+        // 1. Transactions Smart Merge (deduplicate by id and composite hash)
+        const existingTxIds = new Set((DB.transactions || []).map(t => t.id));
+        const existingTxKeys = new Set((DB.transactions || []).map(t => `${t.date}_${t.amount}_${t.category}_${(t.description || '').trim()}`));
+        let txAdded = 0;
+        (data.transactions || []).forEach(tx => {
+          if (!tx) return;
+          const key = `${tx.date}_${tx.amount}_${tx.category}_${(tx.description || '').trim()}`;
+          if (tx.id && !existingTxIds.has(tx.id) && !existingTxKeys.has(key)) {
+            DB.transactions.push(tx);
+            existingTxIds.add(tx.id);
+            existingTxKeys.add(key);
+            txAdded++;
+          } else if (!tx.id && !existingTxKeys.has(key)) {
+            tx.id = uid();
+            DB.transactions.push(tx);
+            existingTxKeys.add(key);
+            txAdded++;
+          }
+        });
+
+        // 2. Budgets Smart Merge (deduplicate by category + subcat + month + year)
+        const existingBudKeys = new Set((DB.budgets || []).map(b => `${b.category}_${b.subCategory || ''}_${b.month}_${b.year}`));
+        let budAdded = 0;
+        (data.budgets || []).forEach(b => {
+          if (!b) return;
+          const key = `${b.category}_${b.subCategory || ''}_${b.month}_${b.year}`;
+          if (!existingBudKeys.has(key)) {
+            if (!b.id) b.id = uid();
+            DB.budgets.push(b);
+            existingBudKeys.add(key);
+            budAdded++;
+          }
+        });
+
+        // 3. Savings Goals Smart Merge (deduplicate by id or name)
+        const existingGoalIds = new Set((DB.savingsGoals || []).map(g => g.id));
+        const existingGoalNames = new Set((DB.savingsGoals || []).map(g => (g.name || '').toLowerCase().trim()));
+        let goalsAdded = 0;
+        (data.savingsGoals || []).forEach(g => {
+          if (!g) return;
+          const nameKey = (g.name || '').toLowerCase().trim();
+          if (g.id && !existingGoalIds.has(g.id) && !existingGoalNames.has(nameKey)) {
+            DB.savingsGoals.push(g);
+            existingGoalIds.add(g.id);
+            existingGoalNames.add(nameKey);
+            goalsAdded++;
+          } else if (!g.id && !existingGoalNames.has(nameKey)) {
+            g.id = uid();
+            DB.savingsGoals.push(g);
+            existingGoalNames.add(nameKey);
+            goalsAdded++;
+          }
+        });
+
+        // 4. Categories Merge
+        if (data.categories) {
+          ['income', 'expense', 'savings', 'investments'].forEach(catType => {
+            if (Array.isArray(data.categories[catType])) {
+              if (catType === 'expense') {
+                const currentNames = new Set((DB.categories.expense || []).map(c => c.name || c));
+                data.categories.expense.forEach(c => {
+                  const name = c.name || c;
+                  if (!currentNames.has(name)) {
+                    DB.categories.expense.push(c);
+                    currentNames.add(name);
+                  }
+                });
+              } else {
+                const currentSet = new Set(DB.categories[catType] || []);
+                data.categories[catType].forEach(item => currentSet.add(item));
+                DB.categories[catType] = Array.from(currentSet);
+              }
+            }
+          });
+        }
+
         sanitizeLoadedDB(DB);
         saveDB(true);
         renderAllForCurrentPage();
-        showToast(`Restored full backup: ${txLen} transactions & ${bLen} budgets!`);
+        showToast(`Smart Merge Complete: Added ${txAdded} new transactions, ${budAdded} budgets, ${goalsAdded} goals with zero duplicates!`, 'success');
       }
     } catch(err) {
       showToast("Error reading JSON file: " + err.message, "error");
@@ -11508,11 +11634,254 @@ function toggleCatBlock(catName){
   if(openBudgetCategories.has(catName)){ openBudgetCategories.delete(catName); } else { openBudgetCategories.add(catName); }
   renderBudgets();
 }
+
+let budgetCategoryFilter = 'all';
+
+function onBudgetCategoryFilterChange(){
+  const sel = document.getElementById('budget-category-filter');
+  budgetCategoryFilter = sel ? sel.value : 'all';
+  renderBudgets();
+}
+
+function openSetBudgetModal(){
+  const modal = document.getElementById('set-budget-modal-backdrop');
+  if(!modal) return;
+  const catSel = document.getElementById('set-budget-category');
+  if(catSel){
+    const cats = (DB.categories && DB.categories.expense) ? DB.categories.expense : [];
+    catSel.innerHTML = cats.map(c => `<option value="${escapeHtml(c.name || c)}">${escapeHtml(c.name || c)}</option>`).join('');
+  }
+  onSetBudgetCategoryChange();
+  const amtInput = document.getElementById('set-budget-amount');
+  if(amtInput) amtInput.value = '';
+  modal.classList.remove('hidden');
+}
+
+function closeSetBudgetModal(){
+  const modal = document.getElementById('set-budget-modal-backdrop');
+  if(modal) modal.classList.add('hidden');
+}
+
+function onSetBudgetCategoryChange(){
+  const catSel = document.getElementById('set-budget-category');
+  const subSel = document.getElementById('set-budget-subcategory');
+  if(!catSel || !subSel) return;
+  const catName = catSel.value;
+  const catObj = findExpenseCategory(catName);
+  const subs = (catObj && Array.isArray(catObj.subcategories)) ? catObj.subcategories : [];
+  let html = '<option value="">All Subcategories (Category Budget)</option>';
+  subs.forEach(s => {
+    html += `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`;
+  });
+  subSel.innerHTML = html;
+}
+
+function handleSaveSetBudget(e){
+  e.preventDefault();
+  const catSel = document.getElementById('set-budget-category');
+  const subSel = document.getElementById('set-budget-subcategory');
+  const amtInput = document.getElementById('set-budget-amount');
+  if(!catSel || !amtInput) return;
+
+  const category = catSel.value;
+  const subCategory = subSel && subSel.value ? subSel.value.trim() : null;
+  const amount = parseFloat(amtInput.value);
+
+  if(!category || isNaN(amount) || amount <= 0){
+    showToast('Please enter a valid monthly limit greater than 0', 'error');
+    return;
+  }
+
+  if(!Array.isArray(DB.budgets)) DB.budgets = [];
+
+  const existing = DB.budgets.find(b =>
+    b.month === budgetSelMonth && b.year === budgetSelYear &&
+    b.category === category && (b.subCategory || null) === subCategory
+  );
+
+  if(existing){
+    existing.budgetAmount = amount;
+    showToast(`Updated budget for "${category}${subCategory ? ` (${subCategory})` : ''}" to ${fmt(amount)}`);
+  } else {
+    DB.budgets.push({
+      id: uid(),
+      category,
+      subCategory,
+      budgetAmount: amount,
+      month: budgetSelMonth,
+      year: budgetSelYear
+    });
+    showToast(`Created budget for "${category}${subCategory ? ` (${subCategory})` : ''}" (${fmt(amount)})`);
+  }
+
+  saveDB(true);
+  closeSetBudgetModal();
+  renderBudgets();
+}
+
+function openCopyBudgetModal(){
+  const modal = document.getElementById('copy-budget-modal-backdrop');
+  if(!modal) return;
+
+  const srcLabel = document.getElementById('copy-budget-source-label');
+  if(srcLabel) srcLabel.textContent = `${monthName(budgetSelMonth)} ${budgetSelYear}`;
+
+  let nextM = budgetSelMonth === 12 ? 1 : budgetSelMonth + 1;
+  let nextY = budgetSelMonth === 12 ? budgetSelYear + 1 : budgetSelYear;
+
+  const destMSel = document.getElementById('copy-budget-dest-month');
+  const destYSel = document.getElementById('copy-budget-dest-year');
+  if(destMSel){
+    destMSel.innerHTML = MONTH_NAMES.map((name, i) =>
+      `<option value="${i+1}" ${i+1 === nextM ? 'selected' : ''}>${name}</option>`
+    ).join('');
+  }
+  if(destYSel){
+    const years = [budgetSelYear - 1, budgetSelYear, budgetSelYear + 1, budgetSelYear + 2];
+    destYSel.innerHTML = years.map(y =>
+      `<option value="${y}" ${y === nextY ? 'selected' : ''}>${y}</option>`
+    ).join('');
+  }
+
+  const rows = budgetProgress(DB.transactions, DB.budgets, budgetSelMonth, budgetSelYear);
+  const distinctCategories = [...new Set(rows.map(r => r.category))];
+
+  const filterSelect = document.getElementById('budget-category-filter');
+  if(filterSelect){
+    const currentFilter = budgetCategoryFilter || 'all';
+    let optHtml = '<option value="all">All Categories</option>';
+    distinctCategories.forEach(cat => {
+      optHtml += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+    });
+    filterSelect.innerHTML = optHtml;
+    if(distinctCategories.includes(currentFilter)){
+      filterSelect.value = currentFilter;
+    } else {
+      budgetCategoryFilter = 'all';
+      filterSelect.value = 'all';
+    }
+  }
+
+  const container = document.getElementById('copy-budget-rows-container');
+  const countLabel = document.getElementById('copy-budget-count-label');
+  if(countLabel) countLabel.textContent = `${distinctCategories.length} categor${distinctCategories.length === 1 ? 'y' : 'ies'}`;
+
+  if(!distinctCategories.length){
+    if(container) container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--muted); font-size:13px;">No active budgets found in ${monthName(budgetSelMonth)} ${budgetSelYear} to copy.</div>`;
+  } else {
+    if(container){
+      container.innerHTML = distinctCategories.map(cat => {
+        const mainRow = rows.find(r => r.category === cat && !r.subCategory);
+        const subRows = rows.filter(r => r.category === cat && r.subCategory);
+        let defaultLimit = 0;
+        if(mainRow){
+          defaultLimit = mainRow.budgetAmount;
+        } else {
+          defaultLimit = subRows.reduce((s, r) => s + r.budgetAmount, 0);
+        }
+
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line-soft); gap:12px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13.5px; font-weight:600; color:var(--ink); min-width:0; flex:1;">
+              <input type="checkbox" class="copy-budget-cat-check" data-category="${escapeHtml(cat)}" checked style="accent-color:var(--primary); width:16px; height:16px;">
+              <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(cat)}</span>
+            </label>
+            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+              <span class="text-xs muted">${currencySymbol()}</span>
+              <input type="number" min="1" step="any" class="field-input figure copy-budget-limit-input" data-category="${escapeHtml(cat)}" value="${defaultLimit}" style="width:110px; padding:4px 8px; font-size:13px; font-weight:700;">
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeCopyBudgetModal(){
+  const modal = document.getElementById('copy-budget-modal-backdrop');
+  if(modal) modal.classList.add('hidden');
+}
+
+function executeCopyBudget(){
+  const destMSel = document.getElementById('copy-budget-dest-month');
+  const destYSel = document.getElementById('copy-budget-dest-year');
+  if(!destMSel || !destYSel) return;
+
+  const destM = parseInt(destMSel.value, 10);
+  const destY = parseInt(destYSel.value, 10);
+
+  if(destM === budgetSelMonth && destY === budgetSelYear){
+    showToast('Destination month cannot be the same as the source month', 'warning');
+    return;
+  }
+
+  const checks = document.querySelectorAll('.copy-budget-cat-check:checked');
+  if(!checks.length){
+    showToast('Please select at least one category to copy', 'warning');
+    return;
+  }
+
+  if(!Array.isArray(DB.budgets)) DB.budgets = [];
+
+  let copiedCount = 0;
+  checks.forEach(chk => {
+    const cat = chk.getAttribute('data-category');
+    const input = document.querySelector(`.copy-budget-limit-input[data-category="${CSS.escape(cat)}"]`);
+    const limit = input ? parseFloat(input.value) : 0;
+    if(!cat || isNaN(limit) || limit <= 0) return;
+
+    const existing = DB.budgets.find(b =>
+      b.month === destM && b.year === destY && b.category === cat && !b.subCategory
+    );
+
+    if(existing){
+      existing.budgetAmount = limit;
+      copiedCount++;
+    } else {
+      DB.budgets.push({
+        id: uid(),
+        category: cat,
+        subCategory: null,
+        budgetAmount: limit,
+        month: destM,
+        year: destY
+      });
+      copiedCount++;
+    }
+  });
+
+  saveDB(true);
+  closeCopyBudgetModal();
+
+  budgetSelMonth = destM;
+  budgetSelYear = destY;
+  renderBudgets();
+  showToast(`Copied ${copiedCount} budget${copiedCount === 1 ? '' : 's'} to ${monthName(destM)} ${destY}!`, 'success');
+}
+
 function renderBudgets(){
   initBudgetSelectors();
 
   const rows = budgetProgress(DB.transactions, DB.budgets, budgetSelMonth, budgetSelYear);
   const distinctCategories = [...new Set(rows.map(r => r.category))];
+
+  const filterSelect = document.getElementById('budget-category-filter');
+  if(filterSelect){
+    const currentFilter = budgetCategoryFilter || 'all';
+    let optHtml = '<option value="all">All Categories</option>';
+    distinctCategories.forEach(cat => {
+      optHtml += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+    });
+    filterSelect.innerHTML = optHtml;
+    if(distinctCategories.includes(currentFilter)){
+      filterSelect.value = currentFilter;
+    } else {
+      budgetCategoryFilter = 'all';
+      filterSelect.value = 'all';
+    }
+  }
 
   const catCards = distinctCategories.map(catName => {
     const mainRow = rows.find(r => r.category === catName && !r.subCategory);
@@ -11583,7 +11952,10 @@ function renderBudgets(){
   const catPalette = ['#7C3AED','#0F9E93','#D97706','#E1435C','#2563EB','#059669'];
   const rowsContainer = document.getElementById('budgets-rows');
   if(rowsContainer){
-    rowsContainer.innerHTML = catCards.length ? catCards.map((b, idx) => {
+    const displayCards = (budgetCategoryFilter && budgetCategoryFilter !== 'all')
+      ? catCards.filter(c => c.category === budgetCategoryFilter)
+      : catCards;
+    rowsContainer.innerHTML = displayCards.length ? displayCards.map((b, idx) => {
       const isOpen = openBudgetCategories.has(b.category);
       const catObj = findExpenseCategory(b.category);
       const allSubs = catObj ? catObj.subcategories : [];
@@ -11720,15 +12092,19 @@ function renderBudgets(){
   });
   const available = (DB.categories.expense||[]).filter(category => !fullyBudgetedCats.has(category.name));
   const form = document.getElementById('budget-add-form');
-  if(available.length===0){
-    form.style.display='none';
-  } else {
-    form.style.display='flex';
-    const categorySelect=document.getElementById('budget-new-category');
-    const currentCategory=categorySelect.value;
-    categorySelect.innerHTML = available.map(category=>`<option value="${category.name}">${category.name}</option>`).join('');
-    categorySelect.value=available.some(category=>category.name===currentCategory)?currentCategory:available[0].name;
-    onBudgetCategoryChoice();
+  if(form){
+    if(available.length===0){
+      form.style.display='none';
+    } else {
+      form.style.display='flex';
+      const categorySelect=document.getElementById('budget-new-category');
+      if(categorySelect){
+        const currentCategory=categorySelect.value;
+        categorySelect.innerHTML = available.map(category=>`<option value="${category.name}">${category.name}</option>`).join('');
+        categorySelect.value=available.some(category=>category.name===currentCategory)?currentCategory:available[0].name;
+        onBudgetCategoryChoice();
+      }
+    }
   }
 
   renderBudgetHistory();
@@ -12983,7 +13359,32 @@ function deleteContributionTransaction(txId){
   showToast(`Deleted contribution of ${fmt(tx.amount)}`);
 }
 
-function openGoalModal(){ document.getElementById('goal-modal-backdrop').classList.remove('hidden'); }
+
+function syncGoalPurposeSelectors(selectedVal = null){
+  const savingsCats = Array.isArray(DB.categories && DB.categories.savings) && DB.categories.savings.length
+    ? DB.categories.savings
+    : ['Emergency Fund', 'Vacation Fund', 'General Savings', 'Goal Savings', 'Retirement Savings'];
+
+  const optionsHtml = savingsCats.map(cat =>
+    `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`
+  ).join('');
+
+  ['goal-purpose', 'edit-goal-purpose', 'planned-goal-purpose'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){
+      const prev = selectedVal || el.value;
+      el.innerHTML = optionsHtml;
+      if(prev && savingsCats.includes(prev)){
+        el.value = prev;
+      } else if(savingsCats.length > 0){
+        el.value = savingsCats[0];
+      }
+    }
+  });
+}
+
+function openGoalModal(){
+  syncGoalPurposeSelectors(); document.getElementById('goal-modal-backdrop').classList.remove('hidden'); }
 function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classList.add('hidden'); }
 
 function handleAddGoal(e){
@@ -13160,6 +13561,7 @@ function reactivateGoal(id){
 function openEditGoalModal(id){
   const g = DB.savingsGoals.find(item => item.id === id);
   if(!g) return;
+  syncGoalPurposeSelectors(g.purpose || '');
   document.getElementById('edit-goal-id').value = id;
   document.getElementById('edit-goal-name').value = g.name || '';
   document.getElementById('edit-goal-start').value = g.startDate || '';
@@ -15792,6 +16194,7 @@ function handleSaveEditSubcategory(e){
 
 function renderCategoryList(){
   captureSubcatDraftsFromDOM();
+  syncGoalPurposeSelectors();
   const query = (document.getElementById('category-search')?.value || '').trim().toLowerCase();
   if(catTypeTab === 'expense'){
     const list = (DB.categories.expense || []).filter(c => !query || c.name.toLowerCase().includes(query) || (c.subcategories || []).some(s => s.toLowerCase().includes(query)));
@@ -16017,7 +16420,7 @@ function renderBackupSettings(){
     <div class="card" style="padding:22px; margin-bottom:18px;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
         <div>
-          <h2 class="section-title" style="margin:0;">Backup &amp; Data Management</h2>
+          <h2 class="section-title" style="margin:0;">Backup</h2>
           <p class="text-xs muted" style="margin:4px 0 0;">Download complete A-to-Z offline backups, export spreadsheets, or restore data.</p>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
@@ -16108,20 +16511,7 @@ function renderBackupSettings(){
       </div>
     </div>
 
-    <!-- Sync with Secondary Email Guide -->
-    <div class="card" style="padding:22px;">
-      <h3 style="margin:0 0 10px; font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Sync Data with Another Email Address
-      </h3>
-      <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:14px;">
-        Want your financial records mirrored on a second Google or email account? Follow these 3 easy steps:
-      </p>
-      <div style="display:flex; flex-direction:column; gap:8px; font-size:12.5px;">
-        <div style="display:flex; align-items:flex-start; gap:10px;">
-          <span style="width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
-          <div>Click <strong>Download Backup (.json)</strong> above to save your latest complete dataset to your phone or computer.</div>
-        </div>
+    
         <div style="display:flex; align-items:flex-start; gap:10px;">
           <span style="width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span>
           <div>Sign out, then sign in with your <strong>second email address</strong>.</div>
@@ -18459,6 +18849,7 @@ function openPlannedGoalsModal(){
   const backdrop = document.getElementById('planned-goals-modal-backdrop');
   if(!backdrop) return;
   activatingPlannedGoalId = null;
+  syncGoalPurposeSelectors();
   resetPlannedGoalForm();
   renderPlannedGoalsModalList();
   backdrop.classList.remove('hidden');
@@ -18480,7 +18871,8 @@ function resetPlannedGoalForm(){
   const cancelBtn = document.getElementById('planned-goal-cancel-edit-btn');
 
   if(editIdEl) editIdEl.value = '';
-  if(purposeEl) purposeEl.value = 'Savings';
+  syncGoalPurposeSelectors();
+  if(purposeEl && DB.categories && DB.categories.savings && DB.categories.savings[0]) purposeEl.value = DB.categories.savings[0];
   if(nameEl) nameEl.value = '';
   if(targetEl) targetEl.value = '';
   if(savingInEl) savingInEl.value = 'Bank Account';
