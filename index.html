@@ -2196,7 +2196,7 @@
             </div>
             <div style="width:140px;">
               <label class="field-label" for="budget-new-amount">Monthly Limit</label>
-              <input type="number" min="1" step="1" id="budget-new-amount" placeholder="e.g. 500" required class="field-input figure">
+              <input type="number" min="1" step="1" id="budget-new-amount" placeholder="" required class="field-input figure">
             </div>
             <button type="submit" class="btn-dark" style="padding:10px 18px; height:38px; white-space:nowrap;">+ Set Budget</button>
           </form>
@@ -2415,7 +2415,7 @@
             <h3 class="section-title">Add Payment Method</h3>
             
             <form onsubmit="handleAddPaymentMethod(event)" class="settings-add-form">
-              <input type="text" id="new-payment-method-name" placeholder="Payment Method Name (e.g. SadaPay)" class="field-input" autocomplete="off" required oninput="const m=document.getElementById('payment-method-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+              <input type="text" id="new-payment-method-name" placeholder="Payment Method Name" class="field-input" autocomplete="off" required oninput="const m=document.getElementById('payment-method-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
               <span id="payment-method-add-message" class="text-xs muted settings-add-message"></span>
               <button type="submit" class="btn-dark" style="white-space:nowrap;">+ Add Method</button>
             </form>
@@ -2549,6 +2549,20 @@
         </div>
         <div id="tx-subcat-itemized-list" style="display:flex; flex-direction:column; gap:6px;"></div>
         <div id="tx-subcat-itemized-total-note" class="text-xs" style="margin-top:8px; font-weight:600; color:var(--teal); display:flex; justify-content:space-between; align-items:center;"></div>
+      </div>
+
+      <!-- Tag & Out-of-Pocket Reimbursement Claim Row (Expense Only) -->
+      <div id="tx-tag-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        <div>
+          <label class="field-label" for="tx-tag">Tag</label>
+          <select id="tx-tag" class="field-input" onchange="onTxTagChange()">
+            <option value="">None</option>
+          </select>
+        </div>
+        <div id="tx-claimable-wrap" class="hidden">
+          <label class="field-label" for="tx-claimable-amount">Claimable Amount (PKR)</label>
+          <input type="number" id="tx-claimable-amount" step="any" min="0" class="field-input figure">
+        </div>
       </div>
 
       <!-- Dedicated Company Allowance Option (Expense Transactions Only) -->
@@ -2890,11 +2904,11 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                   <div>
                     <label class="field-label" style="font-size:10.5px; margin-bottom:2px;">Goal Name</label>
-                    <input type="text" id="roll-goal-new-name" placeholder="e.g. New Gym Q2" class="field-input" style="font-size:12px; padding:5px 8px;">
+                    <input type="text" id="roll-goal-new-name" placeholder="Goal name" class="field-input" style="font-size:12px; padding:5px 8px;">
                   </div>
                   <div>
                     <label class="field-label" style="font-size:10.5px; margin-bottom:2px;">Target Amount</label>
-                    <input type="number" id="roll-goal-new-target" placeholder="e.g. 5000" class="field-input figure" style="font-size:12px; padding:5px 8px;">
+                    <input type="number" id="roll-goal-new-target" placeholder="" class="field-input figure" style="font-size:12px; padding:5px 8px;">
                   </div>
                 </div>
               </div>
@@ -2941,16 +2955,18 @@
     <form onsubmit="handleAddGoal(event)">
       <label class="field-label">Goal Purpose</label>
       <select id="goal-purpose" class="field-input mb-3">
-        <option value="wealth_vault">Wealth Vault (Emergency, House, Gold, Long-Term)</option>
-        <option value="bill_reserve">Bill Reserve (Gym, Electricity, Subscriptions, Sinking Fund)</option>
+        <option value="Savings">Savings</option>
+        <option value="Household">Household</option>
+        <option value="Personal">Personal</option>
+        <option value="Emergency">Emergency</option>
       </select>
-      <label class="field-label">Goal Name</label>
-      <input type="text" id="goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
+      <label class="field-label">Goal Name <span class="text-xs muted">(Optional)</span></label>
+      <input type="text" id="goal-name" class="field-input mb-3">
       <label class="field-label">Start Date</label>
       <input type="date" id="goal-start" class="field-input mb-3" required>
       <label class="field-label">Target Amount</label>
-      <input type="number" min="0" step="any" id="goal-target" placeholder="1000" class="field-input figure mb-3" required>
-      <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
+      <input type="number" min="0" step="any" id="goal-target" class="field-input figure mb-3" required>
+      <label class="field-label">Saving In</label>
       <select id="goal-saving-in" class="field-input mb-3">
         <option value="Bank Account">Bank Account</option>
         <option value="Personal Safe / Cash">Personal Safe / Cash</option>
@@ -2990,7 +3006,7 @@
     </div>
     <div id="budget-subcat-checkbox-group" style="max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:14px; background:var(--surface);"></div>
     <label class="field-label">Monthly Limit</label>
-    <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="e.g. 5000" class="field-input figure mb-4">
+    <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="" class="field-input figure mb-4">
     <button onclick="handleAddSubcatBudget()" class="btn-primary" style="width:100%;">+ Add Subcategory Budget</button>
   </div>
 </div>
@@ -3007,7 +3023,7 @@
       <label class="field-label" for="edit-budget-subcategory">Subcategory</label>
       <select id="edit-budget-subcategory" class="field-input mb-3"></select>
       <label class="field-label" id="edit-budget-amount-label" for="edit-budget-amount">Monthly Limit</label>
-      <input type="text" inputmode="decimal" id="edit-budget-amount" class="field-input figure mb-2" placeholder="e.g. 5000" required oninput="const m=document.getElementById('edit-budget-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <input type="text" inputmode="decimal" id="edit-budget-amount" class="field-input figure mb-2" placeholder="" required oninput="const m=document.getElementById('edit-budget-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
       <span id="edit-budget-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditBudgetModal()" class="btn-ghost">Cancel</button>
@@ -3026,7 +3042,7 @@
       <input type="hidden" id="edit-category-type">
       <input type="hidden" id="edit-category-old-name">
       <label class="field-label" for="edit-category-name">Category Name</label>
-      <input type="text" id="edit-category-name" class="field-input mb-2" placeholder="e.g. Housing" required autocomplete="off" oninput="const m=document.getElementById('edit-category-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <input type="text" id="edit-category-name" class="field-input mb-2" placeholder="" required autocomplete="off" oninput="const m=document.getElementById('edit-category-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
       <span id="edit-category-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditCategoryModal()" class="btn-ghost">Cancel</button>
@@ -3044,16 +3060,18 @@
       <input type="hidden" id="edit-goal-id">
       <label class="field-label">Goal Purpose</label>
       <select id="edit-goal-purpose" class="field-input mb-3">
-        <option value="wealth_vault">Wealth Vault (Emergency, House, Gold, Long-Term)</option>
-        <option value="bill_reserve">Bill Reserve (Gym, Electricity, Subscriptions, Sinking Fund)</option>
+        <option value="Savings">Savings</option>
+        <option value="Household">Household</option>
+        <option value="Personal">Personal</option>
+        <option value="Emergency">Emergency</option>
       </select>
-      <label class="field-label">Goal Name</label>
-      <input type="text" id="edit-goal-name" placeholder="e.g. Emergency Fund" class="field-input mb-3" required>
+      <label class="field-label">Goal Name <span class="text-xs muted">(Optional)</span></label>
+      <input type="text" id="edit-goal-name" class="field-input mb-3">
       <label class="field-label">Start Date</label>
       <input type="date" id="edit-goal-start" class="field-input mb-3" required>
       <label class="field-label" id="edit-goal-target-label">Target Amount</label>
-      <input type="number" min="0" step="any" id="edit-goal-target" placeholder="1000" class="field-input figure mb-3" required>
-      <label class="field-label">Saving In <span class="breadcrumb-tag">(Holding Place)</span></label>
+      <input type="number" min="0" step="any" id="edit-goal-target" class="field-input figure mb-3" required>
+      <label class="field-label">Saving In</label>
       <select id="edit-goal-saving-in" class="field-input mb-3">
         <option value="Bank Account">Bank Account</option>
         <option value="Personal Safe / Cash">Personal Safe / Cash</option>
@@ -3075,20 +3093,28 @@
   <div class="modal" style="max-width:560px;">
     <button class="modal-close" onclick="closePlannedGoalsModal()" aria-label="Close">✕</button>
     <div style="margin-bottom:14px;">
-      <h2 style="margin:0; font-size:18px;">Planned &amp; Future Savings Goals</h2>
-      <p class="text-xs muted" style="margin:4px 0 0;">Save draft goals for upcoming months so you never forget them. They remain inactive until you set dates and activate them.</p>
+      <h2 style="margin:0; font-size:18px;">Planned Goals</h2>
     </div>
 
     <form onsubmit="handleSavePlannedGoal(event)" style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:16px;">
       <input type="hidden" id="planned-goal-edit-id" value="">
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:10px;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:10px;">
         <div>
-          <label class="field-label" for="planned-goal-name">Goal Name</label>
-          <input type="text" id="planned-goal-name" class="field-input" placeholder="e.g. Gym 3-Month Fee" required autocomplete="off">
+          <label class="field-label" for="planned-goal-purpose">Goal Purpose</label>
+          <select id="planned-goal-purpose" class="field-input">
+            <option value="Savings">Savings</option>
+            <option value="Household">Household</option>
+            <option value="Personal">Personal</option>
+            <option value="Emergency">Emergency</option>
+          </select>
         </div>
         <div>
-          <label class="field-label" for="planned-goal-target">Target Amount</label>
-          <input type="number" min="1" step="any" id="planned-goal-target" class="field-input figure" placeholder="e.g. 15000" required>
+          <label class="field-label" for="planned-goal-name">Goal Name <span class="text-xs muted">(Optional)</span></label>
+          <input type="text" id="planned-goal-name" class="field-input" autocomplete="off">
+        </div>
+        <div>
+          <label class="field-label" for="planned-goal-target">Target Amount <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="1" step="any" id="planned-goal-target" class="field-input figure" required>
         </div>
         <div>
           <label class="field-label" for="planned-goal-saving-in">Saving In</label>
@@ -3100,12 +3126,9 @@
           </select>
         </div>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-        <span class="text-xs muted" id="planned-goal-form-mode-note">Add a future goal to your unactivated list.</span>
-        <div style="display:flex; gap:6px;">
-          <button type="button" id="planned-goal-cancel-edit-btn" class="btn-ghost hidden" style="padding:5px 12px; font-size:12px;" onclick="resetPlannedGoalForm()">Cancel Edit</button>
-          <button type="submit" id="planned-goal-submit-btn" class="btn-dark" style="padding:6px 14px; font-size:12px;">+ Add Planned Goal</button>
-        </div>
+      <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+        <button type="button" id="planned-goal-cancel-edit-btn" class="btn-ghost hidden" style="padding:5px 12px; font-size:12px;" onclick="resetPlannedGoalForm()">Cancel Edit</button>
+        <button type="submit" id="planned-goal-submit-btn" class="btn-dark" style="padding:6px 14px; font-size:12px;">+ Add Planned Goal</button>
       </div>
     </form>
 
@@ -3124,15 +3147,14 @@
 <div id="warning-rule-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeWarningRuleModal()">
   <div class="modal" style="max-width:440px;">
     <button class="modal-close" onclick="closeWarningRuleModal()" aria-label="Close">✕</button>
-    <h2 id="warning-rule-modal-title" style="margin:0 0 4px; font-size:18px;">Customize Warning Sign</h2>
-    <p class="text-xs muted" style="margin:0 0 16px;">Rename this warning sign, edit its description, or assign a different click action.</p>
+    <h2 id="warning-rule-modal-title" style="margin:0 0 16px; font-size:18px;">Customize Warning Sign</h2>
     <form onsubmit="handleSaveWarningRule(event)">
       <input type="hidden" id="warning-rule-id">
       <label class="field-label" for="warning-rule-name">Warning Rule Title</label>
-      <input type="text" id="warning-rule-name" class="field-input mb-3" placeholder="e.g. Budget Limit Exceeded" required autocomplete="off">
+      <input type="text" id="warning-rule-name" class="field-input mb-3" required autocomplete="off">
 
       <label class="field-label" for="warning-rule-badge">Badge Label (Displayed on Cards &amp; Rows)</label>
-      <input type="text" id="warning-rule-badge" class="field-input mb-3" placeholder="e.g. Over Budget" required autocomplete="off">
+      <input type="text" id="warning-rule-badge" class="field-input mb-3" placeholder="Badge text" required autocomplete="off">
 
       <label class="field-label" for="warning-rule-subhead">One-Line Subheading / Description</label>
       <input type="text" id="warning-rule-subhead" class="field-input mb-3" placeholder="Short one-line explanation of this warning sign" required autocomplete="off">
@@ -3295,7 +3317,7 @@
       <input type="hidden" id="edit-subcategory-parent">
       <input type="hidden" id="edit-subcategory-old-name">
       <label class="field-label" for="edit-subcategory-name">Subcategory Name</label>
-      <input type="text" id="edit-subcategory-name" class="field-input mb-2" placeholder="e.g. Charger" required autocomplete="off" oninput="const m=document.getElementById('edit-subcategory-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <input type="text" id="edit-subcategory-name" class="field-input mb-2" placeholder="Subcategory name" required autocomplete="off" oninput="const m=document.getElementById('edit-subcategory-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
       <span id="edit-subcategory-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditSubcategoryModal()" class="btn-ghost">Cancel</button>
@@ -3313,7 +3335,7 @@
     <form onsubmit="handleSaveEditPaymentMethod(event)">
       <input type="hidden" id="edit-payment-method-old-name">
       <label class="field-label" for="edit-payment-method-name">Method Name</label>
-      <input type="text" id="edit-payment-method-name" class="field-input mb-2" placeholder="e.g. EasyPaisa, SadaPay" required autocomplete="off" oninput="const m=document.getElementById('edit-payment-method-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
+      <input type="text" id="edit-payment-method-name" class="field-input mb-2" placeholder="Payment method name" required autocomplete="off" oninput="const m=document.getElementById('edit-payment-method-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
       <span id="edit-payment-method-message" class="text-xs muted settings-add-message" style="display:block; min-height:18px; margin-bottom:12px;"></span>
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditPaymentMethodModal()" class="btn-ghost">Cancel</button>
@@ -3606,7 +3628,7 @@
             <label class="field-label" for="withdraw-inv-amount" style="margin:0;">Amount to Withdraw <span style="color:var(--rose);">*</span></label>
             <button type="button" onclick="setWithdrawWholeAmount()" class="link-sm" style="font-size:11.5px; color:var(--teal); background:none; border:none; cursor:pointer; font-weight:600;">Withdraw All</button>
           </div>
-          <input type="number" min="1" step="any" id="withdraw-inv-amount" class="field-input figure" placeholder="e.g. 16000" required oninput="updateWithdrawPreview()">
+          <input type="number" min="1" step="any" id="withdraw-inv-amount" class="field-input figure" placeholder="" required oninput="updateWithdrawPreview()">
         </div>
         <div>
           <label class="field-label" for="withdraw-inv-date" style="margin-bottom:4px;">Date <span style="color:var(--rose);">*</span></label>
@@ -3666,7 +3688,7 @@
             <strong style="font-size:13px; color:var(--ink); display:block;">Direct Purchase / Expense (e.g. Buy Mobile Phone)</strong>
             <span class="text-xs muted" style="line-height:1.4;">Funded 100% by investment balance. Zero deduction from your personal bank!</span>
             <div id="withdraw-dest-expense-wrap" class="hidden" style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
-              <input type="text" id="withdraw-expense-desc" placeholder="What are you buying? (e.g. Mobile Phone)" class="field-input" style="height:34px; font-size:12.5px;">
+              <input type="text" id="withdraw-expense-desc" placeholder="Description" class="field-input" style="height:34px; font-size:12.5px;">
               <select id="withdraw-expense-category" class="field-input" style="height:34px; font-size:12.5px;"></select>
             </div>
           </div>
@@ -3797,7 +3819,7 @@
       <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:flex-end; margin-bottom:8px;">
         <div>
           <label class="field-label" for="deposit-vps-salary-input" style="font-size:11px;">Enter Monthly Base Salary</label>
-          <input type="number" min="0" step="any" id="deposit-vps-salary-input" placeholder="e.g. 80000" class="field-input figure" oninput="calculateVpsDepositFromSalary()">
+          <input type="number" min="0" step="any" id="deposit-vps-salary-input" placeholder="" class="field-input figure" oninput="calculateVpsDepositFromSalary()">
         </div>
         <button type="button" class="btn-dark btn-small" onclick="applyVpsSalaryCalculation()" style="height:36px; padding:0 12px; font-size:11.5px; white-space:nowrap;">Auto-Apply</button>
       </div>
@@ -3844,7 +3866,7 @@
 
       <div style="margin-bottom:14px;">
         <label class="field-label" for="deposit-inv-notes">Note / Month Reference (optional)</label>
-        <input type="text" id="deposit-inv-notes" placeholder="e.g. October 2026 Contribution" class="field-input">
+        <input type="text" id="deposit-inv-notes" placeholder="Notes" class="field-input">
       </div>
 
       <!-- Sync Transaction Checkbox -->
@@ -3979,13 +4001,13 @@
     <form onsubmit="handleSaveAllowance(event)">
       <div style="margin-bottom:12px;">
         <label class="field-label" for="allowance-name">Benefit Name <span style="color:var(--rose);">*</span></label>
-        <input type="text" id="allowance-name" placeholder="e.g. Food Card, Fuel Allowance, Health Insurance" class="field-input" required autocomplete="off">
+        <input type="text" id="allowance-name" class="field-input" required autocomplete="off">
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
           <label class="field-label" for="allowance-limit">Quota Limit <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="0" step="any" id="allowance-limit" placeholder="e.g. 10000" class="field-input figure" required>
+          <input type="number" min="0" step="any" id="allowance-limit" class="field-input figure" required>
         </div>
         <div>
           <label class="field-label" for="allowance-period">Quota Period</label>
@@ -11041,6 +11063,9 @@ function openTxModal(editId = null){
 
       document.getElementById('tx-description').value = tx.description || '';
       document.getElementById('tx-amount').value = tx.amount !== undefined ? tx.amount : '';
+      populateTxTagSelect(tx.tag || '');
+      const claimInput = document.getElementById('tx-claimable-amount');
+      if(claimInput) claimInput.value = (tx.claimableAmount !== undefined && tx.claimableAmount !== null) ? tx.claimableAmount : '';
       return;
     }
   }
@@ -11055,6 +11080,9 @@ function openTxModal(editId = null){
   renderModalSubcategories([]);
   renderModalPaymentMethods(['Cash']);
   populateTxAllowanceSelect('');
+  populateTxTagSelect('');
+  const claimInput = document.getElementById('tx-claimable-amount');
+  if(claimInput) claimInput.value = '';
   const savingInEl = document.getElementById('tx-saving-in');
   if(savingInEl) savingInEl.value = 'Bank Account';
 }
@@ -11344,6 +11372,10 @@ function handleSaveTransaction(e){
   }
   const savingInVal = (txType === 'savings') ? (document.getElementById('tx-saving-in')?.value || 'Bank Account') : undefined;
   const descVal = document.getElementById('tx-description').value.trim() || undefined;
+  const tagVal = (txType === 'expense') ? (document.getElementById('tx-tag')?.value || undefined) : undefined;
+  const rawClaimVal = (txType === 'expense') ? parseFloat(document.getElementById('tx-claimable-amount')?.value) : undefined;
+  const claimableVal = (!isNaN(rawClaimVal) && rawClaimVal > 0) ? rawClaimVal : (tagVal ? finalAmount : undefined);
+  const isReimbursableVal = Boolean(tagVal || claimableVal);
 
   if(editingTxId){
     const index = DB.transactions.findIndex(t => t.id === editingTxId);
@@ -11362,7 +11394,12 @@ function handleSaveTransaction(e){
         companyCoveredAmount: (txType === 'expense' && allwAcc ? finalCoveredAmt : 0),
         personalShare: (txType === 'expense' && allwAcc ? finalPersonalShare : 0),
         subCategoryBreakdown: subCategoryBreakdown || undefined,
-        amount: finalAmount
+        amount: finalAmount,
+        tag: tagVal || undefined,
+        claimableAmount: claimableVal !== undefined ? claimableVal : undefined,
+        isReimbursable: isReimbursableVal,
+        recoveryStatus: isReimbursableVal ? (DB.transactions[index]?.recoveryStatus || 'pending') : undefined,
+        recoveredAmount: isReimbursableVal ? (DB.transactions[index]?.recoveredAmount || 0) : undefined
       };
       DB.transactions[index] = updatedTx;
       highlightedTxId = editingTxId;
@@ -11385,6 +11422,11 @@ function handleSaveTransaction(e){
       personalShare: (txType === 'expense' && allwAcc ? finalPersonalShare : 0),
       subCategoryBreakdown: subCategoryBreakdown || undefined,
       amount: finalAmount,
+      tag: tagVal || undefined,
+      claimableAmount: claimableVal !== undefined ? claimableVal : undefined,
+      isReimbursable: isReimbursableVal,
+      recoveryStatus: isReimbursableVal ? 'pending' : undefined,
+      recoveredAmount: isReimbursableVal ? 0 : undefined,
       createdAt: new Date().toISOString()
     };
     DB.transactions.unshift(newTx);
@@ -12613,7 +12655,7 @@ function renderSavings(){
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               ${dragHandleHtml()}
               <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
-              ${g.purpose === 'bill_reserve' ? '<span class="badge" style="background:rgba(59,130,246,0.1); color:#2563EB; font-weight:600; font-size:11px; padding:2px 7px;">Bill Reserve</span>' : ''}
+              ${(g.purpose === 'Household' || g.purpose === 'Personal' || g.purpose === 'bill_reserve') ? `<span class="badge" style="background:rgba(59,130,246,0.1); color:#2563EB; font-weight:600; font-size:11px; padding:2px 7px;">${escapeHtml(g.purpose === 'bill_reserve' ? 'Household' : g.purpose)}</span>` : ''}
               ${statusBadge}
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:12px; color:var(--muted);">
@@ -12666,7 +12708,7 @@ function renderSavings(){
                 Use Savings
               </button>
             ` : ''}
-            ${(g.purpose === 'bill_reserve' && !isFullySettled && cur > 0) ? `
+            ${((g.purpose === 'Household' || g.purpose === 'Personal' || g.purpose === 'bill_reserve') && !isFullySettled && cur > 0) ? `
               <button type="button" onclick="payBillFromReserve('${g.id}')" class="btn-primary" style="padding:5px 12px; font-size:12px; height:30px; background:#2563EB; border-color:#2563EB;" title="Pay upcoming bill using accumulated reserve (Zero budget deficit)">
                 Pay Bill from Reserve
               </button>
@@ -12946,13 +12988,14 @@ function closeGoalModal(){ document.getElementById('goal-modal-backdrop').classL
 
 function handleAddGoal(e){
   e.preventDefault();
-  const purpose = document.getElementById('goal-purpose')?.value || 'wealth_vault';
-  const name = document.getElementById('goal-name').value.trim();
+  const purpose = document.getElementById('goal-purpose')?.value || 'Savings';
+  let name = document.getElementById('goal-name').value.trim();
+  if(!name) name = purpose;
   const startDate = document.getElementById('goal-start').value;
   const target = parseFloat(document.getElementById('goal-target').value);
   const deadline = document.getElementById('goal-deadline').value;
   const savingIn = document.getElementById('goal-saving-in')?.value || 'Bank Account';
-  if(!name || !startDate || !target || target<=0 || !deadline || deadline < startDate){
+  if(!startDate || !target || target<=0 || !deadline || deadline < startDate){
     if(!deadline){
       showToast('Please select a deadline date', 'error');
     } else if(deadline < startDate){
@@ -13153,10 +13196,12 @@ function handleSaveEditGoal(e){
   const deadline = document.getElementById('edit-goal-deadline').value;
   const savingInSelect = document.getElementById('edit-goal-saving-in');
   const savingIn = savingInSelect ? savingInSelect.value : (g.savingIn || 'Bank Account');
-  const purpose = document.getElementById('edit-goal-purpose')?.value || g.purpose || 'wealth_vault';
+  const purpose = document.getElementById('edit-goal-purpose')?.value || g.purpose || 'Savings';
+  if(!newName) newName = purpose;
+  g.name = newName;
   g.purpose = purpose;
 
-  if(!newName || !startDate || !target || target <= 0 || !deadline || deadline < startDate){
+  if(!startDate || !target || target <= 0 || !deadline || deadline < startDate){
     if(!deadline){
       showToast('Please select a deadline date', 'error');
     } else if(deadline < startDate){
@@ -15000,7 +15045,7 @@ function renderTagsSettings(){
       <div class="settings-add-section" style="margin-top:16px;">
         <h3 class="section-title" style="margin-bottom:8px;">Add Tag</h3>
         <form onsubmit="handleAddTag(event)" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-          <input type="text" id="new-tag-name" placeholder="Tag name (e.g. OPD)" class="field-input" style="flex:1; min-width:160px;" required maxlength="16" autocomplete="off">
+          <input type="text" id="new-tag-name" placeholder="Tag name" class="field-input" style="flex:1; min-width:160px;" required maxlength="16" autocomplete="off">
           <select id="new-tag-color" class="field-input" style="width:130px;">
             <option value="#0D9488">Teal</option>
             <option value="#2563EB">Blue</option>
@@ -18427,38 +18472,41 @@ function closePlannedGoalsModal(){
 
 function resetPlannedGoalForm(){
   const editIdEl = document.getElementById('planned-goal-edit-id');
+  const purposeEl = document.getElementById('planned-goal-purpose');
   const nameEl = document.getElementById('planned-goal-name');
   const targetEl = document.getElementById('planned-goal-target');
   const savingInEl = document.getElementById('planned-goal-saving-in');
   const submitBtn = document.getElementById('planned-goal-submit-btn');
   const cancelBtn = document.getElementById('planned-goal-cancel-edit-btn');
-  const noteEl = document.getElementById('planned-goal-form-mode-note');
 
   if(editIdEl) editIdEl.value = '';
+  if(purposeEl) purposeEl.value = 'Savings';
   if(nameEl) nameEl.value = '';
   if(targetEl) targetEl.value = '';
   if(savingInEl) savingInEl.value = 'Bank Account';
   if(submitBtn) submitBtn.textContent = '+ Add Planned Goal';
   if(cancelBtn) cancelBtn.classList.add('hidden');
-  if(noteEl) noteEl.textContent = 'Add a future goal to your unactivated list.';
 }
 
 function handleSavePlannedGoal(e){
   e.preventDefault();
   if(!Array.isArray(DB.plannedSavingsGoals)) DB.plannedSavingsGoals = [];
   const editId = document.getElementById('planned-goal-edit-id').value.trim();
-  const name = document.getElementById('planned-goal-name').value.trim();
+  const purpose = document.getElementById('planned-goal-purpose')?.value || 'Savings';
+  let name = document.getElementById('planned-goal-name').value.trim();
+  if(!name) name = purpose;
   const targetAmount = parseFloat(document.getElementById('planned-goal-target').value);
   const savingIn = document.getElementById('planned-goal-saving-in').value || 'Bank Account';
 
-  if(!name || isNaN(targetAmount) || targetAmount <= 0){
-    showToast('Please enter a valid goal name and target amount', 'error');
+  if(isNaN(targetAmount) || targetAmount <= 0){
+    showToast('Please enter a valid target amount', 'error');
     return;
   }
 
   if(editId){
     const item = DB.plannedSavingsGoals.find(g => g.id === editId);
     if(item){
+      item.purpose = purpose;
       item.name = name;
       item.targetAmount = targetAmount;
       item.savingIn = savingIn;
@@ -18467,6 +18515,7 @@ function handleSavePlannedGoal(e){
   } else {
     DB.plannedSavingsGoals.unshift({
       id: 'plan_' + uid(),
+      purpose,
       name,
       targetAmount,
       savingIn,
@@ -18485,15 +18534,14 @@ function editPlannedGoalItem(id){
   const item = (DB.plannedSavingsGoals || []).find(g => g.id === id);
   if(!item) return;
   document.getElementById('planned-goal-edit-id').value = item.id;
+  if(document.getElementById('planned-goal-purpose')) document.getElementById('planned-goal-purpose').value = item.purpose || 'Savings';
   document.getElementById('planned-goal-name').value = item.name || '';
   document.getElementById('planned-goal-target').value = item.targetAmount || '';
   document.getElementById('planned-goal-saving-in').value = item.savingIn || 'Bank Account';
   const submitBtn = document.getElementById('planned-goal-submit-btn');
   const cancelBtn = document.getElementById('planned-goal-cancel-edit-btn');
-  const noteEl = document.getElementById('planned-goal-form-mode-note');
   if(submitBtn) submitBtn.textContent = 'Save Changes';
   if(cancelBtn) cancelBtn.classList.remove('hidden');
-  if(noteEl) noteEl.textContent = `Editing planned goal "${item.name}"`;
 }
 
 function deletePlannedGoalItem(id){
@@ -18531,6 +18579,7 @@ function confirmActivatePlannedGoal(id){
   const newGoal = {
     id: uid(),
     name: item.name,
+    purpose: item.purpose || 'Savings',
     targetAmount: Number(item.targetAmount) || 0,
     currentAmount: 0,
     startDate,
@@ -18568,14 +18617,13 @@ function renderPlannedGoalsModalList(){
 
   const list = Array.isArray(DB.plannedSavingsGoals) ? DB.plannedSavingsGoals : [];
   if(countEl){
-    countEl.textContent = `${list.length} planned goal${list.length === 1 ? '' : 's'} (inactive until activated)`;
+    countEl.textContent = `${list.length} planned goal${list.length === 1 ? '' : 's'}`;
   }
 
   if(!list.length){
     listEl.innerHTML = `
-      <div style="text-align:center; padding:28px 16px; background:var(--surface-2); border:1px dashed var(--line); border-radius:10px;">
-        <p style="margin:0 0 4px; font-size:13.5px; font-weight:700; color:var(--ink);">No Planned Goals Saved Yet</p>
-        <p class="text-xs muted" style="margin:0 auto; max-width:380px;">Use the form above to jot down future goals for next month. Activate any goal whenever you are ready to assign its Start Date and Deadline.</p>
+      <div style="text-align:center; padding:20px 16px; background:var(--surface-2); border:1px dashed var(--line); border-radius:10px;">
+        <p style="margin:0; font-size:13px; font-weight:600; color:var(--muted);">No planned goals saved.</p>
       </div>
     `;
     return;
@@ -18721,7 +18769,7 @@ function dispatchDesktopNotification(title, options){
 
       <div style="margin-bottom:16px;">
         <label class="field-label" for="recovery-note">Short Note</label>
-        <input type="text" id="recovery-note" placeholder="e.g. Doctor fee and prescribed tests approved" class="field-input" autocomplete="off">
+        <input type="text" id="recovery-note" placeholder="Recovery note" class="field-input" autocomplete="off">
       </div>
 
       <button type="submit" class="btn-primary" style="width:100%; height:38px; font-weight:700;">Confirm Recovery &amp; Add to Income</button>
