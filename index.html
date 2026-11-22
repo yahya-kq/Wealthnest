@@ -1615,72 +1615,6 @@
         </div>
       </div>
     </div>
-  
-<!-- Set Budget Modal Backdrop -->
-<div id="set-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSetBudgetModal()">
-  <div class="modal" style="max-width:420px;">
-    <button class="modal-close" onclick="closeSetBudgetModal()" aria-label="Close">✕</button>
-    <h2 style="margin:0 0 14px; font-size:18px;">Set Budget</h2>
-    <form onsubmit="handleSaveSetBudget(event)">
-      <div style="margin-bottom:12px;">
-        <label class="field-label" for="set-budget-category">Category <span style="color:var(--rose);">*</span></label>
-        <select id="set-budget-category" class="field-input" onchange="onSetBudgetCategoryChange()" required></select>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label class="field-label" for="set-budget-subcategory">Subcategory <span class="breadcrumb-tag">Optional</span></label>
-        <select id="set-budget-subcategory" class="field-input">
-          <option value="">All Subcategories (Category Budget)</option>
-        </select>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="field-label" for="set-budget-amount">Monthly Limit <span style="color:var(--rose);">*</span></label>
-        <input type="number" min="1" step="any" id="set-budget-amount" placeholder="" class="field-input figure" required>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:10px;">
-        <button type="button" onclick="closeSetBudgetModal()" class="btn-ghost">Cancel</button>
-        <button type="submit" class="btn-primary">+ Set Budget</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Copy Budget Modal Backdrop (Strictly 2 Words) -->
-<div id="copy-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeCopyBudgetModal()">
-  <div class="modal" style="max-width:520px;">
-    <button class="modal-close" onclick="closeCopyBudgetModal()" aria-label="Close">✕</button>
-    <h2 style="margin:0 0 12px; font-size:18px;">Copy Budget</h2>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px;">
-      <div>
-        <span class="text-xs muted" style="text-transform:uppercase; font-weight:600; letter-spacing:0.04em;">Copy From</span>
-        <div id="copy-budget-source-label" style="font-weight:700; font-size:14px; color:var(--ink); margin-top:2px;"></div>
-      </div>
-      <div>
-        <span class="text-xs muted" style="text-transform:uppercase; font-weight:600; letter-spacing:0.04em;">Copy To</span>
-        <div style="display:flex; gap:6px; margin-top:2px;">
-          <select id="copy-budget-dest-month" class="field-input" style="padding:4px 8px; font-size:13px; height:32px;"></select>
-          <select id="copy-budget-dest-year" class="field-input" style="padding:4px 8px; font-size:13px; height:32px;"></select>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-size:13px; font-weight:700; color:var(--ink);">Review Categories &amp; Limits:</span>
-      <span class="text-xs muted" id="copy-budget-count-label">0 categories</span>
-    </div>
-
-    <div id="copy-budget-rows-container" style="max-height:260px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:16px; background:var(--surface);">
-      <!-- populated dynamically -->
-    </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <span class="text-xs muted" style="line-height:1.4;">Destination month takes effect on the 1st.<br>Past history is 100% untouched.</span>
-      <div style="display:flex; gap:10px;">
-        <button type="button" onclick="closeCopyBudgetModal()" class="btn-ghost">Cancel</button>
-        <button type="button" onclick="executeCopyBudget()" class="btn-primary">Apply Budget</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 </main>
 </div>
@@ -2253,7 +2187,7 @@
           <!-- + Set Budget Button -->
           <button type="button" class="btn-primary" onclick="openSetBudgetModal()" style="height:38px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            + Set Budget
+            Set Budget
           </button>
         </div>
       </div>
@@ -2544,6 +2478,72 @@
 </div>
 
 <!-- ============ MODALS ============ -->
+<!-- Set Budget Modal Backdrop -->
+<div id="set-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeSetBudgetModal()">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeSetBudgetModal()" aria-label="Close">✕</button>
+    <h2 style="margin:0 0 14px; font-size:18px;">Set Budget</h2>
+    <form onsubmit="handleSaveSetBudget(event)">
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="set-budget-category">Category <span style="color:var(--rose);">*</span></label>
+        <select id="set-budget-category" class="field-input" onchange="onSetBudgetCategoryChange()" required></select>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="set-budget-subcategory">Subcategory <span class="breadcrumb-tag">Optional</span></label>
+        <select id="set-budget-subcategory" class="field-input">
+          <option value="">All Subcategories (Category Budget)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="field-label" for="set-budget-amount">Monthly Limit <span style="color:var(--rose);">*</span></label>
+        <input type="number" min="1" step="any" id="set-budget-amount" placeholder="" class="field-input figure" required>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeSetBudgetModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Set Budget</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Copy Budget Modal Backdrop (Strictly 2 Words) -->
+<div id="copy-budget-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeCopyBudgetModal()">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeCopyBudgetModal()" aria-label="Close">✕</button>
+    <h2 style="margin:0 0 12px; font-size:18px;">Copy Budget</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px;">
+      <div>
+        <span class="text-xs muted" style="text-transform:uppercase; font-weight:600; letter-spacing:0.04em;">Copy From</span>
+        <div id="copy-budget-source-label" style="font-weight:700; font-size:14px; color:var(--ink); margin-top:2px;"></div>
+      </div>
+      <div>
+        <span class="text-xs muted" style="text-transform:uppercase; font-weight:600; letter-spacing:0.04em;">Copy To</span>
+        <div style="display:flex; gap:6px; margin-top:2px;">
+          <select id="copy-budget-dest-month" class="field-input" style="padding:4px 8px; font-size:13px; height:32px;"></select>
+          <select id="copy-budget-dest-year" class="field-input" style="padding:4px 8px; font-size:13px; height:32px;"></select>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:13px; font-weight:700; color:var(--ink);">Review Categories &amp; Limits:</span>
+      <span class="text-xs muted" id="copy-budget-count-label">0 categories</span>
+    </div>
+
+    <div id="copy-budget-rows-container" style="max-height:260px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:16px; background:var(--surface);">
+      <!-- populated dynamically -->
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="text-xs muted" style="line-height:1.4;">Destination month takes effect on the 1st.<br>Past history is 100% untouched.</span>
+      <div style="display:flex; gap:10px;">
+        <button type="button" onclick="closeCopyBudgetModal()" class="btn-ghost">Cancel</button>
+        <button type="button" onclick="executeCopyBudget()" class="btn-primary">Apply Budget</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="tx-modal-backdrop" class="modal-backdrop hidden">
   <div class="modal">
     <button class="modal-close" onclick="closeTxModal()">✕</button>
@@ -9231,7 +9231,7 @@ function renderDashboardBudgetSummary(period, totals){
           <p class="muted text-xs" style="margin:20px 0; text-align:center;">No category budgets configured for this month.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
-          <button type="button" onclick="goToApp('budgets')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Set Budget</button>
+          <button type="button" onclick="goToApp('budgets')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">Set Budget</button>
         </div>
       </div>
     `;
