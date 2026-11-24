@@ -1906,103 +1906,87 @@
         </div>
       </div>
 
-      <div class="card" style="padding:16px 20px; margin-bottom:16px;">
-        <div class="report-toolbar">
-          <div class="report-toolbar-copy"><p class="report-section-kicker">Period</p><h2>Report Analysis</h2><p>Review trends and spending breakdowns.</p></div>
-          <div class="report-filter">
-            <div class="report-filter-field"><label class="field-label" for="report-year-select">Year</label><select id="report-year-select" class="field-input" onchange="onReportPeriodChange()"></select></div>
-            <div class="report-filter-field"><label class="field-label" for="report-month-select">Month</label><select id="report-month-select" class="field-input" onchange="onReportPeriodChange()"></select></div>
-            <span class="badge badge-ok" style="margin-bottom:9px;">Analytics</span>
+      <div class="card" style="padding:14px 18px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+            <select id="report-year-select" class="field-input" onchange="onReportYearChange()" style="width:auto; min-width:104px; padding:6px 10px; font-size:12.5px; font-weight:600;"></select>
+            <div style="width:1px; height:22px; background:var(--line); margin:0 2px;"></div>
+            <button type="button" id="report-all-months-btn" class="btn-chip" onclick="selectReportMonth('ALL')" style="padding:5px 12px; font-size:12px; font-weight:600;">All Months</button>
+            <div id="report-month-pills" style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;"></div>
           </div>
-        </div>
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:14px; border-top:1px solid var(--line-soft); padding-top:14px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <button class="btn-small" onclick="toggleReportComparison()" id="report-comparison-toggle">Compare Months</button>
-          </div>
-          <div>
-            <button class="btn-primary" id="btn-download-pdf-report" onclick="downloadReportPDF()" title="Download professional monthly financial report as PDF" style="display:inline-flex; align-items:center; gap:8px; padding:7px 18px; font-size:13px; font-weight:600; border-radius:var(--radius-sm); box-shadow:0 2px 10px rgba(124,58,237,0.25);">
+
+          <div id="report-download-wrap" style="position:relative; display:inline-block;">
+            <button type="button" class="btn-primary" id="btn-download-pdf-report" onclick="toggleReportDownloadMenu(event)" style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; font-size:13px; font-weight:600; border-radius:var(--radius-sm); box-shadow:0 2px 10px rgba(124,58,237,0.25);">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span>Download Report</span>
+              <svg id="report-download-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="transition:transform 0.15s;"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-          </div>
-        </div>
-        <div class="comparison-panel" id="report-comparison-panel">
-          <div class="comparison-shell">
-            <div class="comparison-header">
-              <div>
-                <h2>Compare Months</h2>
-                <p class="section-sub">Select year and month to view comparative analytics.</p>
-              </div>
-              <button class="comparison-close" onclick="toggleReportComparison()" aria-label="Close comparison">✕</button>
+            <div id="report-download-menu" class="hidden" style="position:absolute; right:0; top:calc(100% + 6px); min-width:210px; z-index:40; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-lg); padding:6px 0; overflow:hidden;">
+              <button type="button" onclick="triggerScopedReportPDF('monthly')" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer;">
+                <span style="font-weight:600;">Monthly Report</span>
+                <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">PDF</span>
+              </button>
+              <button type="button" onclick="triggerScopedReportPDF('two_months')" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer;">
+                <span style="font-weight:600;">2-Month Report</span>
+                <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">PDF</span>
+              </button>
+              <button type="button" onclick="triggerScopedReportPDF('whole')" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer;">
+                <span style="font-weight:600;">Whole Report</span>
+                <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">PDF</span>
+              </button>
             </div>
-            <div class="comparison-card">
-              <div class="comparison-controls">
-                <div class="comparison-control">
-                  <label class="field-label" for="comparison-year">Year</label>
-                  <select id="comparison-year" class="field-input" onchange="onComparisonChange()"></select>
-                </div>
-                <div class="comparison-control">
-                  <label class="field-label" for="comparison-month-trigger">Month Filter</label>
-                  <div class="excel-filter-dropdown-wrap" id="comparison-filter-wrap">
-                    <button type="button" id="comparison-month-trigger" class="excel-filter-trigger" onclick="toggleExcelFilter('comparison', event)">
-                      <span id="comparison-month-summary" class="excel-filter-summary">All Months (12)</span>
-                      <svg class="excel-filter-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                    <div class="excel-filter-popover hidden" id="comparison-month-popover" onclick="event.stopPropagation()">
-                      <div class="excel-filter-popover-header">
-                        <label class="excel-filter-select-all-label">
-                          <input type="checkbox" id="comparison-select-all" onchange="toggleSelectAllMonths('comparison', this.checked)">
-                          <span>(Select All)</span>
-                        </label>
-                        <button type="button" class="excel-filter-text-btn" onclick="clearAllMonths('comparison')">Select None</button>
-                      </div>
-                      <div class="excel-filter-popover-list" id="comparison-month-list"></div>
-                      <div class="excel-filter-popover-footer">
-                        <span class="excel-filter-count-label" id="comparison-selected-count">12 selected</span>
-                        <button type="button" class="btn-primary" style="padding:4px 12px; font-size:12px; height:28px; border-radius:6px;" onclick="closeExcelFilter('comparison')">Done</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style="margin-top:14px;">
-                <label class="field-label">Metrics to Compare</label>
-                <div class="comparison-metrics" id="comparison-metrics"></div>
-              </div>
-            </div>
-            <div class="comparison-card" id="comparison-output" style="overflow-x:auto;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Charts Section on Reports -->
-      <div class="grid grid-3lg mb-4">
+      <!-- Analytical Insights Strip -->
+      <div class="grid grid-4 mb-4" id="report-insights-strip"></div>
+
+      <!-- Core Analytical Sections: Cash Flow & Income Sources + Expense Breakdown -->
+      <div class="grid grid-2 mb-4" style="align-items:start;">
         <div class="card" style="padding:20px;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-            <div>
-              <h2 class="section-title">Income Vs. Expenses</h2>
-              <p class="section-sub">Annual cash flow trend</p>
-            </div>
-            <span class="text-xs muted" id="report-trend-label">Monthly Trend</span>
+            <h2 class="section-title" style="margin:0;">Cash Flow &amp; Income Sources</h2>
+            <span class="text-xs muted figure" id="report-cf-period-label"></span>
           </div>
-          <div style="position:relative; height:200px; min-height:180px;">
-            <canvas id="chart-trend"></canvas>
-          </div>
+          <div id="report-cashflow-income"></div>
         </div>
+
         <div class="card" style="padding:20px;">
-          <h2 class="section-title" style="margin-bottom:2px;">Spending By Category</h2>
-          <p class="section-sub" style="margin-bottom:14px;">Highest spending categories ranked</p>
-          <div style="position:relative; height:270px; min-height:250px;">
-            <canvas id="chart-category-pie"></canvas>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+            <h2 class="section-title" style="margin:0;">Expense Breakdown</h2>
+            <span class="text-xs muted" id="report-expense-sub"></span>
           </div>
+          <div id="report-expense-breakdown"></div>
         </div>
       </div>
 
-      <div class="grid grid-3lg mb-4">
-        <div class="card" style="padding:20px;"><p class="report-section-kicker">Spending</p><div style="display:flex; justify-content:space-between; align-items:start; gap:12px;"><div><h2 class="section-title" style="margin-bottom:2px;">Top categories</h2><p class="section-sub" id="report-expense-sub"></p></div><span class="badge badge-off">Select for detail</span></div><div id="report-expense-breakdown" style="margin-top:14px;"></div></div>
-        <div class="card" style="padding:20px; height:fit-content;"><p class="report-section-kicker">Budget</p><h2 class="section-title" style="margin-bottom:2px;">Budget summary</h2><p class="section-sub" id="report-budget-sub"></p><div id="report-budget-summary" style="margin-top:16px;"></div></div>
+      <!-- Bottom 3 Balanced Sections: Savings & Bills | Investments | Budget Snapshot -->
+      <div class="grid mb-4" style="grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); align-items:start;">
+        <div class="card" style="padding:20px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <h2 class="section-title" style="margin:0;">Savings &amp; Bills</h2>
+            <span class="text-xs figure" style="font-weight:700; color:var(--teal);" id="report-savings-badge"></span>
+          </div>
+          <div id="report-savings-detail"></div>
+        </div>
+
+        <div class="card" style="padding:20px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <h2 class="section-title" style="margin:0;">Investments</h2>
+            <span class="text-xs figure" style="font-weight:700;" id="report-inv-badge"></span>
+          </div>
+          <div id="report-investments-detail"></div>
+        </div>
+
+        <div class="card" style="padding:20px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <h2 class="section-title" style="margin:0;">Budget Snapshot</h2>
+            <span class="text-xs figure" style="font-weight:700;" id="report-budget-badge"></span>
+          </div>
+          <div id="report-budget-snapshot"></div>
+        </div>
       </div>
-      <div class="card mb-4"><div style="padding:20px 20px 10px;"><p class="report-section-kicker">Variance</p><h2 class="section-title">Budget vs actual</h2><p class="section-sub">Category and subcategory variances.</p></div><div class="report-table-wrap"><div class="report-budget-row" style="font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-2); font-weight:700;"><span>Category / Subcategory</span><span>Budget</span><span>Actual</span><span>Remaining</span><span>Status</span></div><div id="report-budget-breakdown"></div></div></div>
     </section>
 
     <!-- ---- TRANSACTIONS ---- -->
@@ -7644,9 +7628,9 @@ function monthBudgetSummary(month, year){
 }
 /* ---------------- render: monthly reports ---------------- */
 let reportSelMonth, reportSelYear, reportOpenCategory = null;
-let comparisonOpen = false;
-const REPORT_METRICS = [{key:'income',label:'Income'},{key:'expense',label:'Expenses'},{key:'net',label:'Net Income'},{key:'savings',label:'Savings'},{key:'budget',label:'Budget'}];
-function titleCase(value){ return value.replace(/\b\w/g, letter=>letter.toUpperCase()); }
+function titleCase(value){ return String(value || '').replace(/\b\w/g, letter=>letter.toUpperCase()); }
+function renderComparison(){}
+
 function reportYearOptions(){
   const years = new Set();
   const currentYear = new Date().getFullYear();
@@ -7660,500 +7644,519 @@ function reportYearOptions(){
   years.add(currentYear);
   return [...years].sort((a,b)=>a-b);
 }
-function periodSelectOptions(selected){ return MONTH_NAMES.map((name,i)=>`<option value="${i+1}" ${i+1===selected?'selected':''}>${name}</option>`).join(''); }
-function yearSelectOptions(selected){ return reportYearOptions().map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}</option>`).join(''); }
+
+function yearSelectOptions(selected){
+  return reportYearOptions().map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}</option>`).join('') +
+    `<option value="ALL" ${selected==='ALL'?'selected':''}>All Years</option>`;
+}
+
 function initReportSelectors(){
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
-  if(reportSelYear === undefined){ reportSelYear = currentYear; }
-  if(reportSelMonth === undefined){ reportSelMonth = currentMonth; }
-  document.getElementById('report-month-select').innerHTML = periodSelectOptions(reportSelMonth);
-  document.getElementById('report-year-select').innerHTML = yearSelectOptions(reportSelYear);
-}
-function onReportPeriodChange(){
-  reportSelMonth=parseInt(document.getElementById('report-month-select').value,10); reportSelYear=parseInt(document.getElementById('report-year-select').value,10); renderReports();
-}
-function reportCategoryRows(month,year){
-  const expenses=DB.transactions.filter(t=>inMonth(t,month,year)&&t.type==='expense'); const monthBudgets=DB.budgets.filter(b=>b.month===month&&b.year===year);
-  const names=new Set([...expenses.map(t=>t.category),...monthBudgets.map(b=>b.category)]);
-  return [...names].map(category=>{
-    const budget=monthBudgets.filter(b=>b.category===category&&!b.subCategory).reduce((s,b)=>s+b.budgetAmount,0); const actual=spentFor(DB.transactions,month,year,category,null);
-    const subNames=new Set([...expenses.filter(t=>t.category===category&&t.subCategory).flatMap(t=>t.subCategory.split(',').map(s=>s.trim())),...monthBudgets.filter(b=>b.category===category&&b.subCategory).flatMap(b=>b.subCategory.split(',').map(s=>s.trim()))]);
-    const subs=[...subNames].map(subCategory=>{const subBudget=monthBudgets.filter(b=>b.category===category&&b.subCategory===subCategory).reduce((s,b)=>s+b.budgetAmount,0); const spent=spentFor(DB.transactions,month,year,category,subCategory); return {subCategory,budget:subBudget,spent,remaining:subBudget-spent,hasBudget:subBudget>0};}).sort((a,b)=>b.spent-a.spent);
-    return {category,budget,actual,remaining:budget-actual,hasBudget:budget>0,subs};
-  }).sort((a,b)=>b.actual-a.actual||b.budget-a.budget);
-}
-function reportBudgetGroups(month,year){
-  const budgets=DB.budgets.filter(b=>b.month===month&&b.year===year);
-  const names=new Set(budgets.map(b=>b.category));
-  return [...names].map(category=>{
-    const categoryBudgets=budgets.filter(b=>b.category===category); const categoryOnly=categoryBudgets.filter(b=>!b.subCategory);
-    const subNames=new Set(categoryBudgets.filter(b=>b.subCategory).map(b=>b.subCategory));
-    if(categoryOnly.length) subNames.add('Category-wide');
-    const subcategories=[...subNames].map(subCategory=>{
-      const isCategoryWide=subCategory==='Category-wide';
-      const budget=categoryBudgets.filter(b=>isCategoryWide?!b.subCategory:b.subCategory===subCategory).reduce((s,b)=>s+b.budgetAmount,0);
-      const actual=isCategoryWide?spentFor(DB.transactions,month,year,category,null):spentFor(DB.transactions,month,year,category,subCategory);
-      return {subCategory,budget,actual,difference:budget-actual,overspent:actual>budget};
-    }).sort((a,b)=>a.subCategory==='Category-wide'?1:b.subCategory==='Category-wide'?-1:b.actual-a.actual);
-    return {category,subcategories};
-  }).sort((a,b)=>a.category.localeCompare(b.category));
-}
-function reportAmountOrDash(value,hasBudget){return hasBudget?fmt(value):'<span class="muted">-</span>';}
-function toggleReportComparison(){
-  comparisonOpen=!comparisonOpen;
-  const panel = document.getElementById('report-comparison-panel');
-  if(panel) panel.classList.toggle('open',comparisonOpen);
-  const toggleBtn = document.getElementById('report-comparison-toggle');
-  if(toggleBtn) toggleBtn.textContent=comparisonOpen?'Hide Comparison':'Compare Months';
-  
-  if(comparisonOpen){
-    const sidebar = document.getElementById('sidebar');
-    if(sidebar && !sidebar.classList.contains('collapsed')){
-      sidebar.classList.add('collapsed');
-      localStorage.setItem('wealthnest_sidebar_collapsed', 'true');
-      const sideBtn = document.getElementById('sidebar-toggle-btn');
-      if(sideBtn) sideBtn.setAttribute('title', 'Expand sidebar');
-    }
-    initComparison();
-  }
-}
-function initComparison(){
-  document.getElementById('comparison-year').innerHTML=yearSelectOptions(reportSelYear);
-  if(!comparisonSelectedMonths || !comparisonSelectedMonths.length){
-    comparisonSelectedMonths = [...Array(12)].map((_, i) => i + 1);
-  }
-  renderExcelFilterList('comparison');
-  document.getElementById('comparison-metrics').innerHTML=REPORT_METRICS.map(metric=>`<label class="btn-chip active" style="border:1px solid var(--line);"><input type="checkbox" value="${metric.key}" checked onchange="renderComparison()" style="accent-color:var(--primary); margin-right:5px;">${metric.label}</label>`).join('');
-  renderComparison();
-}
-function comparisonBudget(month,year){
-  const rows = DB.budgets.filter(b=>b.month===month&&b.year===year);
-  const catNames = [...new Set(rows.map(r=>r.category))];
-  let budgeted = 0;
-  catNames.forEach(c => {
-    const main = rows.find(r => r.category === c && !r.subCategory);
-    const subs = rows.filter(r => r.category === c && r.subCategory);
-    budgeted += main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
-  });
-  return budgeted;
-}
-function comparisonValue(metric,month,year){ const totals=monthTotals(DB.transactions,month,year); return metric==='budget'?comparisonBudget(month,year):totals[metric]; }
-function renderComparison(){
-  const year=parseInt(document.getElementById('comparison-year').value,10);
-  const months = comparisonSelectedMonths.slice().sort((a,b) => a - b);
-  const selected=[...document.querySelectorAll('#comparison-metrics input:checked')].map(input=>input.value);
-  const output = document.getElementById('comparison-output');
-  if(!output) return;
-  if(!selected.length){
-    output.innerHTML = '<p class="empty-note">Select at least one metric to compare.</p>';
-    return;
-  }
-  if(!months.length){
-    output.innerHTML = '<p class="empty-note">Select at least one month from the Month Filter to compare.</p>';
-    return;
-  }
-  const labels=months.map(month=>`${MONTH_NAMES[month-1]} ${year}`);
-  output.innerHTML = `
-    <div class="report-table-wrap">
-      <table class="comparison-table">
-        <thead>
-          <tr>
-            <th>Metric</th>
-            ${labels.map(label=>`<th>${label}</th>`).join('')}
-          </tr>
-        </thead>
-        <tbody>
-          ${selected.map(key=>`
-            <tr>
-              <td><strong>${REPORT_METRICS.find(metric=>metric.key===key).label}</strong></td>
-              ${months.map(month=>`<td class="figure">${fmt(comparisonValue(key,month,year))}</td>`).join('')}
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
+  if(reportSelYear === undefined) reportSelYear = currentYear;
+  if(reportSelMonth === undefined) reportSelMonth = currentMonth;
 
-    <!-- Category-by-Category Comparative Analysis -->
-    <div style="margin-top:22px;">
-      <h3 style="font-size:15px; font-weight:700; color:var(--ink); margin:0 0 4px;">Category Spending Comparison</h3>
-      <p class="text-xs muted" style="margin:0 0 12px;">Month-over-month category variance and percentage changes.</p>
-      <div class="report-table-wrap">
-        <table class="comparison-table">
-          <thead>
-            <tr>
-              <th>Expense Category</th>
-              ${months.map(m => `<th>${MONTH_NAMES[m-1]} ${year}</th>`).join('')}
-              ${months.length >= 2 ? '<th>Difference (M2 vs M1)</th><th>% Change</th>' : ''}
-            </tr>
-          </thead>
-          <tbody>
-            ${(() => {
-              const allCats = DB.categories?.expense ? DB.categories.expense.map(c => typeof c==='string'?c:c.name) : [];
-              return allCats.map(cat => {
-                const spends = months.map(m => spentFor(DB.transactions, m, year, cat, null));
-                const totalInRow = spends.reduce((a, b) => a + b, 0);
-                if(totalInRow === 0) return '';
-                let diffCell = '';
-                let pctCell = '';
-                if(months.length >= 2){
-                  const diff = spends[1] - spends[0];
-                  const pct = spends[0] > 0 ? Math.round((diff / spends[0]) * 100) : (spends[1] > 0 ? 100 : 0);
-                  const isUp = diff > 0;
-                  diffCell = `<td class="figure" style="font-weight:600; color:${isUp ? 'var(--rose)' : 'var(--teal)'};">${isUp ? '+' : '-'}${fmt(Math.abs(diff))}</td>`;
-                  pctCell = `<td class="figure" style="font-weight:600; color:${isUp ? 'var(--rose)' : 'var(--teal)'};">${isUp ? '+' : ''}${pct}%</td>`;
-                }
-                return `
-                  <tr>
-                    <td><strong>${titleCase(cat)}</strong></td>
-                    ${spends.map(s => `<td class="figure">${fmt(s)}</td>`).join('')}
-                    ${diffCell}
-                    ${pctCell}
-                  </tr>
-                `;
-              }).join('');
-            })()}
-          </tbody>
-        </table>
+  const yearSel = document.getElementById('report-year-select');
+  if(yearSel) yearSel.innerHTML = yearSelectOptions(reportSelYear);
+
+  const allBtn = document.getElementById('report-all-months-btn');
+  const isAllYears = reportSelYear === 'ALL';
+  if(allBtn){
+    allBtn.classList.toggle('active', !isAllYears && reportSelMonth === 'ALL');
+    allBtn.disabled = isAllYears;
+    allBtn.style.opacity = isAllYears ? '0.45' : '1';
+  }
+
+  const pillsWrap = document.getElementById('report-month-pills');
+  if(pillsWrap){
+    const SHORT_M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    pillsWrap.innerHTML = SHORT_M.map((mName, idx) => {
+      const mVal = idx + 1;
+      const isActive = !isAllYears && reportSelMonth === mVal;
+      return `<button type="button" class="btn-chip ${isActive ? 'active' : ''}" ${isAllYears ? 'disabled' : ''} onclick="selectReportMonth(${mVal})" style="padding:5px 10px; font-size:12px; font-weight:600; ${isAllYears ? 'opacity:0.45;' : ''}">${mName}</button>`;
+    }).join('');
+  }
+}
+
+function onReportYearChange(){
+  const val = document.getElementById('report-year-select')?.value;
+  reportSelYear = val === 'ALL' ? 'ALL' : parseInt(val, 10);
+  renderReports();
+}
+
+function selectReportMonth(val){
+  if(reportSelYear === 'ALL') return;
+  reportSelMonth = val === 'ALL' ? 'ALL' : parseInt(val, 10);
+  renderReports();
+}
+
+function toggleReportDownloadMenu(e){
+  if(e) e.stopPropagation();
+  const menu = document.getElementById('report-download-menu');
+  const chev = document.getElementById('report-download-chevron');
+  if(!menu) return;
+  const isHidden = menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !isHidden);
+  if(chev) chev.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function closeReportDownloadMenu(){
+  const menu = document.getElementById('report-download-menu');
+  const chev = document.getElementById('report-download-chevron');
+  if(menu) menu.classList.add('hidden');
+  if(chev) chev.style.transform = 'rotate(0deg)';
+}
+
+if(!window._reportDownloadOutsideBound){
+  window._reportDownloadOutsideBound = true;
+  document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('report-download-wrap');
+    if(wrap && !wrap.contains(e.target)) closeReportDownloadMenu();
+  });
+}
+
+function triggerScopedReportPDF(scope){
+  closeReportDownloadMenu();
+  downloadReportPDF(scope);
+}
+
+function reportCategoryRows(month, year, customTxs, customBudgets){
+  const expenses = customTxs ? customTxs.filter(t => t.type === 'expense') : (DB.transactions || []).filter(t => inMonth(t, month, year) && t.type === 'expense');
+  const periodBudgets = customBudgets ? customBudgets : (DB.budgets || []).filter(b => b.month === month && b.year === year);
+  const names = new Set([...expenses.map(t => t.category), ...periodBudgets.map(b => b.category)]);
+  return [...names].map(category => {
+    const catExpenses = expenses.filter(t => t.category === category);
+    const actual = catExpenses.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const budget = periodBudgets.filter(b => b.category === category && !b.subCategory).reduce((s, b) => s + (b.budgetAmount || 0), 0);
+    const subNames = new Set([
+      ...catExpenses.filter(t => t.subCategory).flatMap(t => t.subCategory.split(',').map(s => s.trim()).filter(Boolean)),
+      ...periodBudgets.filter(b => b.category === category && b.subCategory).flatMap(b => b.subCategory.split(',').map(s => s.trim()).filter(Boolean))
+    ]);
+    const subs = [...subNames].map(subCategory => {
+      const subTxs = catExpenses.filter(t => t.subCategory && t.subCategory.split(',').map(s => s.trim()).includes(subCategory));
+      const spent = subTxs.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+      const subBudget = periodBudgets.filter(b => b.category === category && b.subCategory === subCategory).reduce((s, b) => s + (b.budgetAmount || 0), 0);
+      return { subCategory, budget: subBudget, spent, remaining: subBudget - spent, hasBudget: subBudget > 0, count: subTxs.length };
+    }).sort((a, b) => b.spent - a.spent);
+    return { category, budget, actual, remaining: budget - actual, hasBudget: budget > 0, subs, count: catExpenses.length };
+  }).filter(r => r.actual > 0 || r.budget > 0).sort((a, b) => b.actual - a.actual || b.budget - a.budget);
+}
+
+function getReportPeriodData(year, month){
+  const txs = DB.transactions || [];
+  const budgets = DB.budgets || [];
+  let periodTxs = [];
+  let periodBudgets = [];
+  let periodLabel = '';
+  let daysInPeriod = 30;
+
+  if(year === 'ALL'){
+    periodTxs = [...txs];
+    periodBudgets = [...budgets];
+    periodLabel = 'All Years';
+    const dates = periodTxs.map(t => t.date).filter(Boolean).sort();
+    if(dates.length >= 2){
+      const diff = Math.round((new Date(dates[dates.length - 1]) - new Date(dates[0])) / 86400000) + 1;
+      daysInPeriod = Math.max(1, diff);
+    }
+  } else if(month === 'ALL'){
+    periodTxs = txs.filter(t => parseTxDate(t.date).year === year);
+    periodBudgets = budgets.filter(b => b.year === year);
+    periodLabel = `All Months ${year}`;
+    const now = new Date();
+    daysInPeriod = (year === now.getFullYear()) ? Math.max(1, Math.ceil((now - new Date(year, 0, 1)) / 86400000)) : 365;
+  } else {
+    periodTxs = txs.filter(t => inMonth(t, month, year));
+    periodBudgets = budgets.filter(b => b.month === month && b.year === year);
+    periodLabel = `${MONTH_NAMES[month - 1]} ${year}`;
+    daysInPeriod = new Date(year, month, 0).getDate();
+  }
+
+  let income = 0, expense = 0, savings = 0;
+  const incomeMap = new Map();
+  periodTxs.forEach(t => {
+    const amt = Number(t.amount) || 0;
+    if(t.type === 'income'){
+      income += amt;
+      const cat = t.category || 'Other Income';
+      incomeMap.set(cat, (incomeMap.get(cat) || 0) + amt);
+    } else if(t.type === 'expense'){
+      expense += amt;
+    } else if(t.type === 'savings'){
+      savings += amt;
+    }
+  });
+
+  const incomeSources = [...incomeMap.entries()].map(([category, amount]) => ({
+    category,
+    amount,
+    pct: income > 0 ? Math.round((amount / income) * 100) : 0
+  })).sort((a, b) => b.amount - a.amount);
+
+  const expenseCategories = reportCategoryRows(month, year, periodTxs, periodBudgets).filter(r => r.actual > 0);
+  const netCashFlow = income - expense;
+  const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
+  const burnRate = income > 0 ? (expense / income) * 100 : 0;
+  const avgDailySpend = expense / Math.max(1, daysInPeriod);
+
+  const monthBuckets = new Map();
+  txs.forEach(t => {
+    const d = parseTxDate(t.date);
+    if(!d.year) return;
+    const key = `${d.year}-${d.month}`;
+    if(!monthBuckets.has(key)) monthBuckets.set(key, { inc: 0, exp: 0 });
+    const b = monthBuckets.get(key);
+    if(t.type === 'income') b.inc += (Number(t.amount) || 0);
+    else if(t.type === 'expense') b.exp += (Number(t.amount) || 0);
+  });
+  const validRates = [...monthBuckets.values()].filter(b => b.inc > 0).map(b => ((b.inc - b.exp) / b.inc) * 100);
+  const avgSavingsRate = validRates.length ? (validRates.reduce((s, v) => s + v, 0) / validRates.length) : savingsRate;
+
+  return {
+    periodTxs, periodBudgets, periodLabel, daysInPeriod,
+    income, expense, savings, netCashFlow,
+    savingsRate, avgSavingsRate, burnRate, avgDailySpend,
+    incomeSources, expenseCategories
+  };
+}
+
+function toggleReportCategory(category){
+  reportOpenCategory = reportOpenCategory === category ? null : category;
+  renderReports();
+}
+
+function renderReportInsightsStrip(data){
+  const el = document.getElementById('report-insights-strip');
+  if(!el) return;
+  const sr = data.savingsRate;
+  const delta = sr - data.avgSavingsRate;
+  const deltaSign = delta >= 0 ? '+' : '';
+  const top = data.expenseCategories[0];
+  const topPct = top && data.expense > 0 ? Math.round((top.actual / data.expense) * 100) : 0;
+
+  el.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div class="text-xs muted" style="font-weight:600;">Net Savings Rate</div>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
+        <span class="figure" style="font-size:20px; font-weight:800; color:${sr >= 0 ? 'var(--teal)' : 'var(--rose)'};">${sr.toFixed(1)}%</span>
+        <span class="text-xs figure" style="font-weight:600; color:${delta >= 0 ? 'var(--teal)' : 'var(--rose)'};">${deltaSign}${delta.toFixed(1)}% vs avg</span>
+      </div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div class="text-xs muted" style="font-weight:600;">Burn Rate (Expense / Income)</div>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
+        <span class="figure" style="font-size:20px; font-weight:800; color:${data.burnRate > 95 ? 'var(--rose)' : (data.burnRate > 80 ? 'var(--amber)' : 'var(--ink)')};">${data.burnRate.toFixed(1)}%</span>
+        <span class="text-xs muted">of inflow</span>
+      </div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div class="text-xs muted" style="font-weight:600;">Avg. Daily Spend</div>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
+        <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(data.avgDailySpend)}</span>
+        <span class="text-xs muted">per day</span>
+      </div>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div class="text-xs muted" style="font-weight:600;">Top Cost Driver</div>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
+        <span style="font-size:15px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${top ? escapeHtml(top.category) : 'None'}">${top ? escapeHtml(titleCase(top.category)) : 'None'}</span>
+        <span class="text-xs figure" style="font-weight:700; color:var(--rose); flex-shrink:0;">${top ? topPct + '%' : '0%'}</span>
       </div>
     </div>
   `;
 }
-function toggleReportCategory(category){ reportOpenCategory=reportOpenCategory===category?null:category; renderReports(); }
-let reportOpenBudgetCategory=null;
-function toggleReportBudgetCategory(category){ reportOpenBudgetCategory=reportOpenBudgetCategory===category?null:category; renderReports(); }
-function renderReportBudgetBreakdown(month,year){
-  const groups=reportBudgetGroups(month,year);
-  if(!groups.length) return '<p class="empty-note" style="padding:16px;">No subcategory budgets set for this month.</p>';
-  return groups.map(group=>{
-    const open=reportOpenBudgetCategory===group.category;
-    return `<div class="report-budget-group"><button class="report-budget-group-head" onclick="toggleReportBudgetCategory('${group.category.replace(/'/g,"\\'")}')"><strong>${titleCase(group.category)}</strong><span>${group.subcategories.length} ${group.subcategories.length===1?'subcategory':'subcategories'} <span class="report-category-toggle ${open?'open':''}">›</span></span></button><div class="report-budget-details ${open?'open':''}">${group.subcategories.map(row=>`<div class="report-budget-row is-sub"><span>${titleCase(row.subCategory)}</span><span class="figure">${fmt(row.budget)}</span><span class="figure">${fmt(row.actual)}</span><span class="figure ${row.difference<0?'tone-neg':'tone-pos'}" style="font-weight:600;">${row.difference<0 ? 'Over: ' : 'Saved: '}${fmt(Math.abs(row.difference))}</span><span><span class="badge ${row.overspent?'badge-over':'badge-ok'}">${row.overspent?'Over Budget':'On Track'}</span></span></div>`).join('')}</div></div>`;
-  }).join('');
-}
-function renderReports(){
-  initReportSelectors();
-  const totals = monthTotals(DB.transactions, reportSelMonth, reportSelYear);
-  const rows = reportCategoryRows(reportSelMonth, reportSelYear);
-  const reportRows = DB.budgets.filter(b=>b.month===reportSelMonth && b.year===reportSelYear);
-  const reportCatNames = [...new Set(reportRows.map(r=>r.category))];
-  const actual = totals.expense;
-  const totalActual = totals.expense;
-  let categoryBudgets = 0;
-  reportCatNames.forEach(c => {
-    const main = reportRows.find(r => r.category === c && !r.subCategory);
-    const subs = reportRows.filter(r => r.category === c && r.subCategory);
-    categoryBudgets += main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
-  });
-  const budgetedSpent = reportCatNames.reduce((sum, c) => {
-    return sum + spentFor(DB.transactions, reportSelMonth, reportSelYear, c, null);
-  }, 0);
-  const unbudgetedSpent = Math.max(0, totalActual - budgetedSpent);
-  const plannedRemaining = categoryBudgets - budgetedSpent;
-  const totalVariance = categoryBudgets - totalActual;
-  const monthLabel = `${MONTH_NAMES[reportSelMonth-1]} ${reportSelYear}`;
 
-  const overReportCats = reportCatNames.filter(c => {
-    const main = reportRows.find(r => r.category === c && !r.subCategory);
-    const subs = reportRows.filter(r => r.category === c && r.subCategory);
-    const bAmt = main ? main.budgetAmount : subs.reduce((s,r)=>s+r.budgetAmount, 0);
-    const sp = spentFor(DB.transactions, reportSelMonth, reportSelYear, c, null);
-    return sp > bAmt;
-  });
+function renderReportCashFlowAndIncome(data){
+  const labelEl = document.getElementById('report-cf-period-label');
+  if(labelEl) labelEl.textContent = data.periodLabel;
+  const el = document.getElementById('report-cashflow-income');
+  if(!el) return;
 
-  const expSub = document.getElementById('report-expense-sub');
-  if(expSub) expSub.textContent = `${rows.length} categor${rows.length===1?'y':'ies'} ranked by actual spending`;
-  const expBreakdown = document.getElementById('report-expense-breakdown');
-  if(expBreakdown) expBreakdown.innerHTML = rows.length ? rows.slice(0,5).map((row,index)=>`<div class="report-category-row" onclick="toggleReportCategory('${row.category.replace(/'/g,"\\'")}')"><span class="report-rank">${String(index+1).padStart(2,'0')}</span><div class="report-category-main"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;"><strong>${titleCase(row.category)}</strong><span class="figure" style="font-weight:600;">${fmt(row.actual)}</span><span class="report-category-toggle ${reportOpenCategory===row.category?'open':''}">›</span></div><div class="report-category-bar"><span style="width:${actual?Math.min(100,row.actual/actual*100):0}%;"></span></div><div class="report-category-details ${reportOpenCategory===row.category?'open':''}">${row.subs.length?row.subs.map(sub=>`<div class="report-subcategory"><span>${titleCase(sub.subCategory)}</span><span class="figure" style="font-weight:600;">${fmt(sub.spent)}</span></div>`).join(''):'<p class="empty-note">No subcategory transactions recorded.</p>'}</div></div></div>`).join('') : '<p class="empty-note">No expenses recorded for this month.</p>';
-  const bSub = document.getElementById('report-budget-sub');
-  if(bSub) bSub.textContent = `${monthLabel} category budgets`;
-  const bSummary = document.getElementById('report-budget-summary');
-  if(bSummary) {
-    if(categoryBudgets > 0){
-      const plannedPercent = Math.min(100, Math.round((budgetedSpent / categoryBudgets) * 100));
-      const hasUnbudgeted = unbudgetedSpent > 0;
-      const isPlannedOver = budgetedSpent > categoryBudgets;
+  const totalFlow = data.income > 0 ? data.income : data.expense;
+  const expShare = totalFlow > 0 ? Math.min(100, Math.round((data.expense / totalFlow) * 100)) : 0;
+  const retShare = Math.max(0, 100 - expShare);
+  const netPositive = data.netCashFlow >= 0;
 
-      bSummary.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span class="muted">Monthly Planned Budget</span>
-          <strong class="figure">${fmt(categoryBudgets)}</strong>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span class="muted">Spent in Planned Categories</span>
-          <strong class="figure">${fmt(budgetedSpent)}</strong>
-        </div>
-        <div class="progress-track" style="margin:10px 0 10px;">
-          <div class="progress-fill ${isPlannedOver ? 'fill-rose' : (plannedPercent >= 85 ? 'fill-amber' : 'fill-primary')}" 
-               style="width:${plannedPercent}%;"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-          <span class="muted">${isPlannedOver ? 'Over Planned Budget by' : 'Remaining Budget'}</span>
-          <strong class="figure ${isPlannedOver ? 'tone-neg' : 'tone-pos'}">${fmt(Math.abs(plannedRemaining))}</strong>
-        </div>
-
-        ${hasUnbudgeted ? `
-          <div style="padding:10px 12px; background:var(--surface-muted); border-radius:8px; margin-bottom:12px; font-size:12.5px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-              <span class="muted">Other Spending</span>
-              <strong class="figure">${fmt(unbudgetedSpent)}</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between; border-top:1px solid var(--line-soft); padding-top:5px; margin-top:5px;">
-              <span class="muted" style="font-weight:600;">Total Actual Expenses</span>
-              <strong class="figure ${totalActual > categoryBudgets ? 'tone-neg' : ''}" style="font-weight:700;">${fmt(totalActual)}</strong>
-            </div>
+  const sourcesHtml = data.incomeSources.length
+    ? data.incomeSources.map(src => `
+        <div style="margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; margin-bottom:4px;">
+            <span style="font-weight:600; color:var(--ink);">${escapeHtml(titleCase(src.category))}</span>
+            <span class="figure" style="font-weight:700; color:var(--ink);">${fmt(src.amount)} <span class="muted" style="font-weight:500; font-size:11px;">(${src.pct}%)</span></span>
           </div>
-        ` : `
-          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-            <span class="muted">Total Actual Expenses</span>
-            <strong class="figure">${fmt(totalActual)}</strong>
+          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
+            <div style="width:${src.pct}%; height:100%; background:var(--teal); border-radius:999px;"></div>
           </div>
-        `}
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; font-size:12px;">
-          <span class="badge ${isPlannedOver ? 'badge-over' : 'badge-ok'}">
-            ${isPlannedOver ? 'Over budget' : 'On track'}
-          </span>
-          <span class="${overReportCats.length ? 'tone-neg' : 'tone-pos'}" style="font-weight:500;">
-            ${overReportCats.length ? `${overReportCats.length} categor${overReportCats.length===1?'y':'ies'} exceeded limit` : 'Categories on track'}
-          </span>
         </div>
-      `;
-    } else {
-      bSummary.innerHTML = '<p class="empty-note">No category budgets set for this month.</p>';
-    }
-  }
-  const bBreakdown = document.getElementById('report-budget-breakdown');
-  if(bBreakdown) bBreakdown.innerHTML = renderReportBudgetBreakdown(reportSelMonth, reportSelYear);
+      `).join('')
+    : '<p class="empty-note" style="margin:12px 0;">No income recorded for this period.</p>';
 
-  renderReportCharts(reportSelMonth, reportSelYear);
+  el.innerHTML = `
+    <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; margin-bottom:8px;">
+        <span style="font-weight:600;">Income vs. Outflow</span>
+        <span class="figure" style="font-weight:700; color:${netPositive ? 'var(--teal)' : 'var(--rose)'};">Net ${netPositive ? '+' : '-'}${fmt(Math.abs(data.netCashFlow))}</span>
+      </div>
+      <div style="height:9px; border-radius:999px; background:var(--surface); overflow:hidden; display:flex; border:1px solid var(--line-soft);">
+        <div style="width:${expShare}%; height:100%; background:var(--rose);"></div>
+        <div style="width:${retShare}%; height:100%; background:var(--teal);"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-top:6px;">
+        <span>Expenses: <strong class="figure" style="color:var(--ink);">${expShare}%</strong></span>
+        <span>Retained: <strong class="figure" style="color:var(--teal);">${retShare}%</strong></span>
+      </div>
+    </div>
+    <div>${sourcesHtml}</div>
+  `;
 }
 
-function renderReportCharts(month, year){
-  const trendCanvas = document.getElementById('chart-trend');
-  const categoryCanvas = document.getElementById('chart-category-pie');
-  if(!trendCanvas || !categoryCanvas) return;
+function renderReportExpenseBreakdown(data){
+  const subEl = document.getElementById('report-expense-sub');
+  if(subEl) subEl.textContent = data.expenseCategories.length ? `${data.expenseCategories.length} categories` : '';
+  const el = document.getElementById('report-expense-breakdown');
+  if(!el) return;
 
-  if(typeof Chart === 'undefined'){
-    window._chartReportRetries = (window._chartReportRetries || 0) + 1;
-    if(window._chartReportRetries < 20){
-      setTimeout(() => {
-        if(currentPage === 'reports') renderReportCharts(reportSelMonth, reportSelYear);
-      }, 400);
-    }
+  if(!data.expenseCategories.length){
+    el.innerHTML = '<p class="empty-note">No expenses recorded for this period.</p>';
     return;
   }
-  window._chartReportRetries = 0;
 
-  if(typeof Chart !== 'undefined' && Chart.Tooltip && Chart.Tooltip.positioners){
-    Chart.Tooltip.positioners.mobileSafe = function(items, eventPosition){
-      if(!items || !items.length) return false;
-      const chart = this.chart;
-      const el = items[0].element;
-      const left = chart.chartArea ? chart.chartArea.left : 0;
-      const right = chart.chartArea ? chart.chartArea.right : chart.width;
-      const midX = left + (right - left) / 2;
-      if(chart.width < 680 || window.innerWidth < 768){
-        return { x: midX, y: el.y };
-      }
-      const clampedX = Math.max(left + 120, Math.min(right - 120, el.x));
-      return { x: clampedX, y: el.y };
-    };
-  }
+  const palette = ['var(--rose)', 'var(--amber)', 'var(--primary)', 'var(--teal)'];
+  el.innerHTML = data.expenseCategories.map((row, idx) => {
+    const pct = data.expense > 0 ? Math.round((row.actual / data.expense) * 100) : 0;
+    const isOpen = reportOpenCategory === row.category;
+    const color = palette[idx % palette.length];
+    const safeCat = row.category.replace(/'/g, "\\'");
+    return `
+      <div class="report-category-row" onclick="toggleReportCategory('${safeCat}')" style="cursor:pointer;">
+        <div class="report-category-main" style="width:100%;">
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; font-size:12.5px;">
+            <strong style="color:var(--ink);">${escapeHtml(titleCase(row.category))}</strong>
+            <span class="figure" style="font-weight:700; color:var(--ink);">${fmt(row.actual)} <span class="muted" style="font-weight:500; font-size:11px;">(${pct}%)</span> <span class="report-category-toggle ${isOpen ? 'open' : ''}">›</span></span>
+          </div>
+          <div class="report-category-bar" style="margin-top:5px;"><span style="width:${pct}%; background:${color};"></span></div>
+          <div class="report-category-details ${isOpen ? 'open' : ''}">
+            ${row.subs.length
+              ? row.subs.map(sub => `<div class="report-subcategory"><span>${escapeHtml(titleCase(sub.subCategory))} <span class="muted">(${sub.count})</span></span><span class="figure" style="font-weight:600;">${fmt(sub.spent)}</span></div>`).join('')
+              : `<p class="empty-note" style="margin:6px 0 0;">${row.count} transaction${row.count === 1 ? '' : 's'} (no subcategories)</p>`}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
-  // 6 months trend ending at selected month/year
-  const trendData = [];
-  for(let i = 5; i >= 0; i--){
-    const dt = new Date(year, month - 1 - i, 1);
-    const m = dt.getMonth() + 1;
-    const y = dt.getFullYear();
-    const t = monthTotals(DB.transactions, m, y);
-    trendData.push({
-      label: dt.toLocaleDateString(undefined, { month:'short' }),
-      income: t.income,
-      expense: t.expense,
-      savings: t.savings
-    });
-  }
+function renderReportSavingsDetail(data){
+  const badgeEl = document.getElementById('report-savings-badge');
+  const el = document.getElementById('report-savings-detail');
+  if(!el) return;
 
-  if(chartTrend) chartTrend.destroy();
-  chartTrend = new Chart(trendCanvas, barChartConfig(trendData));
-
-  // Category breakdown for selected month/year - Horizontal Bar Chart
-  const monthTxs = DB.transactions.filter(t => inMonth(t, month, year) && t.type === 'expense');
-  const categories = expenseByCategory(monthTxs).slice(0, 8);
-  if(chartCategoryPie) chartCategoryPie.destroy();
-  const colors = ['#7C3AED','#0D9488','#E11D48','#D97706','#6366F1','#EC4899','#3B82F6','#10B981'];
-  
-  // Build subcategory breakdown per category for rich hover tooltips
-  const categorySubBreakdown = {};
-  monthTxs.forEach(t => {
-    if(!categorySubBreakdown[t.category]) categorySubBreakdown[t.category] = {};
-    const subName = (t.subCategory && t.subCategory.trim()) ? t.subCategory.trim() : 'General';
-    const subs = subName.split(',').map(s => s.trim()).filter(Boolean);
-    if(t.subCategoryBreakdown && typeof t.subCategoryBreakdown === 'object'){
-      let accountedSum = 0;
-      subs.forEach(s => {
-        const itemAmt = parseFloat(t.subCategoryBreakdown[s]) || 0;
-        if(itemAmt > 0){
-          categorySubBreakdown[t.category][s] = (categorySubBreakdown[t.category][s] || 0) + itemAmt;
-          accountedSum += itemAmt;
-        }
-      });
-      const unassignedSubs = subs.filter(s => !(parseFloat(t.subCategoryBreakdown[s]) > 0));
-      if(unassignedSubs.length > 0 && t.amount > accountedSum){
-        const remPerSub = (t.amount - accountedSum) / unassignedSubs.length;
-        unassignedSubs.forEach(s => {
-          categorySubBreakdown[t.category][s] = (categorySubBreakdown[t.category][s] || 0) + remPerSub;
-        });
-      }
-    } else if(subs.length > 1){
-      const perSub = t.amount / subs.length;
-      subs.forEach(s => {
-        categorySubBreakdown[t.category][s] = (categorySubBreakdown[t.category][s] || 0) + perSub;
-      });
+  let goals = DB.savingsGoals || [];
+  if(reportSelYear !== 'ALL'){
+    if(reportSelMonth === 'ALL'){
+      const months = [1,2,3,4,5,6,7,8,9,10,11,12];
+      goals = goals.filter(g => g.isIndependent || months.some(m => goalActiveInPeriod(g, m, reportSelYear)));
     } else {
-      categorySubBreakdown[t.category][subName] = (categorySubBreakdown[t.category][subName] || 0) + t.amount;
+      goals = goals.filter(g => g.isIndependent || goalActiveInPeriod(g, reportSelMonth, reportSelYear));
     }
+  }
+
+  if(badgeEl) badgeEl.textContent = goals.length ? `${goals.length} Active` : 'None';
+
+  if(!goals.length){
+    el.innerHTML = '<p class="empty-note">No savings or bill goals in this period.</p>';
+    return;
+  }
+
+  el.innerHTML = goals.slice(0, 5).map(g => {
+    const acc = getGoalAccumulatedDeposits(g);
+    const tgt = Number(g.targetAmount) || 0;
+    const pct = tgt > 0 ? Math.min(100, Math.round((acc / tgt) * 100)) : 0;
+    const statusTxt = g.paid ? 'Paid' : (pct >= 100 ? 'Met' : `${pct}%`);
+    const statusColor = g.paid || pct >= 100 ? 'var(--teal)' : 'var(--primary)';
+    return `
+      <div style="background:var(--surface-2); border-radius:9px; padding:9px 11px; margin-bottom:8px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; font-weight:700; margin-bottom:3px;">
+          <span>${escapeHtml(g.name)}</span>
+          <span style="color:${statusColor};">${statusTxt}</span>
+        </div>
+        <div class="figure muted" style="display:flex; justify-content:space-between; font-size:11.5px;">
+          <span>${fmt(acc)} / ${fmt(tgt)}</span>
+          <span>${g.type === 'bill' ? 'Bill' : 'Savings'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderReportInvestmentsDetail(){
+  const badgeEl = document.getElementById('report-inv-badge');
+  const el = document.getElementById('report-investments-detail');
+  if(!el) return;
+  const list = DB.investments || [];
+  if(!list.length){
+    if(badgeEl){ badgeEl.textContent = 'No Assets'; badgeEl.style.color = 'var(--muted)'; }
+    el.innerHTML = '<p class="empty-note">No active investment holdings.</p>';
+    return;
+  }
+
+  const totalCost = list.reduce((s, i) => s + (Number(i.initialInvested) || 0), 0);
+  const totalVal = list.reduce((s, i) => s + (Number(i.currentValue) || 0), 0);
+  const gain = totalVal - totalCost;
+  const roi = totalCost > 0 ? ((gain / totalCost) * 100) : 0;
+  if(badgeEl){
+    badgeEl.textContent = `${gain >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`;
+    badgeEl.style.color = gain >= 0 ? 'var(--teal)' : 'var(--rose)';
+  }
+
+  el.innerHTML = list.slice(0, 5).map(inv => {
+    const val = Number(inv.currentValue) || 0;
+    const cost = Number(inv.initialInvested) || 0;
+    const g = val - cost;
+    const r = cost > 0 ? ((g / cost) * 100) : 0;
+    return `
+      <div style="background:var(--surface-2); border-radius:9px; padding:9px 11px; margin-bottom:8px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:700;">${escapeHtml(inv.name)}</div>
+          <div class="muted" style="font-size:11px;">Cost: ${fmt(cost)}</div>
+        </div>
+        <div class="figure" style="text-align:right;">
+          <div style="font-weight:700;">${fmt(val)}</div>
+          <div style="font-size:11px; color:${g >= 0 ? 'var(--teal)' : 'var(--rose)'};">${g >= 0 ? '+' : ''}${r.toFixed(1)}%</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderReportBudgetSnapshot(data){
+  const badgeEl = document.getElementById('report-budget-badge');
+  const el = document.getElementById('report-budget-snapshot');
+  if(!el) return;
+
+  const budgets = data.periodBudgets || [];
+  if(!budgets.length){
+    if(badgeEl){ badgeEl.textContent = 'None'; badgeEl.style.color = 'var(--muted)'; }
+    el.innerHTML = '<p class="empty-note">No budgets configured for this period.</p>';
+    return;
+  }
+
+  const catTotals = new Map();
+  budgets.forEach(b => {
+    if(!b.category) return;
+    if(!catTotals.has(b.category)) catTotals.set(b.category, { main: 0, sub: 0 });
+    const entry = catTotals.get(b.category);
+    if(!b.subCategory) entry.main += (Number(b.budgetAmount) || 0);
+    else entry.sub += (Number(b.budgetAmount) || 0);
   });
 
-  const pieParent = categoryCanvas.parentElement;
-  let emptyMsg = pieParent ? pieParent.querySelector('.chart-empty-msg') : null;
-  if(categories.length === 0){
-    categoryCanvas.style.display = 'none';
-    if(!emptyMsg && pieParent){
-      emptyMsg = document.createElement('p');
-      emptyMsg.className = 'empty-note chart-empty-msg';
-      emptyMsg.style.padding = '30px 0';
-      emptyMsg.textContent = 'No expenses recorded for this month.';
-      pieParent.appendChild(emptyMsg);
-    }
-  } else {
-    categoryCanvas.style.display = 'block';
-    if(emptyMsg) emptyMsg.remove();
-    const totalExp = categories.reduce((s, c) => s + c.amount, 0);
-    chartCategoryPie = new Chart(categoryCanvas, {
-      type: 'bar',
-      data: {
-        labels: categories.map(c => titleCase(c.category)),
-        datasets: [{
-          label: 'Spending',
-          data: categories.map(c => c.amount),
-          backgroundColor: colors.slice(0, categories.length),
-          borderRadius: 6,
-          borderSkipped: false,
-          maxBarThickness: 22,
-          minBarLength: 36
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
-        interaction: {
-          mode: 'nearest',
-          axis: 'y',
-          intersect: false
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            displayColors: false,
-            position: 'mobileSafe',
-            xAlign: 'center',
-            caretPadding: 6,
-            caretSize: 0,
-            backgroundColor: '#111321',
-            titleColor: '#FFFFFF',
-            titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
-            bodyColor: '#F1F5F9',
-            bodyFont: { family: 'JetBrains Mono', size: 11 },
-            padding: 10,
-            cornerRadius: 8,
-            boxPadding: 4,
-            callbacks: {
-              title: function(items) {
-                return items.length ? items[0].label : '';
-              },
-              label: function(ctx) {
-                const val = ctx.parsed.x;
-                const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
-                return ` Total: ${fmt(val)} (${pct}%)`;
-              },
-              afterBody: function(items) {
-                if(!items.length) return [];
-                const catLabel = items[0].label;
-                const matched = categories.find(c => titleCase(c.category) === catLabel || c.category === catLabel);
-                const catKey = matched ? matched.category : catLabel;
-                const subs = categorySubBreakdown[catKey];
-                if(!subs) return [];
-                const subEntries = Object.entries(subs).sort((a,b) => b[1] - a[1]);
-                if(!subEntries.length) return [];
-                const lines = ['───────────────────'];
-                subEntries.forEach(([sName, sAmt]) => {
-                  lines.push(` • ${titleCase(sName)}: ${fmt(sAmt)}`);
-                });
-                return lines;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            display: false,
-            grid: { display: false },
-            border: { display: false },
-            grace: '14%'
-          },
-          y: {
-            grid: { display: false },
-            border: { display: false },
-            ticks: {
-              color: (document.documentElement.getAttribute('data-theme') === 'dark') ? '#E2E8F0' : '#0F172A',
-              font: { family: 'Plus Jakarta Sans', size: 12.5, weight: '700' }
-            }
-          }
-        }
-      },
-      plugins: [
-        {
-          id: 'categoryHorizontalBarLabels',
-          afterDatasetsDraw(chart) {
-            const { ctx } = chart;
-            const meta = chart.getDatasetMeta(0);
-            if (!meta || meta.hidden) return;
-            meta.data.forEach((bar, index) => {
-              const val = chart.data.datasets[0].data[index];
-              if (val && val > 0) {
-                const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
-                const text = `${pct}%`;
-                ctx.save();
-                ctx.font = '700 12px Plus Jakarta Sans, Manrope, sans-serif';
-                ctx.fillStyle = '#FFFFFF';
-                const barWidth = Math.abs(bar.x - bar.base);
-                if (barWidth >= 32) {
-                  ctx.textAlign = 'right';
-                  ctx.textBaseline = 'middle';
-                  ctx.fillText(text, bar.x - 8, bar.y);
-                } else {
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'middle';
-                  ctx.fillText(text, (bar.base + bar.x) / 2, bar.y);
-                }
-                ctx.restore();
-              }
-            });
-          }
-        }
-      ]
-    });
+  const rows = [...catTotals.entries()].map(([cat, vals]) => {
+    const limit = vals.main > 0 ? vals.main : vals.sub;
+    const spent = data.periodTxs.filter(t => t.type === 'expense' && t.category === cat).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    return { cat, limit, spent };
+  }).filter(r => r.limit > 0).sort((a, b) => (b.spent / b.limit) - (a.spent / a.limit));
+
+  const totalLimit = rows.reduce((s, r) => s + r.limit, 0);
+  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
+  const usedPct = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
+
+  if(badgeEl){
+    badgeEl.textContent = `${usedPct}% Used`;
+    badgeEl.style.color = usedPct > 100 ? 'var(--rose)' : (usedPct >= 85 ? 'var(--amber)' : 'var(--teal)');
   }
+
+  el.innerHTML = `
+    <div style="background:var(--surface-2); border-radius:9px; padding:9px 11px; margin-bottom:10px; font-size:12px; display:flex; justify-content:space-between;">
+      <span class="muted">Planned vs Spent</span>
+      <strong class="figure">${fmt(totalSpent)} / ${fmt(totalLimit)}</strong>
+    </div>
+    ${rows.slice(0, 5).map(r => {
+      const over = r.spent > r.limit;
+      return `
+        <div style="display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-bottom:1px solid var(--line-soft);">
+          <span style="font-weight:600;">${escapeHtml(titleCase(r.cat))}</span>
+          <span class="figure" style="color:${over ? 'var(--rose)' : 'var(--teal)'}; font-weight:600;">${fmt(r.spent)} / ${fmt(r.limit)}</span>
+        </div>
+      `;
+    }).join('')}
+  `;
 }
+
+function renderReports(){
+  initReportSelectors();
+  const data = getReportPeriodData(reportSelYear, reportSelMonth);
+  renderReportInsightsStrip(data);
+  renderReportCashFlowAndIncome(data);
+  renderReportExpenseBreakdown(data);
+  renderReportSavingsDetail(data);
+  renderReportInvestmentsDetail();
+  renderReportBudgetSnapshot(data);
+}
+
+
 
 /* ---------------- Executive PDF Report Generation Engine ---------------- */
 
-function generateReportPDFContent(month, year) {
+function buildReportPDFScope(scope){
+  const now = new Date();
+  const baseYear = (reportSelYear && reportSelYear !== 'ALL') ? reportSelYear : now.getFullYear();
+  const baseMonth = (reportSelMonth && reportSelMonth !== 'ALL') ? reportSelMonth : (now.getMonth() + 1);
+
+  if(scope === 'two_months'){
+    let prevM = baseMonth - 1;
+    let prevY = baseYear;
+    if(prevM <= 0){ prevM = 12; prevY--; }
+    const s1 = MONTH_NAMES[prevM - 1].slice(0, 3);
+    const s2 = MONTH_NAMES[baseMonth - 1].slice(0, 3);
+    const label = prevY === baseYear ? `${s1}-${s2} ${baseYear}` : `${s1} ${prevY}-${s2} ${baseYear}`;
+    return {
+      scope: 'two_months',
+      baseMonth,
+      baseYear,
+      periodLabel: label,
+      filenameTag: label.replace(/\s+/g, '_'),
+      matchTx: t => inMonth(t, prevM, prevY) || inMonth(t, baseMonth, baseYear),
+      matchBudget: b => (b.month === prevM && b.year === prevY) || (b.month === baseMonth && b.year === baseYear)
+    };
+  }
+
+  if(scope === 'whole'){
+    if(reportSelYear === 'ALL'){
+      return {
+        scope: 'whole',
+        baseMonth,
+        baseYear,
+        periodLabel: 'All Years Whole Report',
+        filenameTag: 'Whole_All_Years',
+        matchTx: () => true,
+        matchBudget: () => true
+      };
+    }
+    return {
+      scope: 'whole',
+      baseMonth,
+      baseYear,
+      periodLabel: `Full Year ${baseYear}`,
+      filenameTag: `Full_Year_${baseYear}`,
+      matchTx: t => parseTxDate(t.date).year === baseYear,
+      matchBudget: b => b.year === baseYear
+    };
+  }
+
+  const mName = MONTH_NAMES[baseMonth - 1];
+  return {
+    scope: 'monthly',
+    baseMonth,
+    baseYear,
+    periodLabel: `${mName} ${baseYear}`,
+    filenameTag: `${mName}_${baseYear}`,
+    matchTx: t => inMonth(t, baseMonth, baseYear),
+    matchBudget: b => b.month === baseMonth && b.year === baseYear
+  };
+}
+
+function generateReportPDFContent(month, year, scopeObj) {
   const monthName = MONTH_NAMES[month - 1];
   const cur = (DB && DB.currency) ? DB.currency : DEFAULT_CURRENCY;
   
@@ -8162,40 +8165,46 @@ function generateReportPDFContent(month, year) {
     return cur.position === 'suffix' ? (num + ' ' + cur.symbol) : (cur.symbol + ' ' + num);
   }
   
-  const txsInMonth = (DB.transactions || []).filter(t => inMonth(t, month, year));
-  // Sort chronologically ascending from 1st to end of month
+  const txsInMonth = scopeObj ? (DB.transactions || []).filter(scopeObj.matchTx) : (DB.transactions || []).filter(t => inMonth(t, month, year));
   txsInMonth.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   
-  const totals = monthTotals(DB.transactions || [], month, year);
+  const totals = scopeObj
+    ? txsInMonth.reduce((acc, t) => {
+        const amt = Number(t.amount) || 0;
+        if(t.type === 'income') acc.income += amt;
+        else if(t.type === 'expense') acc.expense += amt;
+        else if(t.type === 'savings') acc.savings += amt;
+        return acc;
+      }, { income: 0, expense: 0, savings: 0 })
+    : monthTotals(DB.transactions || [], month, year);
   const netCashFlow = totals.income - totals.expense;
   const netBalance = totals.income - totals.expense - totals.savings;
   const savingsRate = totals.income > 0 ? Math.round((totals.savings / totals.income) * 100) : 0;
   const expenseRatio = totals.income > 0 ? Math.round((totals.expense / totals.income) * 100) : 0;
   
-  // Category spending breakdown for Page 1 & 2
-  const catRows = reportCategoryRows(month, year);
+  const monthBudgets = scopeObj ? (DB.budgets || []).filter(scopeObj.matchBudget) : (DB.budgets || []).filter(b => b.month === month && b.year === year);
+  const catRows = scopeObj ? reportCategoryRows(month, year, txsInMonth, monthBudgets) : reportCategoryRows(month, year);
   const totalActualExpense = totals.expense;
   
-  // Budgets for this month for Page 3
-  const monthBudgets = (DB.budgets || []).filter(b => b.month === month && b.year === year);
   const totalBudgetPlanned = monthBudgets.reduce((s, b) => s + (b.budgetAmount || 0), 0);
   
-  // Calculate budgeted spent
   let budgetedSpent = 0;
   const budgetCats = [...new Set(monthBudgets.map(b => b.category))];
   budgetCats.forEach(c => {
-    budgetedSpent += spentFor(DB.transactions || [], month, year, c, null);
+    if(scopeObj){
+      budgetedSpent += txsInMonth.filter(t => t.type === 'expense' && t.category === c).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    } else {
+      budgetedSpent += spentFor(DB.transactions || [], month, year, c, null);
+    }
   });
   
-  // Savings goals for Page 4
   const goals = DB.savingsGoals || [];
   
-  // Allowances for Page 1 summary
   const allowanceAccounts = (DB.allowanceAccounts || []).filter(a => a.active);
   function getAllowanceUsed(acc, m, y) {
-    const txs = DB.transactions || [];
-    if (acc.period === 'year') {
-      return txs.filter(t => t.companyCovered && t.allowanceId === acc.id && new Date(t.date).getFullYear() === y).reduce((s, t) => s + (t.companyCoveredAmount || t.amount || 0), 0);
+    const txs = scopeObj ? txsInMonth : (DB.transactions || []);
+    if (acc.period === 'year' || scopeObj) {
+      return txs.filter(t => t.companyCovered && t.allowanceId === acc.id).reduce((s, t) => s + (t.companyCoveredAmount || t.amount || 0), 0);
     }
     return txs.filter(t => t.companyCovered && t.allowanceId === acc.id && inMonth(t, m, y)).reduce((s, t) => s + (t.companyCoveredAmount || t.amount || 0), 0);
   }
@@ -8203,7 +8212,7 @@ function generateReportPDFContent(month, year) {
   
   const totalPages = 4;
   const generatedDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  const periodLabel = monthName.toUpperCase() + ' ' + year;
+  const periodLabel = scopeObj ? scopeObj.periodLabel.toUpperCase() : (monthName.toUpperCase() + ' ' + year);
   
   function renderHeader() {
     return `
@@ -8942,7 +8951,8 @@ function loadScript(src) {
   });
 }
 
-async function downloadReportPDF() {
+async function downloadReportPDF(scope = 'monthly') {
+  const scopeObj = buildReportPDFScope(scope);
   const btn = document.getElementById('btn-download-pdf-report');
   const originalText = btn ? btn.innerHTML : '';
   if (btn) {
@@ -8953,7 +8963,6 @@ async function downloadReportPDF() {
     `;
   }
 
-  // Create elegant loading modal overlay
   let modalOverlay = document.getElementById('wealthnest-pdf-loading-modal');
   if (!modalOverlay) {
     modalOverlay = document.createElement('div');
@@ -8977,12 +8986,12 @@ async function downloadReportPDF() {
           <svg class="spin-animation" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
         </div>
         <h3 style="margin:0 0 6px; font-size:18px; font-weight:800; color:#0F172A; letter-spacing:-0.02em;">Generating Financial Statement</h3>
-        <p id="pdf-modal-status-text" style="margin:0 0 18px; font-size:13px; color:#64748B; line-height:1.5;">Compiling high-resolution 5-page PDF report for ${MONTH_NAMES[reportSelMonth - 1]} ${reportSelYear}...</p>
+        <p id="pdf-modal-status-text" style="margin:0 0 18px; font-size:13px; color:#64748B; line-height:1.5;">Compiling high-resolution PDF report for ${escapeHtml(scopeObj.periodLabel)}...</p>
         <div style="width:100%; height:6px; background:#F1F5F9; border-radius:99px; overflow:hidden; position:relative;">
           <div style="width:45%; height:100%; background:linear-gradient(90deg, #7C3AED, #A855F7); border-radius:99px;"></div>
         </div>
         <div style="display:flex; justify-content:space-between; margin-top:14px; font-size:11px; color:#94A3B8; font-weight:600;">
-          <span>KPIs &amp; Variances</span>
+          <span>Cash Flow</span>
           <span>Budgets &amp; Goals</span>
           <span>Audit Ledger</span>
         </div>
@@ -8992,7 +9001,7 @@ async function downloadReportPDF() {
     requestAnimationFrame(() => { modalOverlay.style.opacity = '1'; });
   }
 
-  showToast(`Preparing ${MONTH_NAMES[reportSelMonth - 1]} ${reportSelYear} PDF report...`);
+  showToast(`Preparing ${scopeObj.periodLabel} PDF report...`);
 
   let hiddenWrapper = null;
   try {
@@ -9004,9 +9013,8 @@ async function downloadReportPDF() {
       }
     }
 
-    const htmlContent = generateReportPDFContent(reportSelMonth, reportSelYear);
+    const htmlContent = generateReportPDFContent(scopeObj.baseMonth, scopeObj.baseYear, scopeObj);
     
-    // In-flow hidden wrapper: allows html2canvas to compute true element heights and styles without visual flash
     hiddenWrapper = document.createElement('div');
     hiddenWrapper.id = 'wealthnest-pdf-export-wrapper';
     hiddenWrapper.style.cssText = 'height:0; overflow:hidden; opacity:0; pointer-events:none; position:relative; margin:0; padding:0;';
@@ -9018,11 +9026,9 @@ async function downloadReportPDF() {
     hiddenWrapper.appendChild(container);
     document.body.appendChild(hiddenWrapper);
 
-    // Allow DOM to calculate layout and fonts
     await new Promise(r => setTimeout(r, 300));
 
-    const monthName = MONTH_NAMES[reportSelMonth - 1];
-    const filename = `WealthNest_Financial_Report_${monthName}_${reportSelYear}.pdf`;
+    const filename = `WealthNest_Financial_Report_${scopeObj.filenameTag}.pdf`;
     
     const opt = {
       margin: 0,
@@ -9041,12 +9047,12 @@ async function downloadReportPDF() {
       await html2pdf().set(opt).from(container).save();
       showToast(`✓ Report downloaded: ${filename}`);
     } else {
-      openPrintReportView(reportSelMonth, reportSelYear);
+      openPrintReportView(scopeObj.baseMonth, scopeObj.baseYear, scopeObj);
     }
   } catch (err) {
     console.error('PDF generation error:', err);
     showToast('Opening print dialog for PDF export...');
-    openPrintReportView(reportSelMonth, reportSelYear);
+    openPrintReportView(scopeObj.baseMonth, scopeObj.baseYear, scopeObj);
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -9066,8 +9072,9 @@ async function downloadReportPDF() {
   }
 }
 
-function openPrintReportView(month, year) {
-  const htmlContent = generateReportPDFContent(month, year);
+function openPrintReportView(month, year, scopeObj) {
+  const htmlContent = generateReportPDFContent(month, year, scopeObj);
+  const titleText = scopeObj ? scopeObj.periodLabel : `${MONTH_NAMES[month-1]} ${year}`;
   const printWindow = window.open('', '_blank', 'width=880,height=960');
   if (!printWindow) {
     showToast('Pop-up blocked. Please allow pop-ups to print/export PDF.');
@@ -9077,7 +9084,7 @@ function openPrintReportView(month, year) {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>WealthNest Report - ${MONTH_NAMES[month-1]} ${year}</title>
+      <title>WealthNest Report - ${titleText}</title>
       <meta charset="utf-8">
       <style>
         @page { size: A4 portrait; margin: 0; }
