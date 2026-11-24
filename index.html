@@ -1919,18 +1919,19 @@
               <span>Download Report</span>
               <svg id="report-download-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="transition:transform 0.15s;"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-            <div id="report-download-menu" class="hidden" style="position:absolute; right:0; top:calc(100% + 6px); min-width:210px; z-index:40; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-lg); padding:6px 0; overflow:hidden;">
+            <div id="report-download-menu" class="hidden" style="position:absolute; right:0; top:calc(100% + 6px); min-width:215px; z-index:40; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-lg); padding:6px 0; overflow:hidden;">
               <button type="button" onclick="triggerScopedReportPDF('monthly')" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer;">
                 <span style="font-weight:600;">Monthly Report</span>
-                <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">PDF</span>
-              </button>
-              <button type="button" onclick="triggerScopedReportPDF('two_months')" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer;">
-                <span style="font-weight:600;">2-Month Report</span>
                 <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">PDF</span>
               </button>
               <button type="button" onclick="triggerScopedReportPDF('whole')" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer;">
                 <span style="font-weight:600;">Whole Report</span>
                 <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">PDF</span>
+              </button>
+              <div style="height:1px; background:var(--line); margin:4px 0;"></div>
+              <button type="button" onclick="openCustomReportModal()" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer;">
+                <span style="font-weight:600;">Customize Report</span>
+                <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">Select</span>
               </button>
             </div>
           </div>
@@ -3262,6 +3263,43 @@
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closePayGoalBillModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary" style="background:var(--teal); border-color:var(--teal);">Confirm Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Custom Report Selection Modal -->
+<div id="custom-report-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeCustomReportModal()">
+  <div class="modal" style="max-width:460px; padding:22px;">
+    <button class="modal-close" onclick="closeCustomReportModal()" aria-label="Close">✕</button>
+    <h2 style="margin:0 0 14px; font-size:17px; color:var(--ink);">Customize Report</h2>
+
+    <form onsubmit="handleDownloadCustomReport(event)">
+      <div style="margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <label class="field-label" style="margin:0;">Years</label>
+          <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" id="custom-report-all-years" onchange="toggleCustomReportAllYears(this.checked)" style="accent-color:var(--primary);">
+            <span>All Years</span>
+          </label>
+        </div>
+        <div id="custom-report-years-list" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <label class="field-label" style="margin:0;">Months</label>
+          <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" id="custom-report-all-months" onchange="toggleCustomReportAllMonths(this.checked)" style="accent-color:var(--primary);">
+            <span>All Months</span>
+          </label>
+        </div>
+        <div id="custom-report-months-list" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;"></div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closeCustomReportModal()" class="btn-ghost">Cancel</button>
+        <button type="submit" class="btn-primary">Download PDF</button>
       </div>
     </form>
   </div>
@@ -8195,49 +8233,134 @@ function renderReports(){
 
 /* ---------------- Executive PDF Report Generation Engine ---------------- */
 
-function buildReportPDFScope(scope){
-  const now = new Date();
-  const baseYear = (reportSelYear && reportSelYear !== 'ALL') ? reportSelYear : now.getFullYear();
-  const baseMonth = (reportSelMonth && reportSelMonth !== 'ALL') ? reportSelMonth : (now.getMonth() + 1);
+let customReportYears = new Set();
+let customReportMonths = new Set();
 
-  if(scope === 'two_months'){
-    let prevM = baseMonth - 1;
-    let prevY = baseYear;
-    if(prevM <= 0){ prevM = 12; prevY--; }
-    const s1 = MONTH_NAMES[prevM - 1].slice(0, 3);
-    const s2 = MONTH_NAMES[baseMonth - 1].slice(0, 3);
-    const label = prevY === baseYear ? `${s1}-${s2} ${baseYear}` : `${s1} ${prevY}-${s2} ${baseYear}`;
+function openCustomReportModal(){
+  closeReportDownloadMenu();
+  const now = new Date();
+  const yrs = reportYearOptions();
+  customReportYears = reportSelYear === 'ALL' ? new Set(yrs) : new Set([reportSelYear || now.getFullYear()]);
+  customReportMonths = reportSelMonth === 'ALL' ? new Set([1,2,3,4,5,6,7,8,9,10,11,12]) : new Set([reportSelMonth || (now.getMonth() + 1)]);
+  renderCustomReportModalLists();
+  const modal = document.getElementById('custom-report-modal-backdrop');
+  if(modal) modal.classList.remove('hidden');
+}
+
+function closeCustomReportModal(){
+  const modal = document.getElementById('custom-report-modal-backdrop');
+  if(modal) modal.classList.add('hidden');
+}
+
+function renderCustomReportModalLists(){
+  const yrs = reportYearOptions();
+  const allY = customReportYears.size === yrs.length;
+  const allYChk = document.getElementById('custom-report-all-years');
+  if(allYChk) allYChk.checked = allY;
+
+  const yWrap = document.getElementById('custom-report-years-list');
+  if(yWrap){
+    yWrap.innerHTML = yrs.map(y => {
+      const active = customReportYears.has(y);
+      return `<button type="button" onclick="toggleCustomReportYear(${y})" class="btn-chip ${active ? 'active' : ''}" style="padding:5px 12px; font-size:12px;">${y}</button>`;
+    }).join('');
+  }
+
+  const allM = customReportMonths.size === 12;
+  const allMChk = document.getElementById('custom-report-all-months');
+  if(allMChk) allMChk.checked = allM;
+
+  const mWrap = document.getElementById('custom-report-months-list');
+  if(mWrap){
+    const SHORT_M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    mWrap.innerHTML = SHORT_M.map((m, idx) => {
+      const mVal = idx + 1;
+      const active = customReportMonths.has(mVal);
+      return `<button type="button" onclick="toggleCustomReportMonth(${mVal})" class="btn-chip ${active ? 'active' : ''}" style="padding:5px 8px; font-size:12px; justify-content:center;">${m}</button>`;
+    }).join('');
+  }
+}
+
+function toggleCustomReportYear(y){
+  if(customReportYears.has(y)) customReportYears.delete(y);
+  else customReportYears.add(y);
+  renderCustomReportModalLists();
+}
+
+function toggleCustomReportAllYears(checked){
+  const yrs = reportYearOptions();
+  customReportYears = checked ? new Set(yrs) : new Set();
+  renderCustomReportModalLists();
+}
+
+function toggleCustomReportMonth(m){
+  if(customReportMonths.has(m)) customReportMonths.delete(m);
+  else customReportMonths.add(m);
+  renderCustomReportModalLists();
+}
+
+function toggleCustomReportAllMonths(checked){
+  customReportMonths = checked ? new Set([1,2,3,4,5,6,7,8,9,10,11,12]) : new Set();
+  renderCustomReportModalLists();
+}
+
+function handleDownloadCustomReport(e){
+  e.preventDefault();
+  if(!customReportYears.size){
+    showToast('Select at least one year', 'info');
+    return;
+  }
+  if(!customReportMonths.size){
+    showToast('Select at least one month', 'info');
+    return;
+  }
+  const yrs = reportYearOptions();
+  const customSel = {
+    allYears: customReportYears.size === yrs.length,
+    years: [...customReportYears].sort((a,b) => a - b),
+    allMonths: customReportMonths.size === 12,
+    months: [...customReportMonths].sort((a,b) => a - b)
+  };
+  closeCustomReportModal();
+  downloadReportPDF('custom', customSel);
+}
+
+function buildReportPDFScope(scope, customSel){
+  const now = new Date();
+  const todayStr = ymd(now);
+  const curY = now.getFullYear();
+  const curM = now.getMonth() + 1;
+  const baseYear = (reportSelYear && reportSelYear !== 'ALL') ? reportSelYear : curY;
+  const baseMonth = (reportSelMonth && reportSelMonth !== 'ALL') ? reportSelMonth : curM;
+
+  if(scope === 'whole'){
     return {
-      scope: 'two_months',
-      baseMonth,
-      baseYear,
-      periodLabel: label,
-      filenameTag: label.replace(/\s+/g, '_'),
-      matchTx: t => inMonth(t, prevM, prevY) || inMonth(t, baseMonth, baseYear),
-      matchBudget: b => (b.month === prevM && b.year === prevY) || (b.month === baseMonth && b.year === baseYear)
+      scope: 'whole',
+      baseMonth: curM,
+      baseYear: curY,
+      periodLabel: `Whole Report (Up to ${todayStr})`,
+      filenameTag: `Whole_Up_To_${todayStr}`,
+      matchTx: t => Boolean(t.date && t.date <= todayStr),
+      matchBudget: b => b.year < curY || (b.year === curY && b.month <= curM)
     };
   }
 
-  if(scope === 'whole'){
-    if(reportSelYear === 'ALL'){
-      return {
-        scope: 'whole',
-        baseMonth,
-        baseYear,
-        periodLabel: 'All Years Whole Report',
-        filenameTag: 'Whole_All_Years',
-        matchTx: () => true,
-        matchBudget: () => true
-      };
-    }
+  if(scope === 'custom' && customSel){
+    const yLabel = customSel.allYears ? 'All Years' : customSel.years.join(', ');
+    const mLabel = customSel.allMonths ? 'All Months' : customSel.months.map(m => MONTH_NAMES[m - 1].slice(0, 3)).join(', ');
+    const label = `${yLabel} (${mLabel})`;
     return {
-      scope: 'whole',
-      baseMonth,
-      baseYear,
-      periodLabel: `Full Year ${baseYear}`,
-      filenameTag: `Full_Year_${baseYear}`,
-      matchTx: t => parseTxDate(t.date).year === baseYear,
-      matchBudget: b => b.year === baseYear
+      scope: 'custom',
+      baseMonth: customSel.months[customSel.months.length - 1] || curM,
+      baseYear: customSel.years[customSel.years.length - 1] || curY,
+      periodLabel: label,
+      filenameTag: label.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, ''),
+      matchTx: t => {
+        const d = parseTxDate(t.date);
+        if(!d.year) return false;
+        return (customSel.allYears || customSel.years.includes(d.year)) && (customSel.allMonths || customSel.months.includes(d.month));
+      },
+      matchBudget: b => (customSel.allYears || customSel.years.includes(b.year)) && (customSel.allMonths || customSel.months.includes(b.month))
     };
   }
 
@@ -9048,8 +9171,8 @@ function loadScript(src) {
   });
 }
 
-async function downloadReportPDF(scope = 'monthly') {
-  const scopeObj = buildReportPDFScope(scope);
+async function downloadReportPDF(scope = 'monthly', customSel = null) {
+  const scopeObj = buildReportPDFScope(scope, customSel);
   const btn = document.getElementById('btn-download-pdf-report');
   const originalText = btn ? btn.innerHTML : '';
   if (btn) {
