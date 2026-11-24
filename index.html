@@ -1908,11 +1908,9 @@
 
       <div class="card" style="padding:14px 18px; margin-bottom:16px;">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
-            <select id="report-year-select" class="field-input" onchange="onReportYearChange()" style="width:auto; min-width:104px; padding:6px 10px; font-size:12.5px; font-weight:600;"></select>
-            <div style="width:1px; height:22px; background:var(--line); margin:0 2px;"></div>
-            <button type="button" id="report-all-months-btn" class="btn-chip" onclick="selectReportMonth('ALL')" style="padding:5px 12px; font-size:12px; font-weight:600;">All Months</button>
-            <div id="report-month-pills" style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;"></div>
+          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+            <select id="report-year-select" class="field-input" onchange="onReportFilterChange()" style="width:auto; min-width:110px; padding:7px 12px; font-size:13px; font-weight:600;"></select>
+            <select id="report-month-select" class="field-input" onchange="onReportFilterChange()" style="width:auto; min-width:140px; padding:7px 12px; font-size:13px; font-weight:600;"></select>
           </div>
 
           <div id="report-download-wrap" style="position:relative; display:inline-block;">
@@ -1953,16 +1951,19 @@
         </div>
 
         <div class="card" style="padding:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-            <h2 class="section-title" style="margin:0;">Expense Breakdown</h2>
-            <span class="text-xs muted" id="report-expense-sub"></span>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h2 class="section-title" style="margin:0;">Expense Breakdown</h2>
+              <span class="text-xs muted" id="report-expense-sub"></span>
+            </div>
+            <button type="button" id="report-expense-expand-btn" onclick="toggleReportExpenseExpand()" class="btn-ghost btn-small hidden" style="font-size:11.5px; padding:4px 10px;"></button>
           </div>
           <div id="report-expense-breakdown"></div>
         </div>
       </div>
 
-      <!-- Bottom 3 Balanced Sections: Savings & Bills | Investments | Budget Snapshot -->
-      <div class="grid mb-4" style="grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); align-items:start;">
+      <!-- Balanced 2-Column Row: Savings & Bills | Investments -->
+      <div class="grid grid-2 mb-4" style="align-items:start;">
         <div class="card" style="padding:20px;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
             <h2 class="section-title" style="margin:0;">Savings &amp; Bills</h2>
@@ -1978,14 +1979,18 @@
           </div>
           <div id="report-investments-detail"></div>
         </div>
+      </div>
 
-        <div class="card" style="padding:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-            <h2 class="section-title" style="margin:0;">Budget Snapshot</h2>
+      <!-- Expandable Budget Comparison Card -->
+      <div class="card mb-4" style="padding:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <h2 class="section-title" style="margin:0;">Budget Comparison</h2>
             <span class="text-xs figure" style="font-weight:700;" id="report-budget-badge"></span>
           </div>
-          <div id="report-budget-snapshot"></div>
+          <button type="button" id="report-budget-expand-btn" onclick="toggleReportBudgetSection()" class="btn-ghost btn-small" style="font-size:12px; padding:5px 12px;"></button>
         </div>
+        <div id="report-budget-snapshot" style="margin-top:14px;"></div>
       </div>
     </section>
 
@@ -4432,13 +4437,13 @@ const ICONS = {
 
 const NAV_TOP = [
   { id: "dashboard", label: "Dashboard" },
-  { id: "transactions", label: "Transactions" },
   { id: "reports", label: "Reports" },
 ];
 const NAV_BOTTOM = [
+  { id: "transactions", label: "Transactions" },
   { id: "budgets", label: "Budgets" },
-  { id: "savings", label: "Savings Goals" },
   { id: "investments", label: "Investments" },
+  { id: "savings", label: "Savings Goals" },
 ];
 const NAV_SETTINGS = [
   { id: "settings", label: "Settings" },
@@ -7628,6 +7633,9 @@ function monthBudgetSummary(month, year){
 }
 /* ---------------- render: monthly reports ---------------- */
 let reportSelMonth, reportSelYear, reportOpenCategory = null;
+let reportExpenseExpanded = false;
+let reportBudgetExpanded = false;
+let reportOpenBudgetCat = null;
 function titleCase(value){ return String(value || '').replace(/\b\w/g, letter=>letter.toUpperCase()); }
 function renderComparison(){}
 
@@ -7650,6 +7658,11 @@ function yearSelectOptions(selected){
     `<option value="ALL" ${selected==='ALL'?'selected':''}>All Years</option>`;
 }
 
+function monthFilterOptions(selected){
+  return `<option value="ALL" ${selected==='ALL'?'selected':''}>All Months</option>` +
+    MONTH_NAMES.map((name, idx) => `<option value="${idx + 1}" ${idx + 1 === selected ? 'selected' : ''}>${name}</option>`).join('');
+}
+
 function initReportSelectors(){
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -7660,34 +7673,37 @@ function initReportSelectors(){
   const yearSel = document.getElementById('report-year-select');
   if(yearSel) yearSel.innerHTML = yearSelectOptions(reportSelYear);
 
-  const allBtn = document.getElementById('report-all-months-btn');
+  const monthSel = document.getElementById('report-month-select');
   const isAllYears = reportSelYear === 'ALL';
-  if(allBtn){
-    allBtn.classList.toggle('active', !isAllYears && reportSelMonth === 'ALL');
-    allBtn.disabled = isAllYears;
-    allBtn.style.opacity = isAllYears ? '0.45' : '1';
-  }
-
-  const pillsWrap = document.getElementById('report-month-pills');
-  if(pillsWrap){
-    const SHORT_M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    pillsWrap.innerHTML = SHORT_M.map((mName, idx) => {
-      const mVal = idx + 1;
-      const isActive = !isAllYears && reportSelMonth === mVal;
-      return `<button type="button" class="btn-chip ${isActive ? 'active' : ''}" ${isAllYears ? 'disabled' : ''} onclick="selectReportMonth(${mVal})" style="padding:5px 10px; font-size:12px; font-weight:600; ${isAllYears ? 'opacity:0.45;' : ''}">${mName}</button>`;
-    }).join('');
+  if(monthSel){
+    monthSel.innerHTML = monthFilterOptions(isAllYears ? 'ALL' : reportSelMonth);
+    monthSel.disabled = isAllYears;
+    monthSel.style.opacity = isAllYears ? '0.55' : '1';
   }
 }
 
-function onReportYearChange(){
-  const val = document.getElementById('report-year-select')?.value;
-  reportSelYear = val === 'ALL' ? 'ALL' : parseInt(val, 10);
+function onReportFilterChange(){
+  const yVal = document.getElementById('report-year-select')?.value;
+  const mVal = document.getElementById('report-month-select')?.value;
+  reportSelYear = yVal === 'ALL' ? 'ALL' : parseInt(yVal, 10);
+  if(reportSelYear !== 'ALL' && mVal !== undefined){
+    reportSelMonth = mVal === 'ALL' ? 'ALL' : parseInt(mVal, 10);
+  }
   renderReports();
 }
 
-function selectReportMonth(val){
-  if(reportSelYear === 'ALL') return;
-  reportSelMonth = val === 'ALL' ? 'ALL' : parseInt(val, 10);
+function toggleReportExpenseExpand(){
+  reportExpenseExpanded = !reportExpenseExpanded;
+  renderReports();
+}
+
+function toggleReportBudgetSection(){
+  reportBudgetExpanded = !reportBudgetExpanded;
+  renderReports();
+}
+
+function toggleReportBudgetCat(cat){
+  reportOpenBudgetCat = reportOpenBudgetCat === cat ? null : cat;
   renderReports();
 }
 
@@ -7913,17 +7929,30 @@ function renderReportCashFlowAndIncome(data){
 
 function renderReportExpenseBreakdown(data){
   const subEl = document.getElementById('report-expense-sub');
-  if(subEl) subEl.textContent = data.expenseCategories.length ? `${data.expenseCategories.length} categories` : '';
+  const expandBtn = document.getElementById('report-expense-expand-btn');
   const el = document.getElementById('report-expense-breakdown');
+  if(subEl) subEl.textContent = data.expenseCategories.length ? `(${data.expenseCategories.length})` : '';
   if(!el) return;
 
   if(!data.expenseCategories.length){
+    if(expandBtn) expandBtn.classList.add('hidden');
     el.innerHTML = '<p class="empty-note">No expenses recorded for this period.</p>';
     return;
   }
 
+  const totalCount = data.expenseCategories.length;
+  if(expandBtn){
+    if(totalCount > 5){
+      expandBtn.classList.remove('hidden');
+      expandBtn.textContent = reportExpenseExpanded ? 'Collapse' : `Expand All (${totalCount})`;
+    } else {
+      expandBtn.classList.add('hidden');
+    }
+  }
+
+  const visibleRows = reportExpenseExpanded ? data.expenseCategories : data.expenseCategories.slice(0, 5);
   const palette = ['var(--rose)', 'var(--amber)', 'var(--primary)', 'var(--teal)'];
-  el.innerHTML = data.expenseCategories.map((row, idx) => {
+  el.innerHTML = visibleRows.map((row, idx) => {
     const pct = data.expense > 0 ? Math.round((row.actual / data.expense) * 100) : 0;
     const isOpen = reportOpenCategory === row.category;
     const color = palette[idx % palette.length];
@@ -8032,12 +8061,14 @@ function renderReportInvestmentsDetail(){
 
 function renderReportBudgetSnapshot(data){
   const badgeEl = document.getElementById('report-budget-badge');
+  const expandBtn = document.getElementById('report-budget-expand-btn');
   const el = document.getElementById('report-budget-snapshot');
   if(!el) return;
 
   const budgets = data.periodBudgets || [];
   if(!budgets.length){
     if(badgeEl){ badgeEl.textContent = 'None'; badgeEl.style.color = 'var(--muted)'; }
+    if(expandBtn) expandBtn.classList.add('hidden');
     el.innerHTML = '<p class="empty-note">No budgets configured for this period.</p>';
     return;
   }
@@ -8045,41 +8076,107 @@ function renderReportBudgetSnapshot(data){
   const catTotals = new Map();
   budgets.forEach(b => {
     if(!b.category) return;
-    if(!catTotals.has(b.category)) catTotals.set(b.category, { main: 0, sub: 0 });
+    if(!catTotals.has(b.category)) catTotals.set(b.category, { main: 0, sub: 0, subs: [] });
     const entry = catTotals.get(b.category);
-    if(!b.subCategory) entry.main += (Number(b.budgetAmount) || 0);
-    else entry.sub += (Number(b.budgetAmount) || 0);
+    if(!b.subCategory){
+      entry.main += (Number(b.budgetAmount) || 0);
+    } else {
+      entry.sub += (Number(b.budgetAmount) || 0);
+      entry.subs.push({ name: b.subCategory, limit: Number(b.budgetAmount) || 0 });
+    }
   });
 
   const rows = [...catTotals.entries()].map(([cat, vals]) => {
     const limit = vals.main > 0 ? vals.main : vals.sub;
-    const spent = data.periodTxs.filter(t => t.type === 'expense' && t.category === cat).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-    return { cat, limit, spent };
+    const catTxs = data.periodTxs.filter(t => t.type === 'expense' && t.category === cat);
+    const spent = catTxs.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const subRows = vals.subs.map(s => {
+      const sSpent = catTxs.filter(t => t.subCategory && t.subCategory.split(',').map(x => x.trim()).includes(s.name)).reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      return { name: s.name, limit: s.limit, spent: sSpent };
+    });
+    return { cat, limit, spent, diff: limit - spent, pct: limit > 0 ? Math.round((spent / limit) * 100) : 0, subRows };
   }).filter(r => r.limit > 0).sort((a, b) => (b.spent / b.limit) - (a.spent / a.limit));
 
   const totalLimit = rows.reduce((s, r) => s + r.limit, 0);
   const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
   const usedPct = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
+  const totalOver = totalSpent > totalLimit;
 
   if(badgeEl){
-    badgeEl.textContent = `${usedPct}% Used`;
-    badgeEl.style.color = usedPct > 100 ? 'var(--rose)' : (usedPct >= 85 ? 'var(--amber)' : 'var(--teal)');
+    badgeEl.textContent = `${fmt(totalSpent)} / ${fmt(totalLimit)} · ${usedPct}% Used`;
+    badgeEl.style.color = totalOver ? 'var(--rose)' : (usedPct >= 85 ? 'var(--amber)' : 'var(--teal)');
   }
 
-  el.innerHTML = `
-    <div style="background:var(--surface-2); border-radius:9px; padding:9px 11px; margin-bottom:10px; font-size:12px; display:flex; justify-content:space-between;">
-      <span class="muted">Planned vs Spent</span>
-      <strong class="figure">${fmt(totalSpent)} / ${fmt(totalLimit)}</strong>
+  if(expandBtn){
+    expandBtn.classList.remove('hidden');
+    expandBtn.textContent = reportBudgetExpanded ? 'Collapse' : `Expand Details (${rows.length})`;
+  }
+
+  const summaryBarHtml = `
+    <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:12.5px; margin-bottom:8px;">
+        <span style="font-weight:600;">Overall Budget vs. Actual</span>
+        <span class="figure" style="font-weight:700; color:${totalOver ? 'var(--rose)' : 'var(--teal)'};">
+          ${totalOver ? 'Over by ' + fmt(totalSpent - totalLimit) : 'Remaining ' + fmt(totalLimit - totalSpent)}
+        </span>
+      </div>
+      <div class="progress-track" style="height:8px; border-radius:999px; background:var(--surface); overflow:hidden;">
+        <div style="width:${Math.min(100, usedPct)}%; height:100%; background:${totalOver ? 'var(--rose)' : (usedPct >= 85 ? 'var(--amber)' : 'var(--teal)')}; border-radius:999px;"></div>
+      </div>
     </div>
-    ${rows.slice(0, 5).map(r => {
-      const over = r.spent > r.limit;
-      return `
-        <div style="display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-bottom:1px solid var(--line-soft);">
-          <span style="font-weight:600;">${escapeHtml(titleCase(r.cat))}</span>
-          <span class="figure" style="color:${over ? 'var(--rose)' : 'var(--teal)'}; font-weight:600;">${fmt(r.spent)} / ${fmt(r.limit)}</span>
+  `;
+
+  if(!reportBudgetExpanded){
+    el.innerHTML = summaryBarHtml;
+    return;
+  }
+
+  const detailRowsHtml = rows.map(r => {
+    const over = r.spent > r.limit;
+    const barColor = over ? 'var(--rose)' : (r.pct >= 85 ? 'var(--amber)' : 'var(--teal)');
+    const safeCat = r.cat.replace(/'/g, "\\'");
+    const hasSubs = r.subRows.length > 0;
+    const isSubOpen = reportOpenBudgetCat === r.cat;
+    return `
+      <div style="padding:10px 12px; border-bottom:1px solid var(--line-soft); ${hasSubs ? 'cursor:pointer;' : ''}" ${hasSubs ? `onclick="toggleReportBudgetCat('${safeCat}')"` : ''}>
+        <div style="display:grid; grid-template-columns:minmax(130px,1.5fr) repeat(3, minmax(85px,1fr)) auto; gap:10px; align-items:center; font-size:12.5px;">
+          <div style="font-weight:700; color:var(--ink);">${escapeHtml(titleCase(r.cat))} ${hasSubs ? `<span class="muted" style="font-weight:500;">${isSubOpen ? '▾' : '›'}</span>` : ''}</div>
+          <div class="figure muted">${fmt(r.limit)}</div>
+          <div class="figure" style="font-weight:700; color:${barColor};">${fmt(r.spent)}</div>
+          <div class="figure" style="font-weight:600; color:${over ? 'var(--rose)' : 'var(--teal)'};">${over ? '-' : '+'}${fmt(Math.abs(r.diff))}</div>
+          <div><span class="badge ${over ? 'badge-over' : 'badge-ok'}" style="font-size:10.5px;">${over ? 'Over' : 'On Track'}</span></div>
         </div>
-      `;
-    }).join('')}
+        <div class="progress-track" style="height:4px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-top:7px;">
+          <div style="width:${Math.min(100, r.pct)}%; height:100%; background:${barColor}; border-radius:999px;"></div>
+        </div>
+        ${hasSubs && isSubOpen ? `
+          <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); display:flex; flex-direction:column; gap:4px;">
+            ${r.subRows.map(sr => {
+              const sOver = sr.spent > sr.limit;
+              return `
+                <div style="display:grid; grid-template-columns:minmax(130px,1.5fr) repeat(3, minmax(85px,1fr)) auto; gap:10px; align-items:center; font-size:11.5px; color:var(--muted);">
+                  <div style="padding-left:10px;">${escapeHtml(titleCase(sr.name))}</div>
+                  <div class="figure">${fmt(sr.limit)}</div>
+                  <div class="figure" style="color:${sOver ? 'var(--rose)' : 'var(--ink)'}; font-weight:600;">${fmt(sr.spent)}</div>
+                  <div class="figure" style="color:${sOver ? 'var(--rose)' : 'var(--teal)'};">${sOver ? '-' : '+'}${fmt(Math.abs(sr.limit - sr.spent))}</div>
+                  <div></div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  el.innerHTML = `
+    ${summaryBarHtml}
+    <div style="margin-top:12px; border:1px solid var(--line-soft); border-radius:10px; overflow-x:auto;">
+      <div style="display:grid; grid-template-columns:minmax(130px,1.5fr) repeat(3, minmax(85px,1fr)) auto; gap:10px; padding:8px 12px; background:var(--surface-2); font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700;">
+        <span>Category</span><span>Budget</span><span>Actual</span><span>Variance</span><span>Status</span>
+      </div>
+      ${detailRowsHtml}
+    </div>
   `;
 }
 
