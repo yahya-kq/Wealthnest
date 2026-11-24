@@ -1348,7 +1348,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 14px;
     min-height: 40px;
   }
@@ -1358,28 +1358,24 @@
   }
   #dashboard-bottom-grid .dash-card-head .section-title {
     font-family: var(--font-display);
-    font-size: 15.5px;
+    font-size: 14.5px;
     font-weight: 700;
     line-height: 1.25;
     margin: 0;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   #dashboard-bottom-grid .dash-card-head .section-sub {
-    font-size: 12px;
+    font-size: 11.5px;
     line-height: 1.35;
     color: var(--muted);
     margin: 2px 0 0;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   #dashboard-bottom-grid .dash-card-head .btn-small {
     white-space: nowrap;
     flex-shrink: 0;
     font-size: 11px;
-    padding: 4px 9px;
+    padding: 3px 8px;
     border-radius: 6px;
   }
   .dash-card-kpi-row {
@@ -1843,13 +1839,13 @@
 
       <!-- High-level Overview Grid -->
       <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
-        <div class="card" style="padding:20px;">
+        <div class="card" style="padding:18px;">
           <div class="dash-card-head">
             <div class="dash-card-head-copy">
               <h2 class="section-title">Top Expenses</h2>
               <p class="section-sub">Highest categories</p>
             </div>
-            <button type="button" onclick="goToApp('reports')" class="btn-ghost btn-small">View Reports</button>
+            <button type="button" onclick="goToApp('reports')" class="btn-ghost btn-small">Reports</button>
           </div>
           <div style="position:relative; height:120px; width:100%; margin-bottom:12px; display:none;" id="wrap-chart-top-expenses">
             <canvas id="dashboard-chart-top-expenses"></canvas>
@@ -1857,13 +1853,13 @@
           <div id="dashboard-top-expenses"></div>
         </div>
 
-        <div class="card" style="padding:20px;">
+        <div class="card" style="padding:18px;">
           <div class="dash-card-head">
             <div class="dash-card-head-copy">
               <h2 class="section-title">Budget Overview</h2>
               <p class="section-sub" id="budget-perf-sub">Monthly limits</p>
             </div>
-            <button type="button" onclick="goToApp('budgets')" class="btn-ghost btn-small">Manage Budgets</button>
+            <button type="button" onclick="goToApp('budgets')" class="btn-ghost btn-small">Budgets</button>
           </div>
           <div style="position:relative; height:110px; width:100%; margin-bottom:10px; display:none;" id="wrap-chart-budget">
             <canvas id="dashboard-chart-budget"></canvas>
@@ -1871,7 +1867,7 @@
           <div id="dashboard-budget-summary"></div>
         </div>
 
-        <div class="card" style="padding:20px;">
+        <div class="card" style="padding:18px;">
           <div>
             <div class="dash-card-head">
               <div class="dash-card-head-copy">
@@ -1884,7 +1880,7 @@
           </div>
         </div>
 
-        <div class="card" style="padding:20px;">
+        <div class="card" style="padding:18px;">
           <div class="dash-card-head">
             <div class="dash-card-head-copy">
               <h2 class="section-title">Investments</h2>
@@ -9733,12 +9729,9 @@ function renderDashboardTopExpenses(periodTxs, totals){
             const color = palette[idx % palette.length];
             return `
               <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
-                  <div style="display:flex; align-items:center; gap:7px; min-width:0; flex:1;">
-                    <span style="width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
-                    <span class="dash-card-item-name" title="${escapeHtml(cat.category)}">${escapeHtml(cat.category)}</span>
-                  </div>
-                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11.5px; flex-shrink:0; white-space:nowrap;">${fmt(cat.amount)} <span style="font-weight:500; color:var(--muted); font-size:10.5px;">(${pct}%)</span></span>
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; margin-bottom:4px; gap:6px;">
+                  <span class="dash-card-item-name" style="flex:1; min-width:0;" title="${escapeHtml(cat.category)}">${escapeHtml(cat.category)}</span>
+                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11px; flex-shrink:0; white-space:nowrap;">${fmt(cat.amount)} <span style="font-weight:500; color:var(--muted); font-size:10px;">(${pct}%)</span></span>
                 </div>
                 <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
                   <div style="width:${pct}%; height:100%; background:${color}; border-radius:999px;"></div>
@@ -9917,7 +9910,6 @@ function renderDashboardInvestments(){
   const body = document.getElementById('dash-investments-body');
   if(!body) return;
   const list = DB.investments || [];
-  const vpsActive = DB.vpsSettings && DB.vpsSettings.active;
 
   if(!list.length){
     body.innerHTML = `
@@ -9925,7 +9917,7 @@ function renderDashboardInvestments(){
         <div>
           <div class="dash-card-kpi-row">
             <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(0)}</span>
-            <span class="badge ${vpsActive ? 'badge-ok' : 'badge-off'} dash-card-kpi-badge">VPF ${vpsActive ? 'Active' : 'Paused'}</span>
+            <span class="badge badge-off dash-card-kpi-badge">No Assets</span>
           </div>
           <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
           <p class="muted text-xs" style="margin:20px 0; text-align:center;">Track stock market, money market, income funds, and VPF in real-time.</p>
@@ -9963,12 +9955,9 @@ function renderDashboardInvestments(){
             const meta = getAssetClassMeta(inv.assetType);
             return `
               <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
-                  <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
-                    <span style="width:8px; height:8px; border-radius:50%; background:${meta.color || 'var(--primary)'}; flex-shrink:0;"></span>
-                    <span class="dash-card-item-name" title="${escapeHtml(inv.name)}">${escapeHtml(inv.name)}</span>
-                  </div>
-                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11.5px; flex-shrink:0; white-space:nowrap;">${fmt(invVal)} <span style="font-weight:500; color:${invGain>=0?'var(--teal)':'var(--rose)'}; font-size:10.5px;">(${invGain>=0?'+':''}${invRoi.toFixed(1)}%)</span></span>
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; margin-bottom:4px; gap:6px;">
+                  <span class="dash-card-item-name" style="flex:1; min-width:0;" title="${escapeHtml(inv.name)}">${escapeHtml(inv.name)}</span>
+                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11px; flex-shrink:0; white-space:nowrap;">${fmt(invVal)} <span style="font-weight:500; color:${invGain>=0?'var(--teal)':'var(--rose)'}; font-size:10px;">(${invGain>=0?'+':''}${invRoi.toFixed(1)}%)</span></span>
                 </div>
                 <div style="font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between;">
                   <span>${escapeHtml(meta.label || inv.assetType || 'Asset')}</span>
