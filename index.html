@@ -926,10 +926,10 @@
   .report-kpi{padding:18px 20px;}
   .report-kpi .ov-amount{font-size:24px;}
   .report-table-wrap{overflow-x:auto;}
-  .report-category-row{display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid var(--line-soft);}
+  .report-category-row{display:flex; align-items:center; gap:14px; padding:12px 12px; border-bottom:1px solid var(--line-soft); touch-action:manipulation; user-select:none;}
   .report-category-row:last-child{border-bottom:none;}
   .report-rank{width:24px; color:var(--muted-2); font-family:var(--font-mono); font-size:12px;}
-  .report-category-main{min-width:180px; flex:1;}
+  .report-category-main{min-width:0; flex:1;}
   .report-category-bar{height:6px; margin-top:7px; background:var(--line-soft); border-radius:99px; overflow:hidden;}
   .report-category-bar span{display:block; height:100%; background:var(--rose); border-radius:99px;}
   .report-subcategory{display:flex; justify-content:space-between; gap:12px; padding:7px 10px; margin-top:7px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:8px; font-size:12px;}
@@ -1915,7 +1915,6 @@
 
           <div id="report-download-wrap" style="position:relative; display:inline-block;">
             <button type="button" class="btn-primary" id="btn-download-pdf-report" onclick="toggleReportDownloadMenu(event)" style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; font-size:13px; font-weight:600; border-radius:var(--radius-sm); box-shadow:0 2px 10px rgba(124,58,237,0.25);">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span>Download Report</span>
               <svg id="report-download-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="transition:transform 0.15s;"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
@@ -1952,12 +1951,12 @@
         </div>
 
         <div class="card" style="padding:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:8px;">
               <h2 class="section-title" style="margin:0;">Expense Breakdown</h2>
               <span class="text-xs muted" id="report-expense-sub"></span>
             </div>
-            <button type="button" id="report-expense-expand-btn" onclick="toggleReportExpenseExpand()" class="btn-ghost btn-small hidden" style="font-size:11.5px; padding:4px 10px;"></button>
+            <button type="button" id="report-expense-expand-btn" onclick="toggleReportExpenseExpand()" class="btn-ghost btn-small hidden" style="font-size:12px; font-weight:600; padding:6px 12px; min-height:34px; touch-action:manipulation;"></button>
           </div>
           <div id="report-expense-breakdown"></div>
         </div>
@@ -1983,13 +1982,13 @@
       </div>
 
       <!-- Expandable Budget Comparison Card -->
-      <div class="card mb-4" style="padding:20px;">
+      <div class="card mb-4" id="report-budget-card" style="padding:20px;">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <h2 class="section-title" style="margin:0;">Budget Comparison</h2>
             <span class="text-xs figure" style="font-weight:700;" id="report-budget-badge"></span>
           </div>
-          <button type="button" id="report-budget-expand-btn" onclick="toggleReportBudgetSection()" class="btn-ghost btn-small" style="font-size:12px; padding:5px 12px;"></button>
+          <button type="button" id="report-budget-expand-btn" onclick="toggleReportBudgetSection()" class="btn-ghost btn-small" style="font-size:12px; font-weight:600; padding:6px 12px; min-height:34px; touch-action:manipulation;"></button>
         </div>
         <div id="report-budget-snapshot" style="margin-top:14px;"></div>
       </div>
@@ -2014,7 +2013,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               Export Excel
             </button>
-            <button onclick="openTxModal()" class="btn-primary" style="height:36px; padding:0 18px; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;">+ Add Transaction</button>
+            <button onclick="openTxModal()" class="btn-primary" style="height:36px; padding:0 18px; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;">Add Transaction</button>
           </div>
         </div>
 
@@ -2161,15 +2160,13 @@
             <option value="all">All Categories</option>
           </select>
 
-          <!-- Copy Budget Button (Strictly 2 Words) -->
-          <button type="button" class="btn-ghost" onclick="openCopyBudgetModal()" style="height:38px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; border-color:var(--line);">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <!-- Copy Budget Button -->
+          <button type="button" class="btn-ghost" onclick="openCopyBudgetModal()" style="height:38px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; border-color:var(--line);">
             Copy Budget
           </button>
 
-          <!-- + Set Budget Button -->
-          <button type="button" class="btn-primary" onclick="openSetBudgetModal()" style="height:38px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <!-- Set Budget Button -->
+          <button type="button" class="btn-primary" onclick="openSetBudgetModal()" style="height:38px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:600;">
             Set Budget
           </button>
         </div>
@@ -2178,19 +2175,13 @@
       <!-- KPI Summary Cards -->
       <div class="grid grid-4 mb-4" id="budget-summary-grid"></div>
 
-      <!-- Active Category Budgets Card (Clean, No Subtitles, No Caps Badge, No Bottom Form) -->
+      <!-- Active Category Budgets Card -->
       <div class="card" style="padding:22px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
-          <div>
-            <h2 class="section-title" style="margin:0;">Active Category Budgets</h2>
-          </div>
+          <h2 class="section-title" style="margin:0;">Active Category Budgets</h2>
+          <button type="button" class="btn-ghost btn-small" onclick="openBudgetMonthlyHistory()" style="font-size:12px; font-weight:600; padding:5px 12px;">Monthly History</button>
         </div>
         <div id="budgets-rows"></div>
-      </div>
-
-      <div class="card" style="padding:22px; margin-top:16px;">
-        <h2 class="section-title" style="margin-bottom:2px;">Monthly History</h2>
-        <div id="budget-history-rows"></div>
       </div>
     </section>
 
@@ -2228,12 +2219,11 @@
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <button type="button" onclick="openPlannedGoalsModal()" class="btn-ghost" style="padding:6px 14px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
             <span>Planned Goals</span>
             <span id="planned-goals-btn-badge" class="badge badge-off" style="font-size:10.5px; padding:1px 6px;">0</span>
           </button>
-          <button type="button" onclick="openGoalModal()" class="btn-primary" style="padding:6px 16px; font-size:12.5px; display:inline-flex; align-items:center; gap:6px;">
-            + Create Goal
+          <button type="button" onclick="openGoalModal()" class="btn-primary" style="padding:6px 16px; font-size:12.5px; display:inline-flex; align-items:center; justify-content:center;">
+            Create Goal
           </button>
         </div>
       </div>
@@ -2248,8 +2238,7 @@
           <p id="investments-count-label" class="muted">Holdings, asset allocation, and wealth projections.</p>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
-          <button onclick="openInvestmentModal()" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <button onclick="openInvestmentModal()" class="btn-primary" style="display:inline-flex; align-items:center; justify-content:center;">
             Add Investment
           </button>
           <div style="display:flex; align-items:center; gap:10px;">
@@ -2262,13 +2251,12 @@
         </div>
       </div>
 
-      <!-- Dynamic Type Filter Tabs (All, Stock Market, Money Market, Income Fund, VPF) -->
+      <!-- Dynamic Type Filter Tabs (All, Stock Market, Money Market, Provident Fund) -->
       <div class="chip-row mb-4" id="inv-type-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap;">
         <button type="button" class="btn-chip active" id="inv-filter-all" onclick="setInvTypeFilter('all')">All Investments</button>
         <button type="button" class="btn-chip" id="inv-filter-stock_market" onclick="setInvTypeFilter('stock_market')">Stock Market</button>
         <button type="button" class="btn-chip" id="inv-filter-money_market" onclick="setInvTypeFilter('money_market')">Money Market</button>
-        <button type="button" class="btn-chip" id="inv-filter-income_fund" onclick="setInvTypeFilter('income_fund')">Income Fund</button>
-        <button type="button" class="btn-chip" id="inv-filter-vpf" onclick="setInvTypeFilter('vpf')">Voluntary Provident Fund (VPF)</button>
+        <button type="button" class="btn-chip" id="inv-filter-vpf" onclick="setInvTypeFilter('vpf')">Provident Fund</button>
       </div>
 
       <!-- Top Dynamic KPI Grid (6 Metric Cards) -->
@@ -2400,7 +2388,7 @@
             <form onsubmit="handleAddPaymentMethod(event)" class="settings-add-form">
               <input type="text" id="new-payment-method-name" placeholder="Payment Method Name" class="field-input" autocomplete="off" required oninput="const m=document.getElementById('payment-method-add-message'); if(m){ m.textContent=''; m.className='text-xs muted settings-add-message'; } this.style.borderColor='';">
               <span id="payment-method-add-message" class="text-xs muted settings-add-message"></span>
-              <button type="submit" class="btn-dark" style="white-space:nowrap;">+ Add Method</button>
+              <button type="submit" class="btn-dark" style="white-space:nowrap;">Add Method</button>
             </form>
           </div>
         </div>
@@ -3106,7 +3094,7 @@
     <div id="budget-subcat-checkbox-group" style="max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:14px; background:var(--surface);"></div>
     <label class="field-label">Monthly Limit</label>
     <input type="number" min="0" step="1" id="budget-subcat-amount" placeholder="" class="field-input figure mb-4">
-    <button onclick="handleAddSubcatBudget()" class="btn-primary" style="width:100%;">+ Add Subcategory Budget</button>
+    <button onclick="handleAddSubcatBudget()" class="btn-primary" style="width:100%;">Add Subcategory Budget</button>
   </div>
 </div>
 
@@ -3345,7 +3333,7 @@
       </div>
       <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
         <button type="button" id="planned-goal-cancel-edit-btn" class="btn-ghost hidden" style="padding:5px 12px; font-size:12px;" onclick="resetPlannedGoalForm()">Cancel Edit</button>
-        <button type="submit" id="planned-goal-submit-btn" class="btn-dark" style="padding:6px 14px; font-size:12px;">+ Add Planned Goal</button>
+        <button type="submit" id="planned-goal-submit-btn" class="btn-dark" style="padding:6px 14px; font-size:12px;">Add Planned Goal</button>
       </div>
     </form>
 
@@ -3583,8 +3571,7 @@
           <select id="inv-type" class="field-input" required onchange="onInvTypeChange(this.value)">
             <option value="stock_market" selected>Stock Market</option>
             <option value="money_market">Money Market</option>
-            <option value="income_fund">Income Fund</option>
-            <option value="vpf">Voluntary Provident Fund (VPF)</option>
+            <option value="vpf">Provident Fund</option>
           </select>
         </div>
         <div>
@@ -3674,8 +3661,7 @@
           <select id="edit-inv-type" class="field-input" required onchange="onEditInvTypeChange(this.value)">
             <option value="stock_market">Stock Market</option>
             <option value="money_market">Money Market</option>
-            <option value="income_fund">Income Fund</option>
-            <option value="vpf">Voluntary Provident Fund (VPF)</option>
+            <option value="vpf">Provident Fund</option>
           </select>
         </div>
         <div>
@@ -4514,8 +4500,7 @@ const DEFAULT_SAVINGS_CATEGORIES = ["Emergency Fund", "Vacation Fund", "General 
 const DEFAULT_INVESTMENT_CATEGORIES = [
   "Stock Market",
   "Money Market",
-  "Income Fund",
-  "Voluntary Provident Fund (VPF)"
+  "Provident Fund"
 ];
 const DEFAULT_EXPENSE_CATEGORIES = [
   { name: "Food & Dining", subcategories: ["Restaurant", "Fast Food", "Food Delivery", "Lunch", "Dinner", "Cafe", "Coffee", "Tea", "Snacks", "Takeaway", "Breakfast", "Dinner With Friends", "Lunch With Friends", "Coffee With Friends", "Outing", "Hangout", "Party", "Social Gathering", "Food With Colleagues", "Social Events"] },
@@ -5274,6 +5259,12 @@ function sanitizeLoadedDB(parsed){
   if(parsed.categories && Array.isArray(parsed.categories.savings)){
     parsed.categories.savings = parsed.categories.savings.filter(c => c !== 'Monthly Savings' && c !== 'Monthly Savings Allocation (General)' && c !== 'Monthly Savings Pool');
   }
+  if(parsed.categories && Array.isArray(parsed.categories.investments)){
+    parsed.categories.investments = parsed.categories.investments
+      .filter(c => c !== 'Income Fund')
+      .map(c => (c === 'Voluntary Provident Fund (VPF)' || c === 'VPF') ? 'Provident Fund' : c);
+    parsed.categories.investments = [...new Set(parsed.categories.investments)];
+  }
   parsed.investments = Array.isArray(parsed.investments) ? parsed.investments : [];
   parsed.soldInvestments = Array.isArray(parsed.soldInvestments) ? parsed.soldInvestments : [];
   parsed.paymentMethods = Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length ? parsed.paymentMethods : [...DEFAULT_PAYMENT_METHODS];
@@ -5969,7 +5960,7 @@ function renderSettingsAccount(){
       </div>
       <p class="text-xs muted" style="margin:8px 0 12px; line-height:1.5;">Sign in with Google to safely sync your transactions, budgets, and savings goals in your Supabase backend.</p>
       <div>
-        <button onclick="openAuthModal()" class="btn-dark" style="padding:9px 18px; font-size:13px;">Sign In with Google →</button>
+        <button onclick="openAuthModal()" class="btn-dark" style="padding:9px 18px; font-size:13px;">Sign In with Google</button>
       </div>
 
       
@@ -6528,7 +6519,7 @@ function renderAllowancesSettings(){
     + '</div>'
     + '<div style="font-weight:600; font-size:15px; color:var(--ink); margin-bottom:4px;">No Company Benefits Configured</div>'
     + '<p style="font-size:13px; line-height:1.5; margin:0 0 16px;">Add company allowances like Food Card, Fuel Allowance, or Health Insurance.</p>'
-    + '<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:36px; padding:0 20px;">+ Add First Benefit</button>'
+    + '<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:36px; padding:0 20px;">Add First Benefit</button>'
     + '</div>';
 
     // Pending Claims Hub
@@ -7674,6 +7665,13 @@ let reportSelMonth, reportSelYear, reportOpenCategory = null;
 let reportExpenseExpanded = false;
 let reportBudgetExpanded = false;
 let reportOpenBudgetCat = null;
+let reportBudgetStatusFilter = 'all';
+
+function setReportBudgetStatusFilter(filter, e){
+  if(e) e.stopPropagation();
+  reportBudgetStatusFilter = filter;
+  renderReports();
+}
 function titleCase(value){ return String(value || '').replace(/\b\w/g, letter=>letter.toUpperCase()); }
 function renderComparison(){}
 
@@ -7888,34 +7886,48 @@ function renderReportInsightsStrip(data){
   const deltaSign = delta >= 0 ? '+' : '';
   const top = data.expenseCategories[0];
   const topPct = top && data.expense > 0 ? Math.round((top.actual / data.expense) * 100) : 0;
+  const burnTone = data.burnRate > 95 ? 'rose' : (data.burnRate > 80 ? 'amber' : 'primary');
+  const topName = top ? titleCase(top.category) : 'None';
 
   el.innerHTML = `
-    <div class="card" style="padding:16px;">
-      <div class="text-xs muted" style="font-weight:600;">Net Savings Rate</div>
-      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
-        <span class="figure" style="font-size:20px; font-weight:800; color:${sr >= 0 ? 'var(--teal)' : 'var(--rose)'};">${sr.toFixed(1)}%</span>
-        <span class="text-xs figure" style="font-weight:600; color:${delta >= 0 ? 'var(--teal)' : 'var(--rose)'};">${deltaSign}${delta.toFixed(1)}% vs avg</span>
+    <div class="card ov-card">
+      <div class="ov-top">
+        <span class="label-eyebrow">Net Savings Rate</span>
+        <div class="ov-icon accent-${sr >= 0 ? 'teal' : 'rose'}">${miniIcon('piggy')}</div>
+      </div>
+      <p class="ov-amount" style="color:${sr >= 0 ? 'var(--teal)' : 'var(--rose)'};">${sr.toFixed(1)}%</p>
+      <div class="ov-change">
+        <span class="kpi-trend-badge trend-${delta >= 0 ? 'pos' : 'neg'}">${deltaSign}${delta.toFixed(1)}% Vs Avg</span>
       </div>
     </div>
-    <div class="card" style="padding:16px;">
-      <div class="text-xs muted" style="font-weight:600;">Burn Rate (Expense / Income)</div>
-      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
-        <span class="figure" style="font-size:20px; font-weight:800; color:${data.burnRate > 95 ? 'var(--rose)' : (data.burnRate > 80 ? 'var(--amber)' : 'var(--ink)')};">${data.burnRate.toFixed(1)}%</span>
-        <span class="text-xs muted">of inflow</span>
+    <div class="card ov-card">
+      <div class="ov-top">
+        <span class="label-eyebrow">Burn Rate</span>
+        <div class="ov-icon accent-${burnTone}">${miniIcon('down')}</div>
+      </div>
+      <p class="ov-amount" style="color:${data.burnRate > 95 ? 'var(--rose)' : (data.burnRate > 80 ? 'var(--amber)' : 'var(--ink)')};">${data.burnRate.toFixed(1)}%</p>
+      <div class="ov-change">
+        <span class="kpi-trend-badge trend-neu" style="color:var(--ink); font-weight:600; font-size:12px;">Of Inflow</span>
       </div>
     </div>
-    <div class="card" style="padding:16px;">
-      <div class="text-xs muted" style="font-weight:600;">Avg. Daily Spend</div>
-      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
-        <span class="figure" style="font-size:20px; font-weight:800; color:var(--ink);">${fmt(data.avgDailySpend)}</span>
-        <span class="text-xs muted">per day</span>
+    <div class="card ov-card">
+      <div class="ov-top">
+        <span class="label-eyebrow">Avg. Daily Spend</span>
+        <div class="ov-icon accent-amber">${miniIcon('calendarCheck')}</div>
+      </div>
+      <p class="ov-amount">${fmt(data.avgDailySpend)}</p>
+      <div class="ov-change">
+        <span class="kpi-trend-badge trend-neu" style="color:var(--ink); font-weight:600; font-size:12px;">Per Day</span>
       </div>
     </div>
-    <div class="card" style="padding:16px;">
-      <div class="text-xs muted" style="font-weight:600;">Top Cost Driver</div>
-      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:6px;">
-        <span style="font-size:15px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${top ? escapeHtml(top.category) : 'None'}">${top ? escapeHtml(titleCase(top.category)) : 'None'}</span>
-        <span class="text-xs figure" style="font-weight:700; color:var(--rose); flex-shrink:0;">${top ? topPct + '%' : '0%'}</span>
+    <div class="card ov-card">
+      <div class="ov-top">
+        <span class="label-eyebrow">Top Cost Driver</span>
+        <div class="ov-icon accent-primary">${miniIcon('target')}</div>
+      </div>
+      <p class="ov-amount" style="font-family:var(--font-display); font-size:20px; font-weight:700; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(topName)}">${escapeHtml(topName)}</p>
+      <div class="ov-change">
+        <span class="kpi-trend-badge ${top ? 'trend-neg' : 'trend-neu'}" style="${top ? '' : 'color:var(--ink); font-weight:600;'}">${top ? topPct + '% Of Spend' : '0% Of Spend'}</span>
       </div>
     </div>
   `;
@@ -7996,16 +8008,20 @@ function renderReportExpenseBreakdown(data){
     const color = palette[idx % palette.length];
     const safeCat = row.category.replace(/'/g, "\\'");
     return `
-      <div class="report-category-row" onclick="toggleReportCategory('${safeCat}')" style="cursor:pointer;">
-        <div class="report-category-main" style="width:100%;">
-          <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; font-size:12.5px;">
-            <strong style="color:var(--ink);">${escapeHtml(titleCase(row.category))}</strong>
-            <span class="figure" style="font-weight:700; color:var(--ink);">${fmt(row.actual)} <span class="muted" style="font-weight:500; font-size:11px;">(${pct}%)</span> <span class="report-category-toggle ${isOpen ? 'open' : ''}">›</span></span>
+      <div class="report-category-row" onclick="toggleReportCategory('${safeCat}')" role="button" tabindex="0" aria-expanded="${isOpen ? 'true' : 'false'}" style="cursor:pointer;">
+        <div class="report-category-main" style="width:100%; min-width:0;">
+          <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; font-size:13px; min-height:24px;">
+            <strong style="color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(titleCase(row.category))}</strong>
+            <span class="figure" style="font-weight:700; color:var(--ink); display:inline-flex; align-items:center; gap:5px; flex-shrink:0;">
+              <span>${fmt(row.actual)}</span>
+              <span class="muted" style="font-weight:500; font-size:11px;">(${pct}%)</span>
+              <span class="report-category-toggle ${isOpen ? 'open' : ''}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></span>
+            </span>
           </div>
-          <div class="report-category-bar" style="margin-top:5px;"><span style="width:${pct}%; background:${color};"></span></div>
+          <div class="report-category-bar" style="margin-top:6px;"><span style="width:${pct}%; background:${color};"></span></div>
           <div class="report-category-details ${isOpen ? 'open' : ''}">
             ${row.subs.length
-              ? row.subs.map(sub => `<div class="report-subcategory"><span>${escapeHtml(titleCase(sub.subCategory))} <span class="muted">(${sub.count})</span></span><span class="figure" style="font-weight:600;">${fmt(sub.spent)}</span></div>`).join('')
+              ? row.subs.map(sub => `<div class="report-subcategory"><span style="min-width:0; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(titleCase(sub.subCategory))} <span class="muted">(${sub.count})</span></span><span class="figure" style="font-weight:600; flex-shrink:0;">${fmt(sub.spent)}</span></div>`).join('')
               : `<p class="empty-note" style="margin:6px 0 0;">${row.count} transaction${row.count === 1 ? '' : 's'} (no subcategories)</p>`}
           </div>
         </div>
@@ -8111,32 +8127,66 @@ function renderReportBudgetSnapshot(data){
     return;
   }
 
-  const catTotals = new Map();
-  budgets.forEach(b => {
-    if(!b.category) return;
-    if(!catTotals.has(b.category)) catTotals.set(b.category, { main: 0, sub: 0, subs: [] });
-    const entry = catTotals.get(b.category);
-    if(!b.subCategory){
-      entry.main += (Number(b.budgetAmount) || 0);
-    } else {
-      entry.sub += (Number(b.budgetAmount) || 0);
-      entry.subs.push({ name: b.subCategory, limit: Number(b.budgetAmount) || 0 });
-    }
+  let items = [];
+  if(reportSelYear !== 'ALL' && reportSelMonth !== 'ALL'){
+    items = (budgetProgress(DB.transactions, DB.budgets, reportSelMonth, reportSelYear) || []).map(it => ({
+      category: it.category,
+      subCategory: it.subCategory || '',
+      budgetAmount: Number(it.budgetAmount) || 0,
+      spent: Number(it.spent) || 0,
+      overspent: Boolean(it.overspent)
+    }));
+  } else {
+    const activeMonths = new Set();
+    budgets.forEach(b => {
+      if(b.year && b.month) activeMonths.add(`${b.year}-${b.month}`);
+    });
+    const aggMap = new Map();
+    activeMonths.forEach(ym => {
+      const [yStr, mStr] = ym.split('-');
+      const y = parseInt(yStr, 10);
+      const m = parseInt(mStr, 10);
+      (budgetProgress(DB.transactions, DB.budgets, m, y) || []).forEach(it => {
+        const key = `${it.category}||${it.subCategory || ''}`;
+        if(!aggMap.has(key)){
+          aggMap.set(key, { category: it.category, subCategory: it.subCategory || '', budgetAmount: 0, spent: 0 });
+        }
+        const entry = aggMap.get(key);
+        entry.budgetAmount += (Number(it.budgetAmount) || 0);
+        entry.spent += (Number(it.spent) || 0);
+      });
+    });
+    items = [...aggMap.values()].map(it => ({
+      ...it,
+      overspent: it.budgetAmount > 0 && it.spent > it.budgetAmount
+    }));
+  }
+
+  items = items.filter(it => it.budgetAmount > 0);
+  items.sort((a, b) => {
+    const c = a.category.localeCompare(b.category);
+    if(c !== 0) return c;
+    if(!a.subCategory && b.subCategory) return -1;
+    if(a.subCategory && !b.subCategory) return 1;
+    return (a.subCategory || '').localeCompare(b.subCategory || '');
   });
 
-  const rows = [...catTotals.entries()].map(([cat, vals]) => {
-    const limit = vals.main > 0 ? vals.main : vals.sub;
-    const catTxs = data.periodTxs.filter(t => t.type === 'expense' && t.category === cat);
-    const spent = catTxs.reduce((s, t) => s + (Number(t.amount) || 0), 0);
-    const subRows = vals.subs.map(s => {
-      const sSpent = catTxs.filter(t => t.subCategory && t.subCategory.split(',').map(x => x.trim()).includes(s.name)).reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-      return { name: s.name, limit: s.limit, spent: sSpent };
+  // Compute overall non-duplicated category summary across active budget months
+  let totalLimit = 0;
+  let totalSpent = 0;
+  if(reportSelYear !== 'ALL' && reportSelMonth !== 'ALL'){
+    const ms = monthBudgetSummary(reportSelMonth, reportSelYear);
+    if(ms){ totalLimit = ms.budgeted; totalSpent = ms.spent; }
+  } else {
+    const activeMonths = new Set();
+    budgets.forEach(b => { if(b.year && b.month) activeMonths.add(`${b.year}-${b.month}`); });
+    activeMonths.forEach(ym => {
+      const [yStr, mStr] = ym.split('-');
+      const ms = monthBudgetSummary(parseInt(mStr, 10), parseInt(yStr, 10));
+      if(ms){ totalLimit += ms.budgeted; totalSpent += ms.spent; }
     });
-    return { cat, limit, spent, diff: limit - spent, pct: limit > 0 ? Math.round((spent / limit) * 100) : 0, subRows };
-  }).filter(r => r.limit > 0).sort((a, b) => (b.spent / b.limit) - (a.spent / a.limit));
+  }
 
-  const totalLimit = rows.reduce((s, r) => s + r.limit, 0);
-  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
   const usedPct = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
   const totalOver = totalSpent > totalLimit;
 
@@ -8147,13 +8197,13 @@ function renderReportBudgetSnapshot(data){
 
   if(expandBtn){
     expandBtn.classList.remove('hidden');
-    expandBtn.textContent = reportBudgetExpanded ? 'Collapse' : `Expand Details (${rows.length})`;
+    expandBtn.textContent = reportBudgetExpanded ? 'Collapse' : `Expand Details (${items.length})`;
   }
 
   const summaryBarHtml = `
     <div style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:12.5px; margin-bottom:8px;">
-        <span style="font-weight:600;">Overall Budget vs. Actual</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:13px; margin-bottom:8px;">
+        <span style="font-weight:600; color:var(--ink);">Overall Budget vs. Actual <span class="muted" style="font-weight:500; font-size:12px;">(${escapeHtml(data.periodLabel)})</span></span>
         <span class="figure" style="font-weight:700; color:${totalOver ? 'var(--rose)' : 'var(--teal)'};">
           ${totalOver ? 'Over by ' + fmt(totalSpent - totalLimit) : 'Remaining ' + fmt(totalLimit - totalSpent)}
         </span>
@@ -8169,51 +8219,75 @@ function renderReportBudgetSnapshot(data){
     return;
   }
 
-  const detailRowsHtml = rows.map(r => {
-    const over = r.spent > r.limit;
-    const barColor = over ? 'var(--rose)' : (r.pct >= 85 ? 'var(--amber)' : 'var(--teal)');
-    const safeCat = r.cat.replace(/'/g, "\\'");
-    const hasSubs = r.subRows.length > 0;
-    const isSubOpen = reportOpenBudgetCat === r.cat;
-    return `
-      <div style="padding:10px 12px; border-bottom:1px solid var(--line-soft); ${hasSubs ? 'cursor:pointer;' : ''}" ${hasSubs ? `onclick="toggleReportBudgetCat('${safeCat}')"` : ''}>
-        <div style="display:grid; grid-template-columns:minmax(130px,1.5fr) repeat(3, minmax(85px,1fr)) auto; gap:10px; align-items:center; font-size:12.5px;">
-          <div style="font-weight:700; color:var(--ink);">${escapeHtml(titleCase(r.cat))} ${hasSubs ? `<span class="muted" style="font-weight:500;">${isSubOpen ? '▾' : '›'}</span>` : ''}</div>
-          <div class="figure muted">${fmt(r.limit)}</div>
-          <div class="figure" style="font-weight:700; color:${barColor};">${fmt(r.spent)}</div>
-          <div class="figure" style="font-weight:600; color:${over ? 'var(--rose)' : 'var(--teal)'};">${over ? '-' : '+'}${fmt(Math.abs(r.diff))}</div>
-          <div><span class="badge ${over ? 'badge-over' : 'badge-ok'}" style="font-size:10.5px;">${over ? 'Over' : 'On Track'}</span></div>
-        </div>
-        <div class="progress-track" style="height:4px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-top:7px;">
-          <div style="width:${Math.min(100, r.pct)}%; height:100%; background:${barColor}; border-radius:999px;"></div>
-        </div>
-        ${hasSubs && isSubOpen ? `
-          <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); display:flex; flex-direction:column; gap:4px;">
-            ${r.subRows.map(sr => {
-              const sOver = sr.spent > sr.limit;
-              return `
-                <div style="display:grid; grid-template-columns:minmax(130px,1.5fr) repeat(3, minmax(85px,1fr)) auto; gap:10px; align-items:center; font-size:11.5px; color:var(--muted);">
-                  <div style="padding-left:10px;">${escapeHtml(titleCase(sr.name))}</div>
-                  <div class="figure">${fmt(sr.limit)}</div>
-                  <div class="figure" style="color:${sOver ? 'var(--rose)' : 'var(--ink)'}; font-weight:600;">${fmt(sr.spent)}</div>
-                  <div class="figure" style="color:${sOver ? 'var(--rose)' : 'var(--teal)'};">${sOver ? '-' : '+'}${fmt(Math.abs(sr.limit - sr.spent))}</div>
-                  <div></div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }).join('');
+  const onTrackCount = items.filter(it => !it.overspent).length;
+  const overBudgetCount = items.filter(it => it.overspent).length;
+  const currentFilter = reportBudgetStatusFilter || 'all';
+
+  let displayItems = items;
+  if(currentFilter === 'on-track'){
+    displayItems = items.filter(it => !it.overspent);
+  } else if(currentFilter === 'over-budget'){
+    displayItems = items.filter(it => it.overspent);
+  }
 
   el.innerHTML = `
     ${summaryBarHtml}
-    <div style="margin-top:12px; border:1px solid var(--line-soft); border-radius:10px; overflow-x:auto;">
-      <div style="display:grid; grid-template-columns:minmax(130px,1.5fr) repeat(3, minmax(85px,1fr)) auto; gap:10px; padding:8px 12px; background:var(--surface-2); font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700;">
-        <span>Category</span><span>Budget</span><span>Actual</span><span>Variance</span><span>Status</span>
+    <div style="margin-top:14px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="btn-chip ${currentFilter === 'all' ? 'active' : ''}"
+                  style="border:1px solid var(--line); padding:5px 11px; min-height:34px; font-size:12px; border-radius:7px; touch-action:manipulation;"
+                  onclick="setReportBudgetStatusFilter('all', event)">
+            All (${items.length})
+          </button>
+          <button type="button" class="btn-chip ${currentFilter === 'on-track' ? 'active' : ''}"
+                  style="border:1px solid var(--line); padding:5px 11px; min-height:34px; font-size:12px; border-radius:7px; touch-action:manipulation;"
+                  onclick="setReportBudgetStatusFilter('on-track', event)">
+            On Track (${onTrackCount})
+          </button>
+          <button type="button" class="btn-chip ${currentFilter === 'over-budget' ? 'active' : ''}"
+                  style="border:1px solid var(--line); padding:5px 11px; min-height:34px; font-size:12px; border-radius:7px; touch-action:manipulation;"
+                  onclick="setReportBudgetStatusFilter('over-budget', event)">
+            Over Budget (${overBudgetCount})
+          </button>
+        </div>
       </div>
-      ${detailRowsHtml}
+      ${displayItems.length ? `
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface);">
+          <table style="width:100%; min-width:460px; border-collapse:collapse; font-size:12.5px; text-align:left;">
+            <thead>
+              <tr style="background:var(--surface-2); border-bottom:1px solid var(--line);">
+                <th style="padding:9px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700;">Category</th>
+                <th style="padding:9px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700;">Subcategory</th>
+                <th style="padding:9px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Budget</th>
+                <th style="padding:9px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Spent</th>
+                <th style="padding:9px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:right;">Difference</th>
+                <th style="padding:9px 12px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; text-align:center;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${displayItems.map(it => `
+                <tr style="border-bottom:1px solid var(--line-soft); transition:background .1s ease;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+                  <td style="padding:9px 12px; font-weight:600; color:var(--ink);">${escapeHtml(it.category)}</td>
+                  <td style="padding:9px 12px; color:var(--muted); font-size:12px;">${it.subCategory ? escapeHtml(it.subCategory) : '<span style="color:var(--muted-2); font-style:italic;">All</span>'}</td>
+                  <td class="figure" style="padding:9px 12px; text-align:right; font-weight:500;">${fmt(it.budgetAmount)}</td>
+                  <td class="figure" style="padding:9px 12px; text-align:right; font-weight:600; color:${it.overspent ? 'var(--rose)' : 'var(--ink)'};">${fmt(it.spent)}</td>
+                  <td class="figure" style="padding:9px 12px; text-align:right; font-weight:600; color:${it.budgetAmount >= it.spent ? 'var(--teal)' : 'var(--rose)'};">
+                    ${it.budgetAmount >= it.spent ? '+' : '-'}${fmt(Math.abs(it.budgetAmount - it.spent))}
+                  </td>
+                  <td style="padding:9px 12px; text-align:center;">
+                    ${it.overspent ? '<span class="badge badge-over">Over Budget</span>' : '<span class="badge badge-ok">On Track</span>'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div style="padding:16px 12px; text-align:center; color:var(--muted); font-size:12.5px; background:var(--surface-2); border-radius:8px; border:1px dashed var(--line);">
+          No categories found matching "${currentFilter === 'over-budget' ? 'Over Budget' : 'On Track'}".
+        </div>
+      `}
     </div>
   `;
 }
@@ -10086,7 +10160,7 @@ function renderDashboardSavings(period, totals){
           <p class="muted text-xs" style="margin:20px 0; text-align:center;">No savings targets active for this period.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
-          <button type="button" onclick="goToApp('savings')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Create Goal</button>
+          <button type="button" onclick="goToApp('savings')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">Create Goal</button>
         </div>
       </div>
     `;
@@ -10147,10 +10221,10 @@ function renderDashboardInvestments(){
             <span class="badge badge-off dash-card-kpi-badge">No Assets</span>
           </div>
           <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
-          <p class="muted text-xs" style="margin:20px 0; text-align:center;">Track stock market, money market, income funds, and VPF in real-time.</p>
+          <p class="muted text-xs" style="margin:20px 0; text-align:center;">Track stock market, money market, and Provident Fund in real-time.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
-          <button type="button" onclick="goToApp('investments')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">+ Add First Asset</button>
+          <button type="button" onclick="goToApp('investments')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">Add First Asset</button>
         </div>
       </div>
     `;
@@ -12828,14 +12902,14 @@ function renderBudgets(){
           </div>
           <div class="progress-track" style="height:6px; margin-bottom:6px;"><div class="progress-fill ${barClass}" style="width:${Math.min(100, b.percent)}%;"></div></div>
           
-          <!-- Total Category Spending Line (Budgeted & Unbudgeted combined) -->
+          ${b.totalCategorySpent !== b.spent ? `
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; font-size:11.5px; color:var(--muted);">
             <span>Total Category Spending:</span>
             <span class="figure" style="font-weight:600; color:var(--ink);">${fmt(b.totalCategorySpent)}</span>
-          </div>
+          </div>` : ''}
         </div>
 
-        <!-- Footer: Clean Subcategories Expand/Collapse & + Add Subcategory (Category Limit removed) -->
+        <!-- Footer: Clean Subcategories Expand/Collapse & Add Subcategory -->
         <div class="bbc-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--line-soft);">
           ${b.subRows.length ? `
             <button type="button" class="bbc-subcat-toggle-btn" onclick="toggleCatBlock('${b.category.replace(/'/g,"\\'")}');" title="${isOpen ? 'Collapse' : 'Expand'} subcategories" style="display:inline-flex; align-items:center; gap:5px; background:none; border:none; padding:4px 0; color:var(--ink); font-size:12px; font-weight:600; cursor:pointer;">
@@ -12845,7 +12919,7 @@ function renderBudgets(){
           ` : '<span></span>'}
           <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
             ${availableSubs.length ? `
-              <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\'")}');" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; font-weight:600;">+ Add Subcategory</button>
+              <button class="btn-small" onclick="openBudgetSubcatModal('${b.category.replace(/'/g,"\\'")}');" style="font-size:11px; padding:3px 8px; height:24px; border-radius:6px; font-weight:600;">Add Subcategory</button>
             ` : ''}
           </div>
         </div>
@@ -12931,8 +13005,18 @@ function renderBudgets(){
       }
     }
   }
+}
 
-  renderBudgetHistory();
+function openBudgetMonthlyHistory(){
+  reportSelYear = budgetSelYear;
+  reportSelMonth = budgetSelMonth;
+  reportBudgetExpanded = true;
+  reportBudgetStatusFilter = 'all';
+  goToApp('reports');
+  setTimeout(() => {
+    const cardEl = document.getElementById('report-budget-card');
+    if(cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 60);
 }
 let openBudgetHistoryKey = null;
 let budgetHistoryFilterState = {};
@@ -13739,7 +13823,7 @@ function renderSavings(){
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         </div>
         <p style="font-size:14px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Savings Goals for ${allGoalsMode ? 'All-Time' : curMonthName + ' ' + curY}</p>
-        <p class="text-xs muted" style="margin:0 auto; max-width:380px; line-height:1.5;">You haven't created a savings target for this period yet. Click "+ Create Goal" to set a target milestone.</p>
+        <p class="text-xs muted" style="margin:0 auto; max-width:380px; line-height:1.5;">You haven't created a savings target for this period yet. Click "Create Goal" to set a target milestone.</p>
       </div>
     `;
     return;
@@ -14720,7 +14804,7 @@ function handleExecutePayGoalBill(e){
 }
 
 /* ---------------- render: investments ---------------- */
-let invTypeFilter = 'all'; // 'all' | 'stock_market' | 'money_market' | 'income_fund' | 'vpf'
+let invTypeFilter = 'all'; // 'all' | 'stock_market' | 'money_market' | 'vpf'
 let invHoldingTab = 'active'; // 'active' | 'sold'
 let invCategoryFilter = 'all';
 let chartAssetAllocation = null;
@@ -14728,17 +14812,15 @@ let chartAssetAllocation = null;
 const ASSET_CLASSES = [
   { id: 'stock_market', label: 'Stock Market', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', depositLabel: 'Add Stock Purchase' },
   { id: 'money_market', label: 'Money Market', color: '#0D9488', bg: '#F0FDFA', border: '#99F6E4', depositLabel: 'Add Fund Contribution' },
-  { id: 'income_fund', label: 'Income Fund', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', depositLabel: 'Add Fund Contribution' },
-  { id: 'vpf', label: 'Voluntary Provident Fund (VPF)', color: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE', isRecurring: true, depositLabel: 'Log VPF Contribution' }
+  { id: 'vpf', label: 'Provident Fund', color: '#4F46E5', bg: '#EEF2FF', border: '#C7D2FE', isRecurring: true, depositLabel: 'Log Provident Fund Contribution' }
 ];
 
 function normalizeAssetType(type){
   if(!type) return 'stock_market';
   const t = String(type).trim().toLowerCase();
-  if(t === 'stock_market' || t === 'stocks' || t === 'psx stocks' || t.includes('stock') || t.includes('equit') || t.includes('etf') || t.includes('crypto')) return 'stock_market';
-  if(t === 'money_market' || t.includes('money market') || t.includes('cash') || t.includes('liquid') || t.includes('nss') || t.includes('national savings') || t.includes('tdr') || t.includes('fixed deposit')) return 'money_market';
-  if(t === 'income_fund' || t.includes('income') || t.includes('sukuk') || t.includes('bond') || t.includes('debt') || t.includes('mutual fund') || t.includes('real estate') || t.includes('property') || t.includes('gold') || t.includes('commodit') || t.includes('business')) return 'income_fund';
   if(t === 'vpf' || t.includes('provident') || t.includes('vps') || t.includes('pension') || t.includes('epf')) return 'vpf';
+  if(t === 'money_market' || t === 'income_fund' || t.includes('money market') || t.includes('income') || t.includes('cash') || t.includes('liquid') || t.includes('nss') || t.includes('national savings') || t.includes('tdr') || t.includes('fixed deposit') || t.includes('sukuk') || t.includes('bond') || t.includes('debt') || t.includes('mutual fund')) return 'money_market';
+  if(t === 'stock_market' || t === 'stocks' || t === 'psx stocks' || t.includes('stock') || t.includes('equit') || t.includes('etf') || t.includes('crypto')) return 'stock_market';
   return 'stock_market';
 }
 
@@ -14769,7 +14851,7 @@ function toggleVPSEngine(active){
   DB.vpsSettings.active = (active !== undefined) ? active : !DB.vpsSettings.active;
   saveDB(true);
   renderInvestments();
-  showToast(DB.vpsSettings.active ? 'Automated VPF Engine Activated' : 'Automated VPF Engine Paused');
+  showToast(DB.vpsSettings.active ? 'Automated Provident Fund Activated' : 'Automated Provident Fund Paused');
 }
 
 function checkAutomatedVPSInflow(){
@@ -14798,7 +14880,7 @@ function checkAutomatedVPSInflow(){
     employeeDeposit: empCut,
     employerMatch: compMatch,
     newValuation: vpf.currentValue,
-    notes: 'Automated monthly salary VPF contribution',
+    notes: 'Automated monthly salary Provident Fund contribution',
     recordedAt: now.toISOString()
   });
 
@@ -14845,7 +14927,7 @@ function logQuickPaydayVpsDeposit(invId, m, y){
     date: txDate,
     type: 'expense',
     category: 'Investments',
-    subCategory: 'Voluntary Provident Fund (VPF)',
+    subCategory: 'Provident Fund',
     investmentId: inv.id,
     description: 'Payday Contribution to ' + inv.name + ' (+' + fmt(employerAmt) + ' employer match)',
     amount: userAmt,
@@ -14862,7 +14944,7 @@ function logQuickPaydayVpsDeposit(invId, m, y){
 
 function setInvTypeFilter(type){
   invTypeFilter = type || 'all';
-  ['all', 'stock_market', 'money_market', 'income_fund', 'vpf'].forEach(t => {
+  ['all', 'stock_market', 'money_market', 'vpf'].forEach(t => {
     const btn = document.getElementById('inv-filter-' + t);
     if(btn) btn.classList.toggle('active', invTypeFilter === t);
   });
@@ -14967,7 +15049,6 @@ function renderAssetAllocationChart(){
     const classTotals = {
       'stock_market': 0,
       'money_market': 0,
-      'income_fund': 0,
       'vpf': 0
     };
     allList.forEach(inv => {
@@ -15121,7 +15202,7 @@ function renderHoldingsTable(){
             : 'Switch to "All" or add an asset to this category.') +
         '</p>' +
         '<div style="display:flex; justify-content:center; gap:8px;">' +
-          '<button onclick="openInvestmentModal()" class="btn-primary">+ Add Investment</button>' +
+          '<button onclick="openInvestmentModal()" class="btn-primary">Add Investment</button>' +
         '</div>' +
       '</div>';
       return;
@@ -15179,7 +15260,7 @@ function renderHoldingsTable(){
               'Dossier' +
             '</button>' +
             '<button class="btn-small" onclick="openDepositInvestmentModal(\'' + inv.id + '\')" style="background:rgba(79,70,229,0.1); color:#4F46E5; border:1px solid rgba(79,70,229,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="' + escapeHtml(meta.depositLabel) + '">' +
-              '+ Add' +
+              'Add' +
             '</button>' +
             '<button class="btn-small" onclick="openWithdrawInvestmentModal(\'' + inv.id + '\')" style="background:rgba(20,184,166,0.12); color:var(--teal); border:1px solid rgba(20,184,166,0.3); font-size:11px; padding:3px 9px; font-weight:600; border-radius:6px; cursor:pointer;" title="Withdraw or Redeem">' +
               'Withdraw' +
@@ -15346,7 +15427,7 @@ function openInvestmentDetailModal(invId){
       const match = inv.vpsMatchPct !== undefined ? inv.vpsMatchPct : 100;
       const matchedTot = inv.totalEmployerMatch || inv.totalEmployerMatched || 0;
       detailsHtml = '<div class="card" style="padding:14px; background:var(--surface-2); border:1px solid var(--line-soft);">' +
-        '<h4 style="margin:0 0 8px; font-size:12px; text-transform:uppercase; color:var(--muted); letter-spacing:0.04em;">VPF Contribution Scheme</h4>' +
+        '<h4 style="margin:0 0 8px; font-size:12px; text-transform:uppercase; color:var(--muted); letter-spacing:0.04em;">Provident Fund Contribution Scheme</h4>' +
         '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; font-size:12px;">' +
           '<div><span class="muted" style="font-size:11px; display:block;">Employee Cut:</span><strong>' + cut + '% of salary</strong></div>' +
           '<div><span class="muted" style="font-size:11px; display:block;">Employer Match:</span><strong>' + match + '% match</strong></div>' +
@@ -15775,7 +15856,7 @@ function handleAddInvestment(e){
   const rawType = document.getElementById('inv-type').value;
   const assetType = normalizeAssetType(rawType);
   const isVpf = assetType === 'vpf';
-  const holdingLocation = document.getElementById('inv-location').value.trim() || (isVpf ? 'Corporate VPF' : 'Self-Custody');
+  const holdingLocation = document.getElementById('inv-location').value.trim() || (isVpf ? 'Corporate Provident Fund' : 'Self-Custody');
   const initialInvested = parseFloat(document.getElementById('inv-initial').value);
   const currentValue = parseFloat(document.getElementById('inv-current').value);
   const startDate = document.getElementById('inv-start-date')?.value || ymd(new Date());
@@ -15891,7 +15972,7 @@ function handleSaveEditInvestment(e){
   const rawType = document.getElementById('edit-inv-type').value;
   const assetType = normalizeAssetType(rawType);
   const isVpf = assetType === 'vpf';
-  const holdingLocation = document.getElementById('edit-inv-location').value.trim() || (isVpf ? 'Corporate VPF' : 'Self-Custody');
+  const holdingLocation = document.getElementById('edit-inv-location').value.trim() || (isVpf ? 'Corporate Provident Fund' : 'Self-Custody');
   const initialInvested = parseFloat(document.getElementById('edit-inv-initial').value);
   const currentValue = parseFloat(document.getElementById('edit-inv-current').value);
   const startDate = document.getElementById('edit-inv-start-date')?.value || ymd(new Date());
@@ -15942,7 +16023,7 @@ function openDepositInvestmentModal(id){
   const titleEl = document.getElementById('deposit-inv-modal-title');
   if(titleEl){
     titleEl.textContent = isVpf
-      ? 'Log Voluntary Provident Fund (VPF) Deposit'
+      ? 'Log Provident Fund Deposit'
       : ('Add ' + meta.label + ' Contribution');
   }
 
@@ -16537,7 +16618,7 @@ function renderTagsSettings(){
             <input type="checkbox" id="new-tag-reimbursable" checked style="width:15px; height:15px;">
             Reimbursable
           </label>
-          <button type="submit" class="btn-dark" style="white-space:nowrap; padding:0 18px; height:38px;">+ Add Tag</button>
+          <button type="submit" class="btn-dark" style="white-space:nowrap; padding:0 18px; height:38px;">Add Tag</button>
         </form>
       </div>
     </div>
@@ -17318,8 +17399,8 @@ function renderCategoryList(){
           
           <!-- Inline Subcategory Add Form -->
           <form data-category="${escapeHtml(c.name)}" onsubmit="handleAddSubcategoryInline(event, '${c.name.replace(/'/g,"\\\'")}')" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line-soft); align-items:center;">
-            <input type="text" placeholder="+ Add sub-category under ${escapeHtml(c.name)}..." value="${escapeHtml(draftVal)}" class="field-input" style="font-size:12.5px; flex:1; min-width:180px; height:34px;" required oninput="subcatDrafts['${c.name.replace(/'/g,"\\\'")}'] = this.value; const m=this.form.querySelector('.subcategory-add-message'); if(m) m.textContent=''; this.style.borderColor='';">
-            <button type="submit" class="btn-dark" style="font-size:12px; height:34px; padding:0 14px; white-space:nowrap;">+ Add</button>
+            <input type="text" placeholder="Add sub-category under ${escapeHtml(c.name)}..." value="${escapeHtml(draftVal)}" class="field-input" style="font-size:12.5px; flex:1; min-width:180px; height:34px;" required oninput="subcatDrafts['${c.name.replace(/'/g,"\\\'")}'] = this.value; const m=this.form.querySelector('.subcategory-add-message'); if(m) m.textContent=''; this.style.borderColor='';">
+            <button type="submit" class="btn-dark" style="font-size:12px; height:34px; padding:0 14px; white-space:nowrap;">Add</button>
             <span class="subcategory-add-message text-xs muted" style="width:100%; min-height:16px;"></span>
           </form>
         </div>
@@ -18962,7 +19043,7 @@ function populateDestGoalsDropdown(destM, destY, currentGoalId){
   if(currentGoal && !currentInDest){
     options.push(`<option value="__clone_current__" selected>Carry Over to Next Month: "${escapeHtml(currentGoal.name)}"</option>`);
   }
-  options.push(`<option value="__new_goal__">+ Create New Goal...</option>`);
+  options.push(`<option value="__new_goal__">Create New Goal...</option>`);
   options.push(`<option value="__general__" ${(!currentInDest && !currentGoal) ? 'selected' : ''}>Monthly Savings Allocation (General)</option>`);
   
   goalSelect.innerHTML = options.join('');
@@ -19778,7 +19859,7 @@ function renderWarningSignsSettings(){
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <button type="button" class="btn-ghost" style="padding:6px 12px; font-size:12px;" onclick="handleResetWarningRules()">Reset Defaults</button>
-          <button type="button" class="btn-primary" style="padding:6px 14px; font-size:12px;" onclick="openWarningRuleModal()">+ Add Warning Sign</button>
+          <button type="button" class="btn-primary" style="padding:6px 14px; font-size:12px;" onclick="openWarningRuleModal()">Add Warning Sign</button>
         </div>
       </div>
 
