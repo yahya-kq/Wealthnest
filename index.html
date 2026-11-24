@@ -2358,11 +2358,11 @@
         <button type="button" class="btn-chip" id="subtab-rules-tags" onclick="setRulesSubTab('tags')">Tags</button>
       </div>
 
-      <!-- Sub-tabs for System (Account | Alerts | Backup & Data | Recycle Bin) -->
+      <!-- Sub-tabs for System (Account | Alerts | Backup | Recycle Bin) -->
       <div class="chip-row mb-4 hidden" id="settings-system-subtabs" style="display:flex; gap:8px; flex-wrap:wrap;">
         <button type="button" class="btn-chip active" id="subtab-system-account" onclick="setSystemSubTab('account')">Account</button>
         <button type="button" class="btn-chip" id="subtab-system-notifications" onclick="setSystemSubTab('notifications')">Alerts</button>
-        <button type="button" class="btn-chip" id="subtab-system-backup" onclick="setSystemSubTab('backup')">Backup &amp; Data</button>
+        <button type="button" class="btn-chip" id="subtab-system-backup" onclick="setSystemSubTab('backup')">Backup</button>
         <button type="button" class="btn-chip" id="subtab-system-recycle" onclick="setSystemSubTab('recycle')">Recycle Bin</button>
       </div>
 
@@ -5215,9 +5215,10 @@ function hasMeaningfulFinances(state){
   const txCount = Array.isArray(state.transactions) ? state.transactions.length : 0;
   const budgetCount = Array.isArray(state.budgets) ? state.budgets.length : 0;
   const goalCount = Array.isArray(state.savingsGoals) ? state.savingsGoals.length : 0;
+  const plannedCount = Array.isArray(state.plannedSavingsGoals) ? state.plannedSavingsGoals.length : 0;
   const invCount = Array.isArray(state.investments) ? state.investments.length : 0;
   const soldCount = Array.isArray(state.soldInvestments) ? state.soldInvestments.length : 0;
-  return (txCount + budgetCount + goalCount + invCount + soldCount) > 0;
+  return (txCount + budgetCount + goalCount + plannedCount + invCount + soldCount) > 0;
 }
 
 function createLocalDataBackup(reason = 'auto'){
@@ -5963,23 +5964,56 @@ function renderSettingsAccount(){
   }
 }
 
+function csvCell(v){
+  if(v === null || v === undefined) return '';
+  const s = String(v);
+  if(/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function buildCSVContent(headers, rows){
+  return [headers.map(csvCell).join(','), ...rows.map(r => r.map(csvCell).join(','))].join('\n');
+}
+
+function downloadFileBlob(content, filename, mimeType){
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function recordManualBackupTimestamp(){
+  try {
+    localStorage.setItem('wealthnest_last_manual_backup', new Date().toISOString());
+    if (typeof renderBackupSettings === 'function') renderBackupSettings();
+  } catch(e){}
+}
+
 function exportFinancesJSON(){
   try {
-    // Sort all transactions chronologically from A to Z
-    const sortedTxs = Array.isArray(DB.transactions) 
-      ? [...DB.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || '')) 
+    const sortedTxs = Array.isArray(DB.transactions)
+      ? [...DB.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || ''))
       : [];
 
-    // Complete A-to-Z full database snapshot
     const exportData = {
       ...DB,
       transactions: sortedTxs,
       budgets: Array.isArray(DB.budgets) ? DB.budgets : [],
       savingsGoals: Array.isArray(DB.savingsGoals) ? DB.savingsGoals : [],
+      plannedSavingsGoals: Array.isArray(DB.plannedSavingsGoals) ? DB.plannedSavingsGoals : [],
       investments: Array.isArray(DB.investments) ? DB.investments : [],
       soldInvestments: Array.isArray(DB.soldInvestments) ? DB.soldInvestments : [],
       categories: DB.categories || {},
       paymentMethods: Array.isArray(DB.paymentMethods) ? DB.paymentMethods : [],
+      allowanceAccounts: Array.isArray(DB.allowanceAccounts) ? DB.allowanceAccounts : [],
+      warningRules: Array.isArray(DB.warningRules) ? DB.warningRules : [],
+      tags: Array.isArray(DB.tags) ? DB.tags : [],
+      goalRollovers: Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [],
       recurring: Array.isArray(DB.recurring) ? DB.recurring : [],
       debts: Array.isArray(DB.debts) ? DB.debts : [],
       currency: DB.currency || { code: 'USD', symbol: '$' },
@@ -5993,25 +6027,14 @@ function exportFinancesJSON(){
         totalTransactions: sortedTxs.length,
         totalBudgets: (DB.budgets || []).length,
         totalSavingsGoals: (DB.savingsGoals || []).length,
+        totalPlannedGoals: (DB.plannedSavingsGoals || []).length,
         totalInvestments: (DB.investments || []).length
       }
     };
 
-    const dataStr = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const dateStr = ymd(new Date());
-    a.href = url;
-    a.download = `wealthnest_full_backup_${dateStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    try {
-      localStorage.setItem('wealthnest_last_manual_backup', new Date().toISOString());
-      if (typeof renderBackupSettings === 'function') renderBackupSettings();
-    } catch(e){}
-    showToast(`Full A-to-Z backup downloaded (${sortedTxs.length} transactions)!`);
+    downloadFileBlob(JSON.stringify(exportData, null, 2), `wealthnest_full_backup_${ymd(new Date())}.json`, 'application/json');
+    recordManualBackupTimestamp();
+    showToast(`Full backup downloaded (${sortedTxs.length} transactions)!`);
   } catch(e) {
     showToast("Export failed: " + e.message, "error");
   }
@@ -6025,16 +6048,7 @@ function exportCategoriesJSON(){
       exportedAt: new Date().toISOString(),
       categories: DB.categories || {}
     };
-    const dataStr = JSON.stringify(catsData, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const dateStr = ymd(new Date());
-    a.href = url;
-    a.download = `wealthnest_categories_${dateStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    downloadFileBlob(JSON.stringify(catsData, null, 2), `wealthnest_categories_${ymd(new Date())}.json`, 'application/json');
     showToast("Categories & subcategories exported successfully!");
   } catch(e) {
     showToast("Category export failed: " + e.message, "error");
@@ -6043,8 +6057,8 @@ function exportCategoriesJSON(){
 
 function exportTransactionsJSON(){
   try {
-    const sortedTxs = Array.isArray(DB.transactions) 
-      ? [...DB.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || '')) 
+    const sortedTxs = Array.isArray(DB.transactions)
+      ? [...DB.transactions].sort((a,b) => (a.date || '').localeCompare(b.date || ''))
       : [];
     const txData = {
       appName: "WealthNest",
@@ -6053,59 +6067,230 @@ function exportTransactionsJSON(){
       totalTransactions: sortedTxs.length,
       transactions: sortedTxs
     };
-    const dataStr = JSON.stringify(txData, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const dateStr = ymd(new Date());
-    a.href = url;
-    a.download = `wealthnest_transactions_${dateStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    downloadFileBlob(JSON.stringify(txData, null, 2), `wealthnest_transactions_${ymd(new Date())}.json`, 'application/json');
     showToast(`Exported all ${sortedTxs.length} transactions as JSON!`);
   } catch(e) {
     showToast("Transactions export failed: " + e.message, "error");
   }
 }
 
+function getTransactionsCSVData(){
+  const txs = Array.isArray(DB.transactions) ? [...DB.transactions] : [];
+  txs.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+  const defCur = (DB.currency && DB.currency.code) || 'PKR';
+  const headers = ["ID", "Date", "Type", "Amount", "Currency", "Category", "Subcategory", "PaymentMethod", "Account", "Description", "GoalId", "IsReimbursable", "ClaimableAmount", "RecoveredAmount", "RecoveryStatus", "RecurringId", "CreatedAt"];
+  const rows = txs.map(t => [
+    t.id || '',
+    t.date || '',
+    t.type || '',
+    t.amount || 0,
+    t.currency || defCur,
+    t.category || '',
+    t.subCategory || t.subcategory || '',
+    t.paymentMethod || '',
+    t.account || '',
+    t.description || t.note || '',
+    t.goalId || '',
+    t.isReimbursable ? 'true' : 'false',
+    t.claimableAmount !== undefined && t.claimableAmount !== null ? t.claimableAmount : '',
+    t.recoveredAmount !== undefined && t.recoveredAmount !== null ? t.recoveredAmount : '',
+    t.recoveryStatus || '',
+    t.recurringId || '',
+    t.createdAt || t.date || ''
+  ]);
+  return { headers, rows };
+}
+
+function getBudgetsCSVData(){
+  const list = Array.isArray(DB.budgets) ? DB.budgets : [];
+  const headers = ["ID", "Category", "Subcategory", "Month", "Year", "Amount"];
+  const rows = list.map(b => [
+    b.id || '',
+    b.category || '',
+    b.subCategory || '',
+    b.month || '',
+    b.year || '',
+    b.amount || 0
+  ]);
+  return { headers, rows };
+}
+
+function getSavingsCSVData(){
+  const active = Array.isArray(DB.savingsGoals) ? DB.savingsGoals : [];
+  const planned = Array.isArray(DB.plannedSavingsGoals) ? DB.plannedSavingsGoals : [];
+  const headers = ["Status", "ID", "Name", "Type", "Category", "SubCategory", "TargetAmount", "CurrentAmount", "StartDate", "Deadline", "SavingIn", "Paid", "Dismissed"];
+  const rows = [
+    ...active.map(g => [
+      'active',
+      g.id || '',
+      g.name || '',
+      g.type || (g.purpose === 'Household' || g.purpose === 'Personal' || g.purpose === 'bill_reserve' ? 'bill' : 'savings'),
+      g.category || g.purpose || '',
+      g.subCategory || '',
+      g.targetAmount || 0,
+      g.currentAmount || 0,
+      g.startDate || '',
+      g.targetDate || g.deadline || '',
+      g.savingIn || '',
+      g.paid ? 'true' : 'false',
+      g.dismissed ? 'true' : 'false'
+    ]),
+    ...planned.map(p => [
+      'planned',
+      p.id || '',
+      p.name || '',
+      'savings',
+      p.purpose || 'Savings',
+      '',
+      p.targetAmount || 0,
+      0,
+      '',
+      '',
+      p.savingIn || '',
+      'false',
+      'false'
+    ])
+  ];
+  return { headers, rows };
+}
+
+function getInvestmentsCSVData(){
+  const active = Array.isArray(DB.investments) ? DB.investments : [];
+  const sold = Array.isArray(DB.soldInvestments) ? DB.soldInvestments : [];
+  const headers = ["Status", "ID", "Name", "Symbol", "Type", "Quantity", "BuyPrice", "CurrentPrice", "BuyDate", "SellPrice", "SellDate"];
+  const rows = [
+    ...active.map(i => ['active', i.id || '', i.name || '', i.symbol || '', i.type || '', i.quantity || 0, i.purchasePrice || i.buyPrice || 0, i.currentPrice || 0, i.buyDate || '', '', '']),
+    ...sold.map(s => ['sold', s.id || '', s.name || '', s.symbol || '', s.type || '', s.quantity || 0, s.purchasePrice || s.buyPrice || 0, '', s.buyDate || '', s.sellPrice || 0, s.sellDate || ''])
+  ];
+  return { headers, rows };
+}
+
+function getCategoriesCSVData(){
+  const cats = DB.categories || {};
+  const headers = ["Type", "Category", "Subcategory"];
+  const rows = [];
+  (cats.expense || []).forEach(c => {
+    const name = c && typeof c === 'object' ? c.name : c;
+    const subs = c && typeof c === 'object' && Array.isArray(c.subcategories) ? c.subcategories : [];
+    if(subs.length){
+      subs.forEach(s => rows.push(['expense', name || '', s || '']));
+    } else if(name){
+      rows.push(['expense', name, '']);
+    }
+  });
+  ['income', 'savings', 'investments'].forEach(t => {
+    (cats[t] || []).forEach(name => {
+      if(name) rows.push([t, name, '']);
+    });
+  });
+  return { headers, rows };
+}
+
+function getAllowancesCSVData(){
+  const list = Array.isArray(DB.allowanceAccounts) ? DB.allowanceAccounts : [];
+  const headers = ["ID", "Name", "Limit", "Period", "Active", "StartDate", "EndDate"];
+  const rows = list.map(a => [
+    a.id || '',
+    a.name || '',
+    a.limit || 0,
+    a.period || 'monthly',
+    a.active !== false ? 'true' : 'false',
+    a.startDate || '',
+    a.endDate || ''
+  ]);
+  return { headers, rows };
+}
+
+function getPaymentMethodsCSVData(){
+  const list = Array.isArray(DB.paymentMethods) ? DB.paymentMethods : [];
+  const headers = ["Name"];
+  const rows = list.map(pm => [pm || '']);
+  return { headers, rows };
+}
+
 function exportTransactionsCSV(){
   try {
-    const txs = Array.isArray(DB.transactions) ? [...DB.transactions] : [];
-    if (!txs.length) {
-      showToast("No transactions to export", "info");
-      return;
-    }
-    txs.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
-
-    const headers = ["ID", "Date", "Type", "Amount", "Currency", "Category", "Subcategory", "PaymentMethod", "Account", "Note", "RecurringId", "CreatedAt"];
-    const rows = txs.map(t => [
-      t.id || '',
-      t.date || '',
-      t.type || '',
-      t.amount || 0,
-      t.currency || (DB.currency && DB.currency.code) || 'USD',
-      `"${(t.category || '').replace(/"/g, '""')}"`,
-      `"${(t.subcategory || '').replace(/"/g, '""')}"`,
-      `"${(t.paymentMethod || '').replace(/"/g, '""')}"`,
-      `"${(t.account || '').replace(/"/g, '""')}"`,
-      `"${(t.note || '').replace(/"/g, '""')}"`,
-      t.recurringId || '',
-      t.createdAt || t.date || ''
-    ]);
-    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const dateStr = ymd(new Date());
-    a.href = url;
-    a.download = `wealthnest_transactions_all_${dateStr}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    showToast(`Exported all ${txs.length} transactions (A to Z) as CSV!`);
+    const { headers, rows } = getTransactionsCSVData();
+    if (!rows.length) { showToast("No transactions to export", "info"); return; }
+    downloadFileBlob(buildCSVContent(headers, rows), `wealthnest_transactions_${ymd(new Date())}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`Exported ${rows.length} transactions as CSV!`);
   } catch(e) {
     showToast("CSV export failed: " + e.message, "error");
+  }
+}
+
+function exportBudgetsCSV(){
+  try {
+    const { headers, rows } = getBudgetsCSVData();
+    if (!rows.length) { showToast("No budgets to export", "info"); return; }
+    downloadFileBlob(buildCSVContent(headers, rows), `wealthnest_budgets_${ymd(new Date())}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`Exported ${rows.length} budgets as CSV!`);
+  } catch(e) {
+    showToast("Budgets CSV export failed: " + e.message, "error");
+  }
+}
+
+function exportSavingsCSV(){
+  try {
+    const { headers, rows } = getSavingsCSVData();
+    if (!rows.length) { showToast("No savings or planned goals to export", "info"); return; }
+    downloadFileBlob(buildCSVContent(headers, rows), `wealthnest_savings_${ymd(new Date())}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`Exported ${rows.length} savings records as CSV!`);
+  } catch(e) {
+    showToast("Savings CSV export failed: " + e.message, "error");
+  }
+}
+
+function exportInvestmentsCSV(){
+  try {
+    const { headers, rows } = getInvestmentsCSVData();
+    if (!rows.length) { showToast("No investments to export", "info"); return; }
+    downloadFileBlob(buildCSVContent(headers, rows), `wealthnest_investments_${ymd(new Date())}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`Exported ${rows.length} investment records as CSV!`);
+  } catch(e) {
+    showToast("Investments CSV export failed: " + e.message, "error");
+  }
+}
+
+function exportCategoriesCSV(){
+  try {
+    const { headers, rows } = getCategoriesCSVData();
+    if (!rows.length) { showToast("No categories to export", "info"); return; }
+    downloadFileBlob(buildCSVContent(headers, rows), `wealthnest_categories_${ymd(new Date())}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`Exported ${rows.length} category entries as CSV!`);
+  } catch(e) {
+    showToast("Categories CSV export failed: " + e.message, "error");
+  }
+}
+
+function exportAllowancesCSV(){
+  try {
+    const { headers, rows } = getAllowancesCSVData();
+    if (!rows.length) { showToast("No allowances to export", "info"); return; }
+    downloadFileBlob(buildCSVContent(headers, rows), `wealthnest_allowances_${ymd(new Date())}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`Exported ${rows.length} allowance records as CSV!`);
+  } catch(e) {
+    showToast("Allowances CSV export failed: " + e.message, "error");
+  }
+}
+
+function exportFullBackupCSV(){
+  try {
+    const sections = [
+      { key: 'TRANSACTIONS', data: getTransactionsCSVData() },
+      { key: 'BUDGETS', data: getBudgetsCSVData() },
+      { key: 'SAVINGS_GOALS', data: getSavingsCSVData() },
+      { key: 'INVESTMENTS', data: getInvestmentsCSVData() },
+      { key: 'CATEGORIES', data: getCategoriesCSVData() },
+      { key: 'ALLOWANCES', data: getAllowancesCSVData() },
+      { key: 'PAYMENT_METHODS', data: getPaymentMethodsCSVData() }
+    ];
+    const blocks = sections.map(s => `[SECTION:${s.key}]\n${buildCSVContent(s.data.headers, s.data.rows)}`);
+    downloadFileBlob(blocks.join('\n\n'), `wealthnest_full_backup_${ymd(new Date())}.csv`, 'text/csv;charset=utf-8;');
+    recordManualBackupTimestamp();
+    showToast("Full CSV backup downloaded!");
+  } catch(e) {
+    showToast("Full CSV export failed: " + e.message, "error");
   }
 }
 
@@ -6677,170 +6862,439 @@ function triggerImportFinancesJSON(){
     fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.id = 'wn-import-file-input';
-    fileInput.accept = '.json';
+    fileInput.accept = '.json,.csv';
     fileInput.style.display = 'none';
     fileInput.onchange = handleImportFinancesFile;
     document.body.appendChild(fileInput);
   }
+  fileInput.accept = '.json,.csv';
   fileInput.click();
+}
+
+function parseCSVText(text){
+  const clean = String(text || '').replace(/^\uFEFF/, '');
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+  for(let i = 0; i < clean.length; i++){
+    const ch = clean[i];
+    const next = clean[i + 1];
+    if(inQuotes){
+      if(ch === '"' && next === '"'){ cell += '"'; i++; }
+      else if(ch === '"'){ inQuotes = false; }
+      else { cell += ch; }
+    } else {
+      if(ch === '"'){ inQuotes = true; }
+      else if(ch === ','){ row.push(cell); cell = ''; }
+      else if(ch === '\r' && next === '\n'){ row.push(cell); rows.push(row); row = []; cell = ''; i++; }
+      else if(ch === '\n' || ch === '\r'){ row.push(cell); rows.push(row); row = []; cell = ''; }
+      else { cell += ch; }
+    }
+  }
+  if(cell.length > 0 || row.length > 0){
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+
+function csvRowsToObjects(rows){
+  if(!rows || rows.length < 2) return [];
+  const headers = rows[0].map(h => h.trim());
+  return rows.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = (r[idx] !== undefined ? r[idx] : '').trim(); });
+    return obj;
+  });
+}
+
+function mapCSVSectionObjects(sectionKey, objs, out){
+  if(sectionKey === 'TRANSACTIONS'){
+    out.transactions = objs.map(o => ({
+      id: o.ID || undefined,
+      date: o.Date || '',
+      type: (o.Type || 'expense').toLowerCase(),
+      amount: parseFloat(o.Amount) || 0,
+      currency: o.Currency || undefined,
+      category: o.Category || 'Uncategorized',
+      subCategory: o.Subcategory || o.SubCategory || '',
+      paymentMethod: o.PaymentMethod || '',
+      account: o.Account || '',
+      description: o.Description || o.Note || '',
+      goalId: o.GoalId || undefined,
+      isReimbursable: o.IsReimbursable === 'true',
+      claimableAmount: o.ClaimableAmount !== '' && o.ClaimableAmount !== undefined ? parseFloat(o.ClaimableAmount) : undefined,
+      recoveredAmount: o.RecoveredAmount !== '' && o.RecoveredAmount !== undefined ? parseFloat(o.RecoveredAmount) : undefined,
+      recoveryStatus: o.RecoveryStatus || undefined,
+      recurringId: o.RecurringId || undefined,
+      createdAt: o.CreatedAt || undefined
+    })).filter(t => t.date || t.amount);
+  } else if(sectionKey === 'BUDGETS'){
+    out.budgets = objs.map(o => ({
+      id: o.ID || undefined,
+      category: o.Category || '',
+      subCategory: o.Subcategory || o.SubCategory || null,
+      month: parseInt(o.Month, 10) || 1,
+      year: parseInt(o.Year, 10) || new Date().getFullYear(),
+      amount: parseFloat(o.Amount) || 0
+    })).filter(b => b.category);
+  } else if(sectionKey === 'SAVINGS_GOALS'){
+    out.savingsGoals = [];
+    out.plannedSavingsGoals = [];
+    objs.forEach(o => {
+      if(!o.Name) return;
+      if((o.Status || '').toLowerCase() === 'planned'){
+        out.plannedSavingsGoals.push({
+          id: o.ID || undefined,
+          purpose: o.Category || 'Savings',
+          name: o.Name,
+          targetAmount: parseFloat(o.TargetAmount) || 0,
+          savingIn: o.SavingIn || 'Bank Account',
+          createdAt: new Date().toISOString()
+        });
+      } else {
+        out.savingsGoals.push({
+          id: o.ID || undefined,
+          name: o.Name,
+          type: (o.Type || 'savings').toLowerCase(),
+          category: o.Category || 'Savings',
+          subCategory: o.SubCategory || o.Subcategory || '',
+          targetAmount: parseFloat(o.TargetAmount) || 0,
+          currentAmount: parseFloat(o.CurrentAmount) || 0,
+          startDate: o.StartDate || '',
+          deadline: o.Deadline || '',
+          targetDate: o.Deadline || '',
+          savingIn: o.SavingIn || 'Bank Account',
+          paid: o.Paid === 'true',
+          dismissed: o.Dismissed === 'true'
+        });
+      }
+    });
+  } else if(sectionKey === 'INVESTMENTS'){
+    out.investments = [];
+    out.soldInvestments = [];
+    objs.forEach(o => {
+      if(!o.Name && !o.Symbol) return;
+      const base = {
+        id: o.ID || undefined,
+        name: o.Name || o.Symbol,
+        symbol: o.Symbol || '',
+        type: o.Type || 'Stocks',
+        quantity: parseFloat(o.Quantity) || 0,
+        purchasePrice: parseFloat(o.BuyPrice) || 0,
+        buyDate: o.BuyDate || ''
+      };
+      if((o.Status || '').toLowerCase() === 'sold'){
+        out.soldInvestments.push({ ...base, sellPrice: parseFloat(o.SellPrice) || 0, sellDate: o.SellDate || '' });
+      } else {
+        out.investments.push({ ...base, currentPrice: parseFloat(o.CurrentPrice) || 0 });
+      }
+    });
+  } else if(sectionKey === 'CATEGORIES'){
+    out.categories = { expense: [], income: [], savings: [], investments: [] };
+    const expMap = new Map();
+    objs.forEach(o => {
+      const t = (o.Type || '').toLowerCase();
+      const cat = o.Category || '';
+      const sub = o.Subcategory || o.SubCategory || '';
+      if(!cat) return;
+      if(t === 'expense'){
+        if(!expMap.has(cat)) expMap.set(cat, new Set());
+        if(sub) expMap.get(cat).add(sub);
+      } else if(out.categories[t] && !out.categories[t].includes(cat)){
+        out.categories[t].push(cat);
+      }
+    });
+    expMap.forEach((subs, name) => out.categories.expense.push({ name, subcategories: Array.from(subs) }));
+  } else if(sectionKey === 'ALLOWANCES'){
+    out.allowanceAccounts = objs.map(o => ({
+      id: o.ID || undefined,
+      name: o.Name || '',
+      limit: parseFloat(o.Limit) || 0,
+      period: o.Period || 'monthly',
+      active: o.Active !== 'false',
+      startDate: o.StartDate || '',
+      endDate: o.EndDate || ''
+    })).filter(a => a.name);
+  } else if(sectionKey === 'PAYMENT_METHODS'){
+    out.paymentMethods = objs.map(o => o.Name).filter(Boolean);
+  }
+}
+
+function parseCSVBackupPayload(text){
+  const out = {};
+  const sectionRegex = /\[SECTION:([A-Z_]+)\]/g;
+  if(sectionRegex.test(text)){
+    const parts = text.split(/\[SECTION:([A-Z_]+)\]\r?\n/);
+    for(let i = 1; i < parts.length; i += 2){
+      const key = parts[i].trim();
+      const body = (parts[i + 1] || '').trim();
+      if(!body) continue;
+      const objs = csvRowsToObjects(parseCSVText(body));
+      if(objs.length) mapCSVSectionObjects(key, objs, out);
+    }
+    return out;
+  }
+
+  const rows = parseCSVText(text);
+  if(rows.length < 2) return null;
+  const headers = rows[0].map(h => h.trim());
+  const hSet = new Set(headers);
+  const objs = csvRowsToObjects(rows);
+
+  if(hSet.has('Date') && hSet.has('Amount') && hSet.has('Category')){
+    mapCSVSectionObjects('TRANSACTIONS', objs, out);
+  } else if(hSet.has('Month') && hSet.has('Year') && hSet.has('Amount')){
+    mapCSVSectionObjects('BUDGETS', objs, out);
+  } else if(hSet.has('TargetAmount') && hSet.has('Name')){
+    mapCSVSectionObjects('SAVINGS_GOALS', objs, out);
+  } else if(hSet.has('BuyPrice') || hSet.has('Quantity') || hSet.has('Symbol')){
+    mapCSVSectionObjects('INVESTMENTS', objs, out);
+  } else if(hSet.has('Type') && hSet.has('Category') && (hSet.has('Subcategory') || hSet.has('SubCategory'))){
+    mapCSVSectionObjects('CATEGORIES', objs, out);
+  } else if(hSet.has('Limit') && hSet.has('Period')){
+    mapCSVSectionObjects('ALLOWANCES', objs, out);
+  } else if(headers.length === 1 && hSet.has('Name')){
+    mapCSVSectionObjects('PAYMENT_METHODS', objs, out);
+  } else {
+    return null;
+  }
+  return out;
+}
+
+function smartMergeBackupData(data){
+  const stats = { txAdded: 0, budAdded: 0, goalsAdded: 0, plannedAdded: 0, invAdded: 0, catAdded: 0, allwAdded: 0, pmAdded: 0, skipped: 0 };
+
+  if(Array.isArray(data.transactions)){
+    if(!Array.isArray(DB.transactions)) DB.transactions = [];
+    const existingIds = new Set(DB.transactions.map(t => t.id).filter(Boolean));
+    const existingKeys = new Set(DB.transactions.map(t => `${t.date}_${t.amount}_${t.category}_${(t.description || t.note || '').trim()}`));
+    data.transactions.forEach(tx => {
+      if(!tx) return;
+      const key = `${tx.date}_${tx.amount}_${tx.category}_${(tx.description || tx.note || '').trim()}`;
+      if((tx.id && existingIds.has(tx.id)) || existingKeys.has(key)){
+        stats.skipped++;
+        return;
+      }
+      const rec = { ...tx, id: tx.id || uid() };
+      DB.transactions.push(rec);
+      existingIds.add(rec.id);
+      existingKeys.add(key);
+      stats.txAdded++;
+    });
+  }
+
+  if(Array.isArray(data.budgets)){
+    if(!Array.isArray(DB.budgets)) DB.budgets = [];
+    const existingKeys = new Set(DB.budgets.map(b => `${b.category}_${b.subCategory || ''}_${b.month}_${b.year}`));
+    data.budgets.forEach(b => {
+      if(!b || !b.category) return;
+      const key = `${b.category}_${b.subCategory || ''}_${b.month}_${b.year}`;
+      if(existingKeys.has(key)){ stats.skipped++; return; }
+      DB.budgets.push({ ...b, id: b.id || uid() });
+      existingKeys.add(key);
+      stats.budAdded++;
+    });
+  }
+
+  if(Array.isArray(data.savingsGoals)){
+    if(!Array.isArray(DB.savingsGoals)) DB.savingsGoals = [];
+    const existingIds = new Set(DB.savingsGoals.map(g => g.id).filter(Boolean));
+    const existingNames = new Set(DB.savingsGoals.map(g => (g.name || '').toLowerCase().trim()));
+    data.savingsGoals.forEach(g => {
+      if(!g || !g.name) return;
+      const nameKey = g.name.toLowerCase().trim();
+      if((g.id && existingIds.has(g.id)) || existingNames.has(nameKey)){ stats.skipped++; return; }
+      const rec = { ...g, id: g.id || uid() };
+      DB.savingsGoals.push(rec);
+      existingIds.add(rec.id);
+      existingNames.add(nameKey);
+      stats.goalsAdded++;
+    });
+  }
+
+  if(Array.isArray(data.plannedSavingsGoals)){
+    if(!Array.isArray(DB.plannedSavingsGoals)) DB.plannedSavingsGoals = [];
+    const existingIds = new Set(DB.plannedSavingsGoals.map(g => g.id).filter(Boolean));
+    const existingNames = new Set(DB.plannedSavingsGoals.map(g => (g.name || '').toLowerCase().trim()));
+    data.plannedSavingsGoals.forEach(g => {
+      if(!g || !g.name) return;
+      const nameKey = g.name.toLowerCase().trim();
+      if((g.id && existingIds.has(g.id)) || existingNames.has(nameKey)){ stats.skipped++; return; }
+      const rec = { ...g, id: g.id || ('plan_' + uid()) };
+      DB.plannedSavingsGoals.push(rec);
+      existingIds.add(rec.id);
+      existingNames.add(nameKey);
+      stats.plannedAdded++;
+    });
+  }
+
+  const mergeInvList = (incoming, targetKey) => {
+    if(!Array.isArray(incoming)) return;
+    if(!Array.isArray(DB[targetKey])) DB[targetKey] = [];
+    const existingIds = new Set(DB[targetKey].map(i => i.id).filter(Boolean));
+    const existingKeys = new Set(DB[targetKey].map(i => `${(i.symbol || i.name || '').toLowerCase()}_${i.buyDate || ''}_${i.quantity || 0}`));
+    incoming.forEach(item => {
+      if(!item) return;
+      const key = `${(item.symbol || item.name || '').toLowerCase()}_${item.buyDate || ''}_${item.quantity || 0}`;
+      if((item.id && existingIds.has(item.id)) || existingKeys.has(key)){ stats.skipped++; return; }
+      const rec = { ...item, id: item.id || uid() };
+      DB[targetKey].push(rec);
+      existingIds.add(rec.id);
+      existingKeys.add(key);
+      stats.invAdded++;
+    });
+  };
+  mergeInvList(data.investments, 'investments');
+  mergeInvList(data.soldInvestments, 'soldInvestments');
+
+  if(data.categories && typeof data.categories === 'object'){
+    if(!DB.categories) DB.categories = { expense: [], income: [], savings: [], investments: [] };
+    ['income', 'expense', 'savings', 'investments'].forEach(catType => {
+      if(!Array.isArray(data.categories[catType])) return;
+      if(catType === 'expense'){
+        if(!Array.isArray(DB.categories.expense)) DB.categories.expense = [];
+        const byName = new Map(DB.categories.expense.map(c => [(c.name || c).toLowerCase(), c]));
+        data.categories.expense.forEach(c => {
+          const name = typeof c === 'string' ? c : (c && c.name);
+          if(!name) return;
+          const subs = c && Array.isArray(c.subcategories) ? c.subcategories : [];
+          const existing = byName.get(name.toLowerCase());
+          if(!existing){
+            const entry = { name, subcategories: [...subs] };
+            DB.categories.expense.push(entry);
+            byName.set(name.toLowerCase(), entry);
+            stats.catAdded++;
+          } else if(typeof existing === 'object'){
+            if(!Array.isArray(existing.subcategories)) existing.subcategories = [];
+            const subSet = new Set(existing.subcategories.map(s => s.toLowerCase()));
+            subs.forEach(s => {
+              if(s && !subSet.has(s.toLowerCase())){
+                existing.subcategories.push(s);
+                subSet.add(s.toLowerCase());
+                stats.catAdded++;
+              }
+            });
+          }
+        });
+      } else {
+        if(!Array.isArray(DB.categories[catType])) DB.categories[catType] = [];
+        const currentSet = new Set(DB.categories[catType].map(x => String(x).toLowerCase()));
+        data.categories[catType].forEach(item => {
+          if(item && !currentSet.has(String(item).toLowerCase())){
+            DB.categories[catType].push(item);
+            currentSet.add(String(item).toLowerCase());
+            stats.catAdded++;
+          }
+        });
+      }
+    });
+  }
+
+  if(Array.isArray(data.allowanceAccounts)){
+    if(!Array.isArray(DB.allowanceAccounts)) DB.allowanceAccounts = [];
+    const existingIds = new Set(DB.allowanceAccounts.map(a => a.id).filter(Boolean));
+    const existingNames = new Set(DB.allowanceAccounts.map(a => (a.name || '').toLowerCase().trim()));
+    data.allowanceAccounts.forEach(a => {
+      if(!a || !a.name) return;
+      const nKey = a.name.toLowerCase().trim();
+      if((a.id && existingIds.has(a.id)) || existingNames.has(nKey)){ stats.skipped++; return; }
+      const rec = { ...a, id: a.id || ('allw_' + uid()) };
+      DB.allowanceAccounts.push(rec);
+      existingIds.add(rec.id);
+      existingNames.add(nKey);
+      stats.allwAdded++;
+    });
+  }
+
+  if(Array.isArray(data.paymentMethods)){
+    if(!Array.isArray(DB.paymentMethods)) DB.paymentMethods = [...DEFAULT_PAYMENT_METHODS];
+    const pmSet = new Set(DB.paymentMethods.map(p => String(p).toLowerCase()));
+    data.paymentMethods.forEach(pm => {
+      if(pm && !pmSet.has(String(pm).toLowerCase())){
+        DB.paymentMethods.push(pm);
+        pmSet.add(String(pm).toLowerCase());
+        stats.pmAdded++;
+      }
+    });
+  }
+
+  return stats;
 }
 
 function handleImportFinancesFile(e){
   const file = e.target.files && e.target.files[0];
   if (!file) return;
+  const isCSV = (file.name || '').toLowerCase().endsWith('.csv');
   const reader = new FileReader();
   reader.onload = async function(evt) {
     try {
-      const parsed = JSON.parse(evt.target.result);
-      const data = parsed.data || parsed;
-
-      // Case 1: Categories-only import
-      if (data.type === 'categories_backup' || (data.categories && !data.transactions && !data.budgets)) {
-        const newCats = data.categories || data;
-        if (!Array.isArray(newCats.income) && !Array.isArray(newCats.expense)) {
-          showToast("Invalid categories file format", "error");
+      let data = null;
+      if(isCSV){
+        data = parseCSVBackupPayload(evt.target.result);
+        if(!data){
+          showToast("Unrecognized CSV format", "error");
           return;
         }
-        if (confirm("Restore categories & subcategories from file? Your existing transactions will remain safe.")) {
-          createLocalDataBackup('pre_cat_import');
-          DB.categories = newCats;
-          sanitizeLoadedDB(DB);
-          saveDB(true);
-          renderAllForCurrentPage();
-          showToast("Categories & subcategories updated successfully!");
-        }
+      } else {
+        const parsed = JSON.parse(evt.target.result);
+        data = parsed.data || parsed;
+        if(Array.isArray(data)) data = { transactions: data };
+      }
+
+      const hasAnyData = (data.transactions && data.transactions.length) ||
+        (data.budgets && data.budgets.length) ||
+        (data.savingsGoals && data.savingsGoals.length) ||
+        (data.plannedSavingsGoals && data.plannedSavingsGoals.length) ||
+        (data.investments && data.investments.length) ||
+        (data.soldInvestments && data.soldInvestments.length) ||
+        (data.allowanceAccounts && data.allowanceAccounts.length) ||
+        (data.paymentMethods && data.paymentMethods.length) ||
+        (data.categories && typeof data.categories === 'object');
+
+      if (!hasAnyData) {
+        showToast("No restorable records found in file", "info");
         return;
       }
 
-      // Case 2: Transactions-only import
-      if (data.type === 'transactions_backup' || (Array.isArray(data.transactions) && !data.budgets && !data.categories)) {
-        const importTxs = Array.isArray(data.transactions) ? data.transactions : (Array.isArray(data) ? data : []);
-        if (!importTxs.length) {
-          showToast("No transactions found in file", "info");
-          return;
-        }
-        if (confirm(`Import ${importTxs.length} transactions? They will be merged with your existing records.`)) {
-          createLocalDataBackup('pre_tx_import');
-          const existingIds = new Set((DB.transactions || []).map(t => t.id));
-          let added = 0;
-          for (const tx of importTxs) {
-            if (tx && tx.id && !existingIds.has(tx.id)) {
-              DB.transactions.push(tx);
-              existingIds.add(tx.id);
-              added++;
-            } else if (tx && !tx.id) {
-              tx.id = uid();
-              DB.transactions.push(tx);
-              added++;
-            }
-          }
-          sanitizeLoadedDB(DB);
-          saveDB(true);
-          renderAllForCurrentPage();
-          showToast(`Imported ${added} new transactions successfully!`);
-        }
-        return;
-      }
+      const summaryParts = [];
+      if(data.transactions?.length) summaryParts.push(`${data.transactions.length} transactions`);
+      if(data.budgets?.length) summaryParts.push(`${data.budgets.length} budgets`);
+      if(data.savingsGoals?.length) summaryParts.push(`${data.savingsGoals.length} goals`);
+      if(data.plannedSavingsGoals?.length) summaryParts.push(`${data.plannedSavingsGoals.length} planned goals`);
+      if(data.investments?.length || data.soldInvestments?.length) summaryParts.push(`${(data.investments?.length || 0) + (data.soldInvestments?.length || 0)} investments`);
+      if(data.categories) summaryParts.push(`categories`);
 
-      // Case 3: Complete A-to-Z Database Backup (Smart Merge with Zero Duplication)
-      if (!hasMeaningfulFinances(data) && !Array.isArray(data.categories?.income)) {
-        showToast("Invalid WealthNest backup file", "error");
-        return;
-      }
-      const txLen = Array.isArray(data.transactions) ? data.transactions.length : 0;
-      const bLen = Array.isArray(data.budgets) ? data.budgets.length : 0;
-      
       const shouldMerge = confirm(
-        `Restore / Merge data from backup (${txLen} transactions, ${bLen} budgets)?\n\n` +
-        `Click [OK] to Smart Merge (keeps your current data safe, adds missing records with zero duplication).\n` +
-        `Click [Cancel] to abort.`
+        `Restore missing records from ${file.name} (${summaryParts.join(', ')})?\n\n` +
+        `Existing data will be preserved safely with zero duplicates or overwrites.`
       );
-      if (shouldMerge) {
-        createLocalDataBackup('pre_import');
-        
-        // 1. Transactions Smart Merge (deduplicate by id and composite hash)
-        const existingTxIds = new Set((DB.transactions || []).map(t => t.id));
-        const existingTxKeys = new Set((DB.transactions || []).map(t => `${t.date}_${t.amount}_${t.category}_${(t.description || '').trim()}`));
-        let txAdded = 0;
-        (data.transactions || []).forEach(tx => {
-          if (!tx) return;
-          const key = `${tx.date}_${tx.amount}_${tx.category}_${(tx.description || '').trim()}`;
-          if (tx.id && !existingTxIds.has(tx.id) && !existingTxKeys.has(key)) {
-            DB.transactions.push(tx);
-            existingTxIds.add(tx.id);
-            existingTxKeys.add(key);
-            txAdded++;
-          } else if (!tx.id && !existingTxKeys.has(key)) {
-            tx.id = uid();
-            DB.transactions.push(tx);
-            existingTxKeys.add(key);
-            txAdded++;
-          }
-        });
+      if(!shouldMerge) return;
 
-        // 2. Budgets Smart Merge (deduplicate by category + subcat + month + year)
-        const existingBudKeys = new Set((DB.budgets || []).map(b => `${b.category}_${b.subCategory || ''}_${b.month}_${b.year}`));
-        let budAdded = 0;
-        (data.budgets || []).forEach(b => {
-          if (!b) return;
-          const key = `${b.category}_${b.subCategory || ''}_${b.month}_${b.year}`;
-          if (!existingBudKeys.has(key)) {
-            if (!b.id) b.id = uid();
-            DB.budgets.push(b);
-            existingBudKeys.add(key);
-            budAdded++;
-          }
-        });
+      createLocalDataBackup('pre_import');
+      const stats = smartMergeBackupData(data);
+      sanitizeLoadedDB(DB);
+      saveDB(true);
+      renderAllForCurrentPage();
 
-        // 3. Savings Goals Smart Merge (deduplicate by id or name)
-        const existingGoalIds = new Set((DB.savingsGoals || []).map(g => g.id));
-        const existingGoalNames = new Set((DB.savingsGoals || []).map(g => (g.name || '').toLowerCase().trim()));
-        let goalsAdded = 0;
-        (data.savingsGoals || []).forEach(g => {
-          if (!g) return;
-          const nameKey = (g.name || '').toLowerCase().trim();
-          if (g.id && !existingGoalIds.has(g.id) && !existingGoalNames.has(nameKey)) {
-            DB.savingsGoals.push(g);
-            existingGoalIds.add(g.id);
-            existingGoalNames.add(nameKey);
-            goalsAdded++;
-          } else if (!g.id && !existingGoalNames.has(nameKey)) {
-            g.id = uid();
-            DB.savingsGoals.push(g);
-            existingGoalNames.add(nameKey);
-            goalsAdded++;
-          }
-        });
+      const addedParts = [];
+      if(stats.txAdded) addedParts.push(`${stats.txAdded} transactions`);
+      if(stats.budAdded) addedParts.push(`${stats.budAdded} budgets`);
+      if(stats.goalsAdded) addedParts.push(`${stats.goalsAdded} goals`);
+      if(stats.plannedAdded) addedParts.push(`${stats.plannedAdded} planned goals`);
+      if(stats.invAdded) addedParts.push(`${stats.invAdded} investments`);
+      if(stats.catAdded) addedParts.push(`${stats.catAdded} categories`);
+      if(stats.allwAdded) addedParts.push(`${stats.allwAdded} allowances`);
+      if(stats.pmAdded) addedParts.push(`${stats.pmAdded} payment methods`);
 
-        // 4. Categories Merge
-        if (data.categories) {
-          ['income', 'expense', 'savings', 'investments'].forEach(catType => {
-            if (Array.isArray(data.categories[catType])) {
-              if (catType === 'expense') {
-                const currentNames = new Set((DB.categories.expense || []).map(c => c.name || c));
-                data.categories.expense.forEach(c => {
-                  const name = c.name || c;
-                  if (!currentNames.has(name)) {
-                    DB.categories.expense.push(c);
-                    currentNames.add(name);
-                  }
-                });
-              } else {
-                const currentSet = new Set(DB.categories[catType] || []);
-                data.categories[catType].forEach(item => currentSet.add(item));
-                DB.categories[catType] = Array.from(currentSet);
-              }
-            }
-          });
-        }
-
-        sanitizeLoadedDB(DB);
-        saveDB(true);
-        renderAllForCurrentPage();
-        showToast(`Smart Merge Complete: Added ${txAdded} new transactions, ${budAdded} budgets, ${goalsAdded} goals with zero duplicates!`, 'success');
+      if(addedParts.length){
+        showToast(`Restored ${addedParts.join(', ')} (existing records preserved, 0 duplicates).`, 'success');
+      } else {
+        showToast(`All records in this file already exist (${stats.skipped} duplicates skipped).`, 'info');
       }
     } catch(err) {
-      showToast("Error reading JSON file: " + err.message, "error");
+      showToast("Error reading backup file: " + err.message, "error");
     }
   };
   reader.readAsText(file);
@@ -16797,6 +17251,36 @@ function removeSubcategory(categoryName, subName){
   saveDB();
   renderCategoryList();
 }
+function toggleBackupDownloadMenu(e){
+  if(e) e.stopPropagation();
+  const menu = document.getElementById('backup-download-menu');
+  const chev = document.getElementById('backup-download-chevron');
+  if(!menu) return;
+  const isHidden = menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !isHidden);
+  if(chev) chev.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function closeBackupDownloadMenu(){
+  const menu = document.getElementById('backup-download-menu');
+  const chev = document.getElementById('backup-download-chevron');
+  if(menu) menu.classList.add('hidden');
+  if(chev) chev.style.transform = 'rotate(0deg)';
+}
+
+if(!window._backupDropdownOutsideBound){
+  window._backupDropdownOutsideBound = true;
+  document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('backup-download-wrap');
+    if(wrap && !wrap.contains(e.target)) closeBackupDownloadMenu();
+  });
+}
+
+function runBackupExport(fn){
+  closeBackupDownloadMenu();
+  if(typeof fn === 'function') fn();
+}
+
 function renderBackupSettings(){
   const container = document.getElementById('settings-backup-container');
   if(!container) return;
@@ -16823,19 +17307,15 @@ function renderBackupSettings(){
   const userEmail = currentUser && currentUser.email ? currentUser.email : 'Local Device Account';
   const isCloud = !!currentUser;
 
+  const ddItemStyle = 'width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink); cursor:pointer; transition:background 0.12s;';
+
   container.innerHTML = `
-    <!-- Top Safeguard Overview Card -->
     <div class="card" style="padding:22px; margin-bottom:18px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
-        <div>
-          <h2 class="section-title" style="margin:0;">Backup</h2>
-          <p class="text-xs muted" style="margin:4px 0 0;">Download complete A-to-Z offline backups, export spreadsheets, or restore data.</p>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="badge ${isCloud ? 'badge-ok' : 'badge-off'}" style="font-size:12px;">
-            ${isCloud ? 'Cloud Sync Active' : 'Offline Storage'}
-          </span>
-        </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <h2 class="section-title" style="margin:0;">Backup</h2>
+        <span class="badge ${isCloud ? 'badge-ok' : 'badge-off'}" style="font-size:12px;">
+          ${isCloud ? 'Cloud Sync Active' : 'Offline Storage'}
+        </span>
       </div>
 
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:14px 16px;">
@@ -16850,84 +17330,84 @@ function renderBackupSettings(){
         <div>
           <span class="text-xs muted" style="text-transform:uppercase; letter-spacing:0.04em;">Total Records In Database</span>
           <div style="font-weight:700; font-size:13.5px; color:var(--teal); margin-top:2px;">
-            ${txCount} Txs · ${bCount} Budgets · ${gCount} Goals · ${invCount} Assets
+            ${txCount} Txs · ${bCount} Bud · ${gCount} G · ${invCount} Inv
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 2 Column Action Cards: Download vs Restore -->
-    <div class="grid grid-2" style="margin-bottom:18px;">
-      <!-- Download Backup Card -->
-      <div class="card" style="padding:22px; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-            <div style="width:38px; height:38px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </div>
-            <div>
-              <h3 style="margin:0; font-size:15px; font-weight:700;">Download Backup</h3>
-              <span class="text-xs muted">Save complete A-to-Z snapshot to your device</span>
-            </div>
+    <div class="grid grid-2" style="margin-bottom:18px; align-items:start;">
+      <div class="card" style="padding:22px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+          <div style="width:38px; height:38px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </div>
-          <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;">
-            Exports all transactions from A to Z, categories, budgets, savings goals, investments, and settings into a complete, standard JSON file.
-          </p>
+          <h3 style="margin:0; font-size:15px; font-weight:700;">Download Backup</h3>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" onclick="exportFinancesJSON()" class="btn-primary" style="padding:10px 16px; display:inline-flex; align-items:center; gap:8px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Full Backup (.json)
+
+        <div id="backup-download-wrap" style="position:relative; display:inline-block; width:100%;">
+          <button type="button" id="backup-download-btn" onclick="toggleBackupDownloadMenu(event)" class="btn-primary" style="width:100%; padding:11px 16px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span style="display:inline-flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download Backup</span>
+            </span>
+            <svg id="backup-download-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="transition:transform 0.15s;"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <button type="button" onclick="exportCategoriesJSON()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px; border-color:var(--line);" title="Download all categories and subcategories">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/><polyline points="7 10 12 15 17 10"/></svg>
-            Download Categories &amp; Subcategories (.json)
-          </button>
-          <button type="button" onclick="exportTransactionsJSON()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px; border-color:var(--line);" title="Download all transactions">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Download All Transactions (.json)
-          </button>
-          <button type="button" onclick="exportTransactionsCSV()" class="btn-ghost" style="padding:10px 14px; display:inline-flex; align-items:center; gap:6px; border-color:var(--line);" title="Spreadsheet-compatible format">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Export All CSV (Excel)
-          </button>
+
+          <div id="backup-download-menu" class="hidden" style="position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:40; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-lg); padding:6px 0; overflow:hidden;">
+            <button type="button" onclick="runBackupExport(exportFinancesJSON)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">Full Backup</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">JSON</span>
+            </button>
+            <button type="button" onclick="runBackupExport(exportTransactionsJSON)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">All Transactions</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--primary);">JSON</span>
+            </button>
+            <div style="height:1px; background:var(--line); margin:4px 0;"></div>
+            <button type="button" onclick="runBackupExport(exportFullBackupCSV)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">Full Backup</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">CSV</span>
+            </button>
+            <button type="button" onclick="runBackupExport(exportTransactionsCSV)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">All Transactions</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">CSV</span>
+            </button>
+            <button type="button" onclick="runBackupExport(exportBudgetsCSV)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">Budgets</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">CSV</span>
+            </button>
+            <button type="button" onclick="runBackupExport(exportSavingsCSV)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">Savings</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">CSV</span>
+            </button>
+            <button type="button" onclick="runBackupExport(exportInvestmentsCSV)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">Investments</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">CSV</span>
+            </button>
+            <button type="button" onclick="runBackupExport(exportCategoriesCSV)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">Categories</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">CSV</span>
+            </button>
+            <button type="button" onclick="runBackupExport(exportAllowancesCSV)" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="${ddItemStyle}">
+              <span style="font-weight:600;">Allowances &amp; Claims</span>
+              <span class="figure" style="font-size:11px; font-weight:700; color:var(--teal);">CSV</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Restore from File Card -->
-      <div class="card" style="padding:22px; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-            <div style="width:38px; height:38px; border-radius:10px; background:var(--teal-light); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </div>
-            <div>
-              <h3 style="margin:0; font-size:15px; font-weight:700;">Restore from Backup</h3>
-              <span class="text-xs muted">Load a saved JSON file into WealthNest</span>
-            </div>
+      <div class="card" style="padding:22px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+          <div style="width:38px; height:38px; border-radius:10px; background:var(--teal-light); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           </div>
-          <p style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;">
-            Select any WealthNest <code style="background:var(--surface-2); padding:1px 5px; border-radius:4px;">.json</code> file to restore. WealthNest automatically detects if it's a <strong>Full Backup</strong>, <strong>Categories &amp; Subcategories</strong>, or <strong>Transactions</strong> file and restores or merges it safely.
-          </p>
+          <h3 style="margin:0; font-size:15px; font-weight:700;">Restore Backup</h3>
         </div>
-        <div>
-          <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="padding:10px 18px; display:inline-flex; align-items:center; gap:8px; border-color:var(--line);">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Select Backup File to Restore
-          </button>
-        </div>
-      </div>
-    </div>
 
-    
-        <div style="display:flex; align-items:flex-start; gap:10px;">
-          <span style="width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span>
-          <div>Sign out, then sign in with your <strong>second email address</strong>.</div>
-        </div>
-        <div style="display:flex; align-items:flex-start; gap:10px;">
-          <span style="width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</span>
-          <div>Open <strong>Settings → Backup &amp; Data</strong> and click <strong>Select Backup File to Restore</strong>. WealthNest will load and permanently sync all your records into the second account!</div>
-        </div>
+        <button type="button" onclick="triggerImportFinancesJSON()" class="btn-ghost" style="width:100%; padding:11px 16px; display:flex; align-items:center; justify-content:center; gap:8px; border-color:var(--line);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Select Backup File</span>
+        </button>
       </div>
     </div>
   `;
