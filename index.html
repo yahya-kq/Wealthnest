@@ -814,7 +814,7 @@
   .badge-over{background:var(--rose-light); color:var(--rose);}
   .badge-ok{background:var(--teal-light); color:var(--teal);}
   .badge-off{background:var(--line-soft); color:var(--muted);}
-  .badge-amber{background:var(--amber-light); color:var(--amber);}
+  .badge-amber, .badge-warn{background:var(--amber-light); color:var(--amber);}
 
   /* misc */
   .mb-3{margin-bottom:12px;} .mb-4{margin-bottom:16px;} .mb-5{margin-bottom:20px;}
@@ -1343,40 +1343,53 @@
   .warning-card.priority-teal { border-left: 4px solid var(--teal); background: rgba(15,158,147,0.02); }
   .warning-card.priority-primary { border-left: 4px solid var(--primary); background: rgba(99,102,241,0.02); }
 
-  /* --- Dashboard 4-Card Summary Row Uniform Alignment & Typography --- */
-  #dashboard-bottom-grid .dash-card-head {
+  /* --- Dashboard Summary Cards Uniform Alignment & Typography --- */
+  #dashboard-bottom-grid .dash-card-head,
+  #dash-pending-claims-card .dash-card-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 6px;
+    gap: 10px;
     margin-bottom: 14px;
     min-height: 40px;
   }
-  #dashboard-bottom-grid .dash-card-head-copy {
+  #dashboard-bottom-grid .dash-card-head-copy,
+  #dash-pending-claims-card .dash-card-head-copy {
     min-width: 0;
     flex: 1;
   }
-  #dashboard-bottom-grid .dash-card-head .section-title {
+  #dashboard-bottom-grid .dash-card-head .section-title,
+  #dash-pending-claims-card .dash-card-head .section-title {
     font-family: var(--font-display);
-    font-size: 14.5px;
+    font-size: 15.5px;
     font-weight: 700;
     line-height: 1.25;
     margin: 0;
     white-space: nowrap;
   }
-  #dashboard-bottom-grid .dash-card-head .section-sub {
-    font-size: 11.5px;
+  #dashboard-bottom-grid .dash-card-head .section-sub,
+  #dash-pending-claims-card .dash-card-head .section-sub {
+    font-size: 12px;
     line-height: 1.35;
     color: var(--muted);
     margin: 2px 0 0;
     white-space: nowrap;
   }
-  #dashboard-bottom-grid .dash-card-head .btn-small {
+  #dashboard-bottom-grid .dash-card-head .btn-small,
+  #dash-pending-claims-card .dash-card-head .btn-small {
     white-space: nowrap;
     flex-shrink: 0;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 6px;
+    font-size: 11.5px;
+    padding: 5px 11px;
+    border-radius: 7px;
+  }
+  #dashboard-bottom-grid.grid-2 {
+    grid-template-columns: 1fr;
+  }
+  @media(min-width: 768px){
+    #dashboard-bottom-grid.grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
   .dash-card-kpi-row {
     display: flex;
@@ -1439,9 +1452,9 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 8px;
-    height: 152px;
-    padding: 20px 2px 0;
+    gap: 14px;
+    height: 168px;
+    padding: 22px 6px 0;
     border-bottom: 1px solid var(--line);
     position: relative;
     z-index: 1;
@@ -1462,30 +1475,30 @@
   .dash-vbar-pct {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
     line-height: 1;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     white-space: nowrap;
   }
   .dash-vbar-slot {
     width: 100%;
-    max-width: 34px;
-    height: 102px;
+    max-width: 44px;
+    height: 116px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
   }
   .dash-vbar-bar {
     width: 100%;
-    border-radius: 7px 7px 0 0;
+    border-radius: 8px 8px 0 0;
     transition: height 0.3s ease;
   }
   .dash-vbar-track {
     width: 100%;
-    max-width: 34px;
-    height: 102px;
-    border-radius: 7px 7px 4px 4px;
+    max-width: 44px;
+    height: 116px;
+    border-radius: 8px 8px 4px 4px;
     background: var(--line-soft);
     border: 1px solid var(--line);
     display: flex;
@@ -1502,8 +1515,8 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 6px;
-    padding: 8px 2px 0;
+    gap: 10px;
+    padding: 9px 6px 0;
   }
   .dash-vbar-label-col {
     flex: 1;
@@ -1511,7 +1524,7 @@
     text-align: center;
   }
   .dash-vbar-cat {
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 700;
     color: var(--ink);
     white-space: nowrap;
@@ -1521,7 +1534,7 @@
   .dash-vbar-num {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 10px;
+    font-size: 11px;
     color: var(--muted);
     margin-top: 2px;
     white-space: nowrap;
@@ -2016,9 +2029,9 @@
         </div>
       </div>
 
-      <!-- High-level Overview Grid -->
-      <div class="grid grid-4 mb-4" id="dashboard-bottom-grid">
-        <div class="card" style="padding:18px;">
+      <!-- High-level Overview Grid (2 Rows of 2 Larger Cards: Top Expenses + Budget, Savings Goals + Investments) -->
+      <div class="grid grid-2 mb-4" id="dashboard-bottom-grid">
+        <div class="card" style="padding:22px;">
           <div class="dash-card-head">
             <div class="dash-card-head-copy">
               <h2 class="section-title">Top Expenses</h2>
@@ -2032,7 +2045,7 @@
           <div id="dashboard-top-expenses"></div>
         </div>
 
-        <div class="card" style="padding:18px;">
+        <div class="card" style="padding:22px;">
           <div class="dash-card-head">
             <div class="dash-card-head-copy">
               <h2 class="section-title">Budget Overview</h2>
@@ -2046,7 +2059,7 @@
           <div id="dashboard-budget-summary"></div>
         </div>
 
-        <div class="card" style="padding:18px;">
+        <div class="card" style="padding:22px;">
           <div>
             <div class="dash-card-head">
               <div class="dash-card-head-copy">
@@ -2059,7 +2072,7 @@
           </div>
         </div>
 
-        <div class="card" style="padding:18px;">
+        <div class="card" style="padding:22px;">
           <div class="dash-card-head">
             <div class="dash-card-head-copy">
               <h2 class="section-title">Investments</h2>
@@ -2072,7 +2085,7 @@
       </div>
 
       <!-- Reimbursements Card Below (Auto-hides when 0 open claims) -->
-      <div id="dash-pending-claims-card" class="card hidden" style="padding:18px; margin-bottom:16px;"></div>
+      <div id="dash-pending-claims-card" class="card hidden" style="padding:22px; margin-bottom:16px;"></div>
     </section>
 
     <!-- ---- REPORTS ---- -->
@@ -6736,11 +6749,9 @@ function renderAllowancesSettings(){
       var notes = Array.isArray(t.recoveryNotes) ? t.recoveryNotes : [];
       if(!notes.length) return '';
       var last = notes[notes.length - 1];
-      if(last.destination === 'deduct') return 'Deducted from Bill';
-      if(last.destination === 'next_income' || last.addedToIncome) return 'Added to Income';
-      if(last.destination === 'savings_goal') return 'Saved to ' + (last.goalName || 'Goal');
-      if(last.destination === 'status_only') return 'Settled';
-      return '';
+      if(last.destination === 'mark_reimbursed' || last.destination === 'deduct') return 'Settled against Bill';
+      if(last.destination === 'next_income' || last.addedToIncome) return 'Added to Next Month Income';
+      return 'Settled';
     };
 
     var claimsRows = visibleClaims.map(function(t){
@@ -11145,19 +11156,29 @@ function renderDashboardTrendChart(period){
     }
   });
 
-  // Auto-scroll to active month so it's centered in the viewport
+  // Auto-scroll to active month so current month + surrounding months are immediately visible on desktop & mobile
   if (scrollContainer && trendPoints.length > 5) {
-    const actualColW = targetTotalWidth / trendPoints.length;
-    const targetIdx = (activeM >= 1 && activeM <= 12) ? (activeM - 1) : 8;
-    const centerPos = (targetIdx + 0.5) * actualColW;
-    const targetScroll = Math.max(0, centerPos - (scrollContainer.clientWidth / 2));
-    setTimeout(() => {
-      if (scrollContainer && typeof scrollContainer.scrollTo === 'function') {
+    const positionTrendScroll = (smooth) => {
+      if (!scrollContainer) return;
+      const cw = scrollContainer.clientWidth;
+      if (!cw) return;
+      const padLeft = parseFloat(getComputedStyle(scrollContainer).paddingLeft) || 46;
+      const actualColW = targetTotalWidth / trendPoints.length;
+      const targetIdx = (activeM >= 1 && activeM <= 12) ? (activeM - 1) : (new Date().getMonth());
+      const barCenter = padLeft + (targetIdx + 0.5) * actualColW;
+      const maxScroll = Math.max(0, scrollContainer.scrollWidth - cw);
+      // On mobile place current month ~62% across viewport so 2-3 surrounding months are immediately visible
+      const focusRatio = isMobile ? 0.62 : 0.5;
+      const targetScroll = Math.max(0, Math.min(maxScroll, barCenter - (cw * focusRatio)));
+      if (smooth && typeof scrollContainer.scrollTo === 'function') {
         scrollContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
-      } else if (scrollContainer) {
+      } else {
         scrollContainer.scrollLeft = targetScroll;
       }
-    }, 60);
+    };
+    requestAnimationFrame(() => positionTrendScroll(false));
+    setTimeout(() => positionTrendScroll(false), 120);
+    setTimeout(() => positionTrendScroll(false), 320);
   }
 }
 
@@ -12293,7 +12314,6 @@ function onTxTagChange(){
 /* ---------------- Reimbursement Log Recovery Workflow ---------------- */
 let _recoveryActiveTx = null;
 let _recoveryRemainingAmt = 0;
-let _recoveryMode = 'full';
 
 function setReimbFilter(filter){
   window._reimbFilter = filter || 'all';
@@ -12308,56 +12328,15 @@ function getNextMonthFirstDate(dateStr){
   return `${y}-${String(m).padStart(2, '0')}-01`;
 }
 
-function populateRecoveryGoalOptions(){
-  const sel = document.getElementById('recovery-goal-select');
-  if(!sel) return;
-  const goals = (DB.savingsGoals || []).filter(g => !g.dismissed && !g.paid);
-  if(!goals.length){
-    sel.innerHTML = '<option value="">No active savings goals</option>';
-    return;
-  }
-  sel.innerHTML = goals.map(g => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.name)}</option>`).join('');
-}
-
 function onRecoveryDestinationChange(){
-  const dest = document.getElementById('recovery-destination')?.value || 'deduct';
-  const goalWrap = document.getElementById('recovery-goal-wrap');
-  if(goalWrap) goalWrap.classList.toggle('hidden', dest !== 'savings_goal');
-  if(dest === 'savings_goal') populateRecoveryGoalOptions();
+  const dest = document.getElementById('recovery-destination')?.value || 'mark_reimbursed';
+  const dateEl = document.getElementById('recovery-date');
+  if(!dateEl) return;
   if(dest === 'next_income' && _recoveryActiveTx && _recoveryActiveTx.date){
-    const dateEl = document.getElementById('recovery-date');
-    if(dateEl && dateEl.value.slice(0, 7) === _recoveryActiveTx.date.slice(0, 7)){
-      dateEl.value = getNextMonthFirstDate(_recoveryActiveTx.date);
-    }
+    dateEl.value = getNextMonthFirstDate(_recoveryActiveTx.date);
+  } else if(dest === 'mark_reimbursed'){
+    dateEl.value = ymd(new Date());
   }
-}
-
-function setRecoveryMode(mode){
-  _recoveryMode = (mode === 'partial') ? 'partial' : 'full';
-  const fullBtn = document.getElementById('recovery-mode-full');
-  const partialBtn = document.getElementById('recovery-mode-partial');
-  if(fullBtn) fullBtn.classList.toggle('active', _recoveryMode === 'full');
-  if(partialBtn) partialBtn.classList.toggle('active', _recoveryMode === 'partial');
-
-  const amtEl = document.getElementById('recovery-amount');
-  if(amtEl){
-    if(_recoveryMode === 'full'){
-      amtEl.value = _recoveryRemainingAmt;
-    } else {
-      amtEl.focus();
-      amtEl.select();
-    }
-  }
-}
-
-function onRecoveryAmountInput(){
-  const amt = parseFloat(document.getElementById('recovery-amount')?.value);
-  const isFull = !isNaN(amt) && amt >= _recoveryRemainingAmt && _recoveryRemainingAmt > 0;
-  _recoveryMode = isFull ? 'full' : 'partial';
-  const fullBtn = document.getElementById('recovery-mode-full');
-  const partialBtn = document.getElementById('recovery-mode-partial');
-  if(fullBtn) fullBtn.classList.toggle('active', _recoveryMode === 'full');
-  if(partialBtn) partialBtn.classList.toggle('active', _recoveryMode === 'partial');
 }
 
 function openLogRecoveryModal(txId){
@@ -12378,13 +12357,10 @@ function openLogRecoveryModal(txId){
   document.getElementById('recovery-note').value = '';
 
   const destSel = document.getElementById('recovery-destination');
-  if(destSel) destSel.value = 'deduct';
-  onRecoveryDestinationChange();
+  if(destSel) destSel.value = 'mark_reimbursed';
 
   const amtLabel = document.getElementById('recovery-amount-label');
   if(amtLabel) amtLabel.textContent = 'Amount (' + currencySymbol() + ')';
-
-  setRecoveryMode('full');
 
   const summaryEl = document.getElementById('recovery-claim-summary');
   if(summaryEl){
@@ -12425,7 +12401,7 @@ function handleConfirmRecovery(e){
   const recDate = document.getElementById('recovery-date').value || ymd(new Date());
   const recAccount = document.getElementById('recovery-account').value || 'Bank Account';
   const recNote = document.getElementById('recovery-note').value.trim();
-  const destination = document.getElementById('recovery-destination')?.value || 'deduct';
+  const destination = document.getElementById('recovery-destination')?.value || 'mark_reimbursed';
 
   if(isNaN(amt) || amt <= 0){
     showToast('Please enter a valid recovery amount', 'error');
@@ -12450,46 +12426,28 @@ function handleConfirmRecovery(e){
   const newStatus = newRecovered >= claimable ? 'settled' : 'partial';
 
   let linkedTxId = null;
-  let goalName = '';
 
-  if(destination === 'deduct'){
-    // Deduct directly from original bill — NO extra transaction created; Net Balance & Budgets adjust automatically
+  if(destination === 'mark_reimbursed'){
+    // Settle claimable portion directly against original bill — zero duplicate income transaction
     const prevDeducted = parseFloat(origTx.deductedAmount) || 0;
     const newDeducted = Math.min(origBill, prevDeducted + amt);
     origTx.deductedAmount = newDeducted;
     origTx.amount = Math.max(0, Math.round((origBill - newDeducted) * 100) / 100);
   } else if(destination === 'next_income'){
+    // Record recovered amount as next month's income with proper tag, description & note
+    const claimTag = origTx.tag || 'OPD';
+    const claimDesc = `${claimTag} Claim - ${origTx.description || origTx.category || 'Reimbursement'}${recNote ? ' (' + recNote + ')' : ''}`;
     linkedTxId = uid();
     DB.transactions.unshift({
       id: linkedTxId,
       date: recDate,
       type: 'income',
       category: 'Reimbursement',
+      tag: claimTag,
       amount: amt,
       paymentMethod: recAccount,
-      description: 'Reimbursement: ' + (origTx.description || origTx.category || 'Claim') + (recNote ? ' - ' + recNote : ''),
-      linkedExpenseId: origTx.id,
-      createdAt: new Date().toISOString()
-    });
-  } else if(destination === 'savings_goal'){
-    const goalId = document.getElementById('recovery-goal-select')?.value;
-    const goal = (DB.savingsGoals || []).find(g => g.id === goalId);
-    if(!goal){
-      showToast('Please select a Savings Goal', 'error');
-      return;
-    }
-    goalName = goal.name;
-    linkedTxId = uid();
-    DB.transactions.unshift({
-      id: linkedTxId,
-      date: recDate,
-      type: 'savings',
-      category: goal.name,
-      goalId: goal.id,
-      amount: amt,
-      paymentMethod: recAccount,
-      savingIn: goal.savingIn || recAccount,
-      description: 'Reimbursement: ' + (origTx.description || origTx.category || 'Claim') + (recNote ? ' - ' + recNote : ''),
+      description: claimDesc,
+      note: recNote || `${claimTag} Claim`,
       linkedExpenseId: origTx.id,
       createdAt: new Date().toISOString()
     });
@@ -12502,7 +12460,6 @@ function handleConfirmRecovery(e){
     date: recDate,
     destination: destination,
     linkedTxId: linkedTxId,
-    goalName: goalName || undefined,
     amount: amt,
     account: recAccount,
     note: recNote
@@ -12512,14 +12469,10 @@ function handleConfirmRecovery(e){
   closeLogRecoveryModal();
   renderAllForCurrentPage();
 
-  if(destination === 'deduct'){
-    showToast(`${fmt(amt)} deducted from bill. Remaining bill: ${fmt(origTx.amount)}.`, 'success');
-  } else if(destination === 'next_income'){
-    showToast(`${fmt(amt)} added to Income on ${formatTxDateDisplay(recDate)}.`, 'success');
-  } else if(destination === 'savings_goal'){
-    showToast(`${fmt(amt)} transferred to ${goalName}.`, 'success');
+  if(destination === 'mark_reimbursed'){
+    showToast(`${fmt(amt)} settled against bill. Updated bill: ${fmt(origTx.amount)}.`, 'success');
   } else {
-    showToast(`Reimbursement marked ${newStatus === 'settled' ? 'Reimbursed' : 'Partial'}.`, 'success');
+    showToast(`${fmt(amt)} recorded in Next Month Income (${formatTxDateDisplay(recDate)}).`, 'success');
   }
 }
 
@@ -20855,7 +20808,7 @@ function dispatchDesktopNotification(title, options){
 
 <!-- Log Recovery Modal (Reimbursement Settlement) -->
 <div id="log-recovery-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeLogRecoveryModal()">
-  <div class="modal" style="max-width:430px;">
+  <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeLogRecoveryModal()" aria-label="Close">✕</button>
     <div style="margin-bottom:14px;">
       <h2 style="margin:0; font-size:18px;">Log Recovery</h2>
@@ -20866,14 +20819,9 @@ function dispatchDesktopNotification(title, options){
     <form id="log-recovery-form" onsubmit="handleConfirmRecovery(event)">
       <input type="hidden" id="recovery-tx-id">
 
-      <div class="recovery-mode-pills">
-        <button type="button" id="recovery-mode-full" class="recovery-mode-pill active" onclick="setRecoveryMode('full')">Full</button>
-        <button type="button" id="recovery-mode-partial" class="recovery-mode-pill" onclick="setRecoveryMode('partial')">Partial</button>
-      </div>
-
       <div style="margin-bottom:12px;">
         <label class="field-label" for="recovery-amount" id="recovery-amount-label">Amount</label>
-        <input type="number" min="0" step="any" id="recovery-amount" class="field-input figure" oninput="onRecoveryAmountInput()" required>
+        <input type="number" min="0" step="any" id="recovery-amount" class="field-input figure" required>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
@@ -20894,16 +20842,9 @@ function dispatchDesktopNotification(title, options){
       <div style="margin-bottom:12px;">
         <label class="field-label" for="recovery-destination">Action</label>
         <select id="recovery-destination" class="field-input" onchange="onRecoveryDestinationChange()">
-          <option value="deduct" selected>Deduct from Bill</option>
+          <option value="mark_reimbursed" selected>Mark Reimbursed Only</option>
           <option value="next_income">Next Month Income</option>
-          <option value="savings_goal">Savings Goal</option>
-          <option value="status_only">Mark Reimbursed Only</option>
         </select>
-      </div>
-
-      <div id="recovery-goal-wrap" class="hidden" style="margin-bottom:12px;">
-        <label class="field-label" for="recovery-goal-select">Savings Goal</label>
-        <select id="recovery-goal-select" class="field-input"></select>
       </div>
 
       <div style="margin-bottom:16px;">
