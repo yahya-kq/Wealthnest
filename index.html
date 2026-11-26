@@ -8672,24 +8672,124 @@ function triggerScopedReportPDF(scope){
   downloadReportPDF(scope);
 }
 
+function getGoalsForReportPeriod(yearChoice, monthSet, periodTxs, isWhole = false){
+  const allGoals = (DB.savingsGoals || []).filter(g => g && !g.isAssumption);
+  if(!allGoals.length) return [];
+  if(isWhole) return allGoals;
+
+  const monthsArr = monthSet instanceof Set
+    ? [...monthSet].map(Number).filter(Boolean)
+    : (Array.isArray(monthSet) ? monthSet.map(Number).filter(Boolean) : [1,2,3,4,5,6,7,8,9,10,11,12]);
+  if(!monthsArr.length) return [];
+
+  const isAllYears = yearChoice === 'ALL';
+  if(isAllYears && monthsArr.length === 12) return allGoals;
+
+  let yearsArr = [];
+  if(isAllYears){
+    const ySet = new Set([new Date().getFullYear()]);
+    (DB.transactions || []).forEach(t => { const pd = parseTxDate(t.date); if(pd.year) ySet.add(pd.year); });
+    (DB.budgets || []).forEach(b => { if(b.year) ySet.add(Number(b.year)); });
+    allGoals.forEach(g => { const eff = typeof getGoalEffectiveMonthYear === 'function' ? getGoalEffectiveMonthYear(g) : null; if(eff && eff.year) ySet.add(eff.year); });
+    yearsArr = [...ySet];
+  } else if(Array.isArray(yearChoice)){
+    yearsArr = yearChoice.map(Number).filter(Boolean);
+  } else {
+    const yn = Number(yearChoice);
+    if(yn) yearsArr = [yn];
+  }
+  if(!yearsArr.length) return [];
+
+  const depGoalIds = new Set();
+  const depGoalNames = new Set();
+  (periodTxs || []).forEach(t => {
+    if(t && t.type === 'savings' && !t.isGoalRolloverIn){
+      if(t.goalId) depGoalIds.add(t.goalId);
+      else if(t.category) depGoalNames.add(t.category);
+    }
+  });
+
+  return allGoals.filter(g => {
+    if(g.isIndependent) return true;
+    if(depGoalIds.has(g.id) || depGoalNames.has(g.name)) return true;
+    if(typeof goalActiveInPeriod === 'function'){
+      return yearsArr.some(y => monthsArr.some(m => goalActiveInPeriod(g, m, y)));
+    }
+    return false;
+  });
+}
+
+function getGoalDepositsInTxs(goal, txs){
+  if(!goal || !Array.isArray(txs)) return 0;
+  return txs.filter(t => {
+    if(!t || t.type !== 'savings' || t.isGoalRolloverIn) return false;
+    if(t.goalId) return t.goalId === goal.id;
+    return t.category === goal.name;
+  }).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+}
+
 function reportCategoryRows(month, year, customTxs, customBudgets){
   const expenses = customTxs ? customTxs.filter(t => t.type === 'expense') : (DB.transactions || []).filter(t => inMonth(t, month, year) && t.type === 'expense');
   const periodBudgets = customBudgets ? customBudgets : (DB.budgets || []).filter(b => b.month === month && b.year === year);
+
+  // Aggregate parent budgets cleanly per (year, month, category): parent budget if set, else sum of subcategory budgets
+  const budByCatMonth = new Map();
+  periodBudgets.forEach(b => {
+    const key = `${b.year}-${b.month}::${b.category}`;
+    if(!budByCatMonth.has(key)) budByCatMonth.set(key, { category: b.category, main: 0, subSum: 0, hasMain: false });
+    const entry = budByCatMonth.get(key);
+    if(!b.subCategory){
+      entry.main += Number(b.budgetAmount) || 0;
+      entry.hasMain = true;
+    } else {
+      entry.subSum += Number(b.budgetAmount) || 0;
+    }
+  });
+  const effectiveCatBudget = {};
+  budByCatMonth.forEach(entry => {
+    const val = entry.hasMain ? entry.main : entry.subSum;
+    effectiveCatBudget[entry.category] = (effectiveCatBudget[entry.category] || 0) + val;
+  });
+
   const names = new Set([...expenses.map(t => t.category), ...periodBudgets.map(b => b.category)]);
   return [...names].map(category => {
     const catExpenses = expenses.filter(t => t.category === category);
     const actual = catExpenses.reduce((s, t) => s + (Number(t.amount) || 0), 0);
-    const budget = periodBudgets.filter(b => b.category === category && !b.subCategory).reduce((s, b) => s + (b.budgetAmount || 0), 0);
-    const subNames = new Set([
-      ...catExpenses.filter(t => t.subCategory).flatMap(t => t.subCategory.split(',').map(s => s.trim()).filter(Boolean)),
-      ...periodBudgets.filter(b => b.category === category && b.subCategory).flatMap(b => b.subCategory.split(',').map(s => s.trim()).filter(Boolean))
-    ]);
-    const subs = [...subNames].map(subCategory => {
-      const subTxs = catExpenses.filter(t => t.subCategory && t.subCategory.split(',').map(s => s.trim()).includes(subCategory));
-      const spent = subTxs.reduce((s, t) => s + (Number(t.amount) || 0), 0);
-      const subBudget = periodBudgets.filter(b => b.category === category && b.subCategory === subCategory).reduce((s, b) => s + (b.budgetAmount || 0), 0);
-      return { subCategory, budget: subBudget, spent, remaining: subBudget - spent, hasBudget: subBudget > 0, count: subTxs.length };
-    }).sort((a, b) => b.spent - a.spent);
+    const budget = effectiveCatBudget[category] || 0;
+
+    // Group subcategory spend without double-counting multi-tag bills (keep combined label intact so sub-rows reconcile 100% to parent actual)
+    const subSpendMap = new Map();
+    const subCountMap = new Map();
+    catExpenses.forEach(t => {
+      if(!t.subCategory) return;
+      const parts = t.subCategory.split(',').map(s => s.trim()).filter(Boolean);
+      if(!parts.length) return;
+      const key = parts.join(', ');
+      subSpendMap.set(key, (subSpendMap.get(key) || 0) + (Number(t.amount) || 0));
+      subCountMap.set(key, (subCountMap.get(key) || 0) + 1);
+    });
+
+    const subBudgetMap = new Map();
+    periodBudgets.filter(b => b.category === category && b.subCategory).forEach(b => {
+      const key = b.subCategory.split(',').map(s => s.trim()).filter(Boolean).join(', ');
+      if(!key) return;
+      subBudgetMap.set(key, (subBudgetMap.get(key) || 0) + (Number(b.budgetAmount) || 0));
+    });
+
+    const subKeys = new Set([...subSpendMap.keys(), ...subBudgetMap.keys()]);
+    const subs = [...subKeys].map(subCategory => {
+      const spent = subSpendMap.get(subCategory) || 0;
+      const subBudget = subBudgetMap.get(subCategory) || 0;
+      return {
+        subCategory,
+        budget: subBudget,
+        spent,
+        remaining: subBudget - spent,
+        hasBudget: subBudget > 0,
+        count: subCountMap.get(subCategory) || 0
+      };
+    }).filter(s => s.spent > 0 || s.budget > 0).sort((a, b) => b.spent - a.spent || b.budget - a.budget);
+
     return { category, budget, actual, remaining: budget - actual, hasBudget: budget > 0, subs, count: catExpenses.length };
   }).filter(r => r.actual > 0 || r.budget > 0).sort((a, b) => b.actual - a.actual || b.budget - a.budget);
 }
@@ -8847,7 +8947,7 @@ function renderReportOverviewTab(ws, agg){
   const overCnt = agg.budgetRows.filter(r => r.actual > r.budget).length;
   const budgetPct = agg.budgetTotal > 0 ? Math.round((budgetSpent / agg.budgetTotal) * 100) : 0;
 
-  const goals = DB.savingsGoals || [];
+  const goals = getGoalsForReportPeriod(reportSelYear, reportSelMonths, agg.periodTxs);
   const totalGoalTarget = goals.reduce((s, g) => s + (Number(g.targetAmount) || 0), 0);
   const totalGoalSaved = goals.reduce((s, g) => s + getGoalAccumulatedDeposits(g), 0);
   const goalPct = totalGoalTarget > 0 ? Math.min(100, Math.round((totalGoalSaved / totalGoalTarget) * 100)) : 0;
@@ -8881,7 +8981,9 @@ function renderReportOverviewTab(ws, agg){
     },
     {
       label: 'Saved', val: agg.savings, color: '#D97706', grad: 'linear-gradient(180deg,#FBBF24,#D97706)', glow: 'rgba(245,158,11,0.52)', ring: 'rgba(245,158,11,0.92)',
-      pop: `<div class="rep-pop-sub-lbl">Goals</div><div class="rep-pop-row"><span class="rep-pop-k">All-Time Funded</span><span class="rep-pop-v" style="color:var(--teal);">${fmt(totalGoalSaved)}</span></div><div class="rep-pop-row"><span class="rep-pop-k">Funding Progress</span><span class="rep-pop-v">${goalPct}%</span></div>`
+      pop: goals.length
+        ? `<div class="rep-pop-sub-lbl">Goals</div><div class="rep-pop-row"><span class="rep-pop-k">Funded</span><span class="rep-pop-v" style="color:var(--teal);">${fmt(totalGoalSaved)}</span></div><div class="rep-pop-row"><span class="rep-pop-k">Progress</span><span class="rep-pop-v">${goalPct}%</span></div>`
+        : `<div class="rep-pop-sub-lbl">Goals</div><div class="rep-pop-row"><span class="rep-pop-k">No active goals</span></div>`
     },
     {
       label: 'Net Retained', val: agg.net, color: agg.net >= 0 ? 'var(--primary)' : 'var(--rose)', grad: agg.net >= 0 ? 'linear-gradient(180deg,#A78BFA,#7C3AED)' : 'linear-gradient(180deg,#FB7185,#E11D48)', glow: agg.net >= 0 ? 'rgba(124,58,237,0.48)' : 'rgba(244,63,94,0.52)', ring: agg.net >= 0 ? 'rgba(124,58,237,0.9)' : 'rgba(244,63,94,0.92)',
@@ -8994,7 +9096,7 @@ function renderReportOverviewTab(ws, agg){
               <div class="rep-progress-track"><div class="rep-progress-fill" style="width:${p}%; background:${p>=100?'var(--teal)':'var(--primary)'};"></div></div>
             </div>
           `;
-        }).join('') : `<p class="muted text-xs" style="margin:28px 0; text-align:center;">No savings goals configured yet.</p>`}
+        }).join('') : `<p class="muted text-xs" style="margin:28px 0; text-align:center;">No savings goals in this period.</p>`}
       </div>
 
       <div class="rep-card">
@@ -9687,7 +9789,7 @@ function renderReportInvestmentsTab(ws){
 
 /* ==================== 5. SAVINGS TAB ==================== */
 function renderReportSavingsTab(ws, agg){
-  const goals = DB.savingsGoals || [];
+  const goals = getGoalsForReportPeriod(reportSelYear, reportSelMonths, agg.periodTxs);
   const rows = goals.map(g => {
     const saved = getGoalAccumulatedDeposits(g);
     const target = Number(g.targetAmount) || 0;
@@ -9798,8 +9900,8 @@ function renderReportSavingsTab(ws, agg){
       </div>
     ` : `
       <div class="rep-card" style="text-align:center; padding:36px 20px;">
-        <h2 class="rep-card-title" style="margin-bottom:6px;">No Savings Goals Yet</h2>
-        <p class="muted text-xs" style="margin:0 0 16px;">Create savings targets to track funding progress and completion timelines automatically.</p>
+        <h2 class="rep-card-title" style="margin-bottom:6px;">No Savings Goals in This Period</h2>
+        <p class="muted text-xs" style="margin:0 0 16px;">No savings targets are active for ${escapeHtml(agg.periodLabel)}.</p>
         <button type="button" class="btn-primary" onclick="goToApp('savings')">Manage Savings</button>
       </div>
     `}
@@ -9946,37 +10048,51 @@ function buildReportPDFScope(scope, customSel){
   const curY = now.getFullYear();
   const curM = now.getMonth() + 1;
   const allMods = CUSTOM_REPORT_MODULE_DEFS.map(m => m.id);
+  const todayReadable = now.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
   if(scope === 'whole'){
     return {
       scope: 'whole',
+      isWhole: true,
       modules: allMods,
       baseMonth: curM,
       baseYear: curY,
-      periodLabel: `Full Statement (Up to ${todayStr})`,
+      periodLabel: 'Full Statement',
+      periodSub: `Through ${todayReadable}`,
       filenameTag: `Full_Statement_${todayStr}`,
       matchTx: t => Boolean(t.date && t.date <= todayStr),
-      matchBudget: b => b.year < curY || (b.year === curY && b.month <= curM)
+      matchBudget: b => b.year < curY || (b.year === curY && b.month <= curM),
+      matchGoals: txs => getGoalsForReportPeriod('ALL', null, txs, true)
     };
   }
 
   if(scope === 'custom' && customSel){
     const yLabel = customSel.allYears ? 'All Years' : customSel.years.join(', ');
-    const mLabel = customSel.allMonths ? 'All Months' : customSel.months.map(m => MONTH_NAMES[m - 1].slice(0, 3)).join(', ');
-    const label = `${mLabel} · ${yLabel}`;
+    const mArr = customSel.months || [];
+    const mLabel = customSel.allMonths
+      ? 'All Months'
+      : (mArr.length === 1 ? MONTH_NAMES[mArr[0] - 1] : mArr.map(m => MONTH_NAMES[m - 1].slice(0, 3)).join(', '));
+    const label = (!customSel.allYears && customSel.years.length === 1 && mArr.length === 1)
+      ? `${MONTH_NAMES[mArr[0] - 1]} ${customSel.years[0]}`
+      : `${mLabel} · ${yLabel}`;
+    const goalYears = customSel.allYears ? 'ALL' : customSel.years;
+    const goalMonths = customSel.allMonths ? [1,2,3,4,5,6,7,8,9,10,11,12] : mArr;
     return {
       scope: 'custom',
+      isWhole: false,
       modules: (Array.isArray(customSel.modules) && customSel.modules.length) ? customSel.modules : allMods,
-      baseMonth: customSel.months[customSel.months.length - 1] || curM,
+      baseMonth: mArr[mArr.length - 1] || curM,
       baseYear: customSel.years[customSel.years.length - 1] || curY,
       periodLabel: label,
+      periodSub: `Generated ${todayReadable}`,
       filenameTag: label.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, ''),
       matchTx: t => {
         const d = parseTxDate(t.date);
         if(!d.year) return false;
-        return (customSel.allYears || customSel.years.includes(d.year)) && (customSel.allMonths || customSel.months.includes(d.month));
+        return (customSel.allYears || customSel.years.includes(d.year)) && (customSel.allMonths || mArr.includes(d.month));
       },
-      matchBudget: b => (customSel.allYears || customSel.years.includes(b.year)) && (customSel.allMonths || customSel.months.includes(b.month))
+      matchBudget: b => (customSel.allYears || customSel.years.includes(b.year)) && (customSel.allMonths || mArr.includes(b.month)),
+      matchGoals: txs => getGoalsForReportPeriod(goalYears, goalMonths, txs, customSel.allYears && customSel.allMonths)
     };
   }
 
@@ -9986,32 +10102,45 @@ function buildReportPDFScope(scope, customSel){
   const label = formatReportPeriodLabel(activeY, reportSelMonths);
   return {
     scope: 'monthly',
+    isWhole: false,
     modules: allMods,
     baseMonth: activeMonths[activeMonths.length - 1] || curM,
     baseYear: activeY === 'ALL' ? curY : Number(activeY),
     periodLabel: label,
+    periodSub: `Generated ${todayReadable}`,
     filenameTag: label.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, ''),
     matchTx: t => {
       const d = parseTxDate(t.date);
       if(!d.year) return false;
       return (activeY === 'ALL' || d.year === Number(activeY)) && reportSelMonths.has(d.month);
     },
-    matchBudget: b => (activeY === 'ALL' || Number(b.year) === Number(activeY)) && reportSelMonths.has(Number(b.month))
+    matchBudget: b => (activeY === 'ALL' || Number(b.year) === Number(activeY)) && reportSelMonths.has(Number(b.month)),
+    matchGoals: txs => getGoalsForReportPeriod(activeY, reportSelMonths, txs, activeY === 'ALL' && reportSelMonths.size === 12)
   };
 }
 
 function generateReportPDFContent(month, year, scopeObj) {
   const cur = (DB && DB.currency) ? DB.currency : DEFAULT_CURRENCY;
+  const curCode = cur.code || 'PKR';
   function fmtMoney(n) {
     const num = Math.round(n || 0).toLocaleString();
     return cur.position === 'suffix' ? (num + ' ' + cur.symbol) : (cur.symbol + ' ' + num);
+  }
+  function fmtSigned(n) {
+    const v = Math.round(n || 0);
+    if(v === 0) return fmtMoney(0);
+    return (v > 0 ? '+' : '-') + fmtMoney(Math.abs(v));
   }
 
   const modSet = new Set((scopeObj && Array.isArray(scopeObj.modules) && scopeObj.modules.length)
     ? scopeObj.modules
     : CUSTOM_REPORT_MODULE_DEFS.map(m => m.id));
+  const isWhole = Boolean(scopeObj && scopeObj.isWhole);
+  const isSoloModule = modSet.size === 1;
 
-  const txsInPeriod = scopeObj ? (DB.transactions || []).filter(scopeObj.matchTx) : (DB.transactions || []).filter(t => inMonth(t, month, year));
+  const txsInPeriod = scopeObj
+    ? (DB.transactions || []).filter(scopeObj.matchTx)
+    : (DB.transactions || []).filter(t => inMonth(t, month, year));
   txsInPeriod.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
   const totals = txsInPeriod.reduce((acc, t) => {
@@ -10023,14 +10152,28 @@ function generateReportPDFContent(month, year, scopeObj) {
   }, { income: 0, expense: 0, savings: 0 });
 
   const netBalance = totals.income - totals.expense;
-  const savingsRate = totals.income > 0 ? Math.round((totals.savings / totals.income) * 100) : 0;
   const expenseRatio = totals.income > 0 ? Math.round((totals.expense / totals.income) * 100) : 0;
+  const savingsRatio = totals.income > 0 ? Math.round((totals.savings / totals.income) * 100) : 0;
+  const retainedPct = totals.income > 0 ? (Math.round((netBalance / totals.income) * 1000) / 10) : 0;
 
-  const periodBudgets = scopeObj ? (DB.budgets || []).filter(scopeObj.matchBudget) : (DB.budgets || []).filter(b => b.month === month && b.year === year);
+  const periodBudgets = scopeObj
+    ? (DB.budgets || []).filter(scopeObj.matchBudget)
+    : (DB.budgets || []).filter(b => b.month === month && b.year === year);
   const catRows = reportCategoryRows(month, year, txsInPeriod, periodBudgets);
-  const totalBudgetPlanned = periodBudgets.reduce((s, b) => s + (b.budgetAmount || 0), 0);
-  const goals = DB.savingsGoals || [];
-  const invs = DB.investments || [];
+  const totalBudgetPlanned = catRows.reduce((s, r) => s + (r.budget || 0), 0);
+
+  const periodGoals = (scopeObj && typeof scopeObj.matchGoals === 'function')
+    ? scopeObj.matchGoals(txsInPeriod)
+    : getGoalsForReportPeriod(year, new Set([month]), txsInPeriod, false);
+
+  const activeInvs = (DB.investments || []).filter(Boolean);
+  const soldInvs = (DB.soldInvestments || []).filter(inv => {
+    if(!inv) return false;
+    if(isWhole) return true;
+    if(!inv.sellDate) return false;
+    return scopeObj ? scopeObj.matchTx({ date: inv.sellDate }) : inMonth({ date: inv.sellDate }, month, year);
+  });
+
   const reimbTxs = txsInPeriod.filter(t => t.isReimbursable);
 
   const incomeMap = {};
@@ -10038,228 +10181,622 @@ function generateReportPDFContent(month, year, scopeObj) {
     const k = t.category || 'Other Income';
     incomeMap[k] = (incomeMap[k] || 0) + (Number(t.amount) || 0);
   });
-  const incomeRows = Object.entries(incomeMap).sort((a,b)=>b[1]-a[1]);
+  const incomeRows = Object.entries(incomeMap).sort((a,b) => b[1] - a[1]);
+
+  // Chronological monthly breakdown (for Full Statement & multi-month Custom/Active ranges)
+  const monthlyMap = new Map();
+  txsInPeriod.forEach(t => {
+    const pd = parseTxDate(t.date);
+    if(!pd.year || !pd.month) return;
+    const key = `${pd.year}-${String(pd.month).padStart(2, '0')}`;
+    if(!monthlyMap.has(key)) monthlyMap.set(key, { key, year: pd.year, month: pd.month, income: 0, expense: 0, savings: 0 });
+    const row = monthlyMap.get(key);
+    const amt = Number(t.amount) || 0;
+    if(t.type === 'income') row.income += amt;
+    else if(t.type === 'expense') row.expense += amt;
+    else if(t.type === 'savings') row.savings += amt;
+  });
+  const monthlyRows = [...monthlyMap.values()].sort((a, b) => a.key.localeCompare(b.key));
 
   const generatedDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  const periodLabel = (scopeObj ? scopeObj.periodLabel : `${MONTH_NAMES[month - 1]} ${year}`).toUpperCase();
+  const periodTitle = scopeObj ? scopeObj.periodLabel : `${MONTH_NAMES[month - 1]} ${year}`;
+  const periodSub = (scopeObj && scopeObj.periodSub) ? scopeObj.periodSub : `Generated ${generatedDate}`;
 
-  function renderHeader() {
-    return `
-      <div class="pdf-header">
-        <div class="pdf-brand">
-          <div class="pdf-brand-mark">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+  /* ---- Page Flow & Auto-Pagination Engine (Zero Clipped Rows, Zero Wasted Blank Pages) ---- */
+  const PAGE1_MAX_H = 915;
+  const CONT_MAX_H = 945;
+  const pages = [];
+  let curPage = null;
+
+  function startPage(){
+    const isFirst = pages.length === 0;
+    curPage = { isFirst, parts: [], usedH: 0, maxH: isFirst ? PAGE1_MAX_H : CONT_MAX_H };
+    pages.push(curPage);
+    return curPage;
+  }
+  function ensurePage(){ return curPage || startPage(); }
+  function addAtomicBlock(html, estH){
+    const p = ensurePage();
+    if(p.parts.length > 0 && p.usedH + estH > p.maxH) startPage();
+    curPage.parts.push(html);
+    curPage.usedH += estH;
+  }
+  function addSectionHeaderHtml(title, metaHtml = ''){
+    return `<div class="pdf-sec-head"><h2 class="pdf-sec-title">${title}</h2>${metaHtml ? `<span class="pdf-sec-meta">${metaHtml}</span>` : ''}</div>`;
+  }
+  function addPaginatedTable({ title, metaHtml = '', theadHtml, rows, tfootHtml = '', footerH = 34, minRowsOnStart = 3, blockGap = 22, preferFreshPageIfSplits = false }){
+    if(!rows.length) return;
+    const headH = 34;
+    const theadH = 26;
+    let p = ensurePage();
+
+    const totalBodyH = rows.reduce((s, r) => s + r.h, 0);
+    const fitsAll = (headH + theadH + totalBodyH + (tfootHtml ? footerH : 0) + blockGap) <= (p.maxH - p.usedH);
+    const firstChunkMin = rows.slice(0, Math.min(minRowsOnStart, rows.length)).reduce((s, r) => s + r.h, 0);
+    if(p.parts.length > 0 && !fitsAll && (preferFreshPageIfSplits || (p.usedH + headH + theadH + firstChunkMin + 20 > p.maxH))){
+      p = startPage();
+    }
+
+    let idx = 0;
+    let isContinuation = false;
+    while(idx < rows.length){
+      if(isContinuation) p = startPage();
+      const avail = p.maxH - p.usedH - headH - theadH - 12;
+      const chunk = [];
+      let chunkH = 0;
+
+      while(idx < rows.length){
+        const r = rows[idx];
+        const isLastItem = (idx === rows.length - 1);
+        const needFooter = (isLastItem && tfootHtml) ? footerH : 0;
+
+        // Keep an entire category + its subcategories together if the group is reasonably sized (<= 8 rows)
+        if(r.isGroupHead && chunk.length > 0){
+          let gEnd = idx + 1;
+          while(gEnd < rows.length && !rows[gEnd].isGroupHead) gEnd++;
+          const gCount = gEnd - idx;
+          if(gCount <= 8){
+            const gH = rows.slice(idx, gEnd).reduce((s, item) => s + item.h, 0) + (gEnd === rows.length && tfootHtml ? footerH : 0);
+            if(chunkH + gH > avail) break;
+          } else if(idx + 1 < rows.length && !rows[idx + 1].isGroupHead){
+            if(chunkH + r.h + rows[idx + 1].h > avail) break;
+          }
+        }
+        if(chunk.length > 0 && chunkH + r.h + needFooter > avail) break;
+        chunk.push(r.html);
+        chunkH += r.h;
+        idx++;
+      }
+
+      const includeFoot = (idx >= rows.length) && Boolean(tfootHtml);
+      const secTitle = isContinuation ? `${title} <span class="pdf-sec-cont">(Continued)</span>` : title;
+      const tblHtml = `
+        <div class="pdf-section">
+          ${addSectionHeaderHtml(secTitle, isContinuation ? '' : metaHtml)}
+          <table class="pdf-table">
+            <thead>${theadHtml}</thead>
+            <tbody>${chunk.join('')}</tbody>
+            ${includeFoot ? `<tfoot>${tfootHtml}</tfoot>` : ''}
+          </table>
+        </div>
+      `;
+      p.parts.push(tblHtml);
+      p.usedH += headH + theadH + chunkH + (includeFoot ? footerH : 0) + blockGap;
+      isContinuation = true;
+    }
+  }
+
+  /* ---- 1. CASH FLOW SUMMARY + INCOME & SPENDING ---- */
+  const hasCashFlowActivity = totals.income > 0 || totals.expense > 0 || totals.savings > 0;
+  if((modSet.has('overview') || modSet.has('cashflow')) && (hasCashFlowActivity || isSoloModule || (!catRows.length && !periodGoals.length && !activeInvs.length && !reimbTxs.length))){
+    const topCats = catRows.slice(0, 8);
+    const otherCats = catRows.slice(8);
+    const otherSum = otherCats.reduce((s, c) => s + c.actual, 0);
+
+    const incListRows = incomeRows.slice(0, 8).map(([src, amt]) => {
+      const pct = totals.income > 0 ? Math.round((amt / totals.income) * 100) : 0;
+      return `<tr><td>${escapeHtml(src)}</td><td class="num">${fmtMoney(amt)}</td><td class="num muted">${pct}%</td></tr>`;
+    }).join('');
+    const otherIncSum = incomeRows.slice(8).reduce((s, [, amt]) => s + amt, 0);
+
+    const expListRows = topCats.map(c => {
+      const pct = totals.expense > 0 ? Math.round((c.actual / totals.expense) * 100) : 0;
+      return `<tr><td>${escapeHtml(c.category)}</td><td class="num">${fmtMoney(c.actual)}</td><td class="num muted">${pct}%</td></tr>`;
+    }).join('') + (otherSum > 0
+      ? `<tr><td class="muted">Other (${otherCats.length} categories)</td><td class="num">${fmtMoney(otherSum)}</td><td class="num muted">${totals.expense > 0 ? Math.round((otherSum / totals.expense) * 100) : 0}%</td></tr>`
+      : '');
+
+    const summaryBlock = `
+      <div class="pdf-section">
+        <div class="pdf-kpi-strip">
+          <div class="pdf-kpi-cell">
+            <div class="pdf-kpi-lbl">Inflow</div>
+            <div class="pdf-kpi-val">${fmtMoney(totals.income)}</div>
+            <div class="pdf-kpi-note">${incomeRows.length} source${incomeRows.length === 1 ? '' : 's'}</div>
+          </div>
+          <div class="pdf-kpi-cell">
+            <div class="pdf-kpi-lbl">Outflow</div>
+            <div class="pdf-kpi-val">${fmtMoney(totals.expense)}</div>
+            <div class="pdf-kpi-note">${expenseRatio}% of inflow</div>
+          </div>
+          <div class="pdf-kpi-cell">
+            <div class="pdf-kpi-lbl">Saved</div>
+            <div class="pdf-kpi-val">${fmtMoney(totals.savings)}</div>
+            <div class="pdf-kpi-note">${savingsRatio}% of inflow</div>
+          </div>
+          <div class="pdf-kpi-cell">
+            <div class="pdf-kpi-lbl">Net Cash Flow</div>
+            <div class="pdf-kpi-val ${netBalance > 0 ? 'tone-pos' : (netBalance < 0 ? 'tone-neg' : '')}">${fmtSigned(netBalance)}</div>
+            <div class="pdf-kpi-note">${totals.income > 0 ? `${retainedPct}% retained` : (netBalance >= 0 ? 'Surplus' : 'Deficit')}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    addAtomicBlock(summaryBlock, 108);
+
+    if(incomeRows.length || catRows.length){
+      const maxRows = Math.max(Math.min(incomeRows.length, 8) + (otherIncSum > 0 ? 1 : 0), topCats.length + (otherSum > 0 ? 1 : 0), 1);
+      const breakdownH = 34 + 26 + (maxRows * 25) + 32 + 26;
+      const breakdownBlock = `
+        <div class="pdf-section pdf-two-col">
+          <div>
+            ${addSectionHeaderHtml('Income Sources', incomeRows.length ? `${incomeRows.length} active` : '')}
+            <table class="pdf-table pdf-table-compact">
+              <thead><tr><th>Source</th><th class="num" style="width:36%;">Amount</th><th class="num" style="width:18%;">Share</th></tr></thead>
+              <tbody>
+                ${incomeRows.length ? incListRows + (otherIncSum > 0 ? `<tr><td class="muted">Other</td><td class="num">${fmtMoney(otherIncSum)}</td><td class="num muted">${totals.income > 0 ? Math.round((otherIncSum / totals.income) * 100) : 0}%</td></tr>` : '') : '<tr><td colspan="3" class="pdf-empty-cell">No income recorded</td></tr>'}
+              </tbody>
+              ${incomeRows.length ? `<tfoot><tr><td>Total</td><td class="num">${fmtMoney(totals.income)}</td><td class="num">100%</td></tr></tfoot>` : ''}
+            </table>
           </div>
           <div>
-            <div class="pdf-brand-title">WealthNest</div>
-            <div class="pdf-brand-sub">Financial Statement</div>
+            ${addSectionHeaderHtml('Spending by Category', catRows.length ? `${catRows.length} categories` : '')}
+            <table class="pdf-table pdf-table-compact">
+              <thead><tr><th>Category</th><th class="num" style="width:36%;">Amount</th><th class="num" style="width:18%;">Share</th></tr></thead>
+              <tbody>
+                ${catRows.length ? expListRows : '<tr><td colspan="3" class="pdf-empty-cell">No expenses recorded</td></tr>'}
+              </tbody>
+              ${catRows.length ? `<tfoot><tr><td>Total</td><td class="num">${fmtMoney(totals.expense)}</td><td class="num">100%</td></tr></tfoot>` : ''}
+            </table>
           </div>
         </div>
-        <div class="pdf-meta">
-          <div class="pdf-period-badge">${escapeHtml(periodLabel)}</div>
-          <div class="pdf-meta-date">Generated ${generatedDate} · ${escapeHtml(cur.code || 'PKR')}</div>
+      `;
+      addAtomicBlock(breakdownBlock, breakdownH);
+    }
+
+    // Multi-month chronological cash flow ledger (Full Statement or multi-month Custom/Active filter)
+    if((isWhole || monthlyRows.length >= 2) && monthlyRows.length > 0){
+      const mTableRows = monthlyRows.map(r => {
+        const net = r.income - r.expense;
+        const ret = r.income > 0 ? `${Math.round((net / r.income) * 100)}%` : '—';
+        const mLabel = `${MONTH_NAMES[r.month - 1]} ${r.year}`;
+        return {
+          h: 26,
+          html: `<tr><td class="cell-strong">${escapeHtml(mLabel)}</td><td class="num">${fmtMoney(r.income)}</td><td class="num">${fmtMoney(r.expense)}</td><td class="num">${fmtMoney(r.savings)}</td><td class="num ${net > 0 ? 'tone-pos' : (net < 0 ? 'tone-neg' : '')}">${fmtSigned(net)}</td><td class="num muted">${ret}</td></tr>`
+        };
+      });
+      const mFoot = `<tr><td>Total (${monthlyRows.length} mo)</td><td class="num">${fmtMoney(totals.income)}</td><td class="num">${fmtMoney(totals.expense)}</td><td class="num">${fmtMoney(totals.savings)}</td><td class="num ${netBalance > 0 ? 'tone-pos' : (netBalance < 0 ? 'tone-neg' : '')}">${fmtSigned(netBalance)}</td><td class="num">${totals.income > 0 ? `${Math.round((netBalance / totals.income) * 100)}%` : '—'}</td></tr>`;
+      addPaginatedTable({
+        title: 'Monthly Cash Flow History',
+        metaHtml: `${monthlyRows.length} month${monthlyRows.length === 1 ? '' : 's'}`,
+        theadHtml: '<tr><th style="width:24%;">Month</th><th class="num" style="width:16%;">Inflow</th><th class="num" style="width:16%;">Outflow</th><th class="num" style="width:15%;">Saved</th><th class="num" style="width:17%;">Net</th><th class="num" style="width:12%;">Retained</th></tr>',
+        rows: mTableRows,
+        tfootHtml: mFoot
+      });
+    }
+  }
+
+  /* ---- 2. REIMBURSEMENTS (Compact — packs smoothly on Page 1 when short, omitted when empty) ---- */
+  const renderReimbursements = () => {
+    if(!modSet.has('reimbursements')) return;
+    if(!reimbTxs.length){
+      if(isSoloModule){
+        addAtomicBlock(`<div class="pdf-section">${addSectionHeaderHtml('Reimbursements')}<p class="pdf-empty-line">No reimbursable claims recorded for this period.</p></div>`, 70);
+      }
+      return;
+    }
+    const totCl = reimbTxs.reduce((s, t) => s + (parseFloat(t.claimableAmount ?? t.amount) || 0), 0);
+    const totRec = reimbTxs.reduce((s, t) => s + (parseFloat(t.recoveredAmount) || 0), 0);
+    const totPend = reimbTxs.reduce((s, t) => s + (t.recoveryStatus === 'settled' ? 0 : Math.max(0, (parseFloat(t.claimableAmount ?? t.amount) || 0) - (parseFloat(t.recoveredAmount) || 0))), 0);
+    const rRows = reimbTxs.map(t => {
+      const cl = parseFloat(t.claimableAmount ?? t.amount) || 0;
+      const rec = parseFloat(t.recoveredAmount) || 0;
+      const st = t.recoveryStatus === 'settled' ? 'Reimbursed' : (rec > 0 ? 'Partial' : 'Pending');
+      const stCls = st === 'Reimbursed' ? 'tone-pos' : (st === 'Pending' ? 'tone-neg' : 'tone-warn');
+      return {
+        h: 26,
+        html: `<tr><td class="muted num-left">${escapeHtml(t.date || '—')}</td><td class="cell-strong">${escapeHtml(t.category || '—')}</td><td>${escapeHtml(t.tag || '—')}</td><td class="num">${fmtMoney(cl)}</td><td class="num">${fmtMoney(rec)}</td><td class="status-cell ${stCls}">${st}</td></tr>`
+      };
+    });
+    const rFoot = reimbTxs.length > 1
+      ? `<tr><td colspan="3">Total (${reimbTxs.length} claims)</td><td class="num">${fmtMoney(totCl)}</td><td class="num">${fmtMoney(totRec)}</td><td class="status-cell ${totPend > 0 ? 'tone-neg' : 'tone-pos'}">${totPend > 0 ? `${fmtMoney(totPend)} pending` : 'Settled'}</td></tr>`
+      : '';
+    addPaginatedTable({
+      title: 'Reimbursements',
+      metaHtml: `Claimable ${fmtMoney(totCl)} · Recovered ${fmtMoney(totRec)} · Pending ${fmtMoney(totPend)}`,
+      theadHtml: '<tr><th style="width:15%;">Date</th><th style="width:27%;">Category</th><th style="width:16%;">Benefit</th><th class="num" style="width:15%;">Claimable</th><th class="num" style="width:14%;">Recovered</th><th class="status-th" style="width:13%;">Status</th></tr>',
+      rows: rRows,
+      tfootHtml: rFoot,
+      minRowsOnStart: 1
+    });
+  };
+
+  // On short monthly reports where Reimbursements fits cleanly under Cash Flow on Page 1, place it before the long Budget table so Page 1 is balanced and Page 2+ is dedicated cleanly to Budget vs. Actual
+  const placeReimbEarly = !isWhole && modSet.has('reimbursements') && reimbTxs.length > 0 && reimbTxs.length <= 5 && curPage && (curPage.usedH + 100 + reimbTxs.length * 26 <= curPage.maxH);
+  if(placeReimbEarly) renderReimbursements();
+
+  /* ---- 3. BUDGET VS. ACTUAL (Auto-Paginated, Zero Clipping, Accurate Subcategory Math) ---- */
+  if(modSet.has('budgets')){
+    if(!catRows.length){
+      if(isSoloModule){
+        addAtomicBlock(`<div class="pdf-section">${addSectionHeaderHtml('Budget vs. Actual')}<p class="pdf-empty-line">No budgets or expenses recorded for this period.</p></div>`, 70);
+      }
+    } else {
+      const bRows = [];
+      catRows.forEach(c => {
+        const diff = c.budget > 0 ? (c.budget - c.actual) : 0;
+        const isOver = c.budget > 0 && c.actual > c.budget;
+        const statusHtml = c.budget > 0
+          ? (isOver ? '<span class="tone-neg">Over Limit</span>' : '<span class="tone-pos">On Track</span>')
+          : '<span class="muted">Unbudgeted</span>';
+        const varHtml = c.budget > 0
+          ? `<span class="${diff < 0 ? 'tone-neg' : 'tone-pos'}">${fmtSigned(diff)}</span>`
+          : '<span class="muted">—</span>';
+        const catLines = Math.max(1, Math.ceil((c.category || '').length / 42));
+        bRows.push({
+          isGroupHead: true,
+          h: 25.5 + (catLines - 1) * 14,
+          html: `<tr class="row-group"><td>${escapeHtml(c.category)}</td><td class="num">${c.budget > 0 ? fmtMoney(c.budget) : '<span class="muted">—</span>'}</td><td class="num">${fmtMoney(c.actual)}</td><td class="num">${varHtml}</td><td class="status-cell">${statusHtml}</td></tr>`
+        });
+
+        (c.subs || []).forEach(s => {
+          const sDiff = s.hasBudget ? (s.budget - s.spent) : 0;
+          const sOver = s.hasBudget && s.spent > s.budget;
+          const sVarHtml = s.hasBudget
+            ? `<span class="${sDiff < 0 ? 'tone-neg' : 'tone-pos'}">${fmtSigned(sDiff)}</span>`
+            : '<span class="muted">—</span>';
+          const sStatusHtml = s.hasBudget
+            ? (sOver ? '<span class="tone-neg">Over Limit</span>' : '<span class="tone-pos">On Track</span>')
+            : '';
+          const subLines = Math.max(1, Math.ceil((s.subCategory || '').length / 42));
+          bRows.push({
+            isGroupHead: false,
+            h: 20.5 + (subLines - 1) * 13,
+            html: `<tr class="row-sub"><td class="cell-sub">${escapeHtml(s.subCategory)}</td><td class="num">${s.hasBudget ? fmtMoney(s.budget) : '<span class="muted">—</span>'}</td><td class="num">${fmtMoney(s.spent)}</td><td class="num">${sVarHtml}</td><td class="status-cell">${sStatusHtml}</td></tr>`
+          });
+        });
+      });
+
+      const totalVar = totalBudgetPlanned - totals.expense;
+      const totalOver = totalBudgetPlanned > 0 && totals.expense > totalBudgetPlanned;
+      const bFoot = `
+        <tr>
+          <td>Total</td>
+          <td class="num">${totalBudgetPlanned > 0 ? fmtMoney(totalBudgetPlanned) : '—'}</td>
+          <td class="num">${fmtMoney(totals.expense)}</td>
+          <td class="num ${totalBudgetPlanned > 0 ? (totalVar < 0 ? 'tone-neg' : 'tone-pos') : ''}">${totalBudgetPlanned > 0 ? fmtSigned(totalVar) : '—'}</td>
+          <td class="status-cell ${totalBudgetPlanned > 0 ? (totalOver ? 'tone-neg' : 'tone-pos') : 'muted'}">${totalBudgetPlanned > 0 ? (totalOver ? 'Over Budget' : 'Under Budget') : '—'}</td>
+        </tr>
+      `;
+      const metaSummary = totalBudgetPlanned > 0
+        ? `Planned ${fmtMoney(totalBudgetPlanned)} · Actual ${fmtMoney(totals.expense)}`
+        : `Actual ${fmtMoney(totals.expense)}`;
+
+      addPaginatedTable({
+        title: 'Budget vs. Actual',
+        metaHtml: metaSummary,
+        theadHtml: '<tr><th style="width:43%;">Category</th><th class="num" style="width:14%;">Budget</th><th class="num" style="width:14%;">Actual</th><th class="num" style="width:15%;">Variance</th><th class="status-th" style="width:14%;">Status</th></tr>',
+        rows: bRows,
+        tfootHtml: bFoot,
+        minRowsOnStart: 5,
+        preferFreshPageIfSplits: true
+      });
+    }
+  }
+
+  /* ---- 4. SAVINGS GOALS (Strictly Period-Scoped — Omitted When 0 Goals in Period) ---- */
+  if(modSet.has('savings')){
+    if(!periodGoals.length && totals.savings === 0){
+      if(isSoloModule){
+        addAtomicBlock(`<div class="pdf-section">${addSectionHeaderHtml('Savings Goals')}<p class="pdf-empty-line">No savings goals active for this period.</p></div>`, 70);
+      }
+    } else if(periodGoals.length){
+      const totalTgt = periodGoals.reduce((s, g) => s + (Number(g.targetAmount) || 0), 0);
+      const totalSav = periodGoals.reduce((s, g) => s + getGoalAccumulatedDeposits(g), 0);
+      const totalRem = Math.max(0, totalTgt - totalSav);
+      const gRows = periodGoals.map(g => {
+        const tgt = Number(g.targetAmount) || 0;
+        const curSav = getGoalAccumulatedDeposits(g);
+        const perSav = getGoalDepositsInTxs(g, txsInPeriod);
+        const rem = Math.max(0, tgt - curSav);
+        const pct = tgt > 0 ? Math.min(100, Math.round((curSav / tgt) * 100)) : 0;
+        const eff = typeof getGoalEffectiveMonthYear === 'function' ? getGoalEffectiveMonthYear(g) : null;
+        const when = g.isIndependent ? 'Ongoing' : (eff ? `${MONTH_NAMES[eff.month - 1].slice(0, 3)} ${eff.year}` : (g.deadline || '—'));
+        return {
+          h: 26,
+          html: `<tr><td class="cell-strong">${escapeHtml(g.name)}</td><td class="muted">${escapeHtml(when)}</td><td class="num">${fmtMoney(tgt)}</td><td class="num">${fmtMoney(curSav)}</td><td class="num">${fmtMoney(rem)}</td><td class="status-cell ${rem === 0 && tgt > 0 ? 'tone-pos' : ''}">${rem === 0 && tgt > 0 ? 'Completed' : `${pct}%`}</td></tr>`
+        };
+      });
+      const gFoot = periodGoals.length > 1
+        ? `<tr><td colspan="2">Total (${periodGoals.length} goals)</td><td class="num">${fmtMoney(totalTgt)}</td><td class="num">${fmtMoney(totalSav)}</td><td class="num">${fmtMoney(totalRem)}</td><td class="status-cell">${totalTgt > 0 ? `${Math.min(100, Math.round((totalSav / totalTgt) * 100))}%` : '—'}</td></tr>`
+        : '';
+      const meta = isWhole
+        ? `Funded ${fmtMoney(totalSav)} of ${fmtMoney(totalTgt)}`
+        : `Period Deposited ${fmtMoney(totals.savings)} · Funded ${fmtMoney(totalSav)} / ${fmtMoney(totalTgt)}`;
+      addPaginatedTable({
+        title: 'Savings Goals',
+        metaHtml: meta,
+        theadHtml: '<tr><th style="width:30%;">Goal</th><th style="width:14%;">Period</th><th class="num" style="width:15%;">Target</th><th class="num" style="width:15%;">Saved</th><th class="num" style="width:14%;">Remaining</th><th class="status-th" style="width:12%;">Status</th></tr>',
+        rows: gRows,
+        tfootHtml: gFoot,
+        minRowsOnStart: 2
+      });
+    }
+  }
+
+  /* ---- 5. INVESTMENTS (Omitted Completely When No Holdings & No Realized Positions) ---- */
+  if(modSet.has('investments')){
+    if(!activeInvs.length && !soldInvs.length){
+      if(isSoloModule){
+        addAtomicBlock(`<div class="pdf-section">${addSectionHeaderHtml('Investments')}<p class="pdf-empty-line">No investment holdings recorded.</p></div>`, 70);
+      }
+    } else {
+      if(activeInvs.length){
+        const invCost = activeInvs.reduce((s, i) => s + (Number(i.initialInvested) || 0), 0);
+        const invVal = activeInvs.reduce((s, i) => s + (Number(i.currentValue) || 0), 0);
+        const invGain = invVal - invCost;
+        const invRoi = invCost > 0 ? ((invGain / invCost) * 100).toFixed(1) : '0.0';
+        const iRows = activeInvs.map(i => {
+          const c = Number(i.initialInvested) || 0;
+          const v = Number(i.currentValue) || 0;
+          const g = v - c;
+          const r = c > 0 ? ((g / c) * 100).toFixed(1) : '0.0';
+          const meta = typeof getAssetClassMeta === 'function' ? getAssetClassMeta(i.assetType) : { label: i.assetType || 'Asset' };
+          return {
+            h: 26,
+            html: `<tr><td class="cell-strong">${escapeHtml(i.name)}</td><td class="muted">${escapeHtml(meta.label || i.assetType || 'Asset')}</td><td class="num">${fmtMoney(c)}</td><td class="num">${fmtMoney(v)}</td><td class="num ${g > 0 ? 'tone-pos' : (g < 0 ? 'tone-neg' : '')}">${fmtSigned(g)}</td><td class="status-cell ${g > 0 ? 'tone-pos' : (g < 0 ? 'tone-neg' : '')}">${g >= 0 ? '+' : ''}${r}%</td></tr>`
+          };
+        });
+        const iFoot = activeInvs.length > 1
+          ? `<tr><td colspan="2">Total (${activeInvs.length} holdings)</td><td class="num">${fmtMoney(invCost)}</td><td class="num">${fmtMoney(invVal)}</td><td class="num ${invGain > 0 ? 'tone-pos' : (invGain < 0 ? 'tone-neg' : '')}">${fmtSigned(invGain)}</td><td class="status-cell ${invGain > 0 ? 'tone-pos' : (invGain < 0 ? 'tone-neg' : '')}">${invGain >= 0 ? '+' : ''}${invRoi}%</td></tr>`
+          : '';
+        addPaginatedTable({
+          title: 'Investment Holdings',
+          metaHtml: `Value ${fmtMoney(invVal)} · Return ${invGain >= 0 ? '+' : ''}${invRoi}%`,
+          theadHtml: '<tr><th style="width:28%;">Asset</th><th style="width:16%;">Class</th><th class="num" style="width:15%;">Cost</th><th class="num" style="width:15%;">Value</th><th class="num" style="width:15%;">Gain / Loss</th><th class="status-th" style="width:11%;">ROI</th></tr>',
+          rows: iRows,
+          tfootHtml: iFoot,
+          minRowsOnStart: 2
+        });
+      }
+      if(soldInvs.length){
+        const sCost = soldInvs.reduce((s, i) => s + (Number(i.initialInvested) || 0), 0);
+        const sProceeds = soldInvs.reduce((s, i) => s + (Number(i.sellPrice || i.currentValue) || 0), 0);
+        const sGain = sProceeds - sCost;
+        const sRows = soldInvs.map(i => {
+          const c = Number(i.initialInvested) || 0;
+          const p = Number(i.sellPrice || i.currentValue) || 0;
+          const g = p - c;
+          return {
+            h: 26,
+            html: `<tr><td class="cell-strong">${escapeHtml(i.name)}</td><td class="muted num-left">${escapeHtml(i.sellDate || '—')}</td><td class="num">${fmtMoney(c)}</td><td class="num">${fmtMoney(p)}</td><td class="status-cell ${g > 0 ? 'tone-pos' : (g < 0 ? 'tone-neg' : '')}">${fmtSigned(g)}</td></tr>`
+          };
+        });
+        const sFoot = soldInvs.length > 1
+          ? `<tr><td colspan="2">Total Realized</td><td class="num">${fmtMoney(sCost)}</td><td class="num">${fmtMoney(sProceeds)}</td><td class="status-cell ${sGain > 0 ? 'tone-pos' : (sGain < 0 ? 'tone-neg' : '')}">${fmtSigned(sGain)}</td></tr>`
+          : '';
+        addPaginatedTable({
+          title: 'Realized Positions',
+          metaHtml: `Realized ${fmtSigned(sGain)}`,
+          theadHtml: '<tr><th style="width:32%;">Asset</th><th style="width:16%;">Sold Date</th><th class="num" style="width:17%;">Cost</th><th class="num" style="width:17%;">Proceeds</th><th class="status-th" style="width:18%;">Realized P&amp;L</th></tr>',
+          rows: sRows,
+          tfootHtml: sFoot,
+          minRowsOnStart: 2
+        });
+      }
+    }
+  }
+
+  /* ---- 6. REIMBURSEMENTS (if not already packed onto Page 1) ---- */
+  if(!placeReimbEarly) renderReimbursements();
+
+  if(!pages.length){
+    addAtomicBlock(`<div class="pdf-section"><p class="pdf-empty-line">No financial records found for ${escapeHtml(periodTitle)}.</p></div>`, 70);
+  }
+
+  const totalPages = pages.length;
+
+  function renderPageHeader(isFirst){
+    if(isFirst){
+      return `
+        <div class="pdf-masthead">
+          <div class="pdf-brand">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            <span class="pdf-brand-name">WealthNest</span>
+            <span class="pdf-brand-sep">/</span>
+            <span class="pdf-brand-doc">Financial Statement</span>
+          </div>
+          <div class="pdf-meta">
+            <div class="pdf-period-title">${escapeHtml(periodTitle)}</div>
+            <div class="pdf-period-sub">${escapeHtml(periodSub)} · ${escapeHtml(curCode)}</div>
+          </div>
         </div>
+      `;
+    }
+    return `
+      <div class="pdf-running-head">
+        <span>WealthNest · Financial Statement</span>
+        <span>${escapeHtml(periodTitle)}</span>
       </div>
     `;
   }
 
-  const pageBuilders = [];
-
-  if(modSet.has('overview') || modSet.has('cashflow')){
-    pageBuilders.push(() => `
-      <div class="pdf-page-title-box">
-        <span class="pdf-section-kicker">${modSet.has('overview') ? 'EXECUTIVE SUMMARY' : 'CASH FLOW STATEMENT'}</span>
-        <h1 class="pdf-page-title">${modSet.has('overview') ? 'Financial Overview &amp; Cash Flow' : 'Cash Flow &amp; Income Sources'}</h1>
-        <p class="pdf-page-sub">Period summary covering inflows, operating expenses, savings allocation, and net cash retention.</p>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-card kpi-income"><div class="kpi-label">Total Inflow</div><div class="kpi-value text-income">${fmtMoney(totals.income)}</div><div class="kpi-sub">${incomeRows.length} Income Source${incomeRows.length===1?'':'s'}</div></div>
-        <div class="kpi-card kpi-expense"><div class="kpi-label">Total Outflow</div><div class="kpi-value text-expense">${fmtMoney(totals.expense)}</div><div class="kpi-sub">${expenseRatio}% of Inflow</div></div>
-        <div class="kpi-card kpi-savings"><div class="kpi-label">Period Saved</div><div class="kpi-value text-savings">${fmtMoney(totals.savings)}</div><div class="kpi-sub">${savingsRate}% Allocated</div></div>
-        <div class="kpi-card kpi-net"><div class="kpi-label">Net Cash Flow</div><div class="kpi-value ${netBalance>=0?'text-income':'text-expense'}">${netBalance>=0?'+':'-'}${fmtMoney(Math.abs(netBalance))}</div><div class="kpi-sub">${netBalance>=0?'Surplus':'Deficit'}</div></div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px;">
-        <div class="pdf-card">
-          <div class="pdf-card-title"><span>Income Sources</span><span class="badge badge-ok">${incomeRows.length} Active</span></div>
-          <div style="margin-top:8px;">
-            ${incomeRows.length ? incomeRows.slice(0, 6).map(([src, amt]) => {
-              const p = totals.income > 0 ? Math.round((amt / totals.income) * 100) : 0;
-              return `<div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:3px;"><span style="font-weight:600;">${escapeHtml(src)}</span><strong>${fmtMoney(amt)} (${p}%)</strong></div><div style="height:5px; background:#F1F5F9; border-radius:3px; overflow:hidden;"><div style="width:${p}%; height:100%; background:#0D9488;"></div></div></div>`;
-            }).join('') : '<p class="pdf-empty">No income recorded in this period.</p>'}
-          </div>
-        </div>
-        <div class="pdf-card">
-          <div class="pdf-card-title"><span>Top Spending Categories</span><span class="badge badge-neutral">${catRows.length} Categories</span></div>
-          <div style="margin-top:8px;">
-            ${catRows.length ? catRows.slice(0, 6).map(cat => {
-              const p = totals.expense > 0 ? Math.round((cat.actual / totals.expense) * 100) : 0;
-              return `<div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:3px;"><span style="font-weight:600;">${escapeHtml(cat.category)}</span><strong>${fmtMoney(cat.actual)} (${p}%)</strong></div><div style="height:5px; background:#F1F5F9; border-radius:3px; overflow:hidden;"><div style="width:${p}%; height:100%; background:#E11D48;"></div></div></div>`;
-            }).join('') : '<p class="pdf-empty">No expenses recorded in this period.</p>'}
-          </div>
-        </div>
-      </div>
-    `);
-  }
-
-  if(modSet.has('budgets')){
-    pageBuilders.push(() => `
-      <div class="pdf-page-title-box">
-        <span class="pdf-section-kicker">BUDGET VARIANCE</span>
-        <h1 class="pdf-page-title">Budget vs. Actual Variance Analysis</h1>
-        <p class="pdf-page-sub">Category and subcategory spending compared against planned budget limits.</p>
-      </div>
-      <table class="pdf-table">
-        <thead><tr><th style="width:38%;">Category / Subcategory</th><th class="figure" style="width:16%;">Budget</th><th class="figure" style="width:16%;">Actual</th><th class="figure" style="width:16%;">Variance</th><th style="width:14%; text-align:center;">Status</th></tr></thead>
-        <tbody>
-          ${catRows.length ? catRows.map(c => {
-            const diff = c.budget > 0 ? (c.budget - c.actual) : 0;
-            const isOver = c.budget > 0 && c.actual > c.budget;
-            const catRow = `<tr style="background:#F8FAFC; font-weight:700;"><td>${escapeHtml(c.category)}</td><td class="figure">${c.budget>0?fmtMoney(c.budget):'—'}</td><td class="figure">${fmtMoney(c.actual)}</td><td class="figure ${c.budget>0?(diff<0?'text-expense':'text-income'):''}">${c.budget>0?((diff<0?'-':'+')+fmtMoney(Math.abs(diff))):'—'}</td><td style="text-align:center;">${c.budget>0?(isOver?'<span class="badge badge-over">Over Limit</span>':'<span class="badge badge-ok">On Track</span>'):'<span class="badge badge-neutral">Unbudgeted</span>'}</td></tr>`;
-            const subRows = (c.subs || []).slice(0, 6).map(s => `<tr style="font-size:10.5px;"><td style="padding-left:22px; color:#475569;">↳ ${escapeHtml(s.subCategory)}</td><td class="figure">${s.hasBudget?fmtMoney(s.budget):'—'}</td><td class="figure">${fmtMoney(s.spent)}</td><td class="figure">—</td><td style="text-align:center; color:#94A3B8;">Sub</td></tr>`).join('');
-            return catRow + subRows;
-          }).join('') : '<tr><td colspan="5" class="pdf-empty">No budget or expense records in this period.</td></tr>'}
-        </tbody>
-        <tfoot>
-          <tr style="background:#F1F5F9; font-weight:700;"><td>TOTAL</td><td class="figure">${totalBudgetPlanned>0?fmtMoney(totalBudgetPlanned):'—'}</td><td class="figure">${fmtMoney(totals.expense)}</td><td class="figure">${totalBudgetPlanned>0?((totalBudgetPlanned-totals.expense<0?'-':'+')+fmtMoney(Math.abs(totalBudgetPlanned-totals.expense))):'—'}</td><td style="text-align:center;">${totalBudgetPlanned>0?(totals.expense>totalBudgetPlanned?'<span class="badge badge-over">Over</span>':'<span class="badge badge-ok">Under</span>'):'—'}</td></tr>
-        </tfoot>
-      </table>
-    `);
-  }
-
-  if(modSet.has('savings')){
-    const totalTgt = goals.reduce((s, g) => s + (Number(g.targetAmount) || 0), 0);
-    const totalSav = goals.reduce((s, g) => s + getGoalAccumulatedDeposits(g), 0);
-    pageBuilders.push(() => `
-      <div class="pdf-page-title-box">
-        <span class="pdf-section-kicker">SAVINGS GOALS</span>
-        <h1 class="pdf-page-title">Savings &amp; Goal Progress</h1>
-        <p class="pdf-page-sub">Target milestones, accumulated funding, and remaining gaps.</p>
-      </div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="kpi-card"><div class="kpi-label">Total Saved</div><div class="kpi-value text-savings">${fmtMoney(totalSav)}</div><div class="kpi-sub">${goals.length} Goals</div></div>
-        <div class="kpi-card"><div class="kpi-label">Period Saved</div><div class="kpi-value text-savings">${fmtMoney(totals.savings)}</div><div class="kpi-sub">Selected Period</div></div>
-        <div class="kpi-card"><div class="kpi-label">Total Target</div><div class="kpi-value text-primary">${fmtMoney(totalTgt)}</div><div class="kpi-sub">Gap ${fmtMoney(Math.max(0, totalTgt - totalSav))}</div></div>
-      </div>
-      <table class="pdf-table">
-        <thead><tr><th>Goal</th><th class="figure">Target</th><th class="figure">Saved</th><th class="figure">Remaining</th><th style="text-align:center;">Status</th></tr></thead>
-        <tbody>
-          ${goals.length ? goals.map(g => {
-            const tgt = Number(g.targetAmount) || 0, curSav = getGoalAccumulatedDeposits(g), rem = Math.max(0, tgt - curSav);
-            const pct = tgt > 0 ? Math.min(100, Math.round((curSav / tgt) * 100)) : 0;
-            return `<tr><td><strong>${escapeHtml(g.name)}</strong></td><td class="figure">${fmtMoney(tgt)}</td><td class="figure text-income">${fmtMoney(curSav)}</td><td class="figure">${fmtMoney(rem)}</td><td style="text-align:center;"><span class="badge ${rem===0?'badge-ok':'badge-savings'}">${rem===0?'Completed':pct+'% Funded'}</span></td></tr>`;
-          }).join('') : '<tr><td colspan="5" class="pdf-empty">No savings goals configured.</td></tr>'}
-        </tbody>
-      </table>
-    `);
-  }
-
-  if(modSet.has('investments')){
-    const invCost = invs.reduce((s, i) => s + (Number(i.initialInvested) || 0), 0);
-    const invVal = invs.reduce((s, i) => s + (Number(i.currentValue) || 0), 0);
-    const invGain = invVal - invCost;
-    const invRoi = invCost > 0 ? ((invGain / invCost) * 100).toFixed(1) : '0.0';
-    pageBuilders.push(() => `
-      <div class="pdf-page-title-box">
-        <span class="pdf-section-kicker">INVESTMENTS</span>
-        <h1 class="pdf-page-title">Investment Portfolio Summary</h1>
-        <p class="pdf-page-sub">Active asset holdings, invested capital, valuation, and return on investment.</p>
-      </div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="kpi-card"><div class="kpi-label">Portfolio Value</div><div class="kpi-value text-primary">${fmtMoney(invVal)}</div><div class="kpi-sub">${invs.length} Holdings</div></div>
-        <div class="kpi-card"><div class="kpi-label">Invested Capital</div><div class="kpi-value">${fmtMoney(invCost)}</div><div class="kpi-sub">Cost Basis</div></div>
-        <div class="kpi-card"><div class="kpi-label">Net Return</div><div class="kpi-value ${invGain>=0?'text-income':'text-expense'}">${invGain>=0?'+':''}${invRoi}%</div><div class="kpi-sub">${invGain>=0?'+':'-'}${fmtMoney(Math.abs(invGain))}</div></div>
-      </div>
-      <table class="pdf-table">
-        <thead><tr><th>Asset</th><th>Class</th><th class="figure">Cost</th><th class="figure">Value</th><th style="text-align:center;">ROI</th></tr></thead>
-        <tbody>
-          ${invs.length ? invs.map(i => {
-            const c = Number(i.initialInvested)||0, v = Number(i.currentValue)||0, g = v-c, r = c>0?((g/c)*100).toFixed(1):'0.0';
-            const meta = typeof getAssetClassMeta === 'function' ? getAssetClassMeta(i.assetType) : { label: i.assetType || 'Asset' };
-            return `<tr><td><strong>${escapeHtml(i.name)}</strong></td><td>${escapeHtml(meta.label || i.assetType || 'Asset')}</td><td class="figure">${fmtMoney(c)}</td><td class="figure">${fmtMoney(v)}</td><td style="text-align:center;"><span class="badge ${g>=0?'badge-ok':'badge-over'}">${g>=0?'+':''}${r}%</span></td></tr>`;
-          }).join('') : '<tr><td colspan="5" class="pdf-empty">No active investment holdings.</td></tr>'}
-        </tbody>
-      </table>
-    `);
-  }
-
-  if(modSet.has('reimbursements') && (reimbTxs.length > 0 || modSet.size === 1)){
-    const totCl = reimbTxs.reduce((s, t) => s + (parseFloat(t.claimableAmount ?? t.amount) || 0), 0);
-    const totRec = reimbTxs.reduce((s, t) => s + (parseFloat(t.recoveredAmount) || 0), 0);
-    const totPend = reimbTxs.reduce((s, t) => s + (t.recoveryStatus === 'settled' ? 0 : Math.max(0, (parseFloat(t.claimableAmount ?? t.amount) || 0) - (parseFloat(t.recoveredAmount) || 0))), 0);
-    pageBuilders.push(() => `
-      <div class="pdf-page-title-box">
-        <span class="pdf-section-kicker">COMPANY BENEFITS</span>
-        <h1 class="pdf-page-title">Reimbursements Ledger</h1>
-        <p class="pdf-page-sub">Tracked claimable expenses, recovered settlements, and pending balances.</p>
-      </div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="kpi-card"><div class="kpi-label">Total Claimable</div><div class="kpi-value">${fmtMoney(totCl)}</div><div class="kpi-sub">${reimbTxs.length} Claims</div></div>
-        <div class="kpi-card"><div class="kpi-label">Recovered</div><div class="kpi-value text-income">${fmtMoney(totRec)}</div><div class="kpi-sub">Settled Amount</div></div>
-        <div class="kpi-card"><div class="kpi-label">Pending</div><div class="kpi-value text-expense">${fmtMoney(totPend)}</div><div class="kpi-sub">Awaiting Recovery</div></div>
-      </div>
-      <table class="pdf-table">
-        <thead><tr><th>Date</th><th>Category</th><th>Tag</th><th class="figure">Claimable</th><th class="figure">Recovered</th><th style="text-align:center;">Status</th></tr></thead>
-        <tbody>
-          ${reimbTxs.length ? reimbTxs.map(t => {
-            const cl = parseFloat(t.claimableAmount ?? t.amount) || 0, rec = parseFloat(t.recoveredAmount) || 0;
-            const st = t.recoveryStatus === 'settled' ? 'Reimbursed' : (rec > 0 ? 'Partial' : 'Pending');
-            return `<tr><td>${escapeHtml(t.date || '')}</td><td><strong>${escapeHtml(t.category || '')}</strong></td><td>${escapeHtml(t.tag || '—')}</td><td class="figure">${fmtMoney(cl)}</td><td class="figure text-income">${fmtMoney(rec)}</td><td style="text-align:center;"><span class="badge ${st==='Reimbursed'?'badge-ok':'badge-warn'}">${st}</span></td></tr>`;
-          }).join('') : '<tr><td colspan="6" class="pdf-empty">No reimbursable claims recorded in this period.</td></tr>'}
-        </tbody>
-      </table>
-    `);
-  }
-
-  const totalPages = Math.max(1, pageBuilders.length);
   function renderFooter(pageNumber) {
-    return `<div class="pdf-footer"><div class="pdf-footer-left">WealthNest</div><div class="pdf-footer-right">Page ${pageNumber} of ${totalPages}</div></div>`;
+    return `<div class="pdf-footer"><span>WealthNest</span><span>Page ${pageNumber} of ${totalPages}</span></div>`;
   }
 
   const styles = `
     <style>
       * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .pdf-page { width: 794px; min-height: 1120px; height: 1120px; padding: 32px 38px 24px; background: #ffffff; position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif; color: #0F172A; }
-      .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #7C3AED; padding-bottom: 12px; margin-bottom: 16px; }
-      .pdf-brand { display: flex; align-items: center; gap: 10px; }
-      .pdf-brand-mark { width: 32px; height: 32px; background: linear-gradient(135deg, #160D2E 0%, #7C3AED 100%); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
-      .pdf-brand-title { font-weight: 800; font-size: 18px; color: #160D2E; line-height: 1; }
-      .pdf-brand-sub { font-size: 10.5px; color: #64748B; margin-top: 3px; }
+      .pdf-page {
+        width: 794px;
+        height: 1120px;
+        padding: 36px 44px 28px;
+        background: #FFFFFF;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #0F172A;
+      }
+      .pdf-masthead {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 1.5px solid #0F172A;
+        padding-bottom: 12px;
+        margin-bottom: 22px;
+      }
+      .pdf-brand { display: flex; align-items: center; gap: 8px; }
+      .pdf-brand-name { font-size: 16.5px; font-weight: 800; color: #0F172A; letter-spacing: -0.02em; }
+      .pdf-brand-sep { font-size: 13px; color: #CBD5E1; font-weight: 400; }
+      .pdf-brand-doc { font-size: 11.5px; font-weight: 500; color: #64748B; }
       .pdf-meta { text-align: right; }
-      .pdf-period-badge { display: inline-block; background: #F3E8FF; color: #6D28D9; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 6px; margin-bottom: 4px; }
-      .pdf-meta-date { font-size: 10px; color: #64748B; }
+      .pdf-period-title { font-size: 13.5px; font-weight: 700; color: #0F172A; letter-spacing: -0.01em; line-height: 1.2; }
+      .pdf-period-sub { font-size: 9.5px; color: #64748B; margin-top: 3px; }
+      .pdf-running-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #E2E8F0;
+        padding-bottom: 8px;
+        margin-bottom: 18px;
+        font-size: 9.5px;
+        font-weight: 600;
+        color: #64748B;
+      }
       .pdf-content { flex: 1; display: flex; flex-direction: column; }
-      .pdf-page-title-box { margin-bottom: 14px; }
-      .pdf-section-kicker { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: #7C3AED; font-weight: 700; display: block; margin-bottom: 2px; }
-      .pdf-page-title { font-size: 20px; font-weight: 800; color: #0F172A; margin: 0 0 4px; }
-      .pdf-page-sub { font-size: 11.5px; color: #64748B; margin: 0; }
-      .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
-      .kpi-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px 14px; }
-      .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B; font-weight: 700; margin-bottom: 5px; }
-      .kpi-value { font-size: 17px; font-weight: 800; color: #0F172A; margin-bottom: 4px; }
-      .kpi-sub { font-size: 10.5px; color: #64748B; }
-      .text-income { color: #0D9488; } .text-expense { color: #E11D48; } .text-savings { color: #0D9488; } .text-primary { color: #7C3AED; }
-      .pdf-card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px; }
-      .pdf-card-title { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 6px; }
-      .pdf-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-      .pdf-table th { text-align: left; padding: 8px 10px; background: #F8FAFC; border-bottom: 1px solid #CBD5E1; font-size: 10px; text-transform: uppercase; color: #64748B; }
-      .pdf-table td { padding: 7px 10px; border-bottom: 1px solid #F1F5F9; }
-      .pdf-table .figure { text-align: right; font-variant-numeric: tabular-nums; }
-      .badge { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 700; }
-      .badge-ok { background: #CCFBF1; color: #0D9488; } .badge-over { background: #FFE4E6; color: #E11D48; } .badge-warn { background: #FEF3C7; color: #D97706; } .badge-savings { background: #F3E8FF; color: #7C3AED; } .badge-neutral { background: #F1F5F9; color: #64748B; }
-      .pdf-empty { text-align: center; color: #94A3B8; padding: 18px; font-size: 11px; }
-      .pdf-footer { display: flex; justify-content: space-between; border-top: 1px solid #E2E8F0; padding-top: 10px; font-size: 10px; color: #94A3B8; font-weight: 600; }
+      .pdf-section { margin-bottom: 22px; }
+      .pdf-section:last-child { margin-bottom: 0; }
+      .pdf-sec-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        border-bottom: 1px solid #CBD5E1;
+        padding-bottom: 5px;
+        margin-bottom: 9px;
+      }
+      .pdf-page .pdf-sec-title { font-size: 12.5px; font-weight: 700; color: #0F172A; margin: 0; letter-spacing: -0.01em; text-transform: none; }
+      .pdf-page .pdf-sec-cont { font-weight: 500; color: #64748B; font-size: 11px; text-transform: none; }
+      .pdf-sec-meta { font-size: 9.5px; color: #64748B; font-weight: 500; font-variant-numeric: tabular-nums; }
+      .pdf-kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border-top: 1px solid #E2E8F0;
+        border-bottom: 1px solid #E2E8F0;
+        padding: 13px 0;
+      }
+      .pdf-kpi-cell { padding: 0 14px; border-left: 1px solid #E2E8F0; }
+      .pdf-kpi-cell:first-child { padding-left: 0; border-left: none; }
+      .pdf-kpi-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #64748B; margin-bottom: 5px; }
+      .pdf-kpi-val {
+        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+        font-size: 15.5px;
+        font-weight: 600;
+        color: #0F172A;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        margin-bottom: 3px;
+        font-variant-numeric: tabular-nums;
+      }
+      .pdf-kpi-note { font-size: 9.5px; color: #64748B; }
+      .pdf-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: 28px; align-items: start; }
+      .pdf-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+      .pdf-page .pdf-table thead th {
+        text-align: left;
+        padding: 5.5px 6px;
+        border-bottom: 1px solid #CBD5E1;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748B;
+        background: transparent;
+      }
+      .pdf-page .pdf-table thead th.num,
+      .pdf-page .pdf-table thead th.status-th {
+        text-align: right;
+      }
+      .pdf-page .pdf-table td {
+        padding: 5px 6px;
+        border-bottom: 1px solid #F1F5F9;
+        color: #0F172A;
+        vertical-align: top;
+        line-height: 1.32;
+      }
+      .pdf-page .pdf-table-compact td, .pdf-page .pdf-table-compact thead th { padding: 4.5px 4px; }
+      .pdf-page .pdf-table tr.row-group td {
+        background: #F8FAFC;
+        font-weight: 700;
+        border-top: 1px solid #E2E8F0;
+        border-bottom: 1px solid #E2E8F0;
+        padding: 5.5px 6px;
+      }
+      .pdf-page .pdf-table tr.row-sub td {
+        font-size: 9.8px;
+        color: #475569;
+        padding: 4px 6px;
+      }
+      .pdf-page .pdf-table td.cell-sub { padding-left: 18px; color: #475569; }
+      .pdf-page .pdf-table td.cell-strong { font-weight: 600; color: #0F172A; }
+      .pdf-page .pdf-table tfoot td {
+        padding: 7px 6px;
+        border-top: 1.5px solid #0F172A;
+        border-bottom: 1px solid #CBD5E1;
+        background: #F8FAFC;
+        font-weight: 700;
+        color: #0F172A;
+      }
+      .pdf-page .pdf-table td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .pdf-page .pdf-table td.num-left { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pdf-page .pdf-table td.status-cell {
+        text-align: right;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .tone-pos { color: #0F766E !important; }
+      .tone-neg { color: #BE123C !important; }
+      .tone-warn { color: #B45309 !important; }
+      .muted { color: #64748B !important; font-weight: 400; }
+      .pdf-empty-cell { text-align: center; color: #94A3B8; padding: 14px 6px; font-size: 10px; }
+      .pdf-empty-line { color: #64748B; font-size: 10.5px; margin: 8px 0 0; }
+      .pdf-footer {
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #E2E8F0;
+        padding-top: 9px;
+        font-size: 9.5px;
+        color: #94A3B8;
+        font-weight: 500;
+      }
     </style>
   `;
 
   let html = styles;
-  pageBuilders.forEach((buildBody, idx) => {
+  pages.forEach((p, idx) => {
     html += `
       <div class="pdf-page" id="pdf-page-${idx + 1}">
-        ${renderHeader()}
-        <div class="pdf-content">${buildBody()}</div>
+        ${renderPageHeader(p.isFirst)}
+        <div class="pdf-content">${p.parts.join('')}</div>
         ${renderFooter(idx + 1)}
       </div>
-      ${idx < pageBuilders.length - 1 ? '<div class="html2pdf__page-break"></div>' : ''}
+      ${idx < pages.length - 1 ? '<div class="html2pdf__page-break"></div>' : ''}
     `;
   });
 
