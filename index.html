@@ -1422,6 +1422,185 @@
     }
   }
 
+  /* --- Dashboard Vertical Bar Graphs & Reimbursements Card --- */
+  .dash-vbar-stage {
+    position: relative;
+    padding-top: 4px;
+  }
+  .dash-vbar-limit-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30px;
+    border-top: 1px dashed #CBD5E1;
+    pointer-events: none;
+  }
+  .dash-vbar-group {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    height: 152px;
+    padding: 20px 2px 0;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 1;
+  }
+  .dash-vbar-col {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    cursor: pointer;
+    transition: transform 0.16s ease, opacity 0.16s ease;
+  }
+  .dash-vbar-group:hover .dash-vbar-col { opacity: 0.55; }
+  .dash-vbar-group .dash-vbar-col:hover { opacity: 1; transform: translateY(-2px); }
+  .dash-vbar-pct {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 5px;
+    white-space: nowrap;
+  }
+  .dash-vbar-slot {
+    width: 100%;
+    max-width: 34px;
+    height: 102px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .dash-vbar-bar {
+    width: 100%;
+    border-radius: 7px 7px 0 0;
+    transition: height 0.3s ease;
+  }
+  .dash-vbar-track {
+    width: 100%;
+    max-width: 34px;
+    height: 102px;
+    border-radius: 7px 7px 4px 4px;
+    background: var(--line-soft);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    padding: 2px;
+  }
+  .dash-vbar-fill {
+    width: 100%;
+    border-radius: 5px;
+    transition: height 0.3s ease;
+  }
+  .dash-vbar-labels {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 8px 2px 0;
+  }
+  .dash-vbar-label-col {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+  .dash-vbar-cat {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dash-vbar-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .dash-vbar-tooltip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    background: var(--ink);
+    color: #FFFFFF;
+    border-radius: 9px;
+    padding: 8px 11px;
+    font-size: 12px;
+    line-height: 1.4;
+    box-shadow: 0 10px 24px -4px rgba(15,23,42,0.28);
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(-8px);
+    transition: opacity 0.12s ease;
+    max-width: 240px;
+  }
+  .dash-vbar-tooltip.show { opacity: 1; }
+
+  .dash-claims-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media(min-width: 640px){
+    .dash-claims-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media(min-width: 1024px){
+    .dash-claims-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  .dash-claim-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .dash-claim-item:hover {
+    border-color: var(--muted-2);
+    box-shadow: var(--shadow-sm);
+  }
+  .recovery-mode-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .recovery-mode-pill {
+    padding: 8px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .recovery-mode-pill.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  .cb-claims-table-wrap { display: block; overflow-x: auto; }
+  .cb-claims-mobile-list { display: none; }
+  @media(max-width: 768px){
+    .cb-claims-table-wrap { display: none; }
+    .cb-claims-mobile-list { display: flex; flex-direction: column; gap: 10px; }
+  }
+
   /* --- Mobile Settings Tabs & Layout Improvements --- */
   .settings-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 4px; margin-bottom: 18px; max-width: 100%; }
   @media(max-width: 768px){
@@ -1872,7 +2051,7 @@
             <div class="dash-card-head">
               <div class="dash-card-head-copy">
                 <h2 class="section-title">Savings Goals</h2>
-                <p class="section-sub">Goal progress</p>
+                <p class="section-sub" id="dash-savings-sub">Goal progress</p>
               </div>
               <button type="button" onclick="goToApp('savings')" class="btn-ghost btn-small">All Goals</button>
             </div>
@@ -1891,6 +2070,9 @@
           <div id="dash-investments-body"></div>
         </div>
       </div>
+
+      <!-- Reimbursements Card Below (Auto-hides when 0 open claims) -->
+      <div id="dash-pending-claims-card" class="card hidden" style="padding:18px; margin-bottom:16px;"></div>
     </section>
 
     <!-- ---- REPORTS ---- -->
@@ -6522,7 +6704,7 @@ function renderAllowancesSettings(){
     + '<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:36px; padding:0 20px;">Add First Benefit</button>'
     + '</div>';
 
-    // Pending Claims Hub
+    // Reimbursements Hub
   var openClaims = (DB.transactions || []).filter(function(t){
     return t.isReimbursable && t.recoveryStatus !== 'settled';
   });
@@ -6530,8 +6712,8 @@ function renderAllowancesSettings(){
   var claimsHtml = '';
   if(!openClaims.length){
     claimsHtml = '<div style="text-align:center; padding:32px 20px; color:var(--muted-2); background:var(--surface); border:1px dashed var(--line); border-radius:12px;">'
-      + '<div style="font-weight:600; font-size:14px; color:var(--ink); margin-bottom:4px;">No Pending Claims</div>'
-      + '<p style="font-size:12.5px; color:var(--muted); margin:0;">All reimbursable out-of-pocket expenses are settled.</p>'
+      + '<div style="font-weight:600; font-size:14px; color:var(--ink); margin-bottom:4px;">No Reimbursements</div>'
+      + '<p style="font-size:12.5px; color:var(--muted); margin:0;">All reimbursable expenses are settled.</p>'
       + '</div>';
   } else {
     var claimsRows = openClaims.map(function(t){
@@ -6539,49 +6721,83 @@ function renderAllowancesSettings(){
       var claimable = t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0 ? parseFloat(t.claimableAmount) : billAmt;
       var recovered = parseFloat(t.recoveredAmount) || 0;
       var pending = Math.max(0, claimable - recovered);
-      var tagBadge = t.tag ? '<span class="badge" style="font-size:11px; font-weight:600; background:rgba(99,102,241,0.1); color:var(--primary);">' + escapeHtml(t.tag) + '</span>' : '';
-      var noteText = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
+      var isPartial = (t.recoveryStatus === 'partial' || recovered > 0);
+      var statusBadge = isPartial
+        ? '<span class="badge" style="font-size:11px; font-weight:700; background:var(--primary-light); color:var(--primary);">Partial</span>'
+        : '<span class="badge badge-warn" style="font-size:11px; font-weight:700;">Pending</span>';
+      var tagBadge = t.tag ? '<span class="badge" style="font-size:11px; font-weight:600; background:rgba(99,102,241,0.1); color:var(--primary);">' + escapeHtml(t.tag) + '</span>' : '<span style="color:var(--muted-2); font-size:12px;">-</span>';
+      var claimTitle = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
 
       return '<tr style="border-bottom:1px solid var(--line-soft);">'
         + '<td style="padding:10px 12px; font-size:12.5px; color:var(--muted); white-space:nowrap;">' + formatTxDateDisplay(t.date) + '</td>'
-        + '<td style="padding:10px 12px; font-size:13px; font-weight:600; color:var(--ink);">' + noteText + '</td>'
-        + '<td style="padding:10px 12px;">' + (tagBadge || '<span style="color:var(--muted-2); font-size:12px;">-</span>') + '</td>'
-        + '<td style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--muted); text-align:right;">' + fmt(billAmt) + '</td>'
-        + '<td style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--ink); text-align:right;">' + fmt(claimable) + '</td>'
-        + '<td style="padding:10px 12px; font-size:13px; font-weight:700; color:var(--rose); text-align:right;">' + fmt(pending) + '</td>'
+        + '<td style="padding:10px 12px; font-size:13px; font-weight:600; color:var(--ink);">' + claimTitle + '</td>'
+        + '<td style="padding:10px 12px;">' + tagBadge + '</td>'
+        + '<td class="figure" style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--muted); text-align:right; white-space:nowrap;">' + fmt(billAmt) + '</td>'
+        + '<td class="figure" style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--ink); text-align:right; white-space:nowrap;">' + fmt(claimable) + '</td>'
+        + '<td class="figure" style="padding:10px 12px; font-size:13px; font-weight:700; color:var(--rose); text-align:right; white-space:nowrap;">' + fmt(pending) + '</td>'
+        + '<td style="padding:10px 12px; text-align:center; white-space:nowrap;">' + statusBadge + '</td>'
         + '<td style="padding:10px 12px; text-align:right; white-space:nowrap;">'
-        + '  <button type="button" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')" class="btn-primary" style="height:28px; font-size:12px; padding:0 12px; display:inline-flex; align-items:center; gap:5px;">'
-        + '    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Log Recovery'
-        + '  </button>'
+        + '  <button type="button" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')" class="btn-primary" style="height:28px; font-size:12px; padding:0 12px;">Log Recovery</button>'
         + '</td>'
         + '</tr>';
     }).join('');
 
-    claimsHtml = '<div style="overflow-x:auto;">'
+    var mobileClaimCards = openClaims.map(function(t){
+      var billAmt = parseFloat(t.amount) || 0;
+      var claimable = t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0 ? parseFloat(t.claimableAmount) : billAmt;
+      var recovered = parseFloat(t.recoveredAmount) || 0;
+      var pending = Math.max(0, claimable - recovered);
+      var isPartial = (t.recoveryStatus === 'partial' || recovered > 0);
+      var statusBadge = isPartial
+        ? '<span class="badge" style="font-size:10.5px; font-weight:700; background:var(--primary-light); color:var(--primary);">Partial</span>'
+        : '<span class="badge badge-warn" style="font-size:10.5px; font-weight:700;">Pending</span>';
+      var tagBadge = t.tag ? '<span class="badge" style="font-size:10.5px; font-weight:600; background:rgba(99,102,241,0.1); color:var(--primary);">' + escapeHtml(t.tag) + '</span>' : '';
+      var claimTitle = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
+
+      return '<div style="background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:12px 14px;">'
+        + '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">'
+        + '  <div style="min-width:0; flex:1;">'
+        + '    <div style="font-size:13.5px; font-weight:700; color:var(--ink);">' + claimTitle + '</div>'
+        + '    <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">' + formatTxDateDisplay(t.date) + '</div>'
+        + '  </div>'
+        + '  <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">' + tagBadge + statusBadge + '</div>'
+        + '</div>'
+        + '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; padding:8px 0; border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); margin-bottom:10px;">'
+        + '  <div><div style="font-size:10.5px; color:var(--muted);">Bill Total</div><div class="figure" style="font-size:12px; font-weight:600; color:var(--muted);">' + fmt(billAmt) + '</div></div>'
+        + '  <div><div style="font-size:10.5px; color:var(--muted);">Claimable</div><div class="figure" style="font-size:12px; font-weight:600; color:var(--ink);">' + fmt(claimable) + '</div></div>'
+        + '  <div style="text-align:right;"><div style="font-size:10.5px; color:var(--muted);">Pending</div><div class="figure" style="font-size:12.5px; font-weight:700; color:var(--rose);">' + fmt(pending) + '</div></div>'
+        + '</div>'
+        + '<button type="button" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')" class="btn-primary" style="width:100%; height:34px; font-size:12.5px;">Log Recovery</button>'
+        + '</div>';
+    }).join('');
+
+    claimsHtml = '<div class="cb-claims-table-wrap">'
       + '<table style="width:100%; border-collapse:collapse; text-align:left;">'
       + '<thead>'
       + '  <tr style="border-bottom:1px solid var(--line); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);">'
       + '    <th style="padding:8px 12px;">Date</th>'
-      + '    <th style="padding:8px 12px;">Note / Details</th>'
+      + '    <th style="padding:8px 12px;">Claim</th>'
       + '    <th style="padding:8px 12px;">Tag</th>'
       + '    <th style="padding:8px 12px; text-align:right;">Bill Total</th>'
       + '    <th style="padding:8px 12px; text-align:right;">Claimable</th>'
-      + '    <th style="padding:8px 12px; text-align:right;">Pending Balance</th>'
+      + '    <th style="padding:8px 12px; text-align:right;">Pending</th>'
+      + '    <th style="padding:8px 12px; text-align:center;">Status</th>'
       + '    <th style="padding:8px 12px; text-align:right;">Action</th>'
       + '  </tr>'
       + '</thead>'
       + '<tbody>' + claimsRows + '</tbody>'
       + '</table>'
-      + '</div>';
+      + '</div>'
+      + '<div class="cb-claims-mobile-list">' + mobileClaimCards + '</div>';
   }
 
-  var claimsSection = '<div class="card" style="padding:22px; margin-top:18px;">'
+  var claimsSection = '<div id="company-benefits-pending-claims-section" class="card" style="padding:22px; margin-top:18px;">'
     + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">'
     + '  <div>'
-    + '    <h3 class="section-title" style="margin:0 0 2px;">Pending Claims &amp; Reimbursements</h3>'
+    + '    <h3 class="section-title" style="margin:0 0 2px;">Reimbursements</h3>'
     + '  </div>'
     + '  <span class="badge ' + (openClaims.length ? 'badge-warn' : 'badge-ok') + '" style="font-size:11px;">'
-    +      openClaims.length + (openClaims.length === 1 ? ' Pending Claim' : ' Pending Claims')
+    +      openClaims.length + ' Open'
     + '  </span>'
     + '</div>'
     + claimsHtml
@@ -6592,9 +6808,7 @@ function renderAllowancesSettings(){
     + '  <div>'
     + '    <h2 class="section-title">Company Benefit</h2>'
     + '  </div>'
-    + '  <button onclick="openAddAllowanceModal()" class="btn-primary" style="height:34px; padding:0 14px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">'
-    + '    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Benefit'
-    + '  </button>'
+    + '  <button onclick="openAddAllowanceModal()" class="btn-primary" style="height:34px; padding:0 14px; font-size:13px;">Add Benefit</button>'
     + '</div>'
     + '<div style="display:flex; flex-direction:column; gap:0;">' + cardsHtml + '</div>'
     + '</div>'
@@ -9899,37 +10113,81 @@ let chartDashboardBudget = null;
 
 function renderDashboardClaimsAlert(){
   const chipWrap = document.getElementById('dash-claims-chip-wrap');
-  if(!chipWrap) return;
-
-  const pendingTxs = (DB.transactions || []).filter(t => t.isReimbursable && t.recoveryStatus !== 'settled');
-  const pendingTotal = pendingTxs.reduce((sum, t) => {
-    const claimable = parseFloat(t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount !== '' ? t.claimableAmount : t.amount) || 0;
-    const recovered = parseFloat(t.recoveredAmount) || 0;
-    return sum + Math.max(0, claimable - recovered);
-  }, 0);
-
-  if(pendingTxs.length === 0 || pendingTotal <= 0){
+  if(chipWrap){
     chipWrap.classList.add('hidden');
     chipWrap.innerHTML = '';
+  }
+
+  const cardEl = document.getElementById('dash-pending-claims-card');
+  if(!cardEl) return;
+
+  const pendingTxs = (DB.transactions || []).filter(t => t.isReimbursable && t.recoveryStatus !== 'settled');
+  const pendingItems = pendingTxs.map(t => {
+    const claimable = parseFloat(t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount !== '' ? t.claimableAmount : t.amount) || 0;
+    const recovered = parseFloat(t.recoveredAmount) || 0;
+    const remaining = Math.max(0, claimable - recovered);
+    const isPartial = (t.recoveryStatus === 'partial' || recovered > 0);
+    return { tx: t, remaining, isPartial };
+  }).filter(item => item.remaining > 0);
+
+  const pendingTotal = pendingItems.reduce((sum, item) => sum + item.remaining, 0);
+
+  if(pendingItems.length === 0 || pendingTotal <= 0){
+    cardEl.classList.add('hidden');
+    cardEl.innerHTML = '';
     return;
   }
 
-  chipWrap.classList.remove('hidden');
-  chipWrap.innerHTML = `
-    <button type="button" onclick="goToCompanyBenefitsClaims()" class="badge-chip" style="background:rgba(217,119,6,0.12); border:1px solid rgba(217,119,6,0.3); color:#D97706; font-size:12px; font-weight:700; padding:5px 12px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="View pending insurance recovery claims">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span>${fmt(pendingTotal)} Pending Claim${pendingTxs.length === 1 ? '' : 's'}</span>
-    </button>
+  cardEl.classList.remove('hidden');
+  cardEl.innerHTML = `
+    <div class="dash-card-head" style="margin-bottom:10px; min-height:36px;">
+      <div class="dash-card-head-copy">
+        <h2 class="section-title" style="margin:0; font-size:15px;">Reimbursements</h2>
+        <p class="section-sub" style="margin:2px 0 0;">Awaiting recovery</p>
+      </div>
+      <button type="button" onclick="goToCompanyBenefitsClaims()" class="btn-ghost btn-small" style="padding:5px 12px; font-size:11.5px;">Manage</button>
+    </div>
+    <div class="dash-card-kpi-row" style="margin-bottom:14px;">
+      <span class="dash-card-kpi-val" style="color:var(--amber);">${fmt(pendingTotal)}</span>
+      <span class="badge badge-warn dash-card-kpi-badge">${pendingItems.length} Open</span>
+    </div>
+    <div class="dash-claims-grid">
+      ${pendingItems.map(item => {
+        const t = item.tx;
+        const title = t.description ? escapeHtml(t.description) : escapeHtml(t.category || 'Claim');
+        const metaParts = [];
+        if(t.tag) metaParts.push(escapeHtml(t.tag));
+        else if(t.category && t.description) metaParts.push(escapeHtml(t.category));
+        if(t.date) metaParts.push(escapeHtml(formatTxDateDisplay(t.date)));
+        const statusPill = item.isPartial
+          ? '<span class="badge" style="font-size:10px; padding:2px 7px; margin-top:4px; background:var(--primary-light); color:var(--primary); font-weight:700;">Partial</span>'
+          : '<span class="badge badge-warn" style="font-size:10px; padding:2px 7px; margin-top:4px; font-weight:700;">Pending</span>';
+        return `
+          <div class="dash-claim-item" onclick="goToCompanyBenefitsClaims()">
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${title}">${title}</div>
+              <div style="font-size:11.5px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${metaParts.join(' · ')}</div>
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+              <div class="figure" style="font-size:13px; font-weight:700; color:var(--ink);">${fmt(item.remaining)}</div>
+              ${statusPill}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
   `;
 }
 
 function goToCompanyBenefitsClaims(){
-  setPage('settings');
+  goToApp('settings');
   setSettingsTab('allowances');
-  const claimsSection = document.getElementById('company-benefits-pending-claims-section');
-  if(claimsSection){
-    claimsSection.scrollIntoView({ behavior: 'smooth' });
-  }
+  setTimeout(function(){
+    const claimsSection = document.getElementById('company-benefits-pending-claims-section');
+    if(claimsSection){
+      claimsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 60);
 }
 
 function renderDashboard(){
@@ -9986,6 +10244,28 @@ function renderDashboard(){
   renderDashboardTrendChart(period);
 }
 
+function showDashVbarTip(e, html){
+  const tip = document.getElementById('dash-vbar-tooltip');
+  if(!tip) return;
+  tip.innerHTML = html;
+  tip.style.left = e.clientX + 'px';
+  tip.style.top = (e.clientY - 6) + 'px';
+  tip.classList.add('show');
+}
+function moveDashVbarTip(e){
+  const tip = document.getElementById('dash-vbar-tooltip');
+  if(!tip) return;
+  tip.style.left = e.clientX + 'px';
+  tip.style.top = (e.clientY - 6) + 'px';
+}
+function hideDashVbarTip(){
+  const tip = document.getElementById('dash-vbar-tooltip');
+  if(tip) tip.classList.remove('show');
+}
+function fmtPlainNum(n){
+  return Math.round(Number(n) || 0).toLocaleString();
+}
+
 function renderDashboardTopExpenses(periodTxs, totals){
   const container = document.getElementById('dashboard-top-expenses');
   const wrapEl = document.getElementById('wrap-chart-top-expenses');
@@ -9993,7 +10273,7 @@ function renderDashboardTopExpenses(periodTxs, totals){
   if(chartDashboardTopExpenses){ chartDashboardTopExpenses.destroy(); chartDashboardTopExpenses = null; }
   if(wrapEl) wrapEl.style.display = 'none';
 
-  const categories = expenseByCategory(periodTxs).slice(0, 3);
+  const categories = expenseByCategory(periodTxs).slice(0, 4);
   const totalExpense = totals.expense || 0;
   const totalIncome = totals.income || 0;
   const expRatio = totalIncome > 0 ? Math.min(100, Math.round((totalExpense / totalIncome) * 100)) : 0;
@@ -10017,7 +10297,8 @@ function renderDashboardTopExpenses(periodTxs, totals){
     return;
   }
 
-  const palette = ['#E11D48', '#D97706', '#7C3AED'];
+  const palette = ['#E11D48', '#D97706', '#7C3AED', '#0D9488'];
+  const maxAmt = Math.max(...categories.map(c => Number(c.amount) || 0), 1);
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
@@ -10025,32 +10306,50 @@ function renderDashboardTopExpenses(periodTxs, totals){
           <span class="dash-card-kpi-val" style="color:var(--rose);">${fmt(totalExpense)}</span>
           <span class="badge ${expRatio > 90 ? 'badge-over' : 'badge-off'} dash-card-kpi-badge">${expRatio > 0 ? expRatio + '% of Income' : 'Outflow'}</span>
         </div>
-        <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
-          <div style="width:${Math.min(100, expRatio)}%; height:100%; background:var(--rose); border-radius:999px;"></div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          ${categories.map((cat, idx) => {
-            const pct = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
-            const color = palette[idx % palette.length];
-            return `
-              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; margin-bottom:4px; gap:6px;">
-                  <span class="dash-card-item-name" style="flex:1; min-width:0;" title="${escapeHtml(cat.category)}">${escapeHtml(cat.category)}</span>
-                  <span class="figure" style="font-weight:700; color:var(--ink); font-size:11px; flex-shrink:0; white-space:nowrap;">${fmt(cat.amount)} <span style="font-weight:500; color:var(--muted); font-size:10px;">(${pct}%)</span></span>
+        <div class="dash-vbar-stage">
+          <div class="dash-vbar-group" id="dash-top-exp-bars">
+            ${categories.map((cat, idx) => {
+              const pct = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
+              const hPct = Math.max(14, Math.round(((Number(cat.amount) || 0) / maxAmt) * 100));
+              const color = palette[idx % palette.length];
+              return `
+                <div class="dash-vbar-col" data-vbar-idx="${idx}">
+                  <span class="dash-vbar-pct" style="color:var(--ink);">${pct}%</span>
+                  <div class="dash-vbar-slot">
+                    <div class="dash-vbar-bar" style="height:${hPct}%; background:${color};"></div>
+                  </div>
                 </div>
-                <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
-                  <div style="width:${pct}%; height:100%; background:${color}; border-radius:999px;"></div>
-                </div>
+              `;
+            }).join('')}
+          </div>
+          <div class="dash-vbar-labels">
+            ${categories.map(cat => `
+              <div class="dash-vbar-label-col">
+                <div class="dash-vbar-cat" title="${escapeHtml(cat.category)}">${escapeHtml(cat.category)}</div>
+                <div class="dash-vbar-num">${fmtPlainNum(cat.amount)}</div>
               </div>
-            `;
-          }).join('')}
+            `).join('')}
+          </div>
         </div>
       </div>
-      <div style="text-align:center; margin-top:10px;">
+      <div style="text-align:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--line-soft);">
         <button type="button" onclick="goToApp('reports')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">View Full Reports</button>
       </div>
     </div>
   `;
+
+  const barsWrap = document.getElementById('dash-top-exp-bars');
+  if(barsWrap){
+    barsWrap.querySelectorAll('.dash-vbar-col').forEach(col => {
+      const cat = categories[Number(col.dataset.vbarIdx)];
+      if(!cat) return;
+      const pct = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
+      const html = `<div style="font-weight:700;">${escapeHtml(cat.category)}</div><div class="figure">${fmt(cat.amount)} (${pct}%)</div>`;
+      col.addEventListener('mouseenter', e => showDashVbarTip(e, html));
+      col.addEventListener('mousemove', moveDashVbarTip);
+      col.addEventListener('mouseleave', hideDashVbarTip);
+    });
+  }
 }
 
 function renderDashboardBudgetSummary(period, totals){
@@ -10095,7 +10394,7 @@ function renderDashboardBudgetSummary(period, totals){
     ? `<span class="badge badge-over dash-card-kpi-badge">Over ${fmt(spent - budgeted)}</span>`
     : `<span class="badge badge-ok dash-card-kpi-badge">${fmt(remaining)} Left</span>`;
 
-  const topThree = categoryRows.slice(0, 3);
+  const topFour = categoryRows.slice(0, 4);
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
@@ -10103,38 +10402,65 @@ function renderDashboardBudgetSummary(period, totals){
           <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(spent)}</span>
           ${statusBadge}
         </div>
-        <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
-          <div style="width:${Math.min(100, percent)}%; height:100%; background:${isOver ? 'var(--rose)' : (percent >= 85 ? '#D97706' : 'var(--teal)')}; border-radius:999px; transition:width 0.4s ease;"></div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          ${topThree.map(c => {
-            const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
-            const cOver = c.spent > c.budgetAmount;
-            const cColor = cOver ? 'var(--rose)' : (cPct >= 85 ? '#D97706' : 'var(--teal)');
-            return `
-              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
-                  <span class="dash-card-item-name" style="flex:1;" title="${escapeHtml(c.category)}">${escapeHtml(c.category)}</span>
-                  <span class="figure" style="font-weight:700; color:${cColor}; font-size:11.5px; flex-shrink:0; white-space:nowrap;">${fmt(c.spent)} <span class="muted" style="font-weight:400; font-size:10.5px;">/ ${fmt(c.budgetAmount)}</span></span>
+        <div class="dash-vbar-stage">
+          <div class="dash-vbar-limit-line"></div>
+          <div class="dash-vbar-group" id="dash-budget-bars">
+            ${topFour.map((c, idx) => {
+              const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
+              const cappedPct = Math.min(100, cPct);
+              const cOver = c.spent > c.budgetAmount;
+              const cColor = cOver ? 'var(--rose)' : (cPct >= 85 ? '#D97706' : 'var(--teal)');
+              return `
+                <div class="dash-vbar-col" data-vbar-idx="${idx}">
+                  <span class="dash-vbar-pct" style="color:${cColor};">${cPct}%</span>
+                  <div class="dash-vbar-track">
+                    <div class="dash-vbar-fill" style="height:${c.spent > 0 ? Math.max(8, cappedPct) : 0}%; background:${cColor};"></div>
+                  </div>
                 </div>
-                <div class="progress-track" style="height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
-                  <div style="width:${Math.min(100, cPct)}%; height:100%; background:${cColor}; border-radius:999px;"></div>
+              `;
+            }).join('')}
+          </div>
+          <div class="dash-vbar-labels">
+            ${topFour.map(c => {
+              const cOver = c.spent > c.budgetAmount;
+              return `
+                <div class="dash-vbar-label-col">
+                  <div class="dash-vbar-cat" title="${escapeHtml(c.category)}">${escapeHtml(c.category)}</div>
+                  <div class="dash-vbar-num" style="color:${cOver ? 'var(--rose)' : 'var(--muted)'};">${fmtPlainNum(c.spent)}</div>
                 </div>
-              </div>
-            `;
-          }).join('')}
+              `;
+            }).join('')}
+          </div>
         </div>
       </div>
-      <div style="text-align:center; margin-top:10px;">
+      <div style="text-align:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--line-soft);">
         <button type="button" onclick="goToApp('budgets')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">Manage All Budgets</button>
       </div>
     </div>
   `;
+
+  const budBars = document.getElementById('dash-budget-bars');
+  if(budBars){
+    budBars.querySelectorAll('.dash-vbar-col').forEach(col => {
+      const c = topFour[Number(col.dataset.vbarIdx)];
+      if(!c) return;
+      const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
+      const diff = c.budgetAmount - c.spent;
+      const statusHtml = diff < 0
+        ? `<div style="font-size:11px; color:#FDA4AF; margin-top:2px;">Over by ${fmt(Math.abs(diff))}</div>`
+        : `<div style="font-size:11px; color:#5EEAD4; margin-top:2px;">${fmt(diff)} remaining</div>`;
+      const html = `<div style="font-weight:700;">${escapeHtml(c.category)} (${cPct}%)</div><div class="figure">${fmt(c.spent)} / ${fmt(c.budgetAmount)}</div>${statusHtml}`;
+      col.addEventListener('mouseenter', e => showDashVbarTip(e, html));
+      col.addEventListener('mousemove', moveDashVbarTip);
+      col.addEventListener('mouseleave', hideDashVbarTip);
+    });
+  }
 }
 
 function renderDashboardSavings(period, totals){
   const container = document.getElementById('dash-savings-body');
   if(!container) return;
+  const subEl = document.getElementById('dash-savings-sub');
 
   const monthlySaved = (totals && typeof totals.savings === 'number') ? totals.savings : 0;
   let filteredGoals = DB.savingsGoals || [];
@@ -10153,6 +10479,7 @@ function renderDashboardSavings(period, totals){
   const achievedCount = filteredGoals.filter(g => getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0)).length;
 
   if(!filteredGoals.length){
+    if(subEl) subEl.textContent = 'Goal progress';
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
         <div>
@@ -10171,13 +10498,24 @@ function renderDashboardSavings(period, totals){
     return;
   }
 
+  if(subEl){
+    const activeRemaining = Math.max(0, filteredGoals.length - achievedCount);
+    if(achievedCount > 0 && activeRemaining > 0){
+      subEl.textContent = `${achievedCount} Completed · ${activeRemaining} Active`;
+    } else if(achievedCount === filteredGoals.length){
+      subEl.textContent = `All ${filteredGoals.length} Completed`;
+    } else {
+      subEl.textContent = `${filteredGoals.length} Active Goal${filteredGoals.length === 1 ? '' : 's'}`;
+    }
+  }
+
   const topGoals = filteredGoals.slice(0, 3);
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
         <div class="dash-card-kpi-row">
           <span class="dash-card-kpi-val" style="color:var(--teal);">${fmt(monthlySaved)}</span>
-          <span class="badge ${achievedCount > 0 ? 'badge-ok' : 'badge-off'} dash-card-kpi-badge">${achievedCount} of ${filteredGoals.length} Met</span>
+          <span class="badge ${overallPct > 0 ? 'badge-ok' : 'badge-off'} dash-card-kpi-badge">${overallPct}% Funded</span>
         </div>
         <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-bottom:14px;">
           <div style="width:${overallPct}%; height:100%; background:var(--teal); border-radius:999px; transition:width 0.4s ease;"></div>
@@ -11457,7 +11795,7 @@ function renderTransactions(){
           <span class="tx-cat-name">${escapeHtml(t.category)}</span>
           ${catDeletedBadge}
           ${t.tag ? `<span class="badge" style="font-size:10px; font-weight:600; padding:1px 6px; background:rgba(99,102,241,0.08); color:var(--primary); border:1px solid rgba(99,102,241,0.2);">${escapeHtml(t.tag)}</span>` : ''}
-          ${t.isReimbursable ? (t.recoveryStatus === 'settled' ? `<span class="badge badge-ok" style="font-size:10px; padding:1px 6px;">Reimbursed</span>` : `<span class="badge badge-warn" style="font-size:10px; padding:1px 6px; cursor:pointer;" onclick="goToCompanyBenefitsClaims()" title="Pending reimbursement claim">Pending Claim</span>`) : ''}
+          ${t.isReimbursable ? (t.recoveryStatus === 'settled' ? `<span class="badge badge-ok" style="font-size:10px; padding:1px 6px;">Reimbursed</span>` : (t.recoveryStatus === 'partial' || (parseFloat(t.recoveredAmount) || 0) > 0 ? `<span class="badge" style="font-size:10px; padding:1px 6px; cursor:pointer; background:var(--primary-light); color:var(--primary);" onclick="goToCompanyBenefitsClaims()" title="Partial reimbursement claim">Partial Claim</span>` : `<span class="badge badge-warn" style="font-size:10px; padding:1px 6px; cursor:pointer;" onclick="goToCompanyBenefitsClaims()" title="Pending reimbursement claim">Pending Claim</span>`)) : ''}
         </div>
       </td>
       ${subcatCell}
@@ -11909,6 +12247,62 @@ function onTxTagChange(){
 }
 
 /* ---------------- Reimbursement Log Recovery Workflow ---------------- */
+let _recoveryActiveTx = null;
+let _recoveryRemainingAmt = 0;
+let _recoveryMode = 'full';
+
+function formatRecoveryMonthLabel(dateStr){
+  if(!dateStr || typeof dateStr !== 'string') return '';
+  const parts = dateStr.split('-');
+  if(parts.length < 2) return dateStr;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if(isNaN(y) || isNaN(m) || m < 1 || m > 12) return dateStr;
+  return MONTH_NAMES[m - 1] + ' ' + y;
+}
+
+function updateRecoveryIncomeTargetOptions(){
+  const sel = document.getElementById('recovery-income-target');
+  if(!sel || !_recoveryActiveTx) return;
+  const prevVal = sel.value || 'received';
+  const recDate = document.getElementById('recovery-date')?.value || ymd(new Date());
+  const recLabel = formatRecoveryMonthLabel(recDate);
+  const origLabel = formatRecoveryMonthLabel(_recoveryActiveTx.date || recDate);
+  sel.innerHTML = `
+    <option value="received">Date Received Month${recLabel ? ' (' + escapeHtml(recLabel) + ')' : ''}</option>
+    <option value="original">Original Bill Month${origLabel ? ' (' + escapeHtml(origLabel) + ')' : ''}</option>
+  `;
+  sel.value = (prevVal === 'original' || prevVal === 'received') ? prevVal : 'received';
+}
+
+function setRecoveryMode(mode){
+  _recoveryMode = (mode === 'partial') ? 'partial' : 'full';
+  const fullBtn = document.getElementById('recovery-mode-full');
+  const partialBtn = document.getElementById('recovery-mode-partial');
+  if(fullBtn) fullBtn.classList.toggle('active', _recoveryMode === 'full');
+  if(partialBtn) partialBtn.classList.toggle('active', _recoveryMode === 'partial');
+
+  const amtEl = document.getElementById('recovery-amount');
+  if(amtEl){
+    if(_recoveryMode === 'full'){
+      amtEl.value = _recoveryRemainingAmt;
+    } else {
+      amtEl.focus();
+      amtEl.select();
+    }
+  }
+}
+
+function onRecoveryAmountInput(){
+  const amt = parseFloat(document.getElementById('recovery-amount')?.value);
+  const isFull = !isNaN(amt) && amt >= _recoveryRemainingAmt && _recoveryRemainingAmt > 0;
+  _recoveryMode = isFull ? 'full' : 'partial';
+  const fullBtn = document.getElementById('recovery-mode-full');
+  const partialBtn = document.getElementById('recovery-mode-partial');
+  if(fullBtn) fullBtn.classList.toggle('active', _recoveryMode === 'full');
+  if(partialBtn) partialBtn.classList.toggle('active', _recoveryMode === 'partial');
+}
+
 function openLogRecoveryModal(txId){
   const tx = (DB.transactions || []).find(t => t.id === txId);
   if(!tx) return;
@@ -11917,30 +12311,39 @@ function openLogRecoveryModal(txId){
   const recovered = parseFloat(tx.recoveredAmount) || 0;
   const remaining = Math.max(0, claimable - recovered);
 
+  _recoveryActiveTx = tx;
+  _recoveryRemainingAmt = remaining > 0 ? remaining : claimable;
+
   document.getElementById('recovery-tx-id').value = tx.id;
-  document.getElementById('recovery-amount').value = remaining > 0 ? remaining : claimable;
+  document.getElementById('recovery-amount').value = _recoveryRemainingAmt;
   document.getElementById('recovery-date').value = ymd(new Date());
   document.getElementById('recovery-note').value = '';
+
+  const amtLabel = document.getElementById('recovery-amount-label');
+  if(amtLabel) amtLabel.textContent = 'Amount Recovered (' + currencySymbol() + ')';
+
+  setRecoveryMode('full');
+  updateRecoveryIncomeTargetOptions();
 
   const summaryEl = document.getElementById('recovery-claim-summary');
   if(summaryEl){
     summaryEl.innerHTML = `
       <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-        <span class="muted">Original Bill (${escapeHtml(tx.date || '')}):</span>
-        <strong>${fmt(tx.amount || 0)}</strong>
+        <span class="muted">Original Bill (${escapeHtml(tx.date || '')})</span>
+        <strong class="figure">${fmt(tx.amount || 0)}</strong>
       </div>
       <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-        <span class="muted">Claimable Tag / Portion:</span>
-        <span style="font-weight:600; color:var(--teal);">${escapeHtml(tx.tag || 'Claim')} &bull; ${fmt(claimable)}</span>
+        <span class="muted">Claimable (${escapeHtml(tx.tag || 'Claim')})</span>
+        <span class="figure" style="font-weight:600; color:var(--teal);">${fmt(claimable)}</span>
       </div>
       ${recovered > 0 ? `
       <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--muted);">
-        <span>Already Recovered:</span>
-        <span>${fmt(recovered)}</span>
+        <span>Already Recovered</span>
+        <span class="figure">${fmt(recovered)}</span>
       </div>` : ''}
-      <div style="display:flex; justify-content:space-between; padding-top:4px; border-top:1px solid var(--line-soft);">
-        <span class="muted">Pending Claim Balance:</span>
-        <strong style="color:var(--amber);">${fmt(remaining)}</strong>
+      <div style="display:flex; justify-content:space-between; padding-top:6px; margin-top:4px; border-top:1px solid var(--line-soft);">
+        <span class="muted">Pending Balance</span>
+        <strong class="figure" style="color:var(--amber);">${fmt(remaining)}</strong>
       </div>
     `;
   }
@@ -11954,13 +12357,14 @@ function closeLogRecoveryModal(){
   if(backdrop) backdrop.classList.add('hidden');
 }
 
-function handleConfirmRecovery(e){
-  e.preventDefault();
+function handleConfirmRecovery(e, addToIncome = true){
+  if(e && typeof e.preventDefault === 'function') e.preventDefault();
   const txId = document.getElementById('recovery-tx-id').value;
   const amt = parseFloat(document.getElementById('recovery-amount').value);
   const recDate = document.getElementById('recovery-date').value || ymd(new Date());
   const recAccount = document.getElementById('recovery-account').value || 'Bank Account';
   const recNote = document.getElementById('recovery-note').value.trim();
+  const incomeTarget = document.getElementById('recovery-income-target')?.value || 'received';
 
   if(isNaN(amt) || amt <= 0){
     showToast('Please enter a valid recovery amount', 'error');
@@ -11977,27 +12381,33 @@ function handleConfirmRecovery(e){
   const claimable = parseFloat(origTx.claimableAmount !== undefined && origTx.claimableAmount !== null && origTx.claimableAmount !== '' ? origTx.claimableAmount : origTx.amount) || 0;
   const prevRecovered = parseFloat(origTx.recoveredAmount) || 0;
   const newRecovered = prevRecovered + amt;
+  const newStatus = newRecovered >= claimable ? 'settled' : 'partial';
+  const appliedDate = (incomeTarget === 'original' && origTx.date) ? origTx.date : recDate;
 
-  // 1. Create matching Income transaction
-  const incTx = {
-    id: uid(),
-    date: recDate,
-    type: 'income',
-    category: 'Insurance Claim Recovery',
-    amount: amt,
-    paymentMethod: recAccount,
-    description: 'Reimbursement: ' + (origTx.category || 'Medical') + (origTx.tag ? ' [' + origTx.tag + ']' : '') + (recNote ? ' - ' + recNote : ''),
-    linkedExpenseId: origTx.id,
-    createdAt: new Date().toISOString()
-  };
-  DB.transactions.unshift(incTx);
+  // 1. Optional linked Income transaction in selected month
+  if(addToIncome){
+    const incTx = {
+      id: uid(),
+      date: appliedDate,
+      type: 'income',
+      category: 'Insurance Claim Recovery',
+      amount: amt,
+      paymentMethod: recAccount,
+      description: 'Reimbursement: ' + (origTx.category || 'Claim') + (origTx.tag ? ' [' + origTx.tag + ']' : '') + (recNote ? ' - ' + recNote : ''),
+      linkedExpenseId: origTx.id,
+      createdAt: new Date().toISOString()
+    };
+    DB.transactions.unshift(incTx);
+  }
 
-  // 2. Update original expense transaction status
+  // 2. Sync recovered balance & status directly back to original expense transaction
   origTx.recoveredAmount = newRecovered;
-  origTx.recoveryStatus = newRecovered >= claimable ? 'settled' : 'partial';
+  origTx.recoveryStatus = newStatus;
   origTx.recoveryNotes = Array.isArray(origTx.recoveryNotes) ? origTx.recoveryNotes : [];
   origTx.recoveryNotes.push({
     date: recDate,
+    appliedIncomeDate: addToIncome ? appliedDate : null,
+    addedToIncome: Boolean(addToIncome),
     amount: amt,
     account: recAccount,
     note: recNote
@@ -12006,7 +12416,14 @@ function handleConfirmRecovery(e){
   saveDB(true);
   closeLogRecoveryModal();
   renderAllForCurrentPage();
-  showToast(`Reimbursement recorded! ${fmt(amt)} added to Income and ${recAccount}.`, 'success');
+
+  const statusText = newStatus === 'settled' ? 'Settled' : 'Partial';
+  if(addToIncome){
+    const mLabel = formatRecoveryMonthLabel(appliedDate);
+    showToast(`Recovery (${statusText}) logged and ${fmt(amt)} added to ${mLabel || 'Income'}.`, 'success');
+  } else {
+    showToast(`Recovery (${statusText}) confirmed. Pending balance updated.`, 'success');
+  }
 }
 
 
@@ -16416,7 +16833,7 @@ function renderSettingsTabs(){
   if(topbarSub){
     const subTitles = {
       'categories': 'Organize your income, expense, and savings categories.',
-      'allowances': 'Manage company benefits, quotas, and pending claims.',
+      'allowances': 'Manage company benefits, quotas, and reimbursements.',
       'payment-methods': 'Active payment methods for transactions.',
       'rules': 'Financial health warning signs and short transaction tags.',
       'system': 'Account profile, alerts, backup, and recovery.'
@@ -20312,31 +20729,31 @@ function dispatchDesktopNotification(title, options){
 
 <!-- Log Recovery Modal (Reimbursement Settlement) -->
 <div id="log-recovery-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeLogRecoveryModal()">
-  <div class="modal" style="max-width:420px;">
-    <button class="modal-close" onclick="closeLogRecoveryModal()">✕</button>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-      <div style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      </div>
-      <div>
-        <h2 style="margin:0; font-size:18px;">Log Reimbursement Recovery</h2>
-      </div>
+  <div class="modal" style="max-width:430px;">
+    <button class="modal-close" onclick="closeLogRecoveryModal()" aria-label="Close">✕</button>
+    <div style="margin-bottom:14px;">
+      <h2 style="margin:0; font-size:18px;">Log Recovery</h2>
     </div>
-    
-    <div id="recovery-claim-summary" style="background:var(--surface-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px;"></div>
 
-    <form onsubmit="handleConfirmRecovery(event)">
+    <div id="recovery-claim-summary" style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px;"></div>
+
+    <form id="log-recovery-form" onsubmit="handleConfirmRecovery(event, true)">
       <input type="hidden" id="recovery-tx-id">
-      
+
+      <div class="recovery-mode-pills">
+        <button type="button" id="recovery-mode-full" class="recovery-mode-pill active" onclick="setRecoveryMode('full')">Full Recovery</button>
+        <button type="button" id="recovery-mode-partial" class="recovery-mode-pill" onclick="setRecoveryMode('partial')">Partial Recovery</button>
+      </div>
+
       <div style="margin-bottom:12px;">
-        <label class="field-label" for="recovery-amount">Amount Recovered (PKR) <span style="color:var(--rose);">*</span></label>
-        <input type="number" min="0" step="any" id="recovery-amount" class="field-input figure" required>
+        <label class="field-label" for="recovery-amount" id="recovery-amount-label">Amount Recovered</label>
+        <input type="number" min="0" step="any" id="recovery-amount" class="field-input figure" oninput="onRecoveryAmountInput()" required>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
           <label class="field-label" for="recovery-date">Date Received</label>
-          <input type="date" id="recovery-date" class="field-input" required>
+          <input type="date" id="recovery-date" class="field-input" onchange="updateRecoveryIncomeTargetOptions()" required>
         </div>
         <div>
           <label class="field-label" for="recovery-account">Deposit Account</label>
@@ -20348,15 +20765,28 @@ function dispatchDesktopNotification(title, options){
         </div>
       </div>
 
-      <div style="margin-bottom:16px;">
-        <label class="field-label" for="recovery-note">Short Note</label>
-        <input type="text" id="recovery-note" placeholder="Recovery note" class="field-input" autocomplete="off">
+      <div style="margin-bottom:12px;">
+        <label class="field-label" for="recovery-income-target">Apply Income To</label>
+        <select id="recovery-income-target" class="field-input">
+          <option value="received">Date Received Month</option>
+          <option value="original">Original Bill Month</option>
+        </select>
       </div>
 
-      <button type="submit" class="btn-primary" style="width:100%; height:38px; font-weight:700;">Confirm Recovery &amp; Add to Income</button>
+      <div style="margin-bottom:16px;">
+        <label class="field-label" for="recovery-note">Short Note</label>
+        <input type="text" id="recovery-note" class="field-input" autocomplete="off">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <button type="button" class="btn-ghost" style="height:38px; font-weight:700; padding:0 12px; font-size:13px;" onclick="handleConfirmRecovery(null, false)">Confirm Recovery</button>
+        <button type="submit" class="btn-primary" style="height:38px; font-weight:700; padding:0 12px; font-size:13px;">Add to Income</button>
+      </div>
     </form>
   </div>
 </div>
+
+<div id="dash-vbar-tooltip" class="dash-vbar-tooltip"></div>
 
 </body>
 </html>
