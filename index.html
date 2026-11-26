@@ -7689,9 +7689,13 @@ function reportYearOptions(){
   return [...years].sort((a,b)=>a-b);
 }
 
-function yearSelectOptions(selected){
+function periodSelectOptions(selected){
+  return MONTH_NAMES.map((name, i) => `<option value="${i + 1}" ${i + 1 === selected ? 'selected' : ''}>${name}</option>`).join('');
+}
+
+function yearSelectOptions(selected, includeAll = false){
   return reportYearOptions().map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}</option>`).join('') +
-    `<option value="ALL" ${selected==='ALL'?'selected':''}>All Years</option>`;
+    (includeAll ? `<option value="ALL" ${selected==='ALL'?'selected':''}>All Years</option>` : '');
 }
 
 function monthFilterOptions(selected){
@@ -7707,7 +7711,7 @@ function initReportSelectors(){
   if(reportSelMonth === undefined) reportSelMonth = currentMonth;
 
   const yearSel = document.getElementById('report-year-select');
-  if(yearSel) yearSel.innerHTML = yearSelectOptions(reportSelYear);
+  if(yearSel) yearSel.innerHTML = yearSelectOptions(reportSelYear, true);
 
   const monthSel = document.getElementById('report-month-select');
   const isAllYears = reportSelYear === 'ALL';
