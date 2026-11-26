@@ -1633,30 +1633,31 @@
   .rep-sub-tabs {
     display: inline-flex;
     align-items: center;
-    background: var(--surface-2);
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 10px;
-    padding: 3px;
-    gap: 2px;
+    padding: 4px;
+    gap: 3px;
     flex-wrap: wrap;
   }
   .rep-sub-tab {
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
     color: var(--muted);
     font-family: var(--font-display);
     font-size: 12.5px;
-    font-weight: 700;
-    padding: 7px 14px;
-    border-radius: 8px;
-    transition: all 0.15s ease;
+    font-weight: 600;
+    padding: 6px 13px;
+    border-radius: 7px;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     white-space: nowrap;
   }
-  .rep-sub-tab:hover { color: var(--ink); }
+  .rep-sub-tab:hover { background: var(--surface-2); color: var(--ink); }
   .rep-sub-tab.active {
-    background: var(--ink);
-    color: var(--surface);
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
+    background: var(--line-soft);
+    color: var(--ink);
+    border-color: var(--line);
+    font-weight: 600;
   }
   .rep-filters {
     display: flex;
@@ -1670,8 +1671,9 @@
     border-radius: var(--radius-sm);
     padding: 0 12px;
     height: 36px;
+    font-family: var(--font-display);
     font-size: 12.5px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--ink);
     outline: none;
   }
@@ -1684,8 +1686,9 @@
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--ink);
+    font-family: var(--font-display);
     font-size: 12.5px;
-    font-weight: 700;
+    font-weight: 600;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1716,8 +1719,9 @@
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--ink);
+    font-family: var(--font-display);
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 600;
     text-align: center;
     transition: all 0.12s ease;
   }
@@ -1742,7 +1746,7 @@
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 18px;
+    padding: 18px 20px;
     box-shadow: var(--shadow-sm);
     min-width: 0;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
@@ -1761,23 +1765,26 @@
     margin-bottom: 10px;
   }
   .rep-kpi-label {
+    font-family: var(--font-display);
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0;
     color: var(--muted);
   }
   .rep-kpi-val {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
-    margin: 0 0 6px;
+    margin: 0 0 8px;
     color: var(--ink);
   }
   .rep-kpi-sub {
+    font-family: var(--font-display);
     font-size: 11.5px;
+    font-weight: 500;
     color: var(--muted);
     white-space: nowrap;
     overflow: hidden;
@@ -1788,7 +1795,7 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     box-shadow: var(--shadow-sm);
-    padding: 20px;
+    padding: 22px;
     min-width: 0;
   }
   .rep-card-head {
@@ -1803,13 +1810,15 @@
     margin: 0;
     font-family: var(--font-display);
     font-size: 15.5px;
-    font-weight: 800;
+    font-weight: 700;
+    line-height: 1.25;
     color: var(--ink);
-    letter-spacing: -0.015em;
   }
   .rep-card-sub {
     margin: 2px 0 0;
+    font-family: var(--font-display);
     font-size: 12px;
+    font-weight: 400;
     color: var(--muted);
   }
   .rep-vbar-stage {
@@ -1922,23 +1931,25 @@
   .rep-row-item.clickable:hover strong { color: var(--primary); }
   .rep-progress-track { height: 6px; border-radius: 999px; background: var(--line-soft); overflow: hidden; margin-top: 6px; }
   .rep-progress-fill { height: 100%; border-radius: 999px; }
-  .rep-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  .rep-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .rep-table { width: 100%; border-collapse: collapse; font-family: var(--font-display); font-size: 13px; }
+  .rep-table th { text-align: left; font-family: var(--font-display); font-size: 11.5px; font-weight: 600; text-transform: capitalize; letter-spacing: 0; color: var(--muted); padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   .rep-table td { padding: 11px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+  .rep-table td strong, .rep-row-item strong { font-weight: 600; color: var(--ink); }
   .rep-table tr.expandable { cursor: pointer; transition: background 0.12s ease; }
   .rep-table tr.expandable:hover { background: var(--surface-2); }
   .rep-table tr.rep-sub-row td { background: var(--surface-2); font-size: 12px; color: var(--muted); padding: 8px 10px 8px 26px; }
   .rep-table tr.rep-sub-row.clickable { cursor: pointer; }
   .rep-table tr.rep-sub-row.clickable:hover td { color: var(--primary); }
-  .rep-num { font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-  .rep-mode-pills { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; flex-wrap: wrap; }
-  .rep-mode-pill { border: none; background: transparent; padding: 6px 13px; border-radius: 7px; font-size: 12px; font-weight: 700; color: var(--muted); transition: all 0.12s ease; }
-  .rep-mode-pill.active { background: var(--primary); color: #FFFFFF; }
-  .rep-compare-panel { padding: 14px 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .rep-num { font-family: var(--font-display); font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .rep-mode-pills { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+  .rep-mode-pill { border: 1px solid transparent; background: transparent; padding: 6px 12px; border-radius: 6px; font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.12s ease; }
+  .rep-mode-pill:hover { background: var(--surface-2); color: var(--ink); }
+  .rep-mode-pill.active { background: var(--line-soft); border-color: var(--line); color: var(--ink); }
+  .rep-compare-panel { padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
   .rep-compare-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-  .rep-item-chip { padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 12px; font-weight: 700; color: var(--muted); transition: all 0.12s ease; }
+  .rep-item-chip { padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.12s ease; }
   .rep-item-chip:hover { border-color: var(--muted-2); color: var(--ink); }
-  .rep-item-chip.active { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+  .rep-item-chip.active { background: var(--line-soft); border-color: var(--muted-2); color: var(--ink); }
   .rep-mod-check { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; background: var(--surface); color: var(--ink); }
   .rep-mod-check.checked { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
   @media(max-width: 1024px){
@@ -2462,7 +2473,7 @@
     <!-- ---- REPORTS ---- -->
     <section id="page-reports" class="page hidden">
       <div class="topbar">
-        <div><h1>Reports</h1><p>Financial statements, variance breakdowns, and cross-period analysis.</p></div>
+        <div><h1>Reports</h1><p id="reports-page-subtitle">Summary across cash flow, budgets, savings, and investments.</p></div>
         <div style="display:flex; align-items:center; gap:10px;">
           <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -8462,6 +8473,15 @@ function initReportSelectors(){
   document.querySelectorAll('#report-sub-tabs .rep-sub-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.rtab === reportActiveTab);
   });
+  const subMap = {
+    overview: 'Summary across cash flow, budgets, savings, and investments.',
+    cashflow: 'Cash flow breakdown and income sources.',
+    budgets: 'Budget variance, cross-period, and category breakdown.',
+    investments: 'Portfolio valuation, holdings, and return breakdown.',
+    savings: 'Savings goal funding, progress, and timelines.'
+  };
+  const subEl = document.getElementById('reports-page-subtitle');
+  if(subEl) subEl.textContent = subMap[reportActiveTab] || subMap.overview;
   const dlWrap = document.getElementById('report-download-wrap');
   if(dlWrap) dlWrap.style.display = (reportActiveTab === 'overview') ? 'inline-block' : 'none';
 }
@@ -8919,7 +8939,7 @@ function renderReportOverviewTab(ws, agg){
             <div class="rep-row-item">
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; gap:8px;">
                 <strong>${escapeHtml(r.category)}</strong>
-                <span style="font-family:var(--font-display); font-weight:700; color:${col}; white-space:nowrap;">${fmt(r.actual)} <span class="muted" style="font-weight:500;">/ ${fmtPlainNum(r.budget)}</span></span>
+                <span class="figure" style="font-weight:600; color:${col}; white-space:nowrap;">${fmt(r.actual)} <span class="muted" style="font-weight:400;">/ ${fmtPlainNum(r.budget)}</span></span>
               </div>
               <div class="rep-progress-track"><div class="rep-progress-fill" style="width:${Math.min(100, r.pct)}%; background:${col};"></div></div>
             </div>
@@ -8940,7 +8960,7 @@ function renderReportOverviewTab(ws, agg){
             <div class="rep-row-item">
               <div style="display:flex; justify-content:space-between; font-size:12.5px; gap:8px;">
                 <strong>${escapeHtml(g.name)}</strong>
-                <span style="font-family:var(--font-display); font-weight:700; color:var(--teal); white-space:nowrap;">${fmt(saved)} <span class="muted" style="font-weight:500;">/ ${fmtPlainNum(tgt)}</span></span>
+                <span class="figure" style="font-weight:600; color:var(--teal); white-space:nowrap;">${fmt(saved)} <span class="muted" style="font-weight:400;">/ ${fmtPlainNum(tgt)}</span></span>
               </div>
               <div class="rep-progress-track"><div class="rep-progress-fill" style="width:${p}%; background:${p>=100?'var(--teal)':'var(--primary)'};"></div></div>
             </div>
@@ -8964,7 +8984,7 @@ function renderReportOverviewTab(ws, agg){
             <div class="rep-row-item">
               <div style="display:flex; justify-content:space-between; font-size:12.5px; gap:8px;">
                 <div><strong>${escapeHtml(inv.name)}</strong> <span class="muted" style="font-size:11px;">· ${escapeHtml(meta.label || inv.assetType || 'Asset')}</span></div>
-                <span style="font-family:var(--font-display); font-weight:700; white-space:nowrap;">${fmt(v)} <span style="color:${g>=0?'var(--teal)':'var(--rose)'}; font-size:11.5px;">(${g>=0?'+':''}${r}%)</span></span>
+                <span class="figure" style="font-weight:600; white-space:nowrap;">${fmt(v)} <span style="color:${g>=0?'var(--teal)':'var(--rose)'}; font-size:11.5px;">(${g>=0?'+':''}${r}%)</span></span>
               </div>
               <div class="rep-progress-track"><div class="rep-progress-fill" style="width:${share}%; background:var(--primary);"></div></div>
             </div>
@@ -8977,9 +8997,9 @@ function renderReportOverviewTab(ws, agg){
       <div class="rep-card" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
         <div><h2 class="rep-card-title">Reimbursements</h2><p class="rep-card-sub">${escapeHtml(agg.periodLabel)}</p></div>
         <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
-          <div><div class="rep-kpi-label">Claimable</div><div style="font-family:var(--font-display); font-size:16px; font-weight:800;">${fmt(agg.claimable)}</div></div>
-          <div><div class="rep-kpi-label">Recovered</div><div style="font-family:var(--font-display); font-size:16px; font-weight:800; color:var(--teal);">${fmt(agg.recovered)}</div></div>
-          <div><div class="rep-kpi-label">Pending</div><div style="font-family:var(--font-display); font-size:16px; font-weight:800; color:#D97706;">${fmt(agg.pending)}</div></div>
+          <div><div class="rep-kpi-label">Claimable</div><div class="figure" style="font-size:16px; font-weight:600; color:var(--ink);">${fmt(agg.claimable)}</div></div>
+          <div><div class="rep-kpi-label">Recovered</div><div class="figure" style="font-size:16px; font-weight:600; color:var(--teal);">${fmt(agg.recovered)}</div></div>
+          <div><div class="rep-kpi-label">Pending</div><div class="figure" style="font-size:16px; font-weight:600; color:#D97706;">${fmt(agg.pending)}</div></div>
           <button type="button" class="btn-ghost btn-small" onclick="goToCompanyBenefitsClaims()">Manage</button>
         </div>
       </div>
@@ -9077,7 +9097,7 @@ function renderReportCashFlowTab(ws, agg){
             <div class="rep-row-item clickable" onclick="openTransactionsForReportFilter('income', '${src.replace(/'/g,"\\'")}')">
               <div style="display:flex; justify-content:space-between; font-size:12.5px; gap:8px;">
                 <strong>${escapeHtml(src)}</strong>
-                <span style="font-family:var(--font-display); font-weight:700; color:var(--teal); white-space:nowrap;">${fmt(amt)} <span class="muted" style="font-weight:500;">(${pct}%)</span></span>
+                <span class="figure" style="font-weight:600; color:var(--teal); white-space:nowrap;">${fmt(amt)} <span class="muted" style="font-weight:400;">(${pct}%)</span></span>
               </div>
               <div class="rep-progress-track"><div class="rep-progress-fill" style="width:${pct}%; background:var(--teal);"></div></div>
             </div>
@@ -9096,7 +9116,7 @@ function renderReportCashFlowTab(ws, agg){
             <div class="rep-row-item clickable" onclick="openTransactionsForReportFilter('expense', '${cat.replace(/'/g,"\\'")}')">
               <div style="display:flex; justify-content:space-between; font-size:12.5px; gap:8px;">
                 <strong>${escapeHtml(cat)}</strong>
-                <span style="font-family:var(--font-display); font-weight:700; white-space:nowrap;">${fmt(amt)} <span class="muted" style="font-weight:500;">(${pct}%)</span></span>
+                <span class="figure" style="font-weight:600; white-space:nowrap;">${fmt(amt)} <span class="muted" style="font-weight:400;">(${pct}%)</span></span>
               </div>
               <div class="rep-progress-track"><div class="rep-progress-fill" style="width:${pct}%; background:var(--rose);"></div></div>
             </div>
