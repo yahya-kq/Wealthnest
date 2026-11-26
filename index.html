@@ -1439,24 +1439,15 @@
   /* --- Dashboard Vertical Bar Graphs & Reimbursements Card --- */
   .dash-vbar-stage {
     position: relative;
-    padding-top: 4px;
-  }
-  .dash-vbar-limit-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 30px;
-    border-top: 1px dashed #CBD5E1;
-    pointer-events: none;
+    padding-top: 6px;
   }
   .dash-vbar-group {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 14px;
-    height: 168px;
-    padding: 22px 6px 0;
-    border-bottom: 1px solid var(--line);
+    gap: 10px;
+    height: 144px;
+    padding: 4px 4px 0;
     position: relative;
     z-index: 1;
   }
@@ -1476,48 +1467,24 @@
   .dash-vbar-pct {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     line-height: 1;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     white-space: nowrap;
   }
-  .dash-vbar-slot {
-    width: 100%;
-    max-width: 44px;
-    height: 116px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
   .dash-vbar-bar {
-    width: 100%;
-    border-radius: 8px 8px 0 0;
-    transition: height 0.3s ease;
-  }
-  .dash-vbar-track {
-    width: 100%;
-    max-width: 44px;
-    height: 116px;
-    border-radius: 8px 8px 4px 4px;
-    background: var(--line-soft);
-    border: 1px solid var(--line);
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-    padding: 2px;
-  }
-  .dash-vbar-fill {
-    width: 100%;
-    border-radius: 5px;
+    width: 24px;
+    max-width: 100%;
+    border-radius: 6px 6px 3px 3px;
     transition: height 0.3s ease;
   }
   .dash-vbar-labels {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 10px;
-    padding: 9px 6px 0;
+    gap: 8px;
+    padding: 8px 4px 0;
   }
   .dash-vbar-label-col {
     flex: 1;
@@ -1525,20 +1492,54 @@
     text-align: center;
   }
   .dash-vbar-cat {
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--ink);
-    white-space: nowrap;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
   }
   .dash-vbar-num {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 11px;
+    font-size: 10.5px;
     color: var(--muted);
-    margin-top: 2px;
+    margin-top: 3px;
     white-space: nowrap;
+  }
+  @media(max-width: 640px){
+    .dash-vbar-group { gap: 6px; }
+    .dash-vbar-bar { width: 18px; }
+    .dash-vbar-labels { gap: 4px; }
+    .dash-vbar-cat { font-size: 10px; }
+    .dash-vbar-num { font-size: 9.5px; }
+  }
+  #edit-tag-modal-backdrop,
+  #quick-subcat-modal-backdrop { z-index: 2200 !important; }
+  .tag-color-swatches {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .tag-color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+    padding: 0;
+  }
+  .tag-color-swatch:hover { transform: scale(1.1); }
+  .tag-color-swatch.active {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink);
+    transform: scale(1.06);
   }
   .dash-vbar-tooltip {
     position: fixed;
@@ -6767,7 +6768,7 @@ function renderAllowancesSettings(){
         : (isPartial
           ? '<span class="badge" style="font-size:11px; font-weight:700; background:var(--primary-light); color:var(--primary);">Partial</span>'
           : '<span class="badge badge-warn" style="font-size:11px; font-weight:700;">Pending</span>');
-      var tagBadge = t.tag ? '<span class="badge" style="font-size:11px; font-weight:600; background:rgba(99,102,241,0.1); color:var(--primary);">' + escapeHtml(t.tag) + '</span>' : '<span style="color:var(--muted-2); font-size:12px;">-</span>';
+      var tagBadge = t.tag ? renderTagBadgeHtml(t.tag) : '<span style="color:var(--muted-2); font-size:12px;">-</span>';
       var claimTitle = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
       var destTxt = getDestSummary(t);
       var actionBtns = '';
@@ -6805,7 +6806,7 @@ function renderAllowancesSettings(){
         : (isPartial
           ? '<span class="badge" style="font-size:10.5px; font-weight:700; background:var(--primary-light); color:var(--primary);">Partial</span>'
           : '<span class="badge badge-warn" style="font-size:10.5px; font-weight:700;">Pending</span>');
-      var tagBadge = t.tag ? '<span class="badge" style="font-size:10.5px; font-weight:600; background:rgba(99,102,241,0.1); color:var(--primary);">' + escapeHtml(t.tag) + '</span>' : '';
+      var tagBadge = t.tag ? renderTagBadgeHtml(t.tag, '10.5px') : '';
       var claimTitle = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
       var destTxt = getDestSummary(t);
 
@@ -10164,6 +10165,31 @@ let chartDashboardTopExpenses = null;
 let chartDashboardBudget = null;
 
 
+function getTagMeta(tagName){
+  if(!tagName) return null;
+  const list = (Array.isArray(DB.tags) && DB.tags.length) ? DB.tags : DEFAULT_TAGS;
+  return list.find(t => t && t.name && t.name.toLowerCase() === String(tagName).toLowerCase()) || null;
+}
+
+function hexToRgba(hex, alpha){
+  const clean = String(hex || '#0D9488').replace('#', '').trim();
+  const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+  if(full.length !== 6) return `rgba(13,148,136,${alpha})`;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  if(isNaN(r) || isNaN(g) || isNaN(b)) return `rgba(13,148,136,${alpha})`;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function renderTagBadgeHtml(tagName, fontSize = '11px'){
+  if(!tagName) return '';
+  const meta = getTagMeta(tagName);
+  const color = (meta && meta.color) ? meta.color : '#2563EB';
+  const bg = hexToRgba(color, 0.12);
+  return `<span class="badge" style="font-size:${fontSize}; font-weight:700; padding:2px 7px; background:${bg}; color:${color};">${escapeHtml(tagName)}</span>`;
+}
+
 function renderDashboardClaimsAlert(){
   const chipWrap = document.getElementById('dash-claims-chip-wrap');
   if(chipWrap){
@@ -10195,10 +10221,10 @@ function renderDashboardClaimsAlert(){
   cardEl.innerHTML = `
     <div class="dash-card-head" style="margin-bottom:10px; min-height:36px;">
       <div class="dash-card-head-copy">
-        <h2 class="section-title" style="margin:0; font-size:15px;">Reimbursements</h2>
+        <h2 class="section-title" style="margin:0; font-size:15.5px;">Reimbursements</h2>
         <p class="section-sub" style="margin:2px 0 0;">Awaiting recovery</p>
       </div>
-      <button type="button" onclick="goToCompanyBenefitsClaims()" class="btn-ghost btn-small" style="padding:5px 12px; font-size:11.5px;">Manage</button>
+      <button type="button" onclick="goToCompanyBenefitsClaims()" class="btn-ghost btn-small">Manage</button>
     </div>
     <div class="dash-card-kpi-row" style="margin-bottom:14px;">
       <span class="dash-card-kpi-val" style="color:var(--amber);">${fmt(pendingTotal)}</span>
@@ -10208,10 +10234,8 @@ function renderDashboardClaimsAlert(){
       ${pendingItems.map(item => {
         const t = item.tx;
         const title = t.description ? escapeHtml(t.description) : escapeHtml(t.category || 'Claim');
-        const metaParts = [];
-        if(t.tag) metaParts.push(escapeHtml(t.tag));
-        else if(t.category && t.description) metaParts.push(escapeHtml(t.category));
-        if(t.date) metaParts.push(escapeHtml(formatTxDateDisplay(t.date)));
+        const tagPillHtml = t.tag ? renderTagBadgeHtml(t.tag, '10.5px') : '';
+        const dateHtml = t.date ? `<span style="font-size:11.5px; color:var(--muted);">${escapeHtml(formatTxDateDisplay(t.date))}</span>` : '';
         const statusPill = item.isPartial
           ? '<span class="badge" style="font-size:10px; padding:2px 7px; margin-top:4px; background:var(--primary-light); color:var(--primary); font-weight:700;">Partial</span>'
           : '<span class="badge badge-warn" style="font-size:10px; padding:2px 7px; margin-top:4px; font-weight:700;">Pending</span>';
@@ -10219,7 +10243,7 @@ function renderDashboardClaimsAlert(){
           <div class="dash-claim-item" onclick="goToCompanyBenefitsClaims()">
             <div style="min-width:0; flex:1;">
               <div style="font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${title}">${title}</div>
-              <div style="font-size:11.5px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${metaParts.join(' · ')}</div>
+              <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:4px;">${tagPillHtml}${dateHtml}</div>
             </div>
             <div style="text-align:right; flex-shrink:0;">
               <div class="figure" style="font-size:13px; font-weight:700; color:var(--ink);">${fmt(item.remaining)}</div>
@@ -10326,7 +10350,7 @@ function renderDashboardTopExpenses(periodTxs, totals){
   if(chartDashboardTopExpenses){ chartDashboardTopExpenses.destroy(); chartDashboardTopExpenses = null; }
   if(wrapEl) wrapEl.style.display = 'none';
 
-  const categories = expenseByCategory(periodTxs).slice(0, 4);
+  const categories = expenseByCategory(periodTxs).slice(0, 7);
   const totalExpense = totals.expense || 0;
   const totalIncome = totals.income || 0;
   const expRatio = totalIncome > 0 ? Math.min(100, Math.round((totalExpense / totalIncome) * 100)) : 0;
@@ -10339,8 +10363,7 @@ function renderDashboardTopExpenses(periodTxs, totals){
             <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(0)}</span>
             <span class="badge badge-ok dash-card-kpi-badge">No Spending</span>
           </div>
-          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
-          <p class="muted text-xs" style="margin:20px 0; text-align:center;">No expenses recorded for this period.</p>
+          <p class="muted text-xs" style="margin:28px 0; text-align:center;">No expenses recorded for this period.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
           <button type="button" onclick="goToApp('transactions')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px;">View Transactions</button>
@@ -10350,8 +10373,9 @@ function renderDashboardTopExpenses(periodTxs, totals){
     return;
   }
 
-  const palette = ['#E11D48', '#D97706', '#7C3AED', '#0D9488'];
+  const palette = ['#E11D48', '#D97706', '#7C3AED', '#0D9488', '#2563EB', '#EA580C', '#475569'];
   const maxAmt = Math.max(...categories.map(c => Number(c.amount) || 0), 1);
+  const maxBarPx = 114;
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
@@ -10363,14 +10387,12 @@ function renderDashboardTopExpenses(periodTxs, totals){
           <div class="dash-vbar-group" id="dash-top-exp-bars">
             ${categories.map((cat, idx) => {
               const pct = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
-              const hPct = Math.max(14, Math.round(((Number(cat.amount) || 0) / maxAmt) * 100));
+              const barPx = Math.max(12, Math.round(((Number(cat.amount) || 0) / maxAmt) * maxBarPx));
               const color = palette[idx % palette.length];
               return `
                 <div class="dash-vbar-col" data-vbar-idx="${idx}">
                   <span class="dash-vbar-pct" style="color:var(--ink);">${pct}%</span>
-                  <div class="dash-vbar-slot">
-                    <div class="dash-vbar-bar" style="height:${hPct}%; background:${color};"></div>
-                  </div>
+                  <div class="dash-vbar-bar" style="height:${barPx}px; background:${color};"></div>
                 </div>
               `;
             }).join('')}
@@ -10385,7 +10407,7 @@ function renderDashboardTopExpenses(periodTxs, totals){
           </div>
         </div>
       </div>
-      <div style="text-align:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--line-soft);">
+      <div style="text-align:center; margin-top:12px;">
         <button type="button" onclick="goToApp('reports')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">View Full Reports</button>
       </div>
     </div>
@@ -10432,8 +10454,7 @@ function renderDashboardBudgetSummary(period, totals){
             <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(0)}</span>
             <span class="badge badge-off dash-card-kpi-badge">No Budget</span>
           </div>
-          <div class="progress-track" style="height:6px; border-radius:999px; background:var(--surface-2); margin-bottom:14px;"></div>
-          <p class="muted text-xs" style="margin:20px 0; text-align:center;">No category budgets configured for this month.</p>
+          <p class="muted text-xs" style="margin:28px 0; text-align:center;">No category budgets configured for this month.</p>
         </div>
         <div style="text-align:center; margin-top:8px;">
           <button type="button" onclick="goToApp('budgets')" class="btn-small" style="font-size:11.5px; padding:4px 12px;">Set Budget</button>
@@ -10447,7 +10468,8 @@ function renderDashboardBudgetSummary(period, totals){
     ? `<span class="badge badge-over dash-card-kpi-badge">Over ${fmt(spent - budgeted)}</span>`
     : `<span class="badge badge-ok dash-card-kpi-badge">${fmt(remaining)} Left</span>`;
 
-  const topFour = categoryRows.slice(0, 4);
+  const topSix = categoryRows.slice(0, 6);
+  const maxBarPx = 114;
   container.innerHTML = `
     <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:220px;">
       <div>
@@ -10456,25 +10478,23 @@ function renderDashboardBudgetSummary(period, totals){
           ${statusBadge}
         </div>
         <div class="dash-vbar-stage">
-          <div class="dash-vbar-limit-line"></div>
           <div class="dash-vbar-group" id="dash-budget-bars">
-            ${topFour.map((c, idx) => {
+            ${topSix.map((c, idx) => {
               const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
               const cappedPct = Math.min(100, cPct);
+              const barPx = c.spent > 0 ? Math.max(10, Math.round((cappedPct / 100) * maxBarPx)) : 4;
               const cOver = c.spent > c.budgetAmount;
               const cColor = cOver ? 'var(--rose)' : (cPct >= 85 ? '#D97706' : 'var(--teal)');
               return `
                 <div class="dash-vbar-col" data-vbar-idx="${idx}">
                   <span class="dash-vbar-pct" style="color:${cColor};">${cPct}%</span>
-                  <div class="dash-vbar-track">
-                    <div class="dash-vbar-fill" style="height:${c.spent > 0 ? Math.max(8, cappedPct) : 0}%; background:${cColor};"></div>
-                  </div>
+                  <div class="dash-vbar-bar" style="height:${barPx}px; background:${cColor};"></div>
                 </div>
               `;
             }).join('')}
           </div>
           <div class="dash-vbar-labels">
-            ${topFour.map(c => {
+            ${topSix.map(c => {
               const cOver = c.spent > c.budgetAmount;
               return `
                 <div class="dash-vbar-label-col">
@@ -10486,7 +10506,7 @@ function renderDashboardBudgetSummary(period, totals){
           </div>
         </div>
       </div>
-      <div style="text-align:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--line-soft);">
+      <div style="text-align:center; margin-top:12px;">
         <button type="button" onclick="goToApp('budgets')" class="excel-filter-text-btn" style="font-size:12px; padding:3px 10px; font-weight:600;">Manage All Budgets</button>
       </div>
     </div>
@@ -10495,7 +10515,7 @@ function renderDashboardBudgetSummary(period, totals){
   const budBars = document.getElementById('dash-budget-bars');
   if(budBars){
     budBars.querySelectorAll('.dash-vbar-col').forEach(col => {
-      const c = topFour[Number(col.dataset.vbarIdx)];
+      const c = topSix[Number(col.dataset.vbarIdx)];
       if(!c) return;
       const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
       const diff = c.budgetAmount - c.spent;
@@ -10580,7 +10600,7 @@ function renderDashboardSavings(period, totals){
             const gPct = gTgt > 0 ? Math.min(100, Math.round((gAcc / gTgt) * 100)) : 0;
             const gReached = gAcc >= gTgt && gTgt > 0;
             return `
-              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
+              <div style="padding:6px 0;">
                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; margin-bottom:4px; gap:8px;">
                   <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
                     <span class="dash-card-item-name" title="${escapeHtml(g.name)}">${escapeHtml(g.name)}</span>
@@ -10650,7 +10670,7 @@ function renderDashboardInvestments(){
             const invRoi = invCost > 0 ? ((invGain / invCost) * 100) : 0;
             const meta = getAssetClassMeta(inv.assetType);
             return `
-              <div style="padding:6px 0; border-top:1px solid var(--line-soft);">
+              <div style="padding:6px 0;">
                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; margin-bottom:4px; gap:6px;">
                   <span class="dash-card-item-name" style="flex:1; min-width:0;" title="${escapeHtml(inv.name)}">${escapeHtml(inv.name)}</span>
                   <span class="figure" style="font-weight:700; color:var(--ink); font-size:11px; flex-shrink:0; white-space:nowrap;">${fmt(invVal)} <span style="font-weight:500; color:${invGain>=0?'var(--teal)':'var(--rose)'}; font-size:10px;">(${invGain>=0?'+':''}${invRoi.toFixed(1)}%)</span></span>
@@ -11857,7 +11877,7 @@ function renderTransactions(){
           <span class="tx-cat-pill" style="background:${getCategoryColor(t.category, t.type)};"></span>
           <span class="tx-cat-name">${escapeHtml(t.category)}</span>
           ${catDeletedBadge}
-          ${t.tag ? `<span class="badge" style="font-size:10px; font-weight:600; padding:1px 6px; background:rgba(99,102,241,0.08); color:var(--primary); border:1px solid rgba(99,102,241,0.2);">${escapeHtml(t.tag)}</span>` : ''}
+          ${t.tag ? renderTagBadgeHtml(t.tag, '10px') : ''}
           ${t.isReimbursable ? (t.recoveryStatus === 'settled' ? `<span class="badge badge-ok" style="font-size:10px; padding:1px 6px;">Reimbursed</span>` : (t.recoveryStatus === 'partial' || (parseFloat(t.recoveredAmount) || 0) > 0 ? `<span class="badge" style="font-size:10px; padding:1px 6px; cursor:pointer; background:var(--primary-light); color:var(--primary);" onclick="goToCompanyBenefitsClaims()" title="Partial reimbursement claim">Partial Claim</span>` : `<span class="badge badge-warn" style="font-size:10px; padding:1px 6px; cursor:pointer;" onclick="goToCompanyBenefitsClaims()" title="Pending reimbursement claim">Pending Claim</span>`)) : ''}
         </div>
       </td>
@@ -12228,8 +12248,28 @@ function promptAddSubcategory(){
     showToast('Category not found', 'error');
     return;
   }
-  const newSub = prompt(`Enter new subcategory for "${cat}":`);
-  if(!newSub || !newSub.trim()) return;
+  const catLabel = document.getElementById('quick-subcat-category-label');
+  const inp = document.getElementById('quick-subcat-input');
+  if(catLabel) catLabel.textContent = cat;
+  if(inp) inp.value = '';
+  const backdrop = document.getElementById('quick-subcat-modal-backdrop');
+  if(backdrop){
+    backdrop.classList.remove('hidden');
+    setTimeout(() => { if(inp) inp.focus(); }, 30);
+  }
+}
+
+function closeQuickSubcatModal(){
+  const backdrop = document.getElementById('quick-subcat-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function handleQuickAddSubcategory(e){
+  if(e) e.preventDefault();
+  const cat = document.getElementById('tx-category')?.value;
+  const catObj = findExpenseCategory(cat);
+  const newSub = document.getElementById('quick-subcat-input')?.value;
+  if(!catObj || !newSub || !newSub.trim()) return;
   const rawTrimmed = newSub.trim();
   const trimmed = rawTrimmed.charAt(0).toUpperCase() + rawTrimmed.slice(1);
   if(!Array.isArray(catObj.subcategories)) catObj.subcategories = [];
@@ -12241,13 +12281,15 @@ function promptAddSubcategory(){
       renderExcelFilterList('tx-modal-subcategory');
       updateExcelFilterUI('tx-modal-subcategory');
     }
+    closeQuickSubcatModal();
     return;
   }
   catObj.subcategories.push(trimmed);
-  saveDB();
+  saveDB(true);
   selectedModalSubcategories.push(trimmed);
   renderExcelFilterList('tx-modal-subcategory');
   updateExcelFilterUI('tx-modal-subcategory');
+  closeQuickSubcatModal();
   showToast(`Added and selected "${trimmed}" for ${cat}`, 'success');
 }
 
@@ -17196,7 +17238,7 @@ function renderTagsSettings(){
               ${tag.isReimbursement ? '<span class="badge" style="background:rgba(13,148,136,0.12); color:var(--teal); font-size:11px; padding:2px 7px;">Reimbursable</span>' : ''}
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
-              <button type="button" onclick="promptRenameTag('${tag.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;">Rename</button>
+              <button type="button" onclick="promptRenameTag('${tag.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;">Edit</button>
               <button type="button" onclick="deleteTag('${tag.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);">Delete</button>
             </div>
           </div>
@@ -17263,15 +17305,61 @@ function handleAddTag(e){
   showToast(`Tag "${name}" added successfully`, 'success');
 }
 
+const TAG_COLOR_SWATCHES = ['#0D9488', '#2563EB', '#7C3AED', '#D97706', '#E11D48', '#475569'];
+
+function selectEditTagColor(hex){
+  const hidden = document.getElementById('edit-tag-color');
+  if(hidden) hidden.value = hex;
+  document.querySelectorAll('#edit-tag-swatches .tag-color-swatch').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.color || '').toLowerCase() === String(hex).toLowerCase());
+  });
+}
+
 function promptRenameTag(tagId){
   DB.tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
   const tag = DB.tags.find(t => t.id === tagId);
   if(!tag) return;
 
-  const newName = prompt('Enter new tag name (single word):', tag.name);
-  if(!newName) return;
-  const cleanName = newName.trim().split(/\s+/)[0];
-  if(!cleanName) return;
+  const idEl = document.getElementById('edit-tag-id');
+  const nameEl = document.getElementById('edit-tag-name');
+  const reimbEl = document.getElementById('edit-tag-reimbursable');
+  const swatchesEl = document.getElementById('edit-tag-swatches');
+  if(idEl) idEl.value = tag.id;
+  if(nameEl) nameEl.value = tag.name || '';
+  if(reimbEl) reimbEl.checked = Boolean(tag.isReimbursement);
+  const currentColor = tag.color || '#0D9488';
+  if(swatchesEl){
+    swatchesEl.innerHTML = TAG_COLOR_SWATCHES.map(hex =>
+      `<button type="button" class="tag-color-swatch ${hex.toLowerCase() === currentColor.toLowerCase() ? 'active' : ''}" data-color="${hex}" style="background:${hex};" onclick="selectEditTagColor('${hex}')" aria-label="Color ${hex}"></button>`
+    ).join('');
+  }
+  selectEditTagColor(currentColor);
+
+  const backdrop = document.getElementById('edit-tag-modal-backdrop');
+  if(backdrop){
+    backdrop.classList.remove('hidden');
+    setTimeout(() => { if(nameEl) { nameEl.focus(); nameEl.select(); } }, 30);
+  }
+}
+
+function closeEditTagModal(){
+  const backdrop = document.getElementById('edit-tag-modal-backdrop');
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+function handleSaveEditTag(e){
+  if(e) e.preventDefault();
+  DB.tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
+  const tagId = document.getElementById('edit-tag-id')?.value;
+  const tag = DB.tags.find(t => t.id === tagId);
+  if(!tag) return;
+
+  const rawName = (document.getElementById('edit-tag-name')?.value || '').trim();
+  const cleanName = rawName.split(/\s+/)[0];
+  if(!cleanName){
+    showToast('Please enter a valid tag name', 'error');
+    return;
+  }
 
   if(cleanName.toLowerCase() !== tag.name.toLowerCase() && DB.tags.some(t => t.name.toLowerCase() === cleanName.toLowerCase())){
     showToast(`Tag "${cleanName}" already exists`, 'warning');
@@ -17279,16 +17367,25 @@ function promptRenameTag(tagId){
   }
 
   const oldName = tag.name;
-  tag.name = cleanName;
+  const newColor = document.getElementById('edit-tag-color')?.value || tag.color || '#0D9488';
+  const newReimb = Boolean(document.getElementById('edit-tag-reimbursable')?.checked);
 
-  // Update associated transactions
-  (DB.transactions || []).forEach(tx => {
-    if(tx.tag === oldName) tx.tag = cleanName;
-  });
+  tag.name = cleanName;
+  tag.color = newColor;
+  tag.isReimbursement = newReimb;
+
+  // Sync updated tag name across all transactions
+  if(oldName !== cleanName){
+    (DB.transactions || []).forEach(tx => {
+      if(tx.tag === oldName) tx.tag = cleanName;
+    });
+  }
 
   saveDB(true);
+  closeEditTagModal();
   renderTagsSettings();
-  showToast(`Renamed tag to "${cleanName}"`, 'success');
+  renderAllForCurrentPage();
+  showToast(`Updated tag "${cleanName}"`, 'success');
 }
 
 function deleteTag(tagId){
@@ -20983,6 +21080,59 @@ function dispatchDesktopNotification(title, options){
 </div>
 
 <div id="dash-vbar-tooltip" class="dash-vbar-tooltip"></div>
+
+<!-- Native Edit Tag Modal (Replaces browser prompt — Rename + Color Swatches + Reimbursable) -->
+<div id="edit-tag-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeEditTagModal()">
+  <div class="modal" style="max-width:400px;">
+    <button class="modal-close" onclick="closeEditTagModal()" aria-label="Close">✕</button>
+    <h2 style="margin:0 0 14px; font-size:18px;">Edit Tag</h2>
+    <form onsubmit="handleSaveEditTag(event)">
+      <input type="hidden" id="edit-tag-id">
+      <input type="hidden" id="edit-tag-color" value="#0D9488">
+
+      <div style="margin-bottom:14px;">
+        <label class="field-label" for="edit-tag-name">Tag Name</label>
+        <input type="text" id="edit-tag-name" class="field-input" maxlength="16" autocomplete="off" required>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label class="field-label">Tag Color</label>
+        <div id="edit-tag-swatches" class="tag-color-swatches"></div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <label style="display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;">
+          <input type="checkbox" id="edit-tag-reimbursable" style="width:16px; height:16px;">
+          Reimbursable
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn-ghost" onclick="closeEditTagModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Native Quick-Add Subcategory Modal (Replaces browser prompt) -->
+<div id="quick-subcat-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeQuickSubcatModal()">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeQuickSubcatModal()" aria-label="Close">✕</button>
+    <h2 style="margin:0 0 4px; font-size:18px;">Add Subcategory</h2>
+    <p class="text-xs muted" style="margin:0 0 14px;">Category: <strong id="quick-subcat-category-label" style="color:var(--ink);"></strong></p>
+    <form onsubmit="handleQuickAddSubcategory(event)">
+      <div style="margin-bottom:16px;">
+        <label class="field-label" for="quick-subcat-input">Subcategory Name</label>
+        <input type="text" id="quick-subcat-input" class="field-input" autocomplete="off" required>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn-ghost" onclick="closeQuickSubcatModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Add Subcategory</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 </body>
 </html>
