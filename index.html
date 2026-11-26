@@ -1245,6 +1245,7 @@
 
   /* Confirm Modal styling */
   .confirm-modal{max-width:440px;}
+  #confirm-modal-backdrop{z-index:2200 !important;}
   .confirm-danger{background:var(--rose) !important; color:#fff !important;}
   .confirm-danger:hover{background:#C8324A !important;}
   @media(max-width:700px){
@@ -6932,12 +6933,9 @@ function toggleAllowanceActive(id, active){
   if(acc){ acc.active=active; saveDB(); renderAllowancesSettings(); if(typeof renderAllowanceTrackerWidget === 'function') renderAllowanceTrackerWidget(); }
 }
 function deleteAllowanceAccount(id){
-  if(!confirm('Delete this benefit? Existing transactions will not be affected.')) return;
-  DB.allowanceAccounts = (DB.allowanceAccounts||[]).filter(function(a){ return a.id!==id; });
-  saveDB();
-  renderAllowancesSettings();
-  if(typeof renderAllowanceTrackerWidget === 'function') renderAllowanceTrackerWidget();
-  showToast('Benefit deleted');
+  var acc = (DB.allowanceAccounts || []).find(function(a){ return a.id === id; });
+  if(!acc) return;
+  requestDelete('allowance', id, acc.name || 'Company Benefit');
 }
 
 /* --- Allowance Surplus Transfer Flow --- */
@@ -11898,39 +11896,61 @@ function deleteTx(id){
 let pendingDelete=null;
 function requestDelete(type, value, label){
   pendingDelete = {type, value, label};
-  const isPermanent = type === 'recycle-permanent' || type === 'recycle-empty';
+  const safeLabel = label || 'this item';
   const messages = {
-    transaction: `Move transaction "${label}" to the Recycle Bin? It will stay there for 30 days and can be restored anytime.`,
-    category: `Delete category "${label}"? Its subcategories, budgets, and transactions will also be moved to the Recycle Bin and can be restored within 30 days.`,
-    subcategory: `Delete subcategory "${label}"? Existing transactions will NOT be deleted — their subcategory will be set to "None" so you can reassign them. Subcategory budgets will be moved to the Recycle Bin.`,
-    budget: `Delete "${label}"? It will be moved to the Recycle Bin and can be restored within 30 days.`,
-    goal: `Delete savings goal "${label}"? Its goal details and contributions will be moved to the Recycle Bin and can be restored within 30 days.`,
-    'recycle-permanent': `Permanently delete "${label}"? This action cannot be undone and cannot be recovered from the Recycle Bin.`,
-    'recycle-empty': `Permanently delete ALL items in the Recycle Bin? This action cannot be undone and cannot be recovered.`
+    transaction: `Move "${safeLabel}" to the Recycle Bin? You can restore it anytime within 30 days.`,
+    contribution: `Move contribution "${safeLabel}" to the Recycle Bin? Your goal balance will update and you can restore it within 30 days.`,
+    category: `Move category "${safeLabel}" (with its subcategories, budgets, and transactions) to the Recycle Bin? Restorable for 30 days.`,
+    subcategory: `Move subcategory "${safeLabel}" to the Recycle Bin? Existing transactions stay intact (set to None) and subcategory budgets can be restored within 30 days.`,
+    budget: `Move "${safeLabel}" to the Recycle Bin? You can restore it anytime within 30 days.`,
+    goal: `Move savings goal "${safeLabel}" and its contributions to the Recycle Bin? Restorable for 30 days.`,
+    'planned-goal': `Move planned goal "${safeLabel}" to the Recycle Bin? You can restore it anytime within 30 days.`,
+    allowance: `Move company benefit "${safeLabel}" to the Recycle Bin? Existing transactions stay intact. Restorable for 30 days.`,
+    investment: `Move investment "${safeLabel}" to the Recycle Bin? You can restore it anytime within 30 days.`,
+    'sold-investment': `Move closed trade "${safeLabel}" to the Recycle Bin? You can restore it anytime within 30 days.`,
+    tag: `Move tag "${safeLabel}" to the Recycle Bin? Affected transactions will be untagged and restored if you recover this tag within 30 days.`,
+    'payment-method': `Move payment method "${safeLabel}" to the Recycle Bin? Matching transactions will temporarily use "Other" and revert if restored within 30 days.`,
+    'warning-rule': `Move warning sign "${safeLabel}" to the Recycle Bin? You can restore it anytime within 30 days.`,
+    'recycle-permanent': `Permanently delete "${safeLabel}"? This cannot be undone.`,
+    'recycle-empty': `Permanently delete all items in the Recycle Bin? This cannot be undone.`
   };
   const titles = {
-    transaction: 'Move to Recycle Bin?',
+    transaction: 'Delete Transaction?',
+    contribution: 'Delete Contribution?',
     category: 'Delete Category?',
     subcategory: 'Delete Subcategory?',
     budget: 'Delete Budget?',
     goal: 'Delete Savings Goal?',
-    'recycle-permanent': 'Permanently Delete Item?',
+    'planned-goal': 'Delete Planned Goal?',
+    allowance: 'Delete Company Benefit?',
+    investment: 'Delete Investment?',
+    'sold-investment': 'Delete Closed Trade?',
+    tag: 'Delete Tag?',
+    'payment-method': 'Delete Payment Method?',
+    'warning-rule': 'Delete Warning Sign?',
+    'recycle-permanent': 'Delete Permanently?',
     'recycle-empty': 'Empty Recycle Bin?'
   };
   const badges = {
     transaction: 'Transaction',
-    category: 'Category Deletion',
-    subcategory: 'Subcategory Deletion',
-    budget: 'Budget Deletion',
-    goal: 'Goal Deletion',
+    contribution: 'Goal Contribution',
+    category: 'Category',
+    subcategory: 'Subcategory',
+    budget: 'Budget',
+    goal: 'Savings Goal',
+    'planned-goal': 'Planned Goal',
+    allowance: 'Company Benefit',
+    investment: 'Investment',
+    'sold-investment': 'Closed Trade',
+    tag: 'Tag',
+    'payment-method': 'Payment Method',
+    'warning-rule': 'Warning Sign',
     'recycle-permanent': 'Permanent Deletion Warning',
     'recycle-empty': 'Permanent Deletion Warning'
   };
   const actionTexts = {
-    subcategory: 'Delete Subcategory',
-    category: 'Delete Category',
     'recycle-permanent': 'Delete Permanently',
-    'recycle-empty': 'Empty All Items'
+    'recycle-empty': 'Empty Recycle Bin'
   };
 
   const titleEl = document.getElementById('confirm-modal-title');
@@ -11938,9 +11958,9 @@ function requestDelete(type, value, label){
   const badgeEl = document.getElementById('confirm-modal-type-badge');
   const actionBtn = document.getElementById('confirm-modal-action');
 
-  if(titleEl) titleEl.textContent = titles[type] || 'Are you sure?';
-  if(msgEl) msgEl.textContent = messages[type] || `Are you sure you want to delete "${label}"?`;
-  if(badgeEl) badgeEl.textContent = badges[type] || 'Confirmation';
+  if(titleEl) titleEl.textContent = titles[type] || 'Move to Recycle Bin?';
+  if(msgEl) msgEl.textContent = messages[type] || `Move "${safeLabel}" to the Recycle Bin? Restorable for 30 days.`;
+  if(badgeEl) badgeEl.textContent = badges[type] || 'Deletion Warning';
   if(actionBtn) {
     actionBtn.textContent = actionTexts[type] || 'Move to Recycle Bin';
   }
@@ -11962,10 +11982,10 @@ function confirmDelete(){
     cleanupRecycleBin();
     DB.recycleBin = (DB.recycleBin || []).filter(item => item.id !== value);
     DB.activityLog = (DB.activityLog || []).filter(item => item.id !== value);
-    saveDB();
+    saveDB(true);
     closeConfirmModal();
     renderRecycleBin();
-    renderActivityLog();
+    if(typeof renderActivityLog === 'function') renderActivityLog();
     showToast(`Permanently deleted "${label}"`, 'warning');
     return;
   }
@@ -11974,26 +11994,73 @@ function confirmDelete(){
     cleanupRecycleBin();
     const count = (DB.recycleBin || []).length;
     DB.recycleBin = [];
-    saveDB();
+    saveDB(true);
     closeConfirmModal();
     renderRecycleBin();
-    renderActivityLog();
+    if(typeof renderActivityLog === 'function') renderActivityLog();
     showToast(`Emptied ${count} item${count === 1 ? '' : 's'} from Recycle Bin`, 'warning');
     return;
   }
 
-  if(type === 'transaction'){
-    const transaction = DB.transactions.find(item => item.id === value);
-    activityLabel = transaction ? (transaction.description || transaction.category) : 'transaction';
-    restorePayload = {transaction: transaction ? {...transaction} : null};
+  if(type === 'transaction' || type === 'contribution'){
+    const transaction = (DB.transactions || []).find(item => item.id === value);
+    if(!transaction){ closeConfirmModal(); return; }
+    activityLabel = label || transaction.description || transaction.category || 'transaction';
+    restorePayload = {transaction: {...transaction}};
   } else if(type === 'budget'){
-    const budget = DB.budgets.find(item => item.id === value);
-    activityLabel = budget ? `${budget.category}${budget.subCategory ? ` / ${budget.subCategory}` : ''} budget` : 'budget';
-    restorePayload = {budget: budget ? {...budget} : null};
+    const budget = (DB.budgets || []).find(item => item.id === value);
+    if(!budget){ closeConfirmModal(); return; }
+    activityLabel = `${budget.category}${budget.subCategory ? ` / ${budget.subCategory}` : ''} budget`;
+    restorePayload = {budget: {...budget}};
   } else if(type === 'goal'){
-    const goal = DB.savingsGoals.find(item => item.id === value);
-    activityLabel = goal ? goal.name : 'savings goal';
-    restorePayload = {goal: goal ? {...goal} : null, transactions: goal ? DB.transactions.filter(transaction => transaction.type === 'savings' && transaction.category === goal.name).map(transaction => ({...transaction})) : []};
+    const goal = (DB.savingsGoals || []).find(item => item.id === value);
+    if(!goal){ closeConfirmModal(); return; }
+    activityLabel = goal.name;
+    restorePayload = {goal: {...goal}, transactions: (DB.transactions || []).filter(transaction => transaction.type === 'savings' && (transaction.goalId === goal.id || transaction.category === goal.name)).map(transaction => ({...transaction}))};
+  } else if(type === 'planned-goal'){
+    const planned = (DB.plannedSavingsGoals || []).find(item => item.id === value);
+    if(!planned){ closeConfirmModal(); return; }
+    activityLabel = planned.name || planned.purpose || 'Planned Goal';
+    restorePayload = {plannedGoal: {...planned}};
+  } else if(type === 'allowance'){
+    const acc = (DB.allowanceAccounts || []).find(item => item.id === value);
+    if(!acc){ closeConfirmModal(); return; }
+    activityLabel = acc.name || 'Company Benefit';
+    restorePayload = {allowance: {...acc}};
+  } else if(type === 'investment'){
+    const inv = (DB.investments || []).find(item => item.id === value);
+    if(!inv){ closeConfirmModal(); return; }
+    activityLabel = inv.name || 'Investment';
+    restorePayload = {investment: JSON.parse(JSON.stringify(inv))};
+  } else if(type === 'sold-investment'){
+    const inv = (DB.soldInvestments || []).find(item => item.id === value);
+    if(!inv){ closeConfirmModal(); return; }
+    activityLabel = inv.name || 'Closed Trade';
+    restorePayload = {soldInvestment: JSON.parse(JSON.stringify(inv))};
+  } else if(type === 'tag'){
+    const tagList = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
+    const tag = tagList.find(t => t.id === value);
+    if(!tag){ closeConfirmModal(); return; }
+    activityLabel = tag.name;
+    const affectedTxs = (DB.transactions || []).filter(tx => tx.tag === tag.name).map(tx => ({
+      id: tx.id,
+      tag: tx.tag,
+      isReimbursable: tx.isReimbursable
+    }));
+    restorePayload = {tag: {...tag}, affectedTxs};
+  } else if(type === 'payment-method'){
+    const methodName = value;
+    activityLabel = methodName;
+    const affectedTxs = (DB.transactions || []).filter(t => {
+      if(!t.paymentMethod) return false;
+      return t.paymentMethod.split(',').map(m => m.trim().toLowerCase()).includes(methodName.toLowerCase());
+    }).map(t => ({ id: t.id, prevPaymentMethod: t.paymentMethod }));
+    restorePayload = {paymentMethod: methodName, affectedTxs};
+  } else if(type === 'warning-rule'){
+    const rule = (DB.warningRules || []).find(r => r.id === value && !r.isDefault);
+    if(!rule){ closeConfirmModal(); return; }
+    activityLabel = rule.badgeLabel || rule.name || 'Warning Sign';
+    restorePayload = {warningRule: {...rule}};
   } else if(type === 'category'){
     activityLabel = Array.isArray(value) ? value[1] : value;
     const categoryType = Array.isArray(value) ? value[0] : 'expense';
@@ -12006,10 +12073,9 @@ function confirmDelete(){
 
   recordDeletion(type, activityLabel, restorePayload);
 
-  if(type === 'transaction') {
+  if(type === 'transaction' || type === 'contribution') {
     const deletedTx = (DB.transactions || []).find(item => item.id === value);
     if(deletedTx && deletedTx.isGoalRolloverIn){
-      // Deleting a transferred savings/income transaction cleans up the rollover and restores the source goal balance
       if(Array.isArray(DB.goalRollovers)){
         DB.goalRollovers = DB.goalRollovers.filter(r => r.inTxId !== value);
       }
@@ -12017,18 +12083,62 @@ function confirmDelete(){
         DB.savingsRolloverHistory = DB.savingsRolloverHistory.filter(r => r.inTxId !== value);
       }
     }
-    DB.transactions = DB.transactions.filter(transaction => transaction.id !== value);
+    DB.transactions = (DB.transactions || []).filter(transaction => transaction.id !== value);
     if(Array.isArray(DB.savingsGoals)){
       DB.savingsGoals.forEach(g => { g.currentAmount = getGoalCurrentAmount(g); });
     }
   }
-  if(type === 'budget') DB.budgets = DB.budgets.filter(budget => budget.id !== value);
+  if(type === 'budget') DB.budgets = (DB.budgets || []).filter(budget => budget.id !== value);
   if(type === 'goal'){
-    const goal = DB.savingsGoals.find(item => item.id === value);
+    const goal = (DB.savingsGoals || []).find(item => item.id === value);
     if(goal){
       DB.savingsGoals = DB.savingsGoals.filter(item => item.id !== value);
-      DB.transactions = DB.transactions.filter(transaction => !(transaction.type === 'savings' && transaction.category === goal.name));
+      DB.transactions = (DB.transactions || []).filter(transaction => !(transaction.type === 'savings' && (transaction.goalId === goal.id || transaction.category === goal.name)));
     }
+  }
+  if(type === 'planned-goal'){
+    DB.plannedSavingsGoals = (DB.plannedSavingsGoals || []).filter(item => item.id !== value);
+  }
+  if(type === 'allowance'){
+    DB.allowanceAccounts = (DB.allowanceAccounts || []).filter(item => item.id !== value);
+  }
+  if(type === 'investment'){
+    DB.investments = (DB.investments || []).filter(item => item.id !== value);
+  }
+  if(type === 'sold-investment'){
+    DB.soldInvestments = (DB.soldInvestments || []).filter(item => item.id !== value);
+  }
+  if(type === 'tag'){
+    DB.tags = (Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS))).filter(t => t.id !== value);
+    const removedTagName = restorePayload.tag ? restorePayload.tag.name : '';
+    if(removedTagName){
+      (DB.transactions || []).forEach(tx => {
+        if(tx.tag === removedTagName){
+          delete tx.tag;
+          delete tx.isReimbursable;
+        }
+      });
+    }
+  }
+  if(type === 'payment-method'){
+    let methods = getPaymentMethods();
+    if(!methods.some(m => m.toLowerCase() === 'other')) methods.push('Other');
+    (DB.transactions || []).forEach(t => {
+      if(t.paymentMethod){
+        const pms = t.paymentMethod.split(',').map(m => m.trim()).filter(Boolean);
+        let changed = false;
+        const newPms = pms.map(m => {
+          if(m.toLowerCase() === value.toLowerCase()){ changed = true; return 'Other'; }
+          return m;
+        });
+        if(changed) t.paymentMethod = [...new Set(newPms)].join(', ');
+      }
+    });
+    DB.paymentMethods = methods.filter(m => m.toLowerCase() !== value.toLowerCase());
+    if(!DB.paymentMethods.some(m => m.toLowerCase() === 'other')) DB.paymentMethods.push('Other');
+  }
+  if(type === 'warning-rule'){
+    DB.warningRules = (DB.warningRules || []).filter(r => r.id !== value || r.isDefault);
   }
   if(type === 'category'){
     const categoryType = Array.isArray(value) ? value[0] : 'expense';
@@ -12043,7 +12153,6 @@ function confirmDelete(){
     const category = findExpenseCategory(categoryName);
     if(category) category.subcategories = (category.subcategories || []).filter(item => item !== subCategory);
     DB.budgets = (DB.budgets || []).filter(budget => !(budget.category === categoryName && budget.subCategory === subCategory));
-    // Subcategory deletion preserves transactions: clear subcategory from matching transactions
     (DB.transactions || []).forEach(transaction => {
       if(transaction.category === categoryName && transaction.subCategory){
         const subs = transaction.subCategory.split(',').map(s => s.trim());
@@ -12055,10 +12164,24 @@ function confirmDelete(){
     });
   }
 
-  saveDB();
+  saveDB(true);
   closeConfirmModal();
   renderAllForCurrentPage();
-  showToast(type === 'subcategory' ? `Subcategory "${activityLabel}" deleted. Transactions preserved as None.` : `Moved "${activityLabel}" to Recycle Bin`);
+  if(type === 'contribution' && typeof activeGoalContribId !== 'undefined' && activeGoalContribId && typeof openGoalContributionsModal === 'function'){
+    openGoalContributionsModal(activeGoalContribId);
+  }
+  if(type === 'planned-goal'){
+    if(typeof renderPlannedGoalsModalList === 'function') renderPlannedGoalsModalList();
+    if(typeof updatePlannedGoalsButtonBadge === 'function') updatePlannedGoalsButtonBadge();
+  }
+  if(type === 'payment-method' && typeof renderModalPaymentMethods === 'function'){
+    renderModalPaymentMethods();
+  }
+  if(type === 'allowance' && typeof renderAllowanceTrackerWidget === 'function'){
+    renderAllowanceTrackerWidget();
+  }
+  if(typeof renderRecycleBin === 'function') renderRecycleBin();
+  showToast(`Moved "${activityLabel}" to Recycle Bin (kept 30 days)`);
 }
 
 /* tx modal */
@@ -14757,20 +14880,7 @@ function saveEditedContributionAmount(txId){
 function deleteContributionTransaction(txId){
   const tx = (DB.transactions || []).find(t => t.id === txId);
   if(!tx) return;
-  if(!confirm(`Delete this contribution of ${fmt(tx.amount)} on ${tx.date}? This will update the savings goal and cash balance.`)) return;
-
-  const goalName = tx.category;
-  DB.transactions = DB.transactions.filter(t => t.id !== txId);
-
-  const goal = (DB.savingsGoals || []).find(g => g.name === goalName);
-  if(goal){
-    goal.currentAmount = getGoalCurrentAmount(goal);
-  }
-
-  saveDB(true);
-  renderAllForCurrentPage();
-  if(activeGoalContribId) openGoalContributionsModal(activeGoalContribId);
-  showToast(`Deleted contribution of ${fmt(tx.amount)}`);
+  requestDelete('contribution', txId, `${tx.category || 'Savings'} (${fmt(tx.amount)} on ${tx.date})`);
 }
 
 
@@ -16698,12 +16808,7 @@ function handleConfirmDepositInvestment(e){
 function deleteInvestment(id){
   const inv = (DB.investments || []).find(i => i.id === id);
   if(!inv) return;
-  if(!confirm('Remove "' + inv.name + '" from your active investments?')) return;
-
-  DB.investments = (DB.investments || []).filter(i => i.id !== id);
-  saveDB(true);
-  renderAllForCurrentPage();
-  showToast('Removed "' + inv.name + '"');
+  requestDelete('investment', id, inv.name || 'Investment');
 }
 
 /* ---------------- Selling / Realized Profit Handlers ---------------- */
@@ -16846,12 +16951,7 @@ function handleConfirmSellInvestment(e){
 function deleteSoldInvestment(id){
   const inv = (DB.soldInvestments || []).find(i => i.id === id);
   if(!inv) return;
-  if(!confirm('Remove closed trade record for "' + inv.name + '"?')) return;
-
-  DB.soldInvestments = (DB.soldInvestments || []).filter(i => i.id !== id);
-  saveDB(true);
-  renderAllForCurrentPage();
-  showToast('Removed closed trade record for "' + inv.name + '"');
+  requestDelete('sold-investment', id, inv.name || 'Closed Trade');
 }
 
 /* ---------------- render: settings ---------------- */
@@ -17195,20 +17295,7 @@ function deleteTag(tagId){
   DB.tags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags : JSON.parse(JSON.stringify(DEFAULT_TAGS));
   const tag = DB.tags.find(t => t.id === tagId);
   if(!tag) return;
-
-  if(!confirm(`Delete tag "${tag.name}"? Transactions using this tag will be untagged.`)) return;
-
-  DB.tags = DB.tags.filter(t => t.id !== tagId);
-  (DB.transactions || []).forEach(tx => {
-    if(tx.tag === tag.name){
-      delete tx.tag;
-      delete tx.isReimbursable;
-    }
-  });
-
-  saveDB(true);
-  renderTagsSettings();
-  showToast(`Deleted tag "${tag.name}"`, 'success');
+  requestDelete('tag', tagId, tag.name);
 }
 
 
@@ -17433,42 +17520,7 @@ function handleDeletePaymentMethod(name){
     showToast('You must keep at least one payment method.', 'error');
     return;
   }
-  if(!confirm(`Delete payment method "${name}"? Any transactions using this method will be safely reassigned to "Other".`)){
-    return;
-  }
-  if(!methods.some(m => m.toLowerCase() === 'other')){
-    methods.push('Other');
-  }
-  let reassignedCount = 0;
-  (DB.transactions || []).forEach(t => {
-    if(t.paymentMethod){
-      let pms = t.paymentMethod.split(',').map(m => m.trim()).filter(Boolean);
-      let changed = false;
-      let newPms = pms.map(m => {
-        if(m.toLowerCase() === name.toLowerCase()){
-          changed = true;
-          return 'Other';
-        }
-        return m;
-      });
-      if(changed){
-        t.paymentMethod = [...new Set(newPms)].join(', ');
-        reassignedCount++;
-      }
-    } else {
-      t.paymentMethod = 'Other';
-      reassignedCount++;
-    }
-  });
-  DB.paymentMethods = methods.filter(m => m.toLowerCase() !== name.toLowerCase());
-  if(!DB.paymentMethods.some(m => m.toLowerCase() === 'other')){
-    DB.paymentMethods.push('Other');
-  }
-  saveDB(true);
-  showToast(`Deleted "${name}"${reassignedCount > 0 ? ` (${reassignedCount === 1 ? '1 transaction' : `${reassignedCount} transactions`} reassigned to Other)` : ''}`, 'info');
-  renderPaymentMethodsSettings();
-  renderModalPaymentMethods();
-  renderTransactions();
+  requestDelete('payment-method', name, name);
 }
 function cleanupRecycleBin(){
   const now=Date.now();
@@ -17476,7 +17528,7 @@ function cleanupRecycleBin(){
   if(!expired.length) return;
   DB.recycleBin=DB.recycleBin.filter(item=>!expired.includes(item.id));
   DB.activityLog=(DB.activityLog||[]).filter(entry=>!expired.includes(entry.id));
-  saveDB();
+  saveDB(true);
 }
 function restoreRecycleItem(id){
   cleanupRecycleBin();
@@ -17484,9 +17536,12 @@ function restoreRecycleItem(id){
   if(!entry) return;
   const payload = entry.payload || {};
 
-  if(entry.type === 'transaction' && payload.transaction){
+  if((entry.type === 'transaction' || entry.type === 'contribution') && payload.transaction){
     if(!DB.transactions.some(t => t.id === payload.transaction.id)){
       DB.transactions.unshift(payload.transaction);
+    }
+    if(Array.isArray(DB.savingsGoals)){
+      DB.savingsGoals.forEach(g => { g.currentAmount = getGoalCurrentAmount(g); });
     }
   }
   if(entry.type === 'budget' && payload.budget){
@@ -17503,6 +17558,60 @@ function restoreRecycleItem(id){
         DB.transactions.push(t);
       }
     });
+  }
+  if(entry.type === 'planned-goal' && payload.plannedGoal){
+    if(!Array.isArray(DB.plannedSavingsGoals)) DB.plannedSavingsGoals = [];
+    if(!DB.plannedSavingsGoals.some(g => g.id === payload.plannedGoal.id)){
+      DB.plannedSavingsGoals.unshift(payload.plannedGoal);
+    }
+  }
+  if(entry.type === 'allowance' && payload.allowance){
+    if(!Array.isArray(DB.allowanceAccounts)) DB.allowanceAccounts = [];
+    if(!DB.allowanceAccounts.some(a => a.id === payload.allowance.id)){
+      DB.allowanceAccounts.push(payload.allowance);
+    }
+  }
+  if(entry.type === 'investment' && payload.investment){
+    if(!Array.isArray(DB.investments)) DB.investments = [];
+    if(!DB.investments.some(i => i.id === payload.investment.id)){
+      DB.investments.push(payload.investment);
+    }
+  }
+  if(entry.type === 'sold-investment' && payload.soldInvestment){
+    if(!Array.isArray(DB.soldInvestments)) DB.soldInvestments = [];
+    if(!DB.soldInvestments.some(i => i.id === payload.soldInvestment.id)){
+      DB.soldInvestments.push(payload.soldInvestment);
+    }
+  }
+  if(entry.type === 'tag' && payload.tag){
+    if(!Array.isArray(DB.tags)) DB.tags = [];
+    if(!DB.tags.some(t => t.id === payload.tag.id || t.name.toLowerCase() === payload.tag.name.toLowerCase())){
+      DB.tags.push(payload.tag);
+    }
+    (payload.affectedTxs || []).forEach(ref => {
+      const tx = (DB.transactions || []).find(t => t.id === ref.id);
+      if(tx){
+        tx.tag = ref.tag;
+        if(ref.isReimbursable) tx.isReimbursable = true;
+      }
+    });
+  }
+  if(entry.type === 'payment-method' && payload.paymentMethod){
+    let methods = getPaymentMethods();
+    if(!methods.some(m => m.toLowerCase() === payload.paymentMethod.toLowerCase())){
+      methods.push(payload.paymentMethod);
+    }
+    DB.paymentMethods = methods;
+    (payload.affectedTxs || []).forEach(ref => {
+      const tx = (DB.transactions || []).find(t => t.id === ref.id);
+      if(tx && ref.prevPaymentMethod) tx.paymentMethod = ref.prevPaymentMethod;
+    });
+  }
+  if(entry.type === 'warning-rule' && payload.warningRule){
+    if(!Array.isArray(DB.warningRules)) DB.warningRules = [];
+    if(!DB.warningRules.some(r => r.id === payload.warningRule.id)){
+      DB.warningRules.push(payload.warningRule);
+    }
   }
   if(entry.type === 'category'){
     if(payload.categoryType === 'expense' && payload.category){
@@ -17556,8 +17665,10 @@ function restoreRecycleItem(id){
 
   DB.recycleBin = DB.recycleBin.filter(item => item.id !== id);
   DB.activityLog = (DB.activityLog || []).filter(item => item.id !== id);
-  saveDB();
+  saveDB(true);
   renderAllForCurrentPage();
+  if(typeof renderModalPaymentMethods === 'function') renderModalPaymentMethods();
+  if(typeof updatePlannedGoalsButtonBadge === 'function') updatePlannedGoalsButtonBadge();
   showToast(`Restored "${entry.label}" successfully.`);
 }
 
@@ -17565,6 +17676,25 @@ function permanentlyDeleteRecycleItem(id){
   const entry = (DB.recycleBin || []).find(item => item.id === id);
   const label = entry ? entry.label : 'item';
   requestDelete('recycle-permanent', id, label);
+}
+
+function formatRecycleTypeLabel(type){
+  const map = {
+    transaction: 'Transaction',
+    contribution: 'Contribution',
+    budget: 'Budget',
+    goal: 'Savings Goal',
+    'planned-goal': 'Planned Goal',
+    allowance: 'Company Benefit',
+    investment: 'Investment',
+    'sold-investment': 'Closed Trade',
+    tag: 'Tag',
+    'payment-method': 'Payment Method',
+    'warning-rule': 'Warning Sign',
+    category: 'Category',
+    subcategory: 'Subcategory'
+  };
+  return map[type] || type;
 }
 
 function renderRecycleBin(){
@@ -17585,7 +17715,7 @@ function renderRecycleBin(){
       const daysLeft = Math.max(1, Math.ceil((new Date(entry.expiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
       return `<div class="recycle-item">
         <div class="recycle-item-copy">
-          <p><strong>${escapeHtml(entry.label)}</strong> <span class="badge badge-off" style="font-size:10.5px; margin-left:6px;">${escapeHtml(entry.type)}</span></p>
+          <p><strong>${escapeHtml(entry.label)}</strong> <span class="badge badge-off" style="font-size:10.5px; margin-left:6px;">${escapeHtml(formatRecycleTypeLabel(entry.type))}</span></p>
           <time style="display:flex; align-items:center; gap:8px; margin-top:5px; flex-wrap:wrap;">
             <span>Deleted ${new Date(entry.deletedAt).toLocaleDateString()}</span>
             <span class="badge badge-amber" style="font-size:10.5px;">Expires in ${daysLeft} day${daysLeft===1?'':'s'}</span>
@@ -20504,11 +20634,9 @@ function handleSaveWarningRule(e){
 }
 
 function deleteCustomWarningRule(ruleId){
-  DB.warningRules = (DB.warningRules || []).filter(r => r.id !== ruleId || r.isDefault);
-  saveDB(true);
-  renderWarningSignsSettings();
-  renderAllForCurrentPage();
-  showToast('Removed custom warning sign');
+  const rule = (DB.warningRules || []).find(r => r.id === ruleId && !r.isDefault);
+  if(!rule) return;
+  requestDelete('warning-rule', ruleId, rule.badgeLabel || rule.name || 'Warning Sign');
 }
 
 function handleResetWarningRules(){
@@ -20624,11 +20752,8 @@ function editPlannedGoalItem(id){
 function deletePlannedGoalItem(id){
   if(!Array.isArray(DB.plannedSavingsGoals)) return;
   const item = DB.plannedSavingsGoals.find(g => g.id === id);
-  DB.plannedSavingsGoals = DB.plannedSavingsGoals.filter(g => g.id !== id);
-  saveDB(true);
-  renderPlannedGoalsModalList();
-  updatePlannedGoalsButtonBadge();
-  if(item) showToast(`Removed planned goal "${item.name}"`);
+  if(!item) return;
+  requestDelete('planned-goal', id, item.name || item.purpose || 'Planned Goal');
 }
 
 function promptActivatePlannedGoal(id){
