@@ -1440,20 +1440,29 @@
   .dash-vbar-stage {
     position: relative;
     padding-top: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dash-vbar-stage::-webkit-scrollbar { display: none; }
+  .dash-vbar-inner {
+    min-width: 100%;
+    width: max-content;
   }
   .dash-vbar-group {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
     height: 144px;
-    padding: 4px 4px 0;
+    padding: 4px 2px 0;
     position: relative;
     z-index: 1;
   }
   .dash-vbar-col {
-    flex: 1;
-    min-width: 0;
+    flex: 1 1 0;
+    min-width: 58px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -1484,11 +1493,14 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px 4px 0;
+    padding: 8px 2px 0;
   }
   .dash-vbar-label-col {
-    flex: 1;
-    min-width: 0;
+    flex: 1 1 0;
+    min-width: 58px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
   }
   .dash-vbar-cat {
@@ -1496,26 +1508,41 @@
     font-weight: 700;
     color: var(--ink);
     line-height: 1.25;
+    height: 28px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+  .dash-vbar-cat-txt {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    word-break: break-word;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .dash-vbar-num {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: 10.5px;
     color: var(--muted);
-    margin-top: 3px;
+    margin-top: 4px;
     white-space: nowrap;
+    line-height: 1.2;
   }
   @media(max-width: 640px){
-    .dash-vbar-group { gap: 6px; }
-    .dash-vbar-bar { width: 18px; }
-    .dash-vbar-labels { gap: 4px; }
-    .dash-vbar-cat { font-size: 10px; }
-    .dash-vbar-num { font-size: 9.5px; }
+    .dash-vbar-group { gap: 8px; }
+    .dash-vbar-col,
+    .dash-vbar-label-col { min-width: 66px; }
+    .dash-vbar-bar { width: 22px; }
+    .dash-vbar-labels { gap: 8px; }
+    .dash-vbar-cat { font-size: 10.5px; height: 27px; }
+    .dash-vbar-num { font-size: 10px; }
   }
   #edit-tag-modal-backdrop,
   #quick-subcat-modal-backdrop { z-index: 2200 !important; }
@@ -10342,6 +10369,16 @@ function hideDashVbarTip(){
 function fmtPlainNum(n){
   return Math.round(Number(n) || 0).toLocaleString();
 }
+function formatDashBarCatLabel(name){
+  const raw = String(name || '').trim();
+  const shortMap = {
+    'Transportation': 'Transport',
+    'Entertainment': 'Entertainment',
+    'Subscriptions': 'Subscriptions'
+  };
+  if(shortMap[raw]) return shortMap[raw];
+  return raw;
+}
 
 function renderDashboardTopExpenses(periodTxs, totals){
   const container = document.getElementById('dashboard-top-expenses');
@@ -10384,26 +10421,28 @@ function renderDashboardTopExpenses(periodTxs, totals){
           <span class="badge ${expRatio > 90 ? 'badge-over' : 'badge-off'} dash-card-kpi-badge">${expRatio > 0 ? expRatio + '% of Income' : 'Outflow'}</span>
         </div>
         <div class="dash-vbar-stage">
-          <div class="dash-vbar-group" id="dash-top-exp-bars">
-            ${categories.map((cat, idx) => {
-              const pct = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
-              const barPx = Math.max(12, Math.round(((Number(cat.amount) || 0) / maxAmt) * maxBarPx));
-              const color = palette[idx % palette.length];
-              return `
-                <div class="dash-vbar-col" data-vbar-idx="${idx}">
-                  <span class="dash-vbar-pct" style="color:var(--ink);">${pct}%</span>
-                  <div class="dash-vbar-bar" style="height:${barPx}px; background:${color};"></div>
+          <div class="dash-vbar-inner">
+            <div class="dash-vbar-group" id="dash-top-exp-bars">
+              ${categories.map((cat, idx) => {
+                const pct = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
+                const barPx = Math.max(12, Math.round(((Number(cat.amount) || 0) / maxAmt) * maxBarPx));
+                const color = palette[idx % palette.length];
+                return `
+                  <div class="dash-vbar-col" data-vbar-idx="${idx}">
+                    <span class="dash-vbar-pct" style="color:var(--ink);">${pct}%</span>
+                    <div class="dash-vbar-bar" style="height:${barPx}px; background:${color};"></div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div class="dash-vbar-labels">
+              ${categories.map(cat => `
+                <div class="dash-vbar-label-col">
+                  <div class="dash-vbar-cat" title="${escapeHtml(cat.category)}"><span class="dash-vbar-cat-txt">${escapeHtml(formatDashBarCatLabel(cat.category))}</span></div>
+                  <div class="dash-vbar-num">${fmtPlainNum(cat.amount)}</div>
                 </div>
-              `;
-            }).join('')}
-          </div>
-          <div class="dash-vbar-labels">
-            ${categories.map(cat => `
-              <div class="dash-vbar-label-col">
-                <div class="dash-vbar-cat" title="${escapeHtml(cat.category)}">${escapeHtml(cat.category)}</div>
-                <div class="dash-vbar-num">${fmtPlainNum(cat.amount)}</div>
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
           </div>
         </div>
       </div>
@@ -10478,31 +10517,33 @@ function renderDashboardBudgetSummary(period, totals){
           ${statusBadge}
         </div>
         <div class="dash-vbar-stage">
-          <div class="dash-vbar-group" id="dash-budget-bars">
-            ${topSix.map((c, idx) => {
-              const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
-              const cappedPct = Math.min(100, cPct);
-              const barPx = c.spent > 0 ? Math.max(10, Math.round((cappedPct / 100) * maxBarPx)) : 4;
-              const cOver = c.spent > c.budgetAmount;
-              const cColor = cOver ? 'var(--rose)' : (cPct >= 85 ? '#D97706' : 'var(--teal)');
-              return `
-                <div class="dash-vbar-col" data-vbar-idx="${idx}">
-                  <span class="dash-vbar-pct" style="color:${cColor};">${cPct}%</span>
-                  <div class="dash-vbar-bar" style="height:${barPx}px; background:${cColor};"></div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-          <div class="dash-vbar-labels">
-            ${topSix.map(c => {
-              const cOver = c.spent > c.budgetAmount;
-              return `
-                <div class="dash-vbar-label-col">
-                  <div class="dash-vbar-cat" title="${escapeHtml(c.category)}">${escapeHtml(c.category)}</div>
-                  <div class="dash-vbar-num" style="color:${cOver ? 'var(--rose)' : 'var(--muted)'};">${fmtPlainNum(c.spent)}</div>
-                </div>
-              `;
-            }).join('')}
+          <div class="dash-vbar-inner">
+            <div class="dash-vbar-group" id="dash-budget-bars">
+              ${topSix.map((c, idx) => {
+                const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
+                const cappedPct = Math.min(100, cPct);
+                const barPx = c.spent > 0 ? Math.max(10, Math.round((cappedPct / 100) * maxBarPx)) : 4;
+                const cOver = c.spent > c.budgetAmount;
+                const cColor = cOver ? 'var(--rose)' : (cPct >= 85 ? '#D97706' : 'var(--teal)');
+                return `
+                  <div class="dash-vbar-col" data-vbar-idx="${idx}">
+                    <span class="dash-vbar-pct" style="color:${cColor};">${cPct}%</span>
+                    <div class="dash-vbar-bar" style="height:${barPx}px; background:${cColor};"></div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div class="dash-vbar-labels">
+              ${topSix.map(c => {
+                const cOver = c.spent > c.budgetAmount;
+                return `
+                  <div class="dash-vbar-label-col">
+                    <div class="dash-vbar-cat" title="${escapeHtml(c.category)}"><span class="dash-vbar-cat-txt">${escapeHtml(formatDashBarCatLabel(c.category))}</span></div>
+                    <div class="dash-vbar-num" style="color:${cOver ? 'var(--rose)' : 'var(--muted)'};">${fmtPlainNum(c.spent)}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
           </div>
         </div>
       </div>
