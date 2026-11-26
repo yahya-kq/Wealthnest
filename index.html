@@ -1751,8 +1751,11 @@
     min-width: 0;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   }
-  .rep-kpi-card.clickable { cursor: pointer; }
-  .rep-kpi-card.clickable:hover {
+  .rep-kpi-link {
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .rep-kpi-link:hover {
     border-color: rgba(124, 58, 237, 0.35);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
@@ -8801,6 +8804,19 @@ function getReportAggregate(yearChoice, monthSet){
   };
 }
 
+function renderRepKpiCard({ label, amount, badge, tone = 'neu', accent = 'primary', icon = 'wallet', onclick = '' }){
+  return `
+    <div class="card ov-card ${onclick ? 'rep-kpi-link' : ''}" ${onclick ? `onclick="${onclick}"` : ''}>
+      <div class="ov-top">
+        <span class="label-eyebrow">${escapeHtml(label)}</span>
+        <div class="ov-icon accent-${accent}">${miniIcon(icon)}</div>
+      </div>
+      <p class="ov-amount">${amount}</p>
+      <div class="ov-change"><span class="kpi-trend-badge trend-${tone}">${escapeHtml(badge)}</span></div>
+    </div>
+  `;
+}
+
 function buildRepSubcatPopRows(subsObj, includeDivider = true){
   const list = Object.entries(subsObj || {}).sort((a,b)=>b[1]-a[1]).slice(0, 4);
   if(!list.length) return '';
@@ -8878,30 +8894,43 @@ function renderReportOverviewTab(ws, agg){
   const showReimb = agg.claimable > 0 || agg.recovered > 0 || agg.pending > 0 || openClaimsAll.length > 0;
 
   ws.innerHTML = `
-    <div class="rep-kpi-grid">
-      <div class="rep-kpi-card clickable" onclick="setReportTab('cashflow')">
-        <div class="rep-kpi-top"><span class="rep-kpi-label">Net Cash Flow</span><span class="badge ${agg.net>=0?'badge-ok':'badge-over'}">${agg.savingsRate}% Retained</span></div>
-        <div class="rep-kpi-val" style="color:${agg.net>=0?'var(--teal)':'var(--rose)'};">${agg.net>=0?'+':'-'}${fmt(Math.abs(agg.net))}</div>
-        <div class="rep-kpi-sub">Inflow ${fmtPlainNum(agg.income)} · Outflow ${fmtPlainNum(agg.expense)}</div>
-      </div>
-
-      <div class="rep-kpi-card clickable" onclick="setReportTab('budgets')">
-        <div class="rep-kpi-top"><span class="rep-kpi-label">Budget Variance</span><span class="badge ${agg.budgetTotal===0?'badge-off':(budgetVar<0?'badge-over':(budgetPct>=85?'badge-warn':'badge-ok'))}">${agg.budgetTotal>0 ? budgetPct + '% Used' : 'No Budget'}</span></div>
-        <div class="rep-kpi-val" style="color:${budgetVar<0?'var(--rose)':'var(--ink)'};">${fmt(Math.abs(budgetVar))}</div>
-        <div class="rep-kpi-sub">${agg.budgetTotal>0 ? (budgetVar<0 ? 'Over plan' : 'Remaining') + ' · ' + overCnt + ' Over Limit' : 'Set budgets to track variance'}</div>
-      </div>
-
-      <div class="rep-kpi-card clickable" onclick="setReportTab('savings')">
-        <div class="rep-kpi-top"><span class="rep-kpi-label">Goal Funding</span><span class="badge ${goals.length?'badge-ok':'badge-off'}">${goals.length ? goalPct + '% Funded' : 'No Goals'}</span></div>
-        <div class="rep-kpi-val">${fmt(totalGoalSaved)}</div>
-        <div class="rep-kpi-sub">${goals.length ? `${activeGoals} Active · ${achievedGoals} Completed` : 'No savings targets configured'}</div>
-      </div>
-
-      <div class="rep-kpi-card clickable" onclick="setReportTab('investments')">
-        <div class="rep-kpi-top"><span class="rep-kpi-label">Portfolio</span><span class="badge ${invs.length?(invGain>=0?'badge-ok':'badge-over'):'badge-off'}">${invs.length ? (invGain>=0?'+':'') + invRoi + '% ROI' : 'No Assets'}</span></div>
-        <div class="rep-kpi-val">${fmt(invVal)}</div>
-        <div class="rep-kpi-sub">${invs.length ? `${invGain>=0?'+':''}${fmtPlainNum(invGain)} · ${invs.length} Asset${invs.length===1?'':'s'}` : 'No active holdings'}</div>
-      </div>
+    <div class="grid grid-4 mb-4">
+      ${renderRepKpiCard({
+        label: 'Net Cash Flow',
+        amount: `${agg.net >= 0 ? '' : '-'}${fmt(Math.abs(agg.net))}`,
+        badge: `${agg.savingsRate}% Retained`,
+        tone: agg.net > 0 ? 'pos' : (agg.net < 0 ? 'neg' : 'neu'),
+        accent: 'teal',
+        icon: 'scale',
+        onclick: "setReportTab('cashflow')"
+      })}
+      ${renderRepKpiCard({
+        label: 'Budget Variance',
+        amount: fmt(Math.abs(budgetVar)),
+        badge: agg.budgetTotal > 0 ? `${budgetPct}% Used · ${overCnt} Over` : 'No Budget Set',
+        tone: agg.budgetTotal === 0 ? 'neu' : (budgetVar < 0 ? 'neg' : (budgetPct >= 85 ? 'neu' : 'pos')),
+        accent: 'rose',
+        icon: 'down',
+        onclick: "setReportTab('budgets')"
+      })}
+      ${renderRepKpiCard({
+        label: 'Goal Funding',
+        amount: fmt(totalGoalSaved),
+        badge: goals.length ? `${goalPct}% Funded · ${activeGoals} Active` : 'No Goals',
+        tone: goals.length && totalGoalSaved > 0 ? 'pos' : 'neu',
+        accent: 'amber',
+        icon: 'piggy',
+        onclick: "setReportTab('savings')"
+      })}
+      ${renderRepKpiCard({
+        label: 'Portfolio',
+        amount: fmt(invVal),
+        badge: invs.length ? `${invGain >= 0 ? '+' : ''}${invRoi}% ROI` : 'No Assets',
+        tone: invs.length ? (invGain >= 0 ? 'pos' : 'neg') : 'neu',
+        accent: 'primary',
+        icon: 'wallet',
+        onclick: "setReportTab('investments')"
+      })}
     </div>
 
     <div class="rep-grid-2">
@@ -9039,11 +9068,39 @@ function renderReportCashFlowTab(ws, agg){
       </div>
     </div>
 
-    <div class="rep-kpi-grid">
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Total Inflow</span><span class="badge badge-ok">${incEntries.length} Source${incEntries.length===1?'':'s'}</span></div><div class="rep-kpi-val" style="color:var(--teal);">${fmt(agg.income)}</div><div class="rep-kpi-sub">${escapeHtml(agg.periodLabel)}</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">${reportCfBasis==='net'?'Net Outflow':'Total Outflow'}</span><span class="badge ${burnPct>90?'badge-over':'badge-warn'}">${burnPct}% of Inflow</span></div><div class="rep-kpi-val" style="color:var(--rose);">${fmt(effExp)}</div><div class="rep-kpi-sub">${reportCfBasis==='net'?'Excludes pending claims':'Includes claimable bills'}</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Net Surplus</span><span class="badge ${effNet>=0?'badge-ok':'badge-over'}">${effRate}% Rate</span></div><div class="rep-kpi-val" style="color:${effNet>=0?'var(--teal)':'var(--rose)'};">${effNet>=0?'+':'-'}${fmt(Math.abs(effNet))}</div><div class="rep-kpi-sub">Operating cash retention</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Claims Pending</span><span class="badge badge-warn">Reimbursable</span></div><div class="rep-kpi-val" style="color:#D97706;">${fmt(agg.pending)}</div><div class="rep-kpi-sub">Recovered: ${fmt(agg.recovered)}</div></div>
+    <div class="grid grid-4 mb-4">
+      ${renderRepKpiCard({
+        label: 'Total Inflow',
+        amount: fmt(agg.income),
+        badge: `${incEntries.length} Source${incEntries.length === 1 ? '' : 's'}`,
+        tone: agg.income > 0 ? 'pos' : 'neu',
+        accent: 'teal',
+        icon: 'wallet'
+      })}
+      ${renderRepKpiCard({
+        label: reportCfBasis === 'net' ? 'Net Outflow' : 'Total Outflow',
+        amount: fmt(effExp),
+        badge: `${burnPct}% of Inflow`,
+        tone: burnPct > 90 ? 'neg' : (burnPct > 0 ? 'neu' : 'pos'),
+        accent: 'rose',
+        icon: 'down'
+      })}
+      ${renderRepKpiCard({
+        label: 'Net Surplus',
+        amount: `${effNet >= 0 ? '' : '-'}${fmt(Math.abs(effNet))}`,
+        badge: `${effRate}% Retained`,
+        tone: effNet > 0 ? 'pos' : (effNet < 0 ? 'neg' : 'neu'),
+        accent: 'primary',
+        icon: 'scale'
+      })}
+      ${renderRepKpiCard({
+        label: 'Claims Pending',
+        amount: fmt(agg.pending),
+        badge: agg.recovered > 0 ? `Recovered ${fmt(agg.recovered)}` : (agg.pending > 0 ? 'Awaiting Recovery' : 'No Pending Claims'),
+        tone: agg.pending > 0 ? 'neu' : 'pos',
+        accent: 'amber',
+        icon: 'piggy'
+      })}
     </div>
 
     <div class="rep-card" style="margin-bottom:18px;">
@@ -9165,11 +9222,39 @@ function renderReportBudgetsTab(ws, agg){
 
     ws.innerHTML = `
       ${headerModes}
-      <div class="rep-kpi-grid">
-        <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Total Budget</span></div><div class="rep-kpi-val">${fmt(agg.budgetTotal)}</div><div class="rep-kpi-sub">${agg.budgetRows.length} Categories</div></div>
-        <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Actual Spend</span></div><div class="rep-kpi-val">${fmt(spent)}</div><div class="rep-kpi-sub">${agg.budgetTotal ? Math.round((spent / agg.budgetTotal) * 100) : 0}% Utilized</div></div>
-        <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Net Variance</span></div><div class="rep-kpi-val" style="color:${totalVar<0?'var(--rose)':'var(--teal)'};">${totalVar>=0?'+':'-'}${fmt(Math.abs(totalVar))}</div><div class="rep-kpi-sub">${totalVar<0?'Unfavorable':'Favorable'}</div></div>
-        <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Over Limit</span></div><div class="rep-kpi-val" style="color:${overRows.length?'var(--rose)':'var(--teal)'};">${overRows.length}</div><div class="rep-kpi-sub">Flagged categories</div></div>
+      <div class="grid grid-4 mb-4">
+        ${renderRepKpiCard({
+          label: 'Total Budget',
+          amount: fmt(agg.budgetTotal),
+          badge: `${agg.budgetRows.length} Categor${agg.budgetRows.length === 1 ? 'y' : 'ies'}`,
+          tone: 'neu',
+          accent: 'primary',
+          icon: 'wallet'
+        })}
+        ${renderRepKpiCard({
+          label: 'Actual Spend',
+          amount: fmt(spent),
+          badge: `${agg.budgetTotal ? Math.round((spent / agg.budgetTotal) * 100) : 0}% Utilized`,
+          tone: spent > agg.budgetTotal && agg.budgetTotal > 0 ? 'neg' : 'neu',
+          accent: 'rose',
+          icon: 'down'
+        })}
+        ${renderRepKpiCard({
+          label: 'Net Variance',
+          amount: `${totalVar >= 0 ? '' : '-'}${fmt(Math.abs(totalVar))}`,
+          badge: totalVar < 0 ? 'Over Plan' : 'Remaining',
+          tone: totalVar < 0 ? 'neg' : 'pos',
+          accent: 'teal',
+          icon: 'scale'
+        })}
+        ${renderRepKpiCard({
+          label: 'Over Limit',
+          amount: String(overRows.length),
+          badge: overRows.length ? 'Flagged Categories' : 'All On Track',
+          tone: overRows.length ? 'neg' : 'pos',
+          accent: 'amber',
+          icon: 'piggy'
+        })}
       </div>
 
       ${topBars.length ? `
@@ -9502,11 +9587,39 @@ function renderReportInvestmentsTab(ws){
   const maxV = Math.max(...classRows.flatMap(r => [r.cost, r.val]), 1);
 
   ws.innerHTML = `
-    <div class="rep-kpi-grid">
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Portfolio Value</span></div><div class="rep-kpi-val">${fmt(val)}</div><div class="rep-kpi-sub">${list.length} Active Holding${list.length===1?'':'s'}</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Invested Capital</span></div><div class="rep-kpi-val">${fmt(cost)}</div><div class="rep-kpi-sub">Cost basis</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Unrealized Gain</span></div><div class="rep-kpi-val" style="color:${gain>=0?'var(--teal)':'var(--rose)'};">${gain>=0?'+':'-'}${fmt(Math.abs(gain))}</div><div class="rep-kpi-sub">${sold.length ? `Realized: ${realizedGain>=0?'+':''}${fmt(realizedGain)}` : 'Net appreciation'}</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Portfolio ROI</span></div><div class="rep-kpi-val" style="color:${gain>=0?'var(--teal)':'var(--rose)'};">${gain>=0?'+':''}${roi}%</div><div class="rep-kpi-sub">Weighted return</div></div>
+    <div class="grid grid-4 mb-4">
+      ${renderRepKpiCard({
+        label: 'Portfolio Value',
+        amount: fmt(val),
+        badge: `${list.length} Active Holding${list.length === 1 ? '' : 's'}`,
+        tone: list.length ? 'pos' : 'neu',
+        accent: 'primary',
+        icon: 'wallet'
+      })}
+      ${renderRepKpiCard({
+        label: 'Invested Capital',
+        amount: fmt(cost),
+        badge: 'Cost Basis',
+        tone: 'neu',
+        accent: 'amber',
+        icon: 'piggy'
+      })}
+      ${renderRepKpiCard({
+        label: 'Unrealized Gain',
+        amount: `${gain >= 0 ? '' : '-'}${fmt(Math.abs(gain))}`,
+        badge: sold.length ? `Realized ${realizedGain >= 0 ? '+' : '-'}${fmt(Math.abs(realizedGain))}` : 'Net Appreciation',
+        tone: gain > 0 ? 'pos' : (gain < 0 ? 'neg' : 'neu'),
+        accent: 'teal',
+        icon: 'up'
+      })}
+      ${renderRepKpiCard({
+        label: 'Portfolio ROI',
+        amount: `${gain >= 0 ? '+' : ''}${roi}%`,
+        badge: 'Weighted Return',
+        tone: gain > 0 ? 'pos' : (gain < 0 ? 'neg' : 'neu'),
+        accent: 'rose',
+        icon: 'scale'
+      })}
     </div>
 
     ${list.length ? `
@@ -9597,11 +9710,39 @@ function renderReportSavingsTab(ws, agg){
   const maxG = Math.max(...rows.map(r => Math.max(r.saved, r.target)), 1);
 
   ws.innerHTML = `
-    <div class="rep-kpi-grid">
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Total Saved</span></div><div class="rep-kpi-val" style="color:var(--teal);">${fmt(totalSaved)}</div><div class="rep-kpi-sub">Across ${goals.length} goal${goals.length===1?'':'s'}</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Period Saved</span></div><div class="rep-kpi-val">${fmt(agg.savings)}</div><div class="rep-kpi-sub">${escapeHtml(agg.periodLabel)}</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Funding Progress</span></div><div class="rep-kpi-val">${overallPct}%</div><div class="rep-kpi-sub">Target ${fmtPlainNum(totalTgt)}</div></div>
-      <div class="rep-kpi-card"><div class="rep-kpi-top"><span class="rep-kpi-label">Remaining Gap</span></div><div class="rep-kpi-val">${fmt(totalGap)}</div><div class="rep-kpi-sub">To reach all targets</div></div>
+    <div class="grid grid-4 mb-4">
+      ${renderRepKpiCard({
+        label: 'Total Saved',
+        amount: fmt(totalSaved),
+        badge: `${goals.length} Goal${goals.length === 1 ? '' : 's'}`,
+        tone: totalSaved > 0 ? 'pos' : 'neu',
+        accent: 'teal',
+        icon: 'piggy'
+      })}
+      ${renderRepKpiCard({
+        label: 'Period Saved',
+        amount: fmt(agg.savings),
+        badge: agg.periodLabel,
+        tone: agg.savings > 0 ? 'pos' : 'neu',
+        accent: 'amber',
+        icon: 'wallet'
+      })}
+      ${renderRepKpiCard({
+        label: 'Funding Progress',
+        amount: `${overallPct}%`,
+        badge: `Target ${fmt(totalTgt)}`,
+        tone: overallPct >= 50 ? 'pos' : 'neu',
+        accent: 'primary',
+        icon: 'up'
+      })}
+      ${renderRepKpiCard({
+        label: 'Remaining Gap',
+        amount: fmt(totalGap),
+        badge: totalGap === 0 && goals.length ? 'All Targets Met' : 'To Reach Targets',
+        tone: totalGap === 0 && goals.length ? 'pos' : 'neu',
+        accent: 'rose',
+        icon: 'scale'
+      })}
     </div>
 
     ${rows.length ? `
