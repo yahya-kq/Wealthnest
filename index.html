@@ -1437,33 +1437,59 @@
   }
 
   /* --- Dashboard Vertical Bar Graphs & Reimbursements Card --- */
+  .dash-vbar-wrap {
+    position: relative;
+  }
+  .dash-vbar-wrap::before,
+  .dash-vbar-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .dash-vbar-wrap::before {
+    left: 0;
+    background: linear-gradient(to right, var(--surface) 15%, transparent);
+  }
+  .dash-vbar-wrap::after {
+    right: 0;
+    background: linear-gradient(to left, var(--surface) 15%, transparent);
+  }
+  .dash-vbar-wrap.has-scroll-left::before { opacity: 1; }
+  .dash-vbar-wrap.has-scroll-right::after { opacity: 1; }
   .dash-vbar-stage {
     position: relative;
-    padding-top: 6px;
+    padding-top: 4px;
     overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
   }
   .dash-vbar-stage::-webkit-scrollbar { display: none; }
-  .dash-vbar-inner {
-    width: 100%;
-    min-width: 100%;
-  }
-  .dash-vbar-group {
+  .dash-vbar-track {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 4px;
-    height: 144px;
-    padding: 4px 2px 0;
-    position: relative;
-    z-index: 1;
+    gap: 18px;
+    min-width: 100%;
+    width: max-content;
+    padding: 6px 4px 2px;
   }
   .dash-vbar-col {
-    flex: 1 1 0;
-    min-width: 0;
-    height: 100%;
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .dash-vbar-plot {
+    height: 142px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1472,65 +1498,34 @@
   .dash-vbar-val {
     font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
     font-variant-numeric: tabular-nums;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
+    letter-spacing: -0.01em;
     line-height: 1;
     margin-bottom: 6px;
     white-space: nowrap;
   }
   .dash-vbar-bar {
     width: 22px;
-    max-width: 100%;
     border-radius: 6px 6px 3px 3px;
     transition: height 0.3s ease;
   }
-  .dash-vbar-labels {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 4px;
-    padding: 8px 2px 0;
-  }
-  .dash-vbar-label-col {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
   .dash-vbar-cat {
-    font-size: 10px;
+    font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+    font-size: 12px;
     font-weight: 700;
     color: var(--ink);
-    line-height: 1.22;
-    height: 26px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    line-height: 1.25;
+    margin-top: 10px;
+    white-space: nowrap;
     text-align: center;
-    overflow: hidden;
-    word-break: normal;
-    overflow-wrap: normal;
-  }
-  .dash-vbar-cat-txt {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
   }
   @media(max-width: 640px){
-    .dash-vbar-inner { width: max-content; min-width: 100%; }
-    .dash-vbar-group { gap: 4px; }
-    .dash-vbar-col,
-    .dash-vbar-label-col { flex: 1 0 50px; min-width: 50px; }
+    .dash-vbar-track { gap: 16px; padding: 4px 2px 2px; }
+    .dash-vbar-plot { height: 130px; }
     .dash-vbar-bar { width: 18px; }
-    .dash-vbar-val { font-size: 9.5px; }
-    .dash-vbar-labels { gap: 4px; }
-    .dash-vbar-cat { font-size: 9.5px; height: 25px; }
+    .dash-vbar-val { font-size: 10px; }
+    .dash-vbar-cat { font-size: 11px; margin-top: 8px; }
   }
   #edit-tag-modal-backdrop,
   #quick-subcat-modal-backdrop { z-index: 2200 !important; }
@@ -10358,14 +10353,41 @@ function fmtPlainNum(n){
   return Math.round(Number(n) || 0).toLocaleString();
 }
 function formatDashBarCatLabel(name){
-  const raw = String(name || '').trim();
-  const shortMap = {
-    'Transportation': 'Transport',
-    'Entertainment': 'Entertainment',
-    'Subscriptions': 'Subscriptions'
+  return String(name || '').trim();
+}
+function enableDashVbarDrag(stage){
+  if(!stage) return;
+  const wrap = stage.closest('.dash-vbar-wrap');
+  const syncFade = () => {
+    if(!wrap) return;
+    const maxS = stage.scrollWidth - stage.clientWidth;
+    wrap.classList.toggle('has-scroll-left', stage.scrollLeft > 4);
+    wrap.classList.toggle('has-scroll-right', maxS > 4 && stage.scrollLeft < maxS - 4);
   };
-  if(shortMap[raw]) return shortMap[raw];
-  return raw;
+  requestAnimationFrame(syncFade);
+  if(stage._dragBound) return;
+  stage._dragBound = true;
+  stage.addEventListener('scroll', syncFade, { passive: true });
+  window.addEventListener('resize', syncFade);
+  let isDown = false, startX = 0, startScroll = 0;
+  stage.addEventListener('mousedown', e => {
+    if(stage.scrollWidth <= stage.clientWidth) return;
+    isDown = true;
+    startX = e.pageX - stage.offsetLeft;
+    startScroll = stage.scrollLeft;
+    stage.style.userSelect = 'none';
+  });
+  window.addEventListener('mouseup', () => {
+    if(!isDown) return;
+    isDown = false;
+    stage.style.userSelect = '';
+  });
+  stage.addEventListener('mousemove', e => {
+    if(!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - stage.offsetLeft;
+    stage.scrollLeft = startScroll - (x - startX);
+  });
 }
 
 function renderDashboardTopExpenses(periodTxs, totals){
@@ -10402,31 +10424,28 @@ function renderDashboardTopExpenses(periodTxs, totals){
         <span class="dash-card-kpi-val" style="color:var(--rose);">${fmt(totalExpense)}</span>
         <span class="badge ${expRatio > 90 ? 'badge-over' : 'badge-off'} dash-card-kpi-badge">${expRatio > 0 ? expRatio + '% of Income' : 'Outflow'}</span>
       </div>
-      <div class="dash-vbar-stage">
-        <div class="dash-vbar-inner">
-          <div class="dash-vbar-group" id="dash-top-exp-bars">
+      <div class="dash-vbar-wrap">
+        <div class="dash-vbar-stage" id="dash-top-exp-stage">
+          <div class="dash-vbar-track" id="dash-top-exp-bars">
             ${categories.map((cat, idx) => {
               const barPx = Math.max(12, Math.round(((Number(cat.amount) || 0) / maxAmt) * maxBarPx));
               const color = palette[idx % palette.length];
               return `
                 <div class="dash-vbar-col">
-                  <span class="dash-vbar-val" style="color:var(--ink);">${fmtPlainNum(cat.amount)}</span>
-                  <div class="dash-vbar-bar" style="height:${barPx}px; background:${color};"></div>
+                  <div class="dash-vbar-plot">
+                    <span class="dash-vbar-val" style="color:var(--ink);">${fmtPlainNum(cat.amount)}</span>
+                    <div class="dash-vbar-bar" style="height:${barPx}px; background:${color};"></div>
+                  </div>
+                  <div class="dash-vbar-cat">${escapeHtml(formatDashBarCatLabel(cat.category))}</div>
                 </div>
               `;
             }).join('')}
-          </div>
-          <div class="dash-vbar-labels">
-            ${categories.map(cat => `
-              <div class="dash-vbar-label-col">
-                <div class="dash-vbar-cat"><span class="dash-vbar-cat-txt">${escapeHtml(formatDashBarCatLabel(cat.category))}</span></div>
-              </div>
-            `).join('')}
           </div>
         </div>
       </div>
     </div>
   `;
+  enableDashVbarDrag(document.getElementById('dash-top-exp-stage'));
 }
 
 function renderDashboardBudgetSummary(period, totals){
@@ -10486,9 +10505,9 @@ function renderDashboardBudgetSummary(period, totals){
         <span class="dash-card-kpi-val" style="color:var(--ink);">${fmt(spent)}</span>
         ${statusBadge}
       </div>
-      <div class="dash-vbar-stage">
-        <div class="dash-vbar-inner">
-          <div class="dash-vbar-group" id="dash-budget-bars">
+      <div class="dash-vbar-wrap">
+        <div class="dash-vbar-stage" id="dash-budget-stage">
+          <div class="dash-vbar-track" id="dash-budget-bars">
             ${displayRows.map(c => {
               const cPct = c.budgetAmount > 0 ? Math.round((c.spent / c.budgetAmount) * 100) : 0;
               const cappedPct = Math.min(100, cPct);
@@ -10497,23 +10516,20 @@ function renderDashboardBudgetSummary(period, totals){
               const cColor = cOver ? 'var(--rose)' : (cPct >= 85 ? '#D97706' : 'var(--teal)');
               return `
                 <div class="dash-vbar-col">
-                  <span class="dash-vbar-val" style="color:${cColor};">${fmtPlainNum(c.spent)}</span>
-                  <div class="dash-vbar-bar" style="height:${barPx}px; background:${cColor};"></div>
+                  <div class="dash-vbar-plot">
+                    <span class="dash-vbar-val" style="color:${cColor};">${fmtPlainNum(c.spent)}</span>
+                    <div class="dash-vbar-bar" style="height:${barPx}px; background:${cColor};"></div>
+                  </div>
+                  <div class="dash-vbar-cat">${escapeHtml(formatDashBarCatLabel(c.category))}</div>
                 </div>
               `;
             }).join('')}
-          </div>
-          <div class="dash-vbar-labels">
-            ${displayRows.map(c => `
-              <div class="dash-vbar-label-col">
-                <div class="dash-vbar-cat"><span class="dash-vbar-cat-txt">${escapeHtml(formatDashBarCatLabel(c.category))}</span></div>
-              </div>
-            `).join('')}
           </div>
         </div>
       </div>
     </div>
   `;
+  enableDashVbarDrag(document.getElementById('dash-budget-stage'));
 }
 
 function renderDashboardSavings(period, totals){
