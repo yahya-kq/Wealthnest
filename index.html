@@ -8397,7 +8397,6 @@ function monthFilterOptions(selected){
 /* ---------------- 5-Page Automated Reports Engine ---------------- */
 let reportActiveTab = 'overview';
 let reportSelMonths = null; // Set<number> 1..12, defaults to current month
-let reportCfBasis = 'gross'; // 'gross' | 'net'
 let reportBudgetMode = 'variance'; // 'variance' | 'cross' | 'category'
 let reportExpandedCats = new Set();
 let reportCrossExpandedCats = new Set();
@@ -9188,7 +9187,7 @@ function toggleReportCfExpandCat(cat){
 
 /* ==================== 2. CASH FLOW TAB ==================== */
 function renderReportCashFlowTab(ws, agg){
-  const effExp = reportCfBasis === 'net' ? Math.max(0, agg.expense - agg.pending) : agg.expense;
+  const effExp = agg.expense;
   const effNet = agg.income - effExp;
   const effRate = agg.income > 0 ? Math.round((Math.max(0, effNet) / agg.income) * 1000) / 10 : 0;
   const burnPct = agg.income > 0 ? Math.round((effExp / agg.income) * 100) : 0;
@@ -9201,7 +9200,7 @@ function renderReportCashFlowTab(ws, agg){
   const seriesAll = [];
   for(let m = 1; m <= 12; m++){
     const ma = getReportAggregate(yrNum, new Set([m]));
-    const ex = reportCfBasis === 'net' ? Math.max(0, ma.expense - ma.pending) : ma.expense;
+    const ex = ma.expense;
     if(ma.income > 0 || ex > 0){
       const topCat = Object.entries(ma.expByCat).sort((a,b)=>b[1]-a[1])[0];
       seriesAll.push({ m, label: shortM[m-1], full: MONTH_NAMES[m-1], inc: ma.income, exp: ex, net: ma.income - ex, topCat });
@@ -9211,13 +9210,6 @@ function renderReportCashFlowTab(ws, agg){
   const maxS = Math.max(...series.flatMap(s => [s.inc, s.exp]), 1);
 
   ws.innerHTML = `
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-      <div class="rep-mode-pills">
-        <button type="button" class="rep-mode-pill ${reportCfBasis==='gross'?'active':''}" onclick="reportCfBasis='gross'; renderReports()">Gross Spend</button>
-        <button type="button" class="rep-mode-pill ${reportCfBasis==='net'?'active':''}" onclick="reportCfBasis='net'; renderReports()">Net of Claims</button>
-      </div>
-    </div>
-
     <div class="grid grid-4 mb-4">
       ${renderRepKpiCard({
         label: 'Total Inflow',
@@ -9228,7 +9220,7 @@ function renderReportCashFlowTab(ws, agg){
         icon: 'arrowDownLeft'
       })}
       ${renderRepKpiCard({
-        label: reportCfBasis === 'net' ? 'Net Outflow' : 'Total Outflow',
+        label: 'Total Outflow',
         amount: fmt(effExp),
         badge: `${burnPct}% of Inflow`,
         tone: burnPct > 90 ? 'neg' : (burnPct > 0 ? 'neu' : 'pos'),
