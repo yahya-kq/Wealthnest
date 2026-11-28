@@ -2201,6 +2201,8 @@ table.ben-tbl .num { text-align:right; font-family:var(--font-mono); font-varian
 .ben-dest-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
 .ben-dest-opt { border:1px solid var(--line); border-radius:8px; padding:8px 6px; text-align:center; font-size:12px; font-weight:600; color:var(--muted); background:var(--surface); cursor:pointer; transition:all .14s; }
 .ben-dest-opt.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
+.badge-primary { background:var(--primary-light); color:var(--primary); }
+.warning-card.priority-primary { border-left:4px solid var(--primary); }
 
 @media (max-width: 1020px) {
   .ben-kpi-row { grid-template-columns:repeat(2, 1fr); }
@@ -3187,9 +3189,7 @@ table.ben-tbl .num { text-align:right; font-family:var(--font-mono); font-varian
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
             <div>
               <h2 class="section-title">Payment Methods</h2>
-              
             </div>
-            <span class="badge badge-ok" id="payment-methods-count-badge">Active</span>
           </div>
 
           <div id="payment-methods-list" style="margin:18px 0 20px; display:flex; flex-direction:column; gap:10px;"></div>
@@ -4176,28 +4176,33 @@ table.ben-tbl .num { text-align:right; font-family:var(--font-mono); font-varian
 
 <!-- Warning Rule Edit / Create Modal -->
 <div id="warning-rule-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeWarningRuleModal()">
-  <div class="modal" style="max-width:440px;">
-    <button class="modal-close" onclick="closeWarningRuleModal()" aria-label="Close">✕</button>
-    <h2 id="warning-rule-modal-title" style="margin:0 0 16px; font-size:18px;">Customize Warning Sign</h2>
+  <div class="modal" style="max-width:480px;">
+    <button class="modal-close" onclick="closeWarningRuleModal()" aria-label="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2 id="warning-rule-modal-title" style="margin:0 0 14px; font-size:17px;">Warning Sign</h2>
     <form onsubmit="handleSaveWarningRule(event)">
       <input type="hidden" id="warning-rule-id">
-      <label class="field-label" for="warning-rule-name">Warning Rule Title</label>
-      <input type="text" id="warning-rule-name" class="field-input mb-3" required autocomplete="off">
 
-      <label class="field-label" for="warning-rule-badge">Badge Label (Displayed on Cards &amp; Rows)</label>
-      <input type="text" id="warning-rule-badge" class="field-input mb-3" placeholder="Badge text" required autocomplete="off">
-
-      <label class="field-label" for="warning-rule-subhead">One-Line Subheading / Description</label>
-      <input type="text" id="warning-rule-subhead" class="field-input mb-3" placeholder="Short one-line explanation of this warning sign" required autocomplete="off">
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;" class="mb-3">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
         <div>
-          <label class="field-label" for="warning-rule-section">Dashboard Section</label>
-          <select id="warning-rule-section" class="field-input">
+          <label class="field-label" for="warning-rule-name">Rule Title <span style="color:var(--rose);">*</span></label>
+          <input type="text" id="warning-rule-name" class="field-input" required autocomplete="off">
+        </div>
+        <div>
+          <label class="field-label" for="warning-rule-badge">Badge Label <span style="color:var(--rose);">*</span></label>
+          <input type="text" id="warning-rule-badge" class="field-input" required autocomplete="off">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
+        <div>
+          <label class="field-label" for="warning-rule-section">Section</label>
+          <select id="warning-rule-section" class="field-input" onchange="onWarningRuleSectionChange()">
             <option value="Budgets & Expenses">Budgets &amp; Expenses</option>
             <option value="Savings Goals">Savings Goals</option>
             <option value="Categories & Transactions">Categories &amp; Transactions</option>
             <option value="Income & Benefits">Income &amp; Benefits</option>
+            <option value="Investments">Investments</option>
+            <option value="Dashboard">Dashboard</option>
           </select>
         </div>
         <div>
@@ -4206,28 +4211,38 @@ table.ben-tbl .num { text-align:right; font-family:var(--font-mono); font-varian
             <option value="danger">Critical (Rose)</option>
             <option value="amber">Warning (Amber)</option>
             <option value="teal">Actionable (Teal)</option>
-            <option value="primary">Info (Indigo)</option>
+            <option value="primary">Info (Purple)</option>
           </select>
         </div>
       </div>
 
-      <label class="field-label" for="warning-rule-action">Click Action Behavior</label>
-      <select id="warning-rule-action" class="field-input mb-4">
-        <option value="adjust_budget">Open Edit Budget Modal</option>
-        <option value="view_expenses">View Transactions Page</option>
-        <option value="extend_goal">Open Extend Goal Deadline Modal</option>
-        <option value="contribute_goal">Open Goal Contribute Input</option>
-        <option value="transfer_goal">Open Savings Transfer Modal</option>
-        <option value="use_savings">Use Goal Savings for Expense</option>
-        <option value="edit_tx">Open Edit Transaction Modal</option>
-        <option value="filter_unassigned">Filter Unassigned Subcategories</option>
-        <option value="transfer_benefit">Open Benefit Surplus Transfer Modal</option>
-        <option value="open_budgets">Navigate to Budgets Page</option>
-        <option value="open_savings">Navigate to Savings Goals Page</option>
-        <option value="open_settings">Navigate to Settings Page</option>
-      </select>
+      <div style="display:grid; grid-template-columns:1.35fr 0.65fr; gap:10px; margin-bottom:11px;">
+        <div>
+          <label class="field-label" for="warning-rule-trigger">Trigger Condition</label>
+          <select id="warning-rule-trigger" class="field-input" onchange="onWarningRuleTriggerChange()"></select>
+        </div>
+        <div id="warning-rule-threshold-wrap">
+          <label class="field-label" id="warning-rule-threshold-label" for="warning-rule-threshold">Threshold</label>
+          <input type="number" id="warning-rule-threshold" class="field-input figure" min="0" step="any" placeholder="0">
+        </div>
+      </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <div style="margin-bottom:11px;">
+        <label class="field-label" for="warning-rule-action">Click Action</label>
+        <select id="warning-rule-action" class="field-input"></select>
+      </div>
+
+      <div style="margin-bottom:11px;">
+        <label class="field-label" for="warning-rule-subhead">Description <span style="color:var(--rose);">*</span></label>
+        <input type="text" id="warning-rule-subhead" class="field-input" required autocomplete="off">
+      </div>
+
+      <label for="warning-rule-active" style="display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--surface-2); border-radius:8px; margin-bottom:14px; cursor:pointer; font-size:13px; font-weight:600; color:var(--ink);">
+        <input type="checkbox" id="warning-rule-active" checked style="width:15px; height:15px; accent-color:var(--primary); cursor:pointer;">
+        <span>Active</span>
+      </label>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
         <button type="button" onclick="closeWarningRuleModal()" class="btn-ghost">Cancel</button>
         <button type="submit" class="btn-primary">Save Warning Sign</button>
       </div>
@@ -7710,10 +7725,18 @@ function renderBenefitsAllowancesTab(ws, allStats, periodClaims){
       : (acc.startDate ? ('From ' + formatBenefitsDateShort(acc.startDate)) : (acc.endDate ? ('Until ' + formatBenefitsDateShort(acc.endDate)) : (acc.period === 'year' ? 'Annual' : 'Monthly')));
     var badge = '<span class="badge badge-ok" style="font-size:11px; padding:2px 8px;">Active</span>';
     var barCol = 'var(--teal)';
+    var quotaWarnRule = (typeof getActiveWarningRulesByTrigger === 'function')
+      ? getActiveWarningRulesByTrigger('benefit_quota_pct').filter(function(r){ return s.pct >= (Number(r.threshold) || 80); }).sort(function(a,b){ return (Number(b.threshold)||0) - (Number(a.threshold)||0); })[0]
+      : null;
     if(s.isEnded){ badge = '<span class="badge badge-off" style="font-size:11px; padding:2px 8px;">Cycle Ended</span>'; barCol = '#94A3B8'; }
     else if(acc.active === false){ badge = '<span class="badge badge-off" style="font-size:11px; padding:2px 8px;">Inactive</span>'; barCol = '#94A3B8'; }
     else if(s.isFull){ badge = '<span class="badge badge-over" style="font-size:11px; padding:2px 8px;">Quota Full</span>'; barCol = 'var(--rose)'; }
+    else if(quotaWarnRule){ badge = renderWarningBadgeSpan(quotaWarnRule, { allowanceId: acc.id }, 'font-size:11px; padding:2px 8px;'); barCol = quotaWarnRule.color === 'danger' ? 'var(--rose)' : (quotaWarnRule.color === 'primary' ? 'var(--primary)' : 'var(--amber)'); }
     else if(s.pct >= 80){ badge = '<span class="badge badge-warn" style="font-size:11px; padding:2px 8px;">Near Limit</span>'; barCol = 'var(--amber)'; }
+    var surplusWarnRule = (!s.isFull && acc.active !== false && typeof getActiveWarningRulesByTrigger === 'function')
+      ? getActiveWarningRulesByTrigger('benefit_surplus_available').find(function(r){ return s.avail >= Math.max(1, Number(r.threshold) || 1); })
+      : null;
+    var surplusWarnHtml = (surplusWarnRule && s.isEnded) ? (' ' + renderWarningBadgeSpan(surplusWarnRule, { allowanceId: acc.id }, 'font-size:11px; padding:2px 8px;')) : '';
 
     var lastTr = s.allOutTransfers.length ? s.allOutTransfers[s.allOutTransfers.length - 1] : null;
     var noteHtml = '';
@@ -7728,7 +7751,7 @@ function renderBenefitsAllowancesTab(ws, allStats, periodClaims){
     }
 
     return '<div class="ben-row ' + (s.isEnded ? 'ended' : '') + '">'
-      + '<div><div class="ben-id-top"><span class="ben-name">' + escapeHtml(acc.name) + '</span>' + badge + '</div>'
+      + '<div><div class="ben-id-top"><span class="ben-name">' + escapeHtml(acc.name) + '</span>' + badge + surplusWarnHtml + '</div>'
       + '<div class="ben-dates">' + (acc.period === 'year' ? 'Annual' : 'Monthly') + ' &middot; ' + escapeHtml(dates) + '</div></div>'
       + '<div class="ben-mid">'
       + '  <div class="ben-mid-top"><span class="ben-nums">' + fmt(s.used) + ' <span>/ ' + fmt(s.effLimit) + '</span></span><span class="ben-avail" style="color:' + barCol + ';">' + (s.isFull ? (fmt(0) + ' left') : (fmt(s.avail) + ' left')) + '</span></div>'
@@ -7819,10 +7842,15 @@ function renderBenefitsReimbursementsTab(ws, periodClaims){
       + '</tr>';
   }).join('');
 
+  var reimbWarnRule = (pendAmt > 0 && typeof getActiveWarningRulesByTrigger === 'function')
+    ? getActiveWarningRulesByTrigger('reimb_pending_exceeds').filter(function(r){ return pendAmt >= (Number(r.threshold) || 0); }).sort(function(a,b){ return (Number(b.threshold)||0) - (Number(a.threshold)||0); })[0]
+    : null;
+
   ws.innerHTML = '<div class="ben-panel">'
     + '<div class="ben-panel-head">'
     + '  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span class="ben-panel-title">Reimbursements</span>'
     + (pendAmt > 0 ? '<span class="badge badge-warn" style="font-size:11px;">Pending: ' + fmt(pendAmt) + '</span>' : '<span class="badge badge-ok" style="font-size:11px;">All Settled</span>')
+    + (reimbWarnRule ? renderWarningBadgeSpan(reimbWarnRule, {}, 'font-size:11px;') : '')
     + '  </div>'
     + '  <div class="ben-pill-group">'
     + '    <button type="button" class="ben-pill-btn ' + (benefitsReimbFilter === 'all' ? 'active' : '') + '" onclick="benefitsReimbFilter=\'all\'; renderBenefitsPage()">All (' + periodClaims.length + ')</button>'
@@ -14292,6 +14320,7 @@ function renderTransactions(){
           <span class="tx-cat-name">${escapeHtml(t.category)}</span>
           ${catDeletedBadge}
           ${t.tag ? renderTagBadgeHtml(t.tag, '10px') : ''}
+          ${typeof renderTxAmountWarningBadgesHtml === 'function' ? renderTxAmountWarningBadgesHtml(t) : ''}
           ${t.isReimbursable ? (t.recoveryStatus === 'settled' ? `<span class="badge badge-ok" style="font-size:10px; padding:1px 6px;">Reimbursed</span>` : (t.recoveryStatus === 'partial' || (parseFloat(t.recoveredAmount) || 0) > 0 ? `<span class="badge" style="font-size:10px; padding:1px 6px; cursor:pointer; background:var(--primary-light); color:var(--primary);" onclick="goToCompanyBenefitsClaims()" title="Partial reimbursement claim">Partial Claim</span>` : `<span class="badge badge-warn" style="font-size:10px; padding:1px 6px; cursor:pointer;" onclick="goToCompanyBenefitsClaims()" title="Pending reimbursement claim">Pending Claim</span>`)) : ''}
         </div>
       </td>
@@ -14491,7 +14520,7 @@ function confirmDelete(){
     }).map(t => ({ id: t.id, prevPaymentMethod: t.paymentMethod }));
     restorePayload = {paymentMethod: methodName, affectedTxs};
   } else if(type === 'warning-rule'){
-    const rule = (DB.warningRules || []).find(r => r.id === value && !r.isDefault);
+    const rule = (DB.warningRules || []).find(r => r.id === value);
     if(!rule){ closeConfirmModal(); return; }
     activityLabel = rule.badgeLabel || rule.name || 'Warning Sign';
     restorePayload = {warningRule: {...rule}};
@@ -14572,7 +14601,12 @@ function confirmDelete(){
     if(!DB.paymentMethods.some(m => m.toLowerCase() === 'other')) DB.paymentMethods.push('Other');
   }
   if(type === 'warning-rule'){
-    DB.warningRules = (DB.warningRules || []).filter(r => r.id !== value || r.isDefault);
+    const removed = (DB.warningRules || []).find(r => r.id === value);
+    DB.warningRules = (DB.warningRules || []).filter(r => r.id !== value);
+    if(removed && removed.isDefault){
+      if(!Array.isArray(DB.deletedWarningRuleIds)) DB.deletedWarningRuleIds = [];
+      if(!DB.deletedWarningRuleIds.includes(value)) DB.deletedWarningRuleIds.push(value);
+    }
   }
   if(type === 'category'){
     const categoryType = Array.isArray(value) ? value[0] : 'expense';
@@ -17250,13 +17284,27 @@ function renderSavings(){
     else if(isExpired) cardBorder = 'border-color:rgba(225,29,72,0.35);';
 
     let statusBadge = '<span class="badge badge-off">In Progress</span>';
+    const dueSoonRule = (typeof getActiveWarningRulesByTrigger === 'function')
+      ? getActiveWarningRulesByTrigger('goal_due_within_days').sort((a,b) => (Number(a.threshold)||7) - (Number(b.threshold)||7))[0]
+      : null;
+    const customDueDays = dueSoonRule ? Math.max(1, Number(dueSoonRule.threshold) || 7) : 7;
+    let isDynamicDueSoon = isDueSoon;
+    if(!reached && !isFullySettled && !g.dismissed && !g.paid && g.deadline && g.deadline >= todayStr){
+      const dDiff = Math.ceil((new Date(g.deadline + 'T00:00:00') - new Date(todayStr + 'T00:00:00')) / 86400000);
+      isDynamicDueSoon = dDiff >= 0 && dDiff <= customDueDays;
+    }
+    const achievedRule = (typeof getActiveWarningRulesByTrigger === 'function')
+      ? getActiveWarningRulesByTrigger('goal_achieved').find(r => pct >= (Number(r.threshold) || 100))
+      : null;
+
     if(g.paid) statusBadge = '<span class="badge badge-ok">Paid</span>';
     else if(g.dismissed) statusBadge = '<span class="badge badge-over">Dismissed</span>';
     else if(isFullySettled) statusBadge = '<span class="badge badge-ok">Settled</span>';
     else if(isPartiallyTransferred) statusBadge = '<span class="badge badge-ok">Partially Transferred</span>';
-    else if(reached) statusBadge = '<span class="badge badge-ok">Achieved</span>';
-    else if(isExpired) statusBadge = '<span class="badge badge-over">Overdue</span>';
-    else if(isDueSoon) statusBadge = '<span class="badge badge-warn">Due Soon</span>';
+    else if(reached) statusBadge = renderGoalWarningBadgeHtml(achievedRule ? achievedRule.id : 'goal_achieved', g, 'Achieved', 'badge-ok');
+    else if(achievedRule) statusBadge = renderWarningBadgeSpan(achievedRule, { goalId: g.id, goalName: g.name }, 'font-weight:700;');
+    else if(isExpired) statusBadge = renderGoalWarningBadgeHtml('goal_deadline_passed', g, 'Overdue', 'badge-over');
+    else if(isDynamicDueSoon) statusBadge = dueSoonRule ? renderWarningBadgeSpan(dueSoonRule, { goalId: g.id, goalName: g.name }, 'font-weight:700;') : '<span class="badge badge-warn">Due Soon</span>';
 
     const metaParts = [catLabel, savingInLabel];
     if(g.deadline) metaParts.push(`Target ${formatGoalDateNice(g.deadline)}`);
@@ -20384,6 +20432,9 @@ function restoreRecycleItem(id){
   }
   if(entry.type === 'warning-rule' && payload.warningRule){
     if(!Array.isArray(DB.warningRules)) DB.warningRules = [];
+    if(Array.isArray(DB.deletedWarningRuleIds)){
+      DB.deletedWarningRuleIds = DB.deletedWarningRuleIds.filter(id => id !== payload.warningRule.id);
+    }
     if(!DB.warningRules.some(r => r.id === payload.warningRule.id)){
       DB.warningRules.push(payload.warningRule);
     }
@@ -21553,9 +21604,13 @@ function getSystemNotifications(targetMonth, targetYear){
   const monthEndDay = new Date(y, m, 0).getDate();
   const monthEndStr = `${y}-${String(m).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`;
 
-  // 1. Budget Alerts for Month m, Year y (Evaluated strictly by Category vs Subcategory)
+  // 1. Budget Alerts for Month m, Year y (Dynamically linked to Settings -> Rules -> Warning Signs)
   if(cfg.budgetAlerts !== false){
     const budgetsForMonth = (DB.budgets || []).filter(b => b.month === m && b.year === y);
+    const overRule = (typeof getActiveWarningRulesByTrigger === 'function') ? getActiveWarningRulesByTrigger('budget_exceeded')[0] : { active: true, badgeLabel: 'Budget Exceeded', color: 'danger' };
+    const nearRules = (typeof getActiveWarningRulesByTrigger === 'function')
+      ? getActiveWarningRulesByTrigger('budget_pct_reached').sort((a, b2) => (Number(b2.threshold)||0) - (Number(a.threshold)||0))
+      : [{ active: true, threshold: 85, badgeLabel: 'Budget Warning', color: 'amber' }];
 
     budgetsForMonth.forEach(b => {
       const budgetAmt = Number(b.budgetAmount) || 0;
@@ -21565,14 +21620,15 @@ function getSystemNotifications(targetMonth, targetYear){
       const spent = isSub
         ? spentFor(DB.transactions, m, y, b.category, b.subCategory)
         : spentFor(DB.transactions, m, y, b.category, null);
+      const pct = Math.round((spent / budgetAmt) * 100);
 
-      if(spent > budgetAmt){
+      if(spent > budgetAmt && overRule){
         const overBy = spent - budgetAmt;
         const subKey = isSub ? b.subCategory.replace(/\s+/g, '_') : 'all';
         const id = 'notif-budget-' + b.category + '-' + subKey + '-' + y + '-' + m;
         const baseId = 'notif-budget-' + b.category + '-' + subKey;
         if(!dismissed.has(id) && !dismissed.has(baseId)){
-          const alertTitle = isSub ? ('Budget Exceeded: ' + b.subCategory + ' (' + b.category + ')') : ('Budget Exceeded: ' + b.category);
+          const alertTitle = (overRule.badgeLabel || 'Budget Exceeded') + ': ' + (isSub ? (b.subCategory + ' (' + b.category + ')') : b.category);
           const alertDesc = isSub
             ? ('Spending (' + fmt(spent) + ') on ' + b.subCategory + ' exceeded your ' + fmt(budgetAmt) + ' limit by ' + fmt(overBy) + '.')
             : ('Spending (' + fmt(spent) + ') exceeded your ' + fmt(budgetAmt) + ' limit for ' + b.category + ' by ' + fmt(overBy) + '.');
@@ -21580,7 +21636,7 @@ function getSystemNotifications(targetMonth, targetYear){
           list.push({
             id: id,
             type: 'alert',
-            priority: 'danger',
+            priority: overRule.color || 'danger',
             title: alertTitle,
             desc: alertDesc,
             date: monthStartStr,
@@ -21591,81 +21647,144 @@ function getSystemNotifications(targetMonth, targetYear){
             actionFn: "goToApp('budgets'); closeNotificationDrawer();"
           });
         }
-      } else if(spent >= budgetAmt * 0.85){
-        const subKey = isSub ? b.subCategory.replace(/\s+/g, '_') : 'all';
-        const id = 'notif-budget-warn-' + b.category + '-' + subKey + '-' + y + '-' + m;
-        const baseId = 'notif-budget-warn-' + b.category + '-' + subKey;
-        if(!dismissed.has(id) && !dismissed.has(baseId)){
-          const warnTitle = isSub ? ('Budget Warning: ' + b.subCategory + ' (' + b.category + ')') : ('Budget Warning: ' + b.category);
-          const warnDesc = isSub
-            ? ('Spending (' + fmt(spent) + ') on ' + b.subCategory + ' reached ' + Math.round((spent/budgetAmt)*100) + '% of your ' + fmt(budgetAmt) + ' limit.')
-            : ('Spending (' + fmt(spent) + ') reached ' + Math.round((spent/budgetAmt)*100) + '% of your ' + fmt(budgetAmt) + ' limit for ' + b.category + '.');
+      } else {
+        const matchedNear = nearRules.find(r => pct >= (Number(r.threshold) || 85));
+        if(matchedNear){
+          const subKey = isSub ? b.subCategory.replace(/\s+/g, '_') : 'all';
+          const id = 'notif-budget-warn-' + b.category + '-' + subKey + '-' + y + '-' + m;
+          const baseId = 'notif-budget-warn-' + b.category + '-' + subKey;
+          if(!dismissed.has(id) && !dismissed.has(baseId)){
+            const warnTitle = (matchedNear.badgeLabel || 'Budget Warning') + ': ' + (isSub ? (b.subCategory + ' (' + b.category + ')') : b.category);
+            const warnDesc = isSub
+              ? ('Spending (' + fmt(spent) + ') on ' + b.subCategory + ' reached ' + pct + '% of your ' + fmt(budgetAmt) + ' limit.')
+              : ('Spending (' + fmt(spent) + ') reached ' + pct + '% of your ' + fmt(budgetAmt) + ' limit for ' + b.category + '.');
 
-          list.push({
-            id: id,
-            type: 'alert',
-            priority: 'amber',
-            title: warnTitle,
-            desc: warnDesc,
-            date: monthStartStr,
-            month: m,
-            year: y,
-            read: isNotificationRead(id),
-            actionLabel: 'View Budgets',
-            actionFn: "goToApp('budgets'); closeNotificationDrawer();"
-          });
+            list.push({
+              id: id,
+              type: 'alert',
+              priority: matchedNear.color || 'amber',
+              title: warnTitle,
+              desc: warnDesc,
+              date: monthStartStr,
+              month: m,
+              year: y,
+              read: isNotificationRead(id),
+              actionLabel: 'View Budgets',
+              actionFn: "goToApp('budgets'); closeNotificationDrawer();"
+            });
+          }
         }
       }
     });
   }
-  // 2. Company Benefits Surplus Alerts for Month m, Year y
+  // 2. Company Benefits Alerts for Month m, Year y (Linked to Warning Rules)
   if(cfg.benefitsAlerts !== false){
-    const todayIso = ymd(now);
+    const surplusRule = (typeof getActiveWarningRulesByTrigger === 'function') ? getActiveWarningRulesByTrigger('benefit_surplus_available')[0] : { active: true, threshold: 1, color: 'teal' };
+    const quotaRules = (typeof getActiveWarningRulesByTrigger === 'function') ? getActiveWarningRulesByTrigger('benefit_quota_pct') : [];
+    const reimbRules = (typeof getActiveWarningRulesByTrigger === 'function') ? getActiveWarningRulesByTrigger('reimb_pending_exceeds') : [];
     const threeDaysAhead = ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3));
     (getAllowanceAccounts() || []).filter(a => a.active !== false).forEach(acc => {
       const refStr = `${y}-${String(m).padStart(2, '0')}-15`;
       const avail = computeAllowanceAvailable(acc, refStr);
-      let nearOrEnded = false;
-      if(acc.endDate){
-        const endInMonth = acc.endDate.startsWith(`${y}-${String(m).padStart(2, '0')}`);
-        nearOrEnded = endInMonth && (acc.endDate <= threeDaysAhead);
-      } else {
-        nearOrEnded = !isCurrentOrFuture || now.getDate() >= 25;
-      }
-      if(avail > 0 && nearOrEnded){
-        const id = `notif-benefit-surplus-${acc.id}-${y}-${m}`;
-        const baseId = `notif-benefit-surplus-${acc.id}`;
-        if(!dismissed.has(id) && !dismissed.has(baseId)){
-          const eventDate = acc.endDate && acc.endDate.startsWith(`${y}-${String(m).padStart(2,'0')}`)
-            ? acc.endDate
-            : `${y}-${String(m).padStart(2, '0')}-25`;
-          list.push({
-            id: id,
-            type: 'alert',
-            priority: 'teal',
-            title: 'Surplus Allowance: ' + acc.name,
-            desc: 'You have ' + fmt(avail) + ' unspent quota available to transfer.',
-            date: eventDate,
-            month: m,
-            year: y,
-            read: isNotificationRead(id),
-            actionLabel: 'Transfer Quota',
-            actionFn: "goToApp('benefits'); openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
-          });
+      const lim = parseFloat(acc.limit) || 0;
+      const usedPct = lim > 0 ? Math.round(((lim - avail) / lim) * 100) : 0;
+
+      if(surplusRule){
+        let nearOrEnded = false;
+        if(acc.endDate){
+          const endInMonth = acc.endDate.startsWith(`${y}-${String(m).padStart(2, '0')}`);
+          nearOrEnded = endInMonth && (acc.endDate <= threeDaysAhead);
+        } else {
+          nearOrEnded = !isCurrentOrFuture || now.getDate() >= 25;
+        }
+        const minSurplus = Math.max(1, Number(surplusRule.threshold) || 1);
+        if(avail >= minSurplus && nearOrEnded){
+          const id = `notif-benefit-surplus-${acc.id}-${y}-${m}`;
+          const baseId = `notif-benefit-surplus-${acc.id}`;
+          if(!dismissed.has(id) && !dismissed.has(baseId)){
+            const eventDate = acc.endDate && acc.endDate.startsWith(`${y}-${String(m).padStart(2,'0')}`)
+              ? acc.endDate
+              : `${y}-${String(m).padStart(2, '0')}-25`;
+            list.push({
+              id: id,
+              type: 'alert',
+              priority: surplusRule.color || 'teal',
+              title: (surplusRule.badgeLabel || 'Surplus Allowance') + ': ' + acc.name,
+              desc: 'You have ' + fmt(avail) + ' unspent quota available to transfer.',
+              date: eventDate,
+              month: m,
+              year: y,
+              read: isNotificationRead(id),
+              actionLabel: 'Transfer Quota',
+              actionFn: "goToApp('benefits'); openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
+            });
+          }
         }
       }
+
+      quotaRules.forEach(qr => {
+        if(usedPct >= (Number(qr.threshold) || 80)){
+          const id = `notif-custom-${qr.id}-${acc.id}-${y}-${m}`;
+          if(!dismissed.has(id)){
+            list.push({
+              id: id,
+              type: 'alert',
+              priority: qr.color || 'amber',
+              title: qr.badgeLabel + ': ' + acc.name,
+              desc: acc.name + ' reached ' + usedPct + '% of its ' + fmt(lim) + ' quota (' + fmt(avail) + ' left).',
+              date: monthStartStr,
+              month: m,
+              year: y,
+              read: isNotificationRead(id),
+              actionLabel: 'View Benefits',
+              actionFn: "executeWarningRuleAction('" + qr.id + "','" + encodeURIComponent(JSON.stringify({ allowanceId: acc.id })) + "'); closeNotificationDrawer();"
+            });
+          }
+        }
+      });
     });
+
+    if(reimbRules.length){
+      const pendReimbTotal = (DB.transactions || []).filter(t => t.isReimbursable && t.recoveryStatus !== 'settled' && inMonth(t, m, y)).reduce((s, t) => {
+        const cl = parseFloat(t.claimableAmount !== undefined && t.claimableAmount !== null ? t.claimableAmount : t.amount) || 0;
+        return s + Math.max(0, cl - (parseFloat(t.recoveredAmount) || 0));
+      }, 0);
+      reimbRules.forEach(rr => {
+        if(pendReimbTotal > 0 && pendReimbTotal >= (Number(rr.threshold) || 0)){
+          const id = `notif-custom-${rr.id}-${y}-${m}`;
+          if(!dismissed.has(id)){
+            list.push({
+              id: id,
+              type: 'alert',
+              priority: rr.color || 'amber',
+              title: rr.badgeLabel + ': ' + fmt(pendReimbTotal),
+              desc: rr.subhead || ('Pending reimbursements reached ' + fmt(pendReimbTotal) + '.'),
+              date: monthStartStr,
+              month: m,
+              year: y,
+              read: isNotificationRead(id),
+              actionLabel: 'View Reimbursements',
+              actionFn: "executeWarningRuleAction('" + rr.id + "'); closeNotificationDrawer();"
+            });
+          }
+        }
+      });
+    }
   }
 
-  // 3. Savings Goal Milestones & Deadlines (Skip already settled, paid, or dismissed goals)
+  // 3. Savings Goal Milestones & Deadlines (Linked to Warning Rules)
   if(cfg.goalsAlerts !== false){
+    const achRule = (typeof getActiveWarningRulesByTrigger === 'function') ? getActiveWarningRulesByTrigger('goal_achieved')[0] : { active: true, threshold: 100, color: 'teal' };
+    const dueRule = (typeof getActiveWarningRulesByTrigger === 'function') ? getActiveWarningRulesByTrigger('goal_due_within_days')[0] : { active: true, threshold: 7, color: 'amber' };
     (DB.savingsGoals || []).forEach(g => {
       if(!g || g.dismissed || g.paid || g.isAssumption) return;
       const cur = getGoalCurrentAmount(g);
       const acc = getGoalAccumulatedDeposits(g);
-      const reached = acc >= (Number(g.targetAmount) || 0) && g.targetAmount > 0;
-      if(reached){
-        if(cur <= 0) return; // Already settled — stop nagging
+      const tgt = Number(g.targetAmount) || 0;
+      const pct = tgt > 0 ? (acc / tgt) * 100 : 0;
+      const reached = tgt > 0 && acc >= tgt;
+      if(reached && achRule){
+        if(cur <= 0) return;
         const id = `notif-goal-reached-${g.id}-${y}-${m}`;
         const baseId = `notif-goal-reached-${g.id}`;
         if(!dismissed.has(id) && !dismissed.has(baseId)){
@@ -21673,8 +21792,8 @@ function getSystemNotifications(targetMonth, targetYear){
           list.push({
             id: id,
             type: 'reminder',
-            priority: 'teal',
-            title: 'Goal Achieved: ' + g.name,
+            priority: achRule.color || 'teal',
+            title: (achRule.badgeLabel || 'Goal Achieved') + ': ' + g.name,
             desc: 'You reached your savings target of ' + fmt(g.targetAmount) + '. You have ' + fmt(cur) + ' ready to spend or reallocate.',
             date: eventDate,
             month: m,
@@ -21686,15 +21805,15 @@ function getSystemNotifications(targetMonth, targetYear){
             secondaryActionFn: `openSavingsTransferModal('${g.id}'); closeNotificationDrawer();`
           });
         }
-      } else if(g.deadline && g.deadline.startsWith(`${y}-${String(m).padStart(2,'0')}`)){
+      } else if(dueRule && g.deadline && g.deadline.startsWith(`${y}-${String(m).padStart(2,'0')}`)){
         const id = `notif-goal-deadline-${g.id}-${y}-${m}`;
         const baseId = `notif-goal-deadline-${g.id}`;
         if(!dismissed.has(id) && !dismissed.has(baseId)){
           list.push({
             id: id,
             type: 'alert',
-            priority: 'amber',
-            title: 'Goal Deadline Approaching: ' + g.name,
+            priority: dueRule.color || 'amber',
+            title: (dueRule.badgeLabel || 'Goal Deadline Approaching') + ': ' + g.name,
             desc: 'Target date is ' + g.deadline + '. You have ' + fmt(cur) + ' in vault (' + fmt(Math.max(0, g.targetAmount - acc)) + ' remaining to reach target).',
             date: g.deadline,
             month: m,
@@ -21707,6 +21826,80 @@ function getSystemNotifications(targetMonth, targetYear){
           });
         }
       }
+    });
+  }
+
+  // 3c. Dynamic Custom Warning Rules (Transactions, Investments, Dashboard Cash Flow)
+  if(typeof getActiveWarningRulesByTrigger === 'function'){
+    const mt = monthTotals(DB.transactions || [], m, y);
+    getActiveWarningRulesByTrigger('monthly_deficit').forEach(r => {
+      if(mt.income > 0 && mt.expense > mt.income){
+        const id = `notif-custom-${r.id}-${y}-${m}`;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id, type: 'alert', priority: r.color || 'danger',
+            title: r.badgeLabel + ': ' + MONTH_NAMES[m - 1],
+            desc: 'Expenses (' + fmt(mt.expense) + ') exceeded income (' + fmt(mt.income) + ') by ' + fmt(mt.expense - mt.income) + '.',
+            date: monthStartStr, month: m, year: y, read: isNotificationRead(id),
+            actionLabel: 'Inspect', actionFn: "executeWarningRuleAction('" + r.id + "'); closeNotificationDrawer();"
+          });
+        }
+      }
+    });
+    getActiveWarningRulesByTrigger('savings_rate_below').forEach(r => {
+      const rate = mt.income > 0 ? Math.round((mt.savings / mt.income) * 100) : 0;
+      if(mt.income > 0 && rate < (Number(r.threshold) || 20)){
+        const id = `notif-custom-${r.id}-${y}-${m}`;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id, type: 'alert', priority: r.color || 'amber',
+            title: r.badgeLabel + ' (' + rate + '%)',
+            desc: 'Monthly savings rate is ' + rate + '%, below your ' + (Number(r.threshold) || 20) + '% target.',
+            date: monthStartStr, month: m, year: y, read: isNotificationRead(id),
+            actionLabel: 'View Savings', actionFn: "executeWarningRuleAction('" + r.id + "'); closeNotificationDrawer();"
+          });
+        }
+      }
+    });
+    getActiveWarningRulesByTrigger('tx_amount_exceeds').forEach(r => {
+      const thr = Number(r.threshold) || 0;
+      if(thr <= 0) return;
+      const bigTxs = (DB.transactions || []).filter(t => t.type === 'expense' && inMonth(t, m, y) && getTransactionPersonalAmount(t) >= thr);
+      if(bigTxs.length){
+        const topTx = bigTxs.sort((a,b) => getTransactionPersonalAmount(b) - getTransactionPersonalAmount(a))[0];
+        const id = `notif-custom-${r.id}-${y}-${m}`;
+        if(!dismissed.has(id)){
+          list.push({
+            id: id, type: 'alert', priority: r.color || 'amber',
+            title: r.badgeLabel + ': ' + fmt(getTransactionPersonalAmount(topTx)),
+            desc: bigTxs.length + ' expense' + (bigTxs.length===1?'':'s') + ' exceeded ' + fmt(thr) + ' (' + (topTx.category || 'Expense') + ').',
+            date: topTx.date || monthStartStr, month: m, year: y, read: isNotificationRead(id),
+            actionLabel: 'Review', actionFn: "executeWarningRuleAction('" + r.id + "','" + encodeURIComponent(JSON.stringify({ txId: topTx.id })) + "'); closeNotificationDrawer();"
+          });
+        }
+      }
+    });
+    getActiveWarningRulesByTrigger('investment_loss_pct').forEach(r => {
+      const thr = Number(r.threshold) || 10;
+      (DB.investments || []).forEach(inv => {
+        const invAmt = parseFloat(inv.investedAmount) || 0;
+        const curVal = parseFloat(inv.currentValue) || 0;
+        if(invAmt > 0 && curVal < invAmt){
+          const lossPct = Math.round(((invAmt - curVal) / invAmt) * 100);
+          if(lossPct >= thr){
+            const id = `notif-custom-${r.id}-${inv.id}-${y}-${m}`;
+            if(!dismissed.has(id)){
+              list.push({
+                id: id, type: 'alert', priority: r.color || 'danger',
+                title: r.badgeLabel + ': ' + inv.name + ' (-' + lossPct + '%)',
+                desc: inv.name + ' is down ' + lossPct + '% from invested cost (' + fmt(invAmt) + ' to ' + fmt(curVal) + ').',
+                date: monthStartStr, month: m, year: y, read: isNotificationRead(id),
+                actionLabel: 'View Investments', actionFn: "executeWarningRuleAction('" + r.id + "'); closeNotificationDrawer();"
+              });
+            }
+          }
+        }
+      });
     });
   }
 
@@ -22977,12 +23170,37 @@ window.addEventListener('resize', () => {
   }
 });
 
-/* ---------------- Settings -> Warning Signs Rule & Action Manager ---------------- */
+/* ---------------- Settings -> Dynamic Warning Signs & Action Rules Engine ---------------- */
+function getWarningTriggerCatalog(){
+  return [
+    { id: 'budget_exceeded', section: 'Budgets & Expenses', label: 'Budget Limit Exceeded (> 100%)', needsThreshold: false, unit: '', defaultThreshold: 100, defaultAction: 'adjust_budget' },
+    { id: 'budget_pct_reached', section: 'Budgets & Expenses', label: 'Budget Usage Reaches %', needsThreshold: true, unit: '%', defaultThreshold: 85, defaultAction: 'adjust_budget' },
+    { id: 'budget_zero_remaining', section: 'Budgets & Expenses', label: 'Budget Remaining Hits Zero', needsThreshold: false, unit: '', defaultThreshold: 0, defaultAction: 'view_expenses' },
+    { id: 'goal_deadline_passed', section: 'Savings Goals', label: 'Goal Target Date Passed', needsThreshold: false, unit: '', defaultThreshold: 0, defaultAction: 'extend_goal' },
+    { id: 'goal_due_within_days', section: 'Savings Goals', label: 'Goal Due Within Days', needsThreshold: true, unit: 'Days', defaultThreshold: 7, defaultAction: 'contribute_goal' },
+    { id: 'goal_achieved', section: 'Savings Goals', label: 'Goal Progress Reaches %', needsThreshold: true, unit: '%', defaultThreshold: 100, defaultAction: 'transfer_goal' },
+    { id: 'tx_missing_subcat', section: 'Categories & Transactions', label: 'Expense Missing Subcategory', needsThreshold: false, unit: '', defaultThreshold: 0, defaultAction: 'edit_tx' },
+    { id: 'tx_amount_exceeds', section: 'Categories & Transactions', label: 'Single Expense Exceeds Amount', needsThreshold: true, unit: 'Amount', defaultThreshold: 10000, defaultAction: 'edit_tx' },
+    { id: 'benefit_quota_pct', section: 'Income & Benefits', label: 'Benefit Quota Usage Reaches %', needsThreshold: true, unit: '%', defaultThreshold: 80, defaultAction: 'open_benefits' },
+    { id: 'benefit_surplus_available', section: 'Income & Benefits', label: 'Benefit Unspent Quota Available', needsThreshold: true, unit: 'Amount', defaultThreshold: 1, defaultAction: 'transfer_benefit' },
+    { id: 'reimb_pending_exceeds', section: 'Income & Benefits', label: 'Pending Reimbursements Exceed Amount', needsThreshold: true, unit: 'Amount', defaultThreshold: 5000, defaultAction: 'open_reimbursements' },
+    { id: 'investment_loss_pct', section: 'Investments', label: 'Investment Unrealized Loss Reaches %', needsThreshold: true, unit: '%', defaultThreshold: 10, defaultAction: 'open_investments' },
+    { id: 'monthly_deficit', section: 'Dashboard', label: 'Monthly Expenses Exceed Income', needsThreshold: false, unit: '', defaultThreshold: 0, defaultAction: 'open_reports' },
+    { id: 'savings_rate_below', section: 'Dashboard', label: 'Monthly Savings Rate Below %', needsThreshold: true, unit: '%', defaultThreshold: 20, defaultAction: 'open_savings' }
+  ];
+}
+
+function getWarningTriggerMeta(triggerType){
+  return getWarningTriggerCatalog().find(t => t.id === triggerType) || getWarningTriggerCatalog()[0];
+}
+
 function getDefaultWarningRules(){
   return [
     {
       id: 'budget_over',
       section: 'Budgets & Expenses',
+      triggerType: 'budget_exceeded',
+      threshold: 100,
       name: 'Budget Limit Exceeded',
       badgeLabel: 'Over Budget',
       subhead: 'Triggered when monthly category spending exceeds its configured budget limit.',
@@ -22994,9 +23212,11 @@ function getDefaultWarningRules(){
     {
       id: 'budget_near',
       section: 'Budgets & Expenses',
+      triggerType: 'budget_pct_reached',
+      threshold: 85,
       name: 'Approaching Budget Cap (85%)',
       badgeLabel: 'Near Limit (85%)',
-      subhead: 'Triggered when monthly category spending reaches 85% to 99% of its monthly cap.',
+      subhead: 'Triggered when monthly category spending reaches the warning threshold percentage.',
       color: 'amber',
       actionType: 'adjust_budget',
       active: true,
@@ -23005,6 +23225,8 @@ function getDefaultWarningRules(){
     {
       id: 'budget_zero',
       section: 'Budgets & Expenses',
+      triggerType: 'budget_zero_remaining',
+      threshold: 0,
       name: 'Limit Reached / Zero Remaining',
       badgeLabel: 'Limit Reached',
       subhead: 'Triggered when a category budget has zero remaining balance left for the month.',
@@ -23016,6 +23238,8 @@ function getDefaultWarningRules(){
     {
       id: 'goal_deadline_passed',
       section: 'Savings Goals',
+      triggerType: 'goal_deadline_passed',
+      threshold: 0,
       name: 'Savings Goal Deadline Passed',
       badgeLabel: 'Deadline Passed',
       subhead: 'Triggered when a savings goal target date passes before reaching 100% completion.',
@@ -23027,9 +23251,11 @@ function getDefaultWarningRules(){
     {
       id: 'goal_deadline_near',
       section: 'Savings Goals',
+      triggerType: 'goal_due_within_days',
+      threshold: 7,
       name: 'Savings Goal Due Within 7 Days',
       badgeLabel: 'Due Soon',
-      subhead: 'Triggered when an incomplete savings goal is within 7 days of its target deadline.',
+      subhead: 'Triggered when an incomplete savings goal is within the configured days of its target deadline.',
       color: 'amber',
       actionType: 'contribute_goal',
       active: true,
@@ -23038,9 +23264,11 @@ function getDefaultWarningRules(){
     {
       id: 'goal_achieved',
       section: 'Savings Goals',
+      triggerType: 'goal_achieved',
+      threshold: 100,
       name: 'Savings Target 100% Achieved',
       badgeLabel: '100% Achieved',
-      subhead: 'Triggered when accumulated deposits reach 100% of the savings goal target.',
+      subhead: 'Triggered when accumulated deposits reach the configured goal target percentage.',
       color: 'teal',
       actionType: 'transfer_goal',
       active: true,
@@ -23049,6 +23277,8 @@ function getDefaultWarningRules(){
     {
       id: 'tx_missing_subcat',
       section: 'Categories & Transactions',
+      triggerType: 'tx_missing_subcat',
+      threshold: 0,
       name: 'Unassigned Expense Subcategory',
       badgeLabel: 'None',
       subhead: 'Flags expense transactions recorded without a specific subcategory assigned.',
@@ -23060,9 +23290,11 @@ function getDefaultWarningRules(){
     {
       id: 'benefit_surplus',
       section: 'Income & Benefits',
-      name: 'Company Benefit Quota Alert',
+      triggerType: 'benefit_surplus_available',
+      threshold: 1,
+      name: 'Benefit Quota Alert',
       badgeLabel: 'Quota Available',
-      subhead: 'Flags company benefit accounts with unspent balance available to claim or transfer.',
+      subhead: 'Flags benefit accounts with unspent balance available to transfer.',
       color: 'teal',
       actionType: 'transfer_benefit',
       active: true,
@@ -23074,59 +23306,82 @@ function getDefaultWarningRules(){
 function getWarningActionLabels(){
   return {
     adjust_budget: 'Open Edit Budget Modal',
+    open_budgets: 'View Budgets Page',
     view_expenses: 'View Transactions Page',
+    edit_tx: 'Open Edit Transaction Modal',
+    filter_unassigned: 'Filter Unassigned Subcategories',
     extend_goal: 'Open Extend Goal Deadline Modal',
     contribute_goal: 'Open Goal Contribute Input',
     transfer_goal: 'Open Savings Transfer Modal',
     use_savings: 'Use Goal Savings for Expense',
-    edit_tx: 'Open Edit Transaction Modal',
-    filter_unassigned: 'Filter Unassigned Subcategories',
-    transfer_benefit: 'Open Benefit Surplus Transfer Modal',
-    open_budgets: 'Navigate to Budgets Page',
-    open_savings: 'Navigate to Savings Goals Page',
-    open_settings: 'Navigate to Settings Page'
+    open_savings: 'View Savings Page',
+    transfer_benefit: 'Open Benefit Transfer Modal',
+    open_benefits: 'View Benefits Page',
+    open_reimbursements: 'View Reimbursements',
+    open_investments: 'View Investments Page',
+    open_reports: 'View Reports Page',
+    open_settings: 'View Settings Page'
   };
 }
 
 function ensureWarningRules(existingRules){
   const defaults = getDefaultWarningRules();
+  const deletedSet = new Set(Array.isArray(DB.deletedWarningRuleIds) ? DB.deletedWarningRuleIds : []);
+  const hasExisting = Array.isArray(existingRules) && (existingRules.length > 0 || deletedSet.size > 0 || DB.warningRulesInitialized);
   const list = Array.isArray(existingRules) ? [...existingRules] : [];
   const byId = new Map(list.filter(r => r && r.id).map(r => [r.id, r]));
   const merged = [];
+
   defaults.forEach(def => {
+    if(deletedSet.has(def.id)) return; // Respect user deletion!
     if(byId.has(def.id)){
       const cur = byId.get(def.id);
       merged.push({
         ...def,
         ...cur,
+        triggerType: cur.triggerType || def.triggerType,
+        threshold: cur.threshold !== undefined && cur.threshold !== null ? Number(cur.threshold) : def.threshold,
         active: cur.active !== undefined ? Boolean(cur.active) : true,
         isDefault: true
       });
       byId.delete(def.id);
-    } else {
+    } else if(!hasExisting){
       merged.push({ ...def });
     }
   });
+
   byId.forEach(customRule => {
+    const fallbackTrig = getWarningTriggerCatalog().find(t => t.section === customRule.section) || getWarningTriggerCatalog()[0];
     merged.push({
       ...customRule,
+      triggerType: customRule.triggerType || fallbackTrig.id,
+      threshold: customRule.threshold !== undefined && customRule.threshold !== null ? Number(customRule.threshold) : fallbackTrig.defaultThreshold,
       active: customRule.active !== undefined ? Boolean(customRule.active) : true
     });
   });
+
+  DB.warningRulesInitialized = true;
   return merged;
 }
 
+function getAllWarningRules(){
+  DB.warningRules = ensureWarningRules(DB.warningRules);
+  return DB.warningRules;
+}
+
+function getActiveWarningRulesByTrigger(triggerType){
+  return getAllWarningRules().filter(r => r.active && r.triggerType === triggerType);
+}
+
 function getWarningRule(ruleId){
-  if(!DB.warningRules || !Array.isArray(DB.warningRules)){
-    DB.warningRules = ensureWarningRules([]);
-  }
-  return DB.warningRules.find(r => r.id === ruleId) || getDefaultWarningRules().find(r => r.id === ruleId) || null;
+  return getAllWarningRules().find(r => r.id === ruleId) || null;
 }
 
 function getWarningBadgeClass(color){
   if(color === 'danger') return 'badge-over';
   if(color === 'amber') return 'badge-amber';
   if(color === 'teal') return 'badge-ok';
+  if(color === 'primary') return 'badge-primary';
   return 'badge-off';
 }
 
@@ -23139,19 +23394,13 @@ function executeWarningRuleAction(ruleId, ctxStr){
   }
   const act = rule.actionType || 'open_budgets';
   if(act === 'adjust_budget'){
-    if(ctx.budgetId){
-      openEditBudgetModal(ctx.budgetId);
-    } else {
-      goToApp('budgets');
-    }
+    if(ctx.budgetId) openEditBudgetModal(ctx.budgetId);
+    else goToApp('budgets');
   } else if(act === 'view_expenses'){
     goToApp('transactions');
   } else if(act === 'extend_goal'){
-    if(ctx.goalId){
-      openRolloverGoalModal(ctx.goalId);
-    } else {
-      goToApp('savings');
-    }
+    if(ctx.goalId) openRolloverGoalModal(ctx.goalId);
+    else goToApp('savings');
   } else if(act === 'contribute_goal'){
     if(ctx.goalId){
       goToApp('savings');
@@ -23160,36 +23409,31 @@ function executeWarningRuleAction(ruleId, ctxStr){
       goToApp('savings');
     }
   } else if(act === 'transfer_goal'){
-    if(ctx.goalId){
-      openSavingsTransferModal(ctx.goalId);
-    } else {
-      goToApp('savings');
-    }
+    if(ctx.goalId) openSavingsTransferModal(ctx.goalId);
+    else goToApp('savings');
   } else if(act === 'use_savings'){
-    if(ctx.goalName){
-      openTxModalWithGoal(ctx.goalName);
-    } else {
-      goToApp('savings');
-    }
+    if(ctx.goalName) openTxModalWithGoal(ctx.goalName);
+    else goToApp('savings');
   } else if(act === 'edit_tx'){
-    if(ctx.txId){
-      openTxModal(ctx.txId);
-    } else {
-      goToApp('transactions');
-    }
+    if(ctx.txId) openTxModal(ctx.txId);
+    else goToApp('transactions');
   } else if(act === 'filter_unassigned'){
     goToApp('transactions');
     if(!txFilterUnassignedOnly) toggleUnassignedSubcatFilter();
   } else if(act === 'transfer_benefit'){
-    const accs = (getAllowanceAccounts() || []).filter(a => a.active);
-    if(ctx.allowanceId){
-      openTransferAllowanceModal(ctx.allowanceId);
-    } else if(accs.length){
-      openTransferAllowanceModal(accs[0].id);
-    } else {
-      goToApp('settings');
-      setSettingsTab('allowances');
-    }
+    const accs = (getAllowanceAccounts() || []).filter(a => a.active !== false);
+    if(ctx.allowanceId) openTransferAllowanceModal(ctx.allowanceId);
+    else if(accs.length) openTransferAllowanceModal(accs[0].id);
+    else goToApp('benefits');
+  } else if(act === 'open_benefits'){
+    goToApp('benefits');
+    if(typeof setBenefitsTab === 'function') setBenefitsTab('allowances');
+  } else if(act === 'open_reimbursements'){
+    goToCompanyBenefitsClaims();
+  } else if(act === 'open_investments'){
+    goToApp('investments');
+  } else if(act === 'open_reports'){
+    goToApp('reports');
   } else if(act === 'open_budgets'){
     goToApp('budgets');
   } else if(act === 'open_savings'){
@@ -23199,48 +23443,65 @@ function executeWarningRuleAction(ruleId, ctxStr){
   }
 }
 
+function renderWarningBadgeSpan(rule, ctxObj, extraStyle){
+  if(!rule || !rule.active) return '';
+  const ctxEncoded = encodeURIComponent(JSON.stringify(ctxObj || {}));
+  return `<span class="badge ${getWarningBadgeClass(rule.color)}" style="cursor:pointer; ${extraStyle || ''}" title="${escapeHtml(rule.subhead || rule.name)}" onclick="event.stopPropagation(); executeWarningRuleAction('${escapeHtml(rule.id)}','${ctxEncoded}')">${escapeHtml(rule.badgeLabel)}</span>`;
+}
+
 function renderBudgetWarningBadgeHtml(b){
   const isCatOver = b.budgetAmount > 0 && b.spent > b.budgetAmount;
   const isCatZero = b.budgetAmount > 0 && b.remaining === 0;
-  const isCatNear = !isCatOver && !isCatZero && b.budgetAmount > 0 && b.percent >= 85;
-  const ctxEncoded = encodeURIComponent(JSON.stringify({ budgetId: b.id || (b.subRows && b.subRows[0] ? b.subRows[0].id : ''), category: b.category }));
+  const ctx = { budgetId: b.id || (b.subRows && b.subRows[0] ? b.subRows[0].id : ''), category: b.category };
 
   if(isCatOver){
-    const r = getWarningRule('budget_over');
-    if(!r || !r.active) return '';
-    return `<span class="badge ${getWarningBadgeClass(r.color)}" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('budget_over','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+    const overRule = getActiveWarningRulesByTrigger('budget_exceeded')[0];
+    if(overRule) return renderWarningBadgeSpan(overRule, ctx);
+    return '<span class="badge badge-off">Over Budget</span>';
   }
   if(isCatZero){
-    const r = getWarningRule('budget_zero');
-    if(!r || !r.active) return '<span class="badge badge-off">Limit Reached</span>';
-    return `<span class="badge ${getWarningBadgeClass(r.color)}" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('budget_zero','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+    const zeroRule = getActiveWarningRulesByTrigger('budget_zero_remaining')[0];
+    if(zeroRule) return renderWarningBadgeSpan(zeroRule, ctx);
+    return '<span class="badge badge-off">Limit Reached</span>';
   }
-  if(isCatNear){
-    const r = getWarningRule('budget_near');
-    if(r && r.active){
-      return `<span class="badge ${getWarningBadgeClass(r.color)}" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('budget_near','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+  if(b.budgetAmount > 0){
+    const pctRules = getActiveWarningRulesByTrigger('budget_pct_reached')
+      .filter(r => b.percent >= (Number(r.threshold) || 85))
+      .sort((a, b2) => (Number(b2.threshold) || 0) - (Number(a.threshold) || 0));
+    if(pctRules.length){
+      return renderWarningBadgeSpan(pctRules[0], ctx);
     }
   }
   return '<span class="badge badge-ok">On track</span>';
 }
 
-function renderGoalWarningBadgeHtml(ruleId, g, fallbackText){
-  const r = getWarningRule(ruleId);
-  if(!r || !r.active){
-    return `<span class="badge badge-off">${escapeHtml(fallbackText)}</span>`;
+function renderGoalWarningBadgeHtml(ruleOrTrigger, g, fallbackText, fallbackClass){
+  let rule = getWarningRule(ruleOrTrigger);
+  if(!rule) rule = getActiveWarningRulesByTrigger(ruleOrTrigger)[0] || null;
+  if(!rule || !rule.active){
+    return `<span class="badge ${fallbackClass || 'badge-off'}">${escapeHtml(fallbackText)}</span>`;
   }
-  const ctxEncoded = encodeURIComponent(JSON.stringify({ goalId: g.id, goalName: g.name }));
-  return `<span class="badge ${getWarningBadgeClass(r.color)}" style="font-weight:700; cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('${ruleId}','${ctxEncoded}')">${escapeHtml(r.badgeLabel)}</span>`;
+  return renderWarningBadgeSpan(rule, { goalId: g.id, goalName: g.name }, 'font-weight:700;');
 }
 
 function renderMissingSubcatBadgeHtml(t){
-  const r = getWarningRule('tx_missing_subcat');
+  const r = getActiveWarningRulesByTrigger('tx_missing_subcat')[0];
   if(!r || !r.active){
     return '<span style="color:var(--muted-2);">-</span>';
   }
   const ctxEncoded = encodeURIComponent(JSON.stringify({ txId: t.id }));
   const dotColor = r.color === 'amber' ? 'var(--amber)' : (r.color === 'teal' ? 'var(--teal)' : (r.color === 'primary' ? 'var(--primary)' : 'var(--rose)'));
-  return `<span class="badge-subcat-none" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('tx_missing_subcat','${ctxEncoded}')"><span class="rect-sign-red" style="background:${dotColor};"></span>${escapeHtml(r.badgeLabel || 'None')}</span>`;
+  return `<span class="badge-subcat-none" style="cursor:pointer;" title="${escapeHtml(r.subhead)}" onclick="event.stopPropagation(); executeWarningRuleAction('${escapeHtml(r.id)}','${ctxEncoded}')"><span class="rect-sign-red" style="background:${dotColor};"></span>${escapeHtml(r.badgeLabel || 'None')}</span>`;
+}
+
+function renderTxAmountWarningBadgesHtml(t){
+  if(!t || t.type !== 'expense') return '';
+  const amt = getTransactionPersonalAmount(t);
+  const rules = getActiveWarningRulesByTrigger('tx_amount_exceeds')
+    .filter(r => (Number(r.threshold) || 0) > 0 && amt >= Number(r.threshold))
+    .sort((a, b) => (Number(b.threshold) || 0) - (Number(a.threshold) || 0));
+  if(!rules.length) return '';
+  return renderWarningBadgeSpan(rules[0], { txId: t.id }, 'font-size:10.5px; margin-left:4px;');
 }
 
 var settingsWarningsFilter = 'all';
@@ -23250,36 +23511,39 @@ function setSettingsWarningsFilter(filter){
   renderWarningSignsSettings();
 }
 
+function formatWarningTriggerSummary(r){
+  const meta = getWarningTriggerMeta(r.triggerType);
+  if(!meta) return '';
+  if(!meta.needsThreshold) return meta.label;
+  const val = Number(r.threshold) || 0;
+  if(meta.unit === '%') return `${meta.label.replace('%', '')}${val}%`;
+  if(meta.unit === 'Days') return `${meta.label.replace('Days', '')}${val} Days`;
+  return `${meta.label.replace('Amount', '')}${fmt(val)}`;
+}
+
 function renderWarningSignsSettings(){
   const container = document.getElementById('settings-warnings-container');
   if(!container) return;
 
-  DB.warningRules = ensureWarningRules(DB.warningRules);
-  const allRules = DB.warningRules;
-  const activeCount = allRules.filter(r => r.active).length;
+  const allRules = getAllWarningRules();
   const actionLabels = getWarningActionLabels();
+  const sections = ['Budgets & Expenses', 'Savings Goals', 'Categories & Transactions', 'Income & Benefits', 'Investments', 'Dashboard'];
 
   const filteredRules = (!settingsWarningsFilter || settingsWarningsFilter === 'all')
     ? allRules
     : allRules.filter(r => r.section === settingsWarningsFilter);
 
   const colorLabels = {
-    danger: 'Critical / Rose',
-    amber: 'Warning / Amber',
-    teal: 'Actionable / Teal',
-    primary: 'Info / Indigo'
+    danger: 'Critical',
+    amber: 'Warning',
+    teal: 'Actionable',
+    primary: 'Info'
   };
 
   container.innerHTML = `
     <div class="card" style="padding:22px; margin-bottom:18px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
-        <div>
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <h2 class="section-title" style="margin:0;">Warning Signs &amp; Action Rules</h2>
-            <span class="badge badge-ok" style="font-size:11px; font-weight:700;">${activeCount} of ${allRules.length} Active</span>
-          </div>
-          <p class="text-xs muted" style="margin:4px 0 0;">Activate, rename, change colors, or assign custom click actions for warning signs across Budgets, Savings Goals, Transactions, and Benefits.</p>
-        </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+        <h2 class="section-title" style="margin:0;">Warning Signs &amp; Action Rules</h2>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <button type="button" class="btn-ghost" style="padding:6px 12px; font-size:12px;" onclick="handleResetWarningRules()">Reset Defaults</button>
           <button type="button" class="btn-primary" style="padding:6px 14px; font-size:12px;" onclick="openWarningRuleModal()">Add Warning Sign</button>
@@ -23288,50 +23552,48 @@ function renderWarningSignsSettings(){
 
       <div class="chip-row" style="margin-bottom:16px; flex-wrap:wrap;">
         <button type="button" class="btn-chip ${(!settingsWarningsFilter || settingsWarningsFilter === 'all') ? 'active' : ''}" onclick="setSettingsWarningsFilter('all')">All Rules (${allRules.length})</button>
-        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Budgets & Expenses' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Budgets & Expenses')">Budgets &amp; Expenses</button>
-        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Savings Goals' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Savings Goals')">Savings Goals</button>
-        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Categories & Transactions' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Categories & Transactions')">Categories &amp; Transactions</button>
-        <button type="button" class="btn-chip ${settingsWarningsFilter === 'Income & Benefits' ? 'active' : ''}" onclick="setSettingsWarningsFilter('Income & Benefits')">Income &amp; Benefits</button>
+        ${sections.map(sec => `<button type="button" class="btn-chip ${settingsWarningsFilter === sec ? 'active' : ''}" onclick="setSettingsWarningsFilter('${escapeHtml(sec)}')">${escapeHtml(sec)}</button>`).join('')}
       </div>
 
       <div style="display:flex; flex-direction:column; gap:10px;">
-        ${filteredRules.map(r => {
+        ${filteredRules.length ? filteredRules.map(r => {
           const badgeClass = getWarningBadgeClass(r.color);
           const actionLabel = actionLabels[r.actionType] || 'Navigate to Page';
-          const colorMeta = colorLabels[r.color] || 'Warning / Amber';
+          const colorMeta = colorLabels[r.color] || 'Warning';
+          const trigTxt = formatWarningTriggerSummary(r);
           return `
-            <div class="warning-card priority-${escapeHtml(r.color || 'amber')}" style="margin-bottom:0; opacity:${r.active ? '1' : '0.62'};">
+            <div class="warning-card priority-${escapeHtml(r.color || 'amber')}" style="margin-bottom:0; opacity:${r.active ? '1' : '0.58'};">
               <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                 <div style="flex:1; min-width:220px;">
                   <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
                     <span class="badge ${badgeClass}" style="font-size:11px; font-weight:700;">${escapeHtml(r.badgeLabel)}</span>
                     <strong style="font-size:14px; color:var(--ink);">${escapeHtml(r.name)}</strong>
                     <span class="badge" style="background:var(--surface-2); border:1px solid var(--line-soft); font-size:10.5px; color:var(--muted);">${escapeHtml(r.section)}</span>
+                    ${trigTxt ? `<span class="badge" style="background:rgba(13,148,136,0.09); color:var(--teal); font-size:10.5px; font-weight:600;">${escapeHtml(trigTxt)}</span>` : ''}
                     <span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-size:10.5px; font-weight:600;">Action: ${escapeHtml(actionLabel)}</span>
-                    <span class="text-xs muted" style="font-size:11px;">• ${escapeHtml(colorMeta)}</span>
+                    <span class="text-xs muted" style="font-size:11px;">${escapeHtml(colorMeta)}</span>
                   </div>
                   <p style="margin:0; font-size:12.5px; color:var(--muted); line-height:1.4;">${escapeHtml(r.subhead)}</p>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
                   <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:${r.active ? 'var(--teal)' : 'var(--muted)'}; cursor:pointer; user-select:none; padding:4px 8px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line-soft);">
-                    <input type="checkbox" ${r.active ? 'checked' : ''} onchange="toggleWarningRuleActive('${escapeHtml(r.id)}', this.checked)" style="width:15px; height:15px; cursor:pointer;">
+                    <input type="checkbox" ${r.active ? 'checked' : ''} onchange="toggleWarningRuleActive('${escapeHtml(r.id)}', this.checked)" style="width:15px; height:15px; cursor:pointer; accent-color:var(--primary);">
                     <span>${r.active ? 'Active' : 'Off'}</span>
                   </label>
-                  <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" onclick="openWarningRuleModal('${escapeHtml(r.id)}')">Edit / Rename</button>
-                  ${!r.isDefault ? `<button type="button" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" onclick="deleteCustomWarningRule('${escapeHtml(r.id)}')">Delete</button>` : ''}
+                  <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" onclick="openWarningRuleModal('${escapeHtml(r.id)}')">Edit</button>
+                  <button type="button" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" onclick="deleteWarningRule('${escapeHtml(r.id)}')">Delete</button>
                 </div>
               </div>
             </div>
           `;
-        }).join('')}
+        }).join('') : '<div style="padding:26px; text-align:center; color:var(--muted); font-size:13px;">No warning signs in this section. Click Add Warning Sign to create one.</div>'}
       </div>
     </div>
   `;
 }
 
 function toggleWarningRuleActive(ruleId, isActive){
-  DB.warningRules = ensureWarningRules(DB.warningRules);
-  const rule = DB.warningRules.find(r => r.id === ruleId);
+  const rule = getAllWarningRules().find(r => r.id === ruleId);
   if(!rule) return;
   rule.active = Boolean(isActive);
   saveDB(true);
@@ -23340,10 +23602,54 @@ function toggleWarningRuleActive(ruleId, isActive){
   showToast(`Warning sign "${rule.badgeLabel}" ${rule.active ? 'activated' : 'deactivated'}`);
 }
 
+function populateWarningActionSelect(selectedAction){
+  const actSel = document.getElementById('warning-rule-action');
+  if(!actSel) return;
+  const map = getWarningActionLabels();
+  actSel.innerHTML = Object.entries(map).map(([k, lbl]) =>
+    `<option value="${escapeHtml(k)}" ${k === selectedAction ? 'selected' : ''}>${escapeHtml(lbl)}</option>`
+  ).join('');
+}
+
+function onWarningRuleSectionChange(presetTrigger, presetThreshold, presetAction){
+  const sec = document.getElementById('warning-rule-section')?.value || 'Budgets & Expenses';
+  const trigSel = document.getElementById('warning-rule-trigger');
+  if(!trigSel) return;
+  const catalog = getWarningTriggerCatalog();
+  const matching = catalog.filter(t => t.section === sec);
+  const options = matching.length ? matching : catalog;
+  trigSel.innerHTML = options.map(t =>
+    `<option value="${escapeHtml(t.id)}" ${t.id === presetTrigger ? 'selected' : ''}>${escapeHtml(t.label)}</option>`
+  ).join('');
+  if(presetTrigger && options.some(o => o.id === presetTrigger)) trigSel.value = presetTrigger;
+  onWarningRuleTriggerChange(presetThreshold, presetAction);
+}
+
+function onWarningRuleTriggerChange(presetThreshold, presetAction){
+  const trigVal = document.getElementById('warning-rule-trigger')?.value;
+  const meta = getWarningTriggerMeta(trigVal);
+  const wrap = document.getElementById('warning-rule-threshold-wrap');
+  const lbl = document.getElementById('warning-rule-threshold-label');
+  const inp = document.getElementById('warning-rule-threshold');
+  if(wrap && lbl && inp){
+    if(meta && meta.needsThreshold){
+      wrap.style.visibility = 'visible';
+      inp.disabled = false;
+      lbl.textContent = meta.unit === '%' ? 'Threshold (%)' : (meta.unit === 'Days' ? 'Days Before' : 'Amount (' + currencySymbol() + ')');
+      inp.value = (presetThreshold !== undefined && presetThreshold !== null) ? presetThreshold : meta.defaultThreshold;
+    } else {
+      wrap.style.visibility = 'hidden';
+      inp.disabled = true;
+      inp.value = 0;
+    }
+  }
+  populateWarningActionSelect(presetAction || (meta ? meta.defaultAction : 'open_budgets'));
+}
+
 function openWarningRuleModal(ruleId){
   const backdrop = document.getElementById('warning-rule-modal-backdrop');
   if(!backdrop) return;
-  DB.warningRules = ensureWarningRules(DB.warningRules);
+  const allRules = getAllWarningRules();
   const titleEl = document.getElementById('warning-rule-modal-title');
   const idInput = document.getElementById('warning-rule-id');
   const nameInput = document.getElementById('warning-rule-name');
@@ -23351,10 +23657,10 @@ function openWarningRuleModal(ruleId){
   const subheadInput = document.getElementById('warning-rule-subhead');
   const secSelect = document.getElementById('warning-rule-section');
   const colSelect = document.getElementById('warning-rule-color');
-  const actSelect = document.getElementById('warning-rule-action');
+  const actChk = document.getElementById('warning-rule-active');
 
   if(ruleId){
-    const rule = DB.warningRules.find(r => r.id === ruleId);
+    const rule = allRules.find(r => r.id === ruleId);
     if(!rule) return;
     if(titleEl) titleEl.textContent = 'Edit Warning Sign';
     idInput.value = rule.id;
@@ -23363,16 +23669,18 @@ function openWarningRuleModal(ruleId){
     subheadInput.value = rule.subhead || '';
     secSelect.value = rule.section || 'Budgets & Expenses';
     colSelect.value = rule.color || 'amber';
-    actSelect.value = rule.actionType || 'adjust_budget';
+    if(actChk) actChk.checked = rule.active !== false;
+    onWarningRuleSectionChange(rule.triggerType, rule.threshold, rule.actionType);
   } else {
-    if(titleEl) titleEl.textContent = 'New Warning Sign';
+    if(titleEl) titleEl.textContent = 'Add Warning Sign';
     idInput.value = '';
     nameInput.value = '';
     badgeInput.value = '';
     subheadInput.value = '';
-    secSelect.value = 'Budgets & Expenses';
+    secSelect.value = (settingsWarningsFilter && settingsWarningsFilter !== 'all') ? settingsWarningsFilter : 'Budgets & Expenses';
     colSelect.value = 'amber';
-    actSelect.value = 'adjust_budget';
+    if(actChk) actChk.checked = true;
+    onWarningRuleSectionChange(null, undefined, null);
   }
   backdrop.classList.remove('hidden');
 }
@@ -23384,26 +23692,33 @@ function closeWarningRuleModal(){
 
 function handleSaveWarningRule(e){
   e.preventDefault();
-  DB.warningRules = ensureWarningRules(DB.warningRules);
+  const allRules = getAllWarningRules();
   const ruleId = document.getElementById('warning-rule-id').value.trim();
   const name = document.getElementById('warning-rule-name').value.trim();
   const badgeLabel = document.getElementById('warning-rule-badge').value.trim();
   const subhead = document.getElementById('warning-rule-subhead').value.trim();
   const section = document.getElementById('warning-rule-section').value;
   const color = document.getElementById('warning-rule-color').value;
+  const triggerType = document.getElementById('warning-rule-trigger').value;
+  const meta = getWarningTriggerMeta(triggerType);
+  const threshold = meta && meta.needsThreshold ? (parseFloat(document.getElementById('warning-rule-threshold').value) || 0) : 0;
   const actionType = document.getElementById('warning-rule-action').value;
+  const active = document.getElementById('warning-rule-active') ? document.getElementById('warning-rule-active').checked : true;
 
   if(!name || !badgeLabel || !subhead) return;
 
   if(ruleId){
-    const existing = DB.warningRules.find(r => r.id === ruleId);
+    const existing = allRules.find(r => r.id === ruleId);
     if(existing){
       existing.name = name;
       existing.badgeLabel = badgeLabel;
       existing.subhead = subhead;
       existing.section = section;
       existing.color = color;
+      existing.triggerType = triggerType;
+      existing.threshold = threshold;
       existing.actionType = actionType;
+      existing.active = active;
     }
   } else {
     DB.warningRules.push({
@@ -23413,8 +23728,10 @@ function handleSaveWarningRule(e){
       subhead,
       section,
       color,
+      triggerType,
+      threshold,
       actionType,
-      active: true,
+      active,
       isDefault: false
     });
   }
@@ -23426,18 +23743,21 @@ function handleSaveWarningRule(e){
   showToast(`Saved warning sign "${badgeLabel}"`);
 }
 
-function deleteCustomWarningRule(ruleId){
-  const rule = (DB.warningRules || []).find(r => r.id === ruleId && !r.isDefault);
+function deleteWarningRule(ruleId){
+  const rule = getAllWarningRules().find(r => r.id === ruleId);
   if(!rule) return;
   requestDelete('warning-rule', ruleId, rule.badgeLabel || rule.name || 'Warning Sign');
 }
+function deleteCustomWarningRule(ruleId){ deleteWarningRule(ruleId); }
 
 function handleResetWarningRules(){
+  DB.deletedWarningRuleIds = [];
+  DB.warningRulesInitialized = true;
   DB.warningRules = getDefaultWarningRules().map(r => ({ ...r }));
   saveDB(true);
   renderWarningSignsSettings();
   renderAllForCurrentPage();
-  showToast('All warning signs reset to active defaults');
+  showToast('Warning signs reset to defaults');
 }
 
 /* ---------------- Planned / Future Savings Goals Manager ---------------- */
