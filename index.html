@@ -838,6 +838,50 @@
   .budget-cat-dd-item{width:100%; text-align:left; border:none; background:transparent; color:var(--ink); font-family:var(--font-display); font-size:12.5px; font-weight:500; padding:7px 10px; border-radius:7px; display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer;}
   .budget-cat-dd-item:hover{background:var(--surface-2);}
   .budget-cat-dd-item.active{background:var(--line-soft); color:var(--ink); font-weight:700;}
+  /* Savings Page Clean Toolbar, Multi-Filters & 4-Zone Goal Cards */
+  .sav-toolbar{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:18px;}
+  .sav-toolbar-left{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .sav-toolbar-right{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .sav-dd-wrap{position:relative; display:inline-block;}
+  .sav-dd-trigger{height:36px; min-width:136px; padding:0 11px 0 12px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink); font-family:var(--font-display); font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease;}
+  .sav-dd-trigger:hover{border-color:var(--muted-2);}
+  .sav-dd-trigger.open{border-color:var(--primary); box-shadow:0 0 0 3px rgba(124,58,237,0.12);}
+  .sav-dd-panel{position:absolute; top:calc(100% + 6px); left:0; min-width:236px; z-index:80; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:0 14px 32px -4px rgba(15,23,42,0.14); padding:10px;}
+  .sav-dd-panel-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding-bottom:8px; margin-bottom:8px; border-bottom:1px solid var(--line-soft);}
+  .sav-dd-panel-title{font-size:11px; font-weight:700; color:var(--muted); text-transform:capitalize;}
+  .sav-dd-head-btn{background:none; border:none; padding:2px 4px; font-size:11.5px; font-weight:700; color:var(--primary); cursor:pointer;}
+  .sav-month-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:5px;}
+  .sav-month-chip{height:30px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--muted); font-family:var(--font-display); font-size:12px; font-weight:600; cursor:pointer; transition:all .12s ease;}
+  .sav-month-chip:hover{border-color:var(--muted-2); color:var(--ink);}
+  .sav-month-chip.active{background:var(--line-soft); border-color:var(--muted-2); color:var(--ink); font-weight:700;}
+  .sav-status-list{display:flex; flex-direction:column; gap:3px;}
+  .sav-status-opt{width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 9px; border-radius:7px; border:none; background:transparent; color:var(--ink); font-family:var(--font-display); font-size:12.5px; font-weight:500; cursor:pointer; text-align:left;}
+  .sav-status-opt:hover{background:var(--surface-2);}
+  .sav-status-opt.active{background:var(--line-soft); font-weight:600;}
+  .sav-status-chk{width:15px; height:15px; border-radius:4px; border:1.5px solid var(--line); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--surface); transition:all .12s ease;}
+  .sav-status-opt.active .sav-status-chk{background:var(--primary); border-color:var(--primary); color:#fff;}
+  .sav-goal-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:12px; transition:border-color .15s ease, box-shadow .15s ease;}
+  .sav-goal-card:hover{border-color:#CBD5E1; box-shadow:0 4px 14px rgba(15,23,42,0.06);}
+  .sav-gc-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .sav-gc-title-wrap{display:flex; align-items:flex-start; gap:8px; min-width:0; flex:1;}
+  .sav-gc-title{margin:0; font-family:var(--font-display); font-size:15.5px; font-weight:700; color:var(--ink); line-height:1.3; word-break:break-word;}
+  .sav-gc-meta{font-size:12px; color:var(--muted); margin-top:3px; line-height:1.4;}
+  .sav-gc-right{display:flex; align-items:center; gap:6px; flex-shrink:0;}
+  .sav-gc-nums{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:6px;}
+  .sav-gc-amt{font-family:var(--font-display); font-size:14.5px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .sav-gc-amt .muted{font-size:12.5px; font-weight:500;}
+  .sav-gc-pct{font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .sav-gc-note{font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; line-height:1.4; margin-top:-2px;}
+  .sav-gc-note strong{color:var(--ink); font-weight:600;}
+  .sav-gc-footer{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding-top:11px; border-top:1px solid var(--line-soft);}
+  .sav-gc-actions{display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .sav-gc-sub-actions{display:flex; align-items:center; gap:12px; margin-left:auto;}
+  .sav-gc-link{background:none; border:none; padding:2px 0; font-family:var(--font-display); font-size:12px; font-weight:600; color:var(--muted); cursor:pointer;}
+  .sav-gc-link:hover{color:var(--ink);}
+  .sav-empty{grid-column:1 / -1; text-align:center; padding:34px 20px; background:var(--surface-2); border:1px dashed var(--line); border-radius:12px;}
+  .sav-empty-title{font-family:var(--font-display); font-size:14px; font-weight:600; color:var(--muted); margin:0;}
+  .sav-month-group-hdr{grid-column:1 / -1; margin-top:10px; margin-bottom:2px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:6px;}
+  .sav-month-group-hdr:first-child{margin-top:0;}
   .subcat-card{padding:10px 12px; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface-2); margin-top:6px; transition:all .2s ease;}
   .subcat-card.on-track{border:1px solid var(--line-soft); box-shadow:none;}
   .subcat-card.warning-zero{border:1px solid rgba(217, 119, 6, 0.45); box-shadow:0 0 14px -3px rgba(217, 119, 6, 0.12);}
@@ -2776,35 +2820,67 @@
           </button>
           <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
         </div></div>
-      <div class="card" style="padding:14px 20px; margin-bottom:16px;">
-        <div class="dashboard-filter" style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-          <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
-            <div class="dashboard-filter-field"><label class="field-label" for="savings-filter-month">Month</label><select id="savings-filter-month" class="field-input" onchange="onSavingsFilterChange()"></select></div>
-            <div class="dashboard-filter-field"><label class="field-label" for="savings-filter-year">Year</label><select id="savings-filter-year" class="field-input" onchange="onSavingsFilterChange()"></select></div>
-            <p class="dashboard-filter-note" id="savings-filter-note"></p>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" id="btn-savings-all-goals" onclick="toggleSavingsAllGoals()" class="btn-ghost" style="padding:7px 14px; font-size:12px; font-weight:600; border-radius:8px;">
-              All Goals
+
+      <!-- Unified Multi-Filter Bar: Year + Multi-Month + Multi-Status + All Goals -->
+      <div class="sav-toolbar">
+        <div class="sav-toolbar-left">
+          <select id="savings-filter-year" class="rep-select" onchange="onSavingsYearChange()" style="height:36px; min-width:108px;"></select>
+
+          <div class="sav-dd-wrap" id="savings-month-dd-wrap">
+            <button type="button" id="savings-month-dd-trigger" class="sav-dd-trigger" onclick="toggleSavingsDropdown('month', event)" aria-haspopup="listbox" aria-expanded="false">
+              <span id="savings-month-dd-label">November</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
+            <div id="savings-month-dd-panel" class="sav-dd-panel hidden" onclick="event.stopPropagation()">
+              <div class="sav-dd-panel-head">
+                <span class="sav-dd-panel-title">Select Months</span>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="sav-dd-head-btn" onclick="selectSavingsAllMonths()">All</button>
+                  <button type="button" class="sav-dd-head-btn" onclick="selectSavingsCurrentMonth()">Current</button>
+                </div>
+              </div>
+              <div class="sav-month-grid" id="savings-month-chip-grid"></div>
+            </div>
           </div>
+
+          <div class="sav-dd-wrap" id="savings-status-dd-wrap">
+            <button type="button" id="savings-status-dd-trigger" class="sav-dd-trigger" onclick="toggleSavingsDropdown('status', event)" aria-haspopup="listbox" aria-expanded="false">
+              <span id="savings-status-dd-label">All Statuses</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="savings-status-dd-panel" class="sav-dd-panel hidden" onclick="event.stopPropagation()">
+              <div class="sav-dd-panel-head">
+                <span class="sav-dd-panel-title">Filter By Status</span>
+                <button type="button" class="sav-dd-head-btn" onclick="clearSavingsStatusFilter()">All</button>
+              </div>
+              <div class="sav-status-list" id="savings-status-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sav-toolbar-right">
+          <button type="button" id="btn-savings-all-goals" onclick="toggleSavingsAllGoals()" class="btn-ghost" style="height:36px; padding:0 14px; font-size:12.5px; font-weight:600; border-radius:9px;">
+            All Goals
+          </button>
         </div>
       </div>
-      <!-- 4-Card Summary KPI Grid with Embedded Carry Forward & Roll All Actions -->
+
+      <!-- Clean Uniform 4-Card KPI Grid -->
       <div class="grid grid-4 mb-4" id="savings-summary-grid"></div>
 
-      <!-- Clean Section Header (No giant empty card) -->
-      <div style="display:flex; align-items:center; justify-content:space-between; margin:22px 0 14px; flex-wrap:wrap; gap:12px;">
+      <!-- Active Savings Targets Section Header + Action Bar -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin:20px 0 14px; flex-wrap:wrap; gap:12px;">
         <div>
-          <h2 class="section-title" style="margin:0; font-size:16.5px;">Active Savings Targets</h2>
-          <p class="text-xs muted" id="savings-count-label" style="margin:2px 0 0;">Target milestones and accumulated balances.</p>
+          <h2 class="section-title" style="margin:0; font-size:16px;">Active Savings Targets</h2>
+          <p class="text-xs muted" id="savings-period-sub" style="margin:2px 0 0;"></p>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <button type="button" onclick="openPlannedGoalsModal()" class="btn-ghost" style="padding:6px 14px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+          <span id="savings-inline-actions" style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap;"></span>
+          <button type="button" onclick="openPlannedGoalsModal()" class="btn-ghost" style="height:34px; padding:0 13px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
             <span>Planned Goals</span>
             <span id="planned-goals-btn-badge" class="badge badge-off" style="font-size:10.5px; padding:1px 6px;">0</span>
           </button>
-          <button type="button" onclick="openGoalModal()" class="btn-primary" style="padding:6px 16px; font-size:12.5px; display:inline-flex; align-items:center; justify-content:center;">
+          <button type="button" onclick="openGoalModal()" class="btn-primary" style="height:34px; padding:0 15px; font-size:12.5px; display:inline-flex; align-items:center; justify-content:center;">
             Create Goal
           </button>
         </div>
@@ -15733,17 +15809,227 @@ function handleSaveEditBudget(e){
 
 /* ---------------- render: savings ---------------- */
 let savingsFilterMonth, savingsFilterYear;
-function initSavingsFilters(){
-  const now=new Date();
-  if(savingsFilterMonth===undefined){ savingsFilterMonth=now.getMonth()+1; savingsFilterYear=now.getFullYear(); }
-  document.getElementById('savings-filter-month').innerHTML=periodSelectOptions(savingsFilterMonth);
-  document.getElementById('savings-filter-year').innerHTML=yearSelectOptions(savingsFilterYear);
-  document.getElementById('savings-filter-note').textContent=`Showing goals active in ${MONTH_NAMES[savingsFilterMonth-1]} ${savingsFilterYear}.`;
+let savingsSelYear = null; // number | 'ALL'
+let savingsSelMonths = null; // Set<number> 1..12
+let savingsStatusFilter = new Set(); // empty = All Statuses
+const SAVINGS_STATUS_DEFS = [
+  { id: 'in_progress', label: 'In Progress' },
+  { id: 'achieved', label: 'Achieved' },
+  { id: 'settled', label: 'Settled' },
+  { id: 'partial', label: 'Partially Transferred' },
+  { id: 'overdue', label: 'Overdue / Due Soon' },
+  { id: 'dismissed', label: 'Dismissed' }
+];
+
+function savingsYearOptions(){
+  const ySet = new Set([new Date().getFullYear()]);
+  (DB.transactions || []).forEach(t => { const pd = parseTxDate(t.date); if(pd.year) ySet.add(pd.year); });
+  (DB.savingsGoals || []).forEach(g => {
+    const eff = getGoalEffectiveMonthYear(g);
+    if(eff && eff.year) ySet.add(eff.year);
+    const s = parseYmFromDateStr(g.startDate); if(s && s.year) ySet.add(s.year);
+    const d = parseYmFromDateStr(g.deadline); if(d && d.year) ySet.add(d.year);
+  });
+  return [...ySet].sort((a, b) => b - a);
 }
-function onSavingsFilterChange(){
-  savingsFilterMonth=parseInt(document.getElementById('savings-filter-month').value,10);
-  savingsFilterYear=parseInt(document.getElementById('savings-filter-year').value,10);
+
+function syncLegacySavingsPeriodVars(){
+  const now = new Date();
+  const sortedM = (savingsSelMonths instanceof Set && savingsSelMonths.size) ? [...savingsSelMonths].sort((a, b) => a - b) : [now.getMonth() + 1];
+  savingsFilterMonth = sortedM[sortedM.length - 1] || (now.getMonth() + 1);
+  savingsFilterYear = (savingsSelYear === 'ALL' || !savingsSelYear) ? now.getFullYear() : Number(savingsSelYear);
+  savingsViewMode = (savingsSelYear === 'ALL' && savingsSelMonths instanceof Set && savingsSelMonths.size === 12) ? 'all' : 'monthly';
+}
+
+function closeSavingsDropdowns(){
+  ['month', 'status'].forEach(kind => {
+    const p = document.getElementById(`savings-${kind}-dd-panel`);
+    const b = document.getElementById(`savings-${kind}-dd-trigger`);
+    if(p) p.classList.add('hidden');
+    if(b){ b.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); }
+  });
+}
+
+function toggleSavingsDropdown(kind, e){
+  if(e) e.stopPropagation();
+  const panel = document.getElementById(`savings-${kind}-dd-panel`);
+  const btn = document.getElementById(`savings-${kind}-dd-trigger`);
+  if(!panel) return;
+  const opening = panel.classList.contains('hidden');
+  closeSavingsDropdowns();
+  if(opening){
+    panel.classList.remove('hidden');
+    if(btn){ btn.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+  }
+}
+
+if(!window._savingsFilterListenersBound){
+  window._savingsFilterListenersBound = true;
+  document.addEventListener('click', e => {
+    const mWrap = document.getElementById('savings-month-dd-wrap');
+    const sWrap = document.getElementById('savings-status-dd-wrap');
+    if((!mWrap || !mWrap.contains(e.target)) && (!sWrap || !sWrap.contains(e.target))) closeSavingsDropdowns();
+  });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeSavingsDropdowns(); });
+}
+
+function initSavingsFilters(){
+  const now = new Date();
+  if(savingsSelYear === null || savingsSelYear === undefined){
+    savingsSelYear = savingsFilterYear || now.getFullYear();
+  }
+  if(!(savingsSelMonths instanceof Set) || savingsSelMonths.size === 0){
+    savingsSelMonths = new Set([savingsFilterMonth || (now.getMonth() + 1)]);
+  }
+  syncLegacySavingsPeriodVars();
+
+  const ySel = document.getElementById('savings-filter-year');
+  if(ySel){
+    const yrs = savingsYearOptions();
+    if(savingsSelYear !== 'ALL' && !yrs.includes(Number(savingsSelYear))) yrs.unshift(Number(savingsSelYear));
+    ySel.innerHTML = yrs.map(y => `<option value="${y}" ${String(savingsSelYear)===String(y)?'selected':''}>${y}</option>`).join('') +
+      `<option value="ALL" ${savingsSelYear==='ALL'?'selected':''}>All Years</option>`;
+  }
+
+  const mLbl = document.getElementById('savings-month-dd-label');
+  const shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const arr = [...savingsSelMonths].sort((a,b)=>a-b);
+  if(mLbl){
+    if(arr.length === 12) mLbl.textContent = 'All Months';
+    else if(arr.length === 1) mLbl.textContent = MONTH_NAMES[arr[0] - 1];
+    else if(arr.length <= 3) mLbl.textContent = arr.map(m => shortM[m - 1]).join(', ');
+    else mLbl.textContent = `${arr.length} Months`;
+  }
+  const mGrid = document.getElementById('savings-month-chip-grid');
+  if(mGrid){
+    mGrid.innerHTML = shortM.map((mName, idx) => {
+      const mv = idx + 1;
+      const active = savingsSelMonths.has(mv);
+      return `<button type="button" class="sav-month-chip ${active?'active':''}" onclick="toggleSavingsMonth(${mv})">${mName}</button>`;
+    }).join('');
+  }
+
+  const sLbl = document.getElementById('savings-status-dd-label');
+  if(sLbl){
+    if(savingsStatusFilter.size === 0){
+      sLbl.textContent = 'All Statuses';
+    } else if(savingsStatusFilter.size === 1){
+      const id = [...savingsStatusFilter][0];
+      const def = SAVINGS_STATUS_DEFS.find(d => d.id === id);
+      sLbl.textContent = def ? def.label : '1 Status';
+    } else {
+      sLbl.textContent = `${savingsStatusFilter.size} Statuses`;
+    }
+  }
+  const sList = document.getElementById('savings-status-list');
+  if(sList){
+    const chkSvg = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    sList.innerHTML = SAVINGS_STATUS_DEFS.map(d => {
+      const active = savingsStatusFilter.has(d.id);
+      return `<button type="button" class="sav-status-opt ${active?'active':''}" onclick="toggleSavingsStatusFilter('${d.id}')"><span>${d.label}</span><span class="sav-status-chk">${active ? chkSvg : ''}</span></button>`;
+    }).join('');
+  }
+}
+
+function onSavingsYearChange(){
+  const ySel = document.getElementById('savings-filter-year');
+  if(!ySel) return;
+  savingsSelYear = ySel.value === 'ALL' ? 'ALL' : Number(ySel.value);
+  syncLegacySavingsPeriodVars();
   renderSavings();
+}
+
+function toggleSavingsMonth(m){
+  if(!(savingsSelMonths instanceof Set)) savingsSelMonths = new Set([m]);
+  if(savingsSelMonths.has(m)){
+    if(savingsSelMonths.size > 1) savingsSelMonths.delete(m);
+  } else {
+    savingsSelMonths.add(m);
+  }
+  syncLegacySavingsPeriodVars();
+  renderSavings();
+}
+
+function selectSavingsAllMonths(){
+  savingsSelMonths = new Set([1,2,3,4,5,6,7,8,9,10,11,12]);
+  syncLegacySavingsPeriodVars();
+  renderSavings();
+}
+
+function selectSavingsCurrentMonth(){
+  const now = new Date();
+  savingsSelYear = now.getFullYear();
+  savingsSelMonths = new Set([now.getMonth() + 1]);
+  syncLegacySavingsPeriodVars();
+  closeSavingsDropdowns();
+  renderSavings();
+}
+
+function toggleSavingsStatusFilter(id){
+  if(savingsStatusFilter.has(id)) savingsStatusFilter.delete(id);
+  else savingsStatusFilter.add(id);
+  renderSavings();
+}
+
+function clearSavingsStatusFilter(){
+  savingsStatusFilter.clear();
+  closeSavingsDropdowns();
+  renderSavings();
+}
+
+function formatSavingsPeriodSubtitle(){
+  const shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const arr = (savingsSelMonths instanceof Set) ? [...savingsSelMonths].sort((a,b)=>a-b) : [];
+  if(savingsSelYear === 'ALL' && arr.length === 12) return 'All Goals · Chronological';
+  const yTxt = savingsSelYear === 'ALL' ? 'All Years' : String(savingsSelYear);
+  if(arr.length === 12) return `All Months · ${yTxt}`;
+  if(arr.length === 1) return `${MONTH_NAMES[arr[0] - 1]} ${yTxt}`;
+  return `${arr.map(m => shortM[m - 1]).join(', ')} · ${yTxt}`;
+}
+
+function formatGoalDateNice(dateStr){
+  if(!dateStr || typeof dateStr !== 'string') return '';
+  const parts = dateStr.split('-');
+  if(parts.length < 3) return dateStr;
+  const y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+  if(!y || !m || !d) return dateStr;
+  const shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${shortM[m - 1]} ${d}, ${y}`;
+}
+
+function classifySavingsGoal(g, todayStr){
+  const accumulated = getGoalAccumulatedDeposits(g);
+  const cur = getGoalCurrentAmount(g);
+  const targetAmt = Number(g.targetAmount) || 0;
+  const reached = accumulated >= targetAmt && targetAmt > 0;
+  const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
+  const transferOutRecords = rollList.filter(r => {
+    if(r.targetGoalId && r.targetGoalId === g.id) return false;
+    return r.goalId ? (r.goalId === g.id) : (r.goalName === g.name);
+  });
+  const totalTransferredOut = transferOutRecords.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  const lastTransferOut = transferOutRecords[transferOutRecords.length - 1] || null;
+  const isFullySettled = totalTransferredOut > 0 && cur === 0;
+  const isPartiallyTransferred = totalTransferredOut > 0 && cur > 0;
+  const isExpired = !g.dismissed && !isFullySettled && !reached && Boolean(g.deadline && g.deadline < todayStr);
+  let isDueSoon = false;
+  if(!g.dismissed && !isFullySettled && !reached && !isExpired && g.deadline){
+    const dDiff = Math.ceil((new Date(g.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    if(dDiff >= 0 && dDiff <= 7) isDueSoon = true;
+  }
+
+  let statusKey = 'in_progress';
+  if(g.dismissed) statusKey = 'dismissed';
+  else if(isFullySettled) statusKey = 'settled';
+  else if(isPartiallyTransferred) statusKey = 'partial';
+  else if(reached) statusKey = 'achieved';
+  else if(isExpired || isDueSoon) statusKey = 'overdue';
+
+  return {
+    statusKey, accumulated, cur, targetAmt, reached,
+    totalTransferredOut, lastTransferOut,
+    isFullySettled, isPartiallyTransferred, isExpired, isDueSoon
+  };
 }
 function parseYmFromDateStr(dStr){
   if(!dStr || typeof dStr !== 'string') return null;
@@ -15903,6 +16189,8 @@ function handleSaveRolloverGoal(e){
   if(!isNaN(deadlineDate.getTime())){
     savingsFilterMonth = deadlineDate.getMonth() + 1;
     savingsFilterYear = deadlineDate.getFullYear();
+    savingsSelYear = savingsFilterYear;
+    savingsSelMonths = new Set([savingsFilterMonth]);
   }
 
   saveDB(true);
@@ -15991,117 +16279,150 @@ function getGoalCurrentAmount(goal){
 let savingsViewMode = 'monthly'; // 'monthly' | 'all'
 
 function toggleSavingsAllGoals(forceState){
-  if(forceState === true) savingsViewMode = 'all';
-  else if(forceState === false) savingsViewMode = 'monthly';
-  else savingsViewMode = (savingsViewMode === 'monthly') ? 'all' : 'monthly';
+  const now = new Date();
+  const isAllNow = (savingsSelYear === 'ALL' && savingsSelMonths instanceof Set && savingsSelMonths.size === 12);
+  const goAll = (forceState === true) ? true : (forceState === false ? false : !isAllNow);
+  if(goAll){
+    savingsSelYear = 'ALL';
+    savingsSelMonths = new Set([1,2,3,4,5,6,7,8,9,10,11,12]);
+    savingsStatusFilter.clear();
+  } else {
+    savingsSelYear = now.getFullYear();
+    savingsSelMonths = new Set([now.getMonth() + 1]);
+  }
+  syncLegacySavingsPeriodVars();
+  closeSavingsDropdowns();
   renderSavings();
 }
 
 function renderSavings(){
   initSavingsFilters();
   updatePlannedGoalsButtonBadge();
-  const allGoalsMode = (savingsViewMode === 'all');
-  const allGoalsList = DB.savingsGoals || [];
-  const visibleGoals = allGoalsMode
+
+  const todayStr = ymd(new Date());
+  const now = new Date();
+  const monthArr = [...savingsSelMonths].sort((a,b)=>a-b);
+  const isSingleMonth = savingsSelYear !== 'ALL' && monthArr.length === 1;
+  const allGoalsMode = (savingsSelYear === 'ALL' && monthArr.length === 12);
+  const isGroupedMode = allGoalsMode || savingsSelYear === 'ALL' || monthArr.length > 1;
+  const periodSubLabel = formatSavingsPeriodSubtitle();
+
+  const allGoalsList = (DB.savingsGoals || []).filter(g => g && !g.isAssumption);
+  const periodTxs = (DB.transactions || []).filter(t => {
+    const pd = parseTxDate(t.date);
+    if(!pd.year) return false;
+    if(savingsSelYear !== 'ALL' && pd.year !== Number(savingsSelYear)) return false;
+    return savingsSelMonths.has(pd.month);
+  });
+
+  // 1. Period-filtered goals (matching Report & Dashboard period logic)
+  const periodGoals = allGoalsMode
     ? [...allGoalsList]
-    : allGoalsList.filter(goal => goalActiveInPeriod(goal, savingsFilterMonth, savingsFilterYear));
+    : getGoalsForReportPeriod(savingsSelYear, savingsSelMonths, periodTxs, false);
+
+  // 2. Apply Multi-Status filter on top of period-filtered goals
+  const visibleGoals = savingsStatusFilter.size === 0
+    ? periodGoals
+    : periodGoals.filter(g => savingsStatusFilter.has(classifySavingsGoal(g, todayStr).statusKey));
 
   const allGoalsBtn = document.getElementById('btn-savings-all-goals');
   if(allGoalsBtn){
-    if(allGoalsMode){
-      allGoalsBtn.className = 'btn-primary';
-      allGoalsBtn.textContent = 'Showing All-Time';
-    } else {
-      allGoalsBtn.className = 'btn-ghost';
-      allGoalsBtn.textContent = 'All-Time';
-    }
+    allGoalsBtn.className = allGoalsMode ? 'btn-primary' : 'btn-ghost';
+    allGoalsBtn.textContent = 'All Goals';
   }
 
-  const noteEl = document.getElementById('savings-filter-note');
-  if(noteEl && allGoalsMode){
-    noteEl.textContent = 'Showing all goals grouped chronologically by month.';
+  const periodSubEl = document.getElementById('savings-period-sub');
+  if(periodSubEl){
+    const stTag = savingsStatusFilter.size > 0 ? ` · ${savingsStatusFilter.size} status filter${savingsStatusFilter.size===1?'':'s'}` : '';
+    periodSubEl.textContent = periodSubLabel + stTag;
   }
 
   const countLabel = document.getElementById('savings-count-label');
   if(countLabel){
-    countLabel.textContent = allGoalsMode
-      ? `${visibleGoals.length} total goal${visibleGoals.length===1?'':'s'} on record`
-      : `${visibleGoals.length} active target${visibleGoals.length===1?'':'s'} for this period`;
+    countLabel.textContent = `${visibleGoals.length} goal${visibleGoals.length===1?'':'s'} · ${periodSubLabel}`;
   }
 
-  // 1. Calculate All-Time Cumulative Unspent Savings (deposits minus funded expenses and income drawdowns)
+  // 3. Calculate All-Time Cumulative Unspent Savings
   const allSavingsTxs = (DB.transactions || []).filter(t => t.type === 'savings' && !t.isGoalRolloverIn);
   const allSavingsDeposited = allSavingsTxs.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const allSavingsUsed = (DB.transactions || []).filter(t => t.type === 'expense' && (t.description || '').includes('Funded from')).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const allDrawdownsToIncome = (DB.goalRollovers || []).filter(r => r.type === 'goal_to_income').reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
   const netTotalSavingsAllTime = Math.max(0, Math.round((allSavingsDeposited - allSavingsUsed - allDrawdownsToIncome) * 100) / 100);
 
-  // 2. Selected Period Savings & Remaining Balance
-  const now = new Date();
-  const curM = savingsFilterMonth || (now.getMonth() + 1);
-  const curY = savingsFilterYear || now.getFullYear();
-  const monthSaved = (DB.transactions || []).filter(t => {
-    if(t.type !== 'savings' || t.isGoalRolloverIn) return false;
-    return inMonth(t, curM, curY);
-  }).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-  const monthIncome = (DB.transactions || []).filter(t => t.type === 'income' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-  const monthExpense = (DB.transactions || []).filter(t => t.type === 'expense' && inMonth(t, curM, curY)).reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-  const rawRemaining = monthIncome - monthExpense - monthSaved;
+  // 4. Period Savings & Remaining Balance
+  const curM = isSingleMonth ? monthArr[0] : (now.getMonth() + 1);
+  const curY = isSingleMonth ? Number(savingsSelYear) : now.getFullYear();
+  const periodSaved = periodTxs.filter(t => t.type === 'savings' && !t.isGoalRolloverIn)
+    .reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+  const monthIncome = isSingleMonth ? periodTxs.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0) : 0;
+  const monthExpense = isSingleMonth ? periodTxs.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0) : 0;
+  const rawRemaining = monthIncome - monthExpense - periodSaved;
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const curMonthName = SHORT_MONTHS[curM - 1];
 
-  // Check if carry-forward is already active for this month
-  const activeCf = (DB.carryForwards || []).find(cf => cf.fromMonth === curM && cf.fromYear === curY && (DB.transactions || []).some(t => t.id === cf.txId));
+  const activeCf = isSingleMonth
+    ? (DB.carryForwards || []).find(cf => cf.fromMonth === curM && cf.fromYear === curY && (DB.transactions || []).some(t => t.id === cf.txId))
+    : null;
 
-  // 3. Goals Achieved KPI (based on accumulated savings reached target!)
-  const activeVisibleGoals = visibleGoals.filter(g => !g.dismissed);
-  const monthGoalsCount = activeVisibleGoals.length;
-  const monthGoalsAchieved = activeVisibleGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+  // 5. Goals Achieved KPI (for selected period, excluding dismissed)
+  const activePeriodGoals = periodGoals.filter(g => !g.dismissed);
+  const periodGoalsCount = activePeriodGoals.length;
+  const periodGoalsAchieved = activePeriodGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0) && (Number(g.targetAmount) || 0) > 0)).length;
 
-  // 4. Update goal currentAmounts
-  visibleGoals.forEach(g => {
-    g.currentAmount = getGoalCurrentAmount(g);
-  });
+  visibleGoals.forEach(g => { g.currentAmount = getGoalCurrentAmount(g); });
 
-  // 5. Render 4-card Summary KPI Grid with Embedded Actions
+  // 6. Render Clean Uniform 4-Card KPI Grid (zero embedded buttons/links inside KPI cards)
   const summaryGrid = document.getElementById('savings-summary-grid');
   if(summaryGrid){
-    const remainTone = activeCf ? 'pos' : (rawRemaining >= 0 ? 'pos' : 'neg');
-    const remainLabel = activeCf ? 'Rolled over to next month' : (rawRemaining >= 0 ? curMonthName + ' unspent surplus' : curMonthName + ' over budget');
-    const goalsTone = monthGoalsAchieved > 0 ? 'pos' : 'neu';
-    const goalsLabel = allGoalsMode ? 'All-time achieved' : (monthGoalsCount > 0 ? (monthGoalsCount - monthGoalsAchieved) + ' active in ' + curMonthName : 'No targets in ' + curMonthName);
+    const remainTone = !isSingleMonth ? 'pos' : (activeCf ? 'pos' : (rawRemaining >= 0 ? 'pos' : 'neg'));
+    const remainLabel = !isSingleMonth
+      ? 'Available Across Vaults'
+      : (activeCf ? 'Carried forward' : (rawRemaining >= 0 ? `${curMonthName} unspent surplus` : `${curMonthName} deficit`));
+    const goalsTone = periodGoalsAchieved > 0 ? 'pos' : 'neu';
+    const goalsLabel = allGoalsMode
+      ? 'All-time achieved'
+      : (periodGoalsCount > 0 ? `${periodGoalsCount - periodGoalsAchieved} remaining` : 'No targets in period');
+    const savedTitle = allGoalsMode ? 'Saved All-Time' : (isSingleMonth ? 'Saved This Month' : 'Saved In Period');
+    const savedBadge = allGoalsMode ? 'Lifetime deposits' : `${periodSubLabel}`;
+
     summaryGrid.innerHTML = `
       <div class="card ov-card">
         <div class="ov-top"><span class="label-eyebrow">Total Savings</span><div class="ov-icon accent-teal">${miniIcon('vault')}</div></div>
         <p class="ov-amount">${fmt(netTotalSavingsAllTime)}</p>
         <div class="ov-change"><span class="kpi-trend-badge trend-pos">Unspent savings pool</span></div>
-        ${netTotalSavingsAllTime > 0 ? `<div style="margin-top:6px;"><button type="button" onclick="openRollAllSavingsModal()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">Roll All to Next Month</button></div>` : ''}
       </div>
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">${allGoalsMode ? 'Saved All-Time' : 'Saved This Month'}</span><div class="ov-icon accent-primary">${miniIcon('calendarCheck')}</div></div>
-        <p class="ov-amount">${fmt(allGoalsMode ? allSavingsDeposited : monthSaved)}</p>
-        <div class="ov-change"><span class="kpi-trend-badge trend-neu">${allGoalsMode ? 'Lifetime gross deposits' : curMonthName + ' ' + curY + ' contributions'}</span></div>
+        <div class="ov-top"><span class="label-eyebrow">${savedTitle}</span><div class="ov-icon accent-primary">${miniIcon('calendarCheck')}</div></div>
+        <p class="ov-amount">${fmt(allGoalsMode ? allSavingsDeposited : periodSaved)}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-neu">${escapeHtml(savedBadge)}</span></div>
       </div>
       <div class="card ov-card">
-        <div class="ov-top"><span class="label-eyebrow">${allGoalsMode ? 'Unspent Balance' : 'Remaining Balance'}</span><div class="ov-icon accent-amber">${miniIcon('coins')}</div></div>
-        <p class="ov-amount">${fmt(allGoalsMode ? netTotalSavingsAllTime : Math.abs(activeCf ? activeCf.amount : rawRemaining))}</p>
-        <div class="ov-change"><span class="kpi-trend-badge trend-${remainTone}">${allGoalsMode ? 'Available Across Vaults' : remainLabel}</span></div>
-        <div style="margin-top:6px;">
-          ${!allGoalsMode && activeCf ? `
-            <span class="badge badge-ok" style="font-size:10.5px; padding:2px 6px;">Applied</span>
-            <button type="button" onclick="reverseCarryForward('${activeCf.id}')" class="link-sm" style="font-size:11px; color:var(--rose); background:none; border:none; cursor:pointer; margin-left:6px; font-weight:600;">Reverse</button>
-          ` : (!allGoalsMode && rawRemaining > 0 ? `
-            <button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-primary" style="padding:2px 10px; font-size:11px; height:24px; border-radius:6px; font-weight:600;">Carry Forward</button>
-          ` : '')}
-        </div>
+        <div class="ov-top"><span class="label-eyebrow">${isSingleMonth ? 'Remaining Balance' : 'Unspent Balance'}</span><div class="ov-icon accent-amber">${miniIcon('coins')}</div></div>
+        <p class="ov-amount">${fmt(isSingleMonth ? Math.abs(activeCf ? activeCf.amount : rawRemaining) : netTotalSavingsAllTime)}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${remainTone}">${escapeHtml(remainLabel)}</span></div>
       </div>
       <div class="card ov-card">
         <div class="ov-top"><span class="label-eyebrow">Goals Achieved</span><div class="ov-icon accent-rose">${miniIcon('trophy')}</div></div>
-        <p class="ov-amount">${monthGoalsAchieved} of ${monthGoalsCount}</p>
-        <div class="ov-change"><span class="kpi-trend-badge trend-${goalsTone}">${goalsLabel}</span></div>
-        <div style="margin-top:6px;"><button type="button" onclick="toggleSavingsAllGoals()" class="link-sm" style="font-size:11px; font-weight:700; color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">${allGoalsMode ? 'Show Monthly' : 'All-Time'}</button></div>
+        <p class="ov-amount">${periodGoalsAchieved} of ${periodGoalsCount}</p>
+        <div class="ov-change"><span class="kpi-trend-badge trend-${goalsTone}">${escapeHtml(goalsLabel)}</span></div>
       </div>
     `;
+  }
+
+  // 7. Render Carry Forward & Roll All cleanly in the Active Savings Targets action bar
+  const inlineActions = document.getElementById('savings-inline-actions');
+  if(inlineActions){
+    const parts = [];
+    if(isSingleMonth && activeCf){
+      parts.push(`<span class="badge badge-ok" style="font-size:11px; padding:3px 8px;">Carry Forward Applied</span>`);
+      parts.push(`<button type="button" onclick="reverseCarryForward('${activeCf.id}')" class="btn-ghost" style="height:34px; padding:0 12px; font-size:12px; font-weight:600; color:var(--rose);">Reverse</button>`);
+    } else if(isSingleMonth && rawRemaining > 0){
+      parts.push(`<button type="button" onclick="openCarryForwardModal(${rawRemaining}, ${curM}, ${curY})" class="btn-ghost" style="height:34px; padding:0 13px; font-size:12.5px; font-weight:600; color:var(--primary); border-color:rgba(124,58,237,0.35);">Carry Forward (${fmtPlainNum(rawRemaining)})</button>`);
+    }
+    if(netTotalSavingsAllTime > 0){
+      parts.push(`<button type="button" onclick="openRollAllSavingsModal()" class="btn-ghost" style="height:34px; padding:0 13px; font-size:12.5px; font-weight:600;">Roll All</button>`);
+    }
+    inlineActions.innerHTML = parts.join('');
   }
 
   const cfBtnContainer = document.getElementById('savings-carry-forward-btn-wrap');
@@ -16110,265 +16431,192 @@ function renderSavings(){
   const grid = document.getElementById('savings-grid');
   if(!grid) return;
 
-  const todayStr = ymd(new Date());
-
+  // 8. Clean Empty State (zero instructional filler text)
   if(visibleGoals.length === 0){
+    const emptyMsg = savingsStatusFilter.size > 0
+      ? 'No Matching Savings Goals'
+      : `No Savings Goals for ${allGoalsMode ? 'All-Time' : periodSubLabel}`;
     grid.innerHTML = `
-      <div style="grid-column:1 / -1; text-align:center; padding:32px 18px; background:var(--surface-2); border:1px dashed var(--line); border-radius:12px; margin-bottom:12px;">
-        <div style="width:40px; height:40px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        </div>
-        <p style="font-size:14px; font-weight:700; color:var(--ink); margin:0 0 4px;">No Savings Goals for ${allGoalsMode ? 'All-Time' : curMonthName + ' ' + curY}</p>
-        <p class="text-xs muted" style="margin:0 auto; max-width:380px; line-height:1.5;">You haven't created a savings target for this period yet. Click "Create Goal" to set a target milestone.</p>
+      <div class="sav-empty">
+        <p class="sav-empty-title">${escapeHtml(emptyMsg)}</p>
       </div>
     `;
     return;
   }
 
-  // Render a single goal card cleanly
-  function renderSingleGoalCard(g, gIdx){
-    const accumulated = getGoalAccumulatedDeposits(g);
-    const cur = getGoalCurrentAmount(g);
-    const targetAmt = Number(g.targetAmount) || 0;
-    const reached = accumulated >= targetAmt && targetAmt > 0;
-
-    // Check if goal funds were transferred out via rollover
-    const rollList = Array.isArray(DB.goalRollovers) ? DB.goalRollovers : [];
-    const transferOutRecords = rollList.filter(r => {
-      if(r.targetGoalId && r.targetGoalId === g.id) return false;
-      return r.goalId ? (r.goalId === g.id) : (r.goalName === g.name);
-    });
-    const totalTransferredOut = transferOutRecords.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
-    const lastTransferOut = transferOutRecords[transferOutRecords.length - 1];
-
-    const isFullySettled = totalTransferredOut > 0 && cur === 0;
-    const isPartiallyTransferred = totalTransferredOut > 0 && cur > 0;
-    const isExpired = !isFullySettled && !reached && Boolean(g.deadline && g.deadline < todayStr);
-
+  // 9. Clean 4-Zone Goal Card (100% existing functionality preserved)
+  function renderSingleGoalCard(g){
+    const st = classifySavingsGoal(g, todayStr);
+    const { accumulated, cur, targetAmt, reached, totalTransferredOut, lastTransferOut, isFullySettled, isPartiallyTransferred, isExpired, isDueSoon } = st;
     const pct = reached ? 100 : (targetAmt > 0 ? Math.min(100, (accumulated / targetAmt) * 100) : 0);
     const rem = reached ? 0 : Math.max(0, targetAmt - accumulated);
     const savingInLabel = g.savingIn || 'Bank Account';
+    const catLabel = g.category || 'General Savings';
 
     let cardBorder = '';
-    let cardBg = '';
-    if(isFullySettled){
-      cardBorder = 'border-color:rgba(15,158,147,0.35);';
-      cardBg = 'background:rgba(15,158,147,0.02);';
-    } else if(reached){
-      cardBorder = 'border-color:var(--teal);';
-    } else if(isExpired){
-      cardBorder = 'border-color:var(--rose);';
-    }
+    if(g.dismissed) cardBorder = 'border-color:rgba(225,29,72,0.28);';
+    else if(isFullySettled || reached) cardBorder = 'border-color:rgba(13,148,136,0.32);';
+    else if(isExpired) cardBorder = 'border-color:rgba(225,29,72,0.35);';
 
     let statusBadge = '<span class="badge badge-off">In Progress</span>';
-    if(g.dismissed){
-      statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.12); color:var(--rose); font-weight:700; border:1px solid rgba(239,68,68,0.25);">Goal Dismissed</span>';
-      cardBorder = 'border-color:rgba(239,68,68,0.3);';
-    } else if(isFullySettled){
-      statusBadge = '<span class="badge badge-ok" style="font-weight:700;">Settled</span>';
-    } else if(isPartiallyTransferred){
-      statusBadge = `<span class="badge badge-ok" style="background:rgba(15,158,147,0.12); color:var(--teal); font-weight:600;">Partially Transferred</span>`;
-    } else if(reached){
-      statusBadge = renderGoalWarningBadgeHtml('goal_achieved', g, '100% Achieved');
-    } else if(isExpired){
-      statusBadge = renderGoalWarningBadgeHtml('goal_deadline_passed', g, 'Deadline Passed');
-    } else if(g.deadline){
-      const dDiff = Math.ceil((new Date(g.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-      if(dDiff >= 0 && dDiff <= 7){
-        statusBadge = renderGoalWarningBadgeHtml('goal_deadline_near', g, 'Due Soon');
-      }
-    }
+    if(g.paid) statusBadge = '<span class="badge badge-ok">Paid</span>';
+    else if(g.dismissed) statusBadge = '<span class="badge badge-over">Dismissed</span>';
+    else if(isFullySettled) statusBadge = '<span class="badge badge-ok">Settled</span>';
+    else if(isPartiallyTransferred) statusBadge = '<span class="badge badge-ok">Partially Transferred</span>';
+    else if(reached) statusBadge = '<span class="badge badge-ok">Achieved</span>';
+    else if(isExpired) statusBadge = '<span class="badge badge-over">Overdue</span>';
+    else if(isDueSoon) statusBadge = '<span class="badge badge-warn">Due Soon</span>';
 
-    // Multi-month pacing calculation
-    const monthsRemaining = getGoalMonthsRemaining(g);
-    const monthlyPacing = getGoalMonthlyPacing(g);
-    let pacingBadgeHtml = '';
-    if(!reached && !isFullySettled && g.deadline && monthlyPacing > 0){
-      if(monthsRemaining > 1){
-        pacingBadgeHtml = `<span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px;">Pacing: ${fmt(monthlyPacing)} / mo · ${monthsRemaining} mos left</span>`;
-      } else {
-        pacingBadgeHtml = `<span class="badge" style="background:rgba(217,119,6,0.1); color:var(--amber); font-size:11px; font-weight:600; padding:2px 7px; border-radius:5px;">Final Month · ${fmt(monthlyPacing)} left</span>`;
-      }
-    }
+    const metaParts = [catLabel, savingInLabel];
+    if(g.deadline) metaParts.push(`Target ${formatGoalDateNice(g.deadline)}`);
 
-    let transferBannerHtml = '';
+    // Quiet single-line note (transfer record or multi-month pacing)
+    let noteHtml = '';
     if(lastTransferOut){
-      const destLabel = lastTransferOut.type === 'goal_to_income' ? 'Income' : (escapeHtml(lastTransferOut.targetGoalName || 'Savings'));
-      const destDateLabel = MONTH_NAMES[lastTransferOut.toMonth - 1] + ' ' + lastTransferOut.toYear;
+      const destLabel = lastTransferOut.type === 'goal_to_income' ? 'Income' : escapeHtml(lastTransferOut.targetGoalName || 'Savings');
+      const destDateLabel = `${SHORT_MONTHS[(lastTransferOut.toMonth || 1) - 1]} ${lastTransferOut.toYear || ''}`.trim();
       if(isFullySettled){
-        transferBannerHtml = `
-          <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
-            <span style="font-size:13px; font-weight:700;">↳</span>
-            <span><strong>Settled:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}).</span>
-          </div>
-        `;
+        noteHtml = `<div class="sav-gc-note"><span style="color:var(--teal); font-weight:700;">↳</span><span>Transferred <strong>${fmt(totalTransferredOut)}</strong> to <strong>${destLabel}</strong> (${destDateLabel})</span></div>`;
       } else if(isPartiallyTransferred){
-        transferBannerHtml = `
-          <div style="margin-top:10px; background:rgba(15,158,147,0.07); border:1px solid rgba(15,158,147,0.2); border-radius:8px; padding:7px 11px; font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
-            <span style="font-size:13px; font-weight:700;">↳</span>
-            <span><strong>Partial Transfer:</strong> ${fmt(totalTransferredOut)} transferred to <strong>${destLabel}</strong> (${destDateLabel}). <strong>${fmt(cur)}</strong> remaining in vault.</span>
-          </div>
-        `;
+        noteHtml = `<div class="sav-gc-note"><span style="color:var(--teal); font-weight:700;">↳</span><span>Transferred <strong>${fmt(totalTransferredOut)}</strong> to <strong>${destLabel}</strong> (${destDateLabel}) · <strong>${fmt(cur)}</strong> in vault</span></div>`;
+      }
+    } else if(!reached && !isFullySettled && !g.dismissed && g.deadline){
+      const monthsRemaining = getGoalMonthsRemaining(g);
+      const monthlyPacing = getGoalMonthlyPacing(g);
+      if(monthlyPacing > 0){
+        noteHtml = monthsRemaining > 1
+          ? `<div class="sav-gc-note"><span>Pacing <strong>${fmt(monthlyPacing)} / mo</strong> · ${monthsRemaining} months left</span></div>`
+          : `<div class="sav-gc-note"><span>Final month · <strong>${fmt(monthlyPacing)}</strong> remaining</span></div>`;
       }
     }
 
-    let rightSideFigure = '';
+    // Compact right-hand progress figure (no triple repetition of "Settled")
+    let rightFigureHtml = '';
     if(isFullySettled){
-      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">${fmt(0)} in Vault · Settled</span>`;
+      rightFigureHtml = `<span class="sav-gc-pct" style="color:var(--teal);">100% <span class="muted" style="font-weight:500;">· ${fmt(0)} in vault</span></span>`;
     } else if(isPartiallyTransferred){
-      rightSideFigure = `<span class="text-xs" style="color:var(--ink); font-weight:600;">${fmt(cur)} in Vault</span>`;
+      rightFigureHtml = `<span class="sav-gc-pct" style="color:var(--ink);">${Math.round(pct)}% <span class="muted" style="font-weight:500;">· ${fmt(cur)} in vault</span></span>`;
     } else if(reached){
-      rightSideFigure = `<span class="text-xs" style="color:var(--teal); font-weight:600;">${fmt(cur)} in Vault · Target Met</span>`;
+      rightFigureHtml = `<span class="sav-gc-pct" style="color:var(--teal);">100% <span class="muted" style="font-weight:500;">· ${fmt(cur)} in vault</span></span>`;
     } else {
-      rightSideFigure = `<span class="text-xs muted">${fmt(rem)} remaining</span>`;
+      rightFigureHtml = `<span class="sav-gc-pct" style="color:var(--primary);">${Math.round(pct)}% <span class="muted" style="font-weight:500;">· ${fmt(rem)} left</span></span>`;
     }
 
-    const canContribute = !reached && !isFullySettled;
+    const canContribute = !reached && !isFullySettled && !g.dismissed;
     const canReverseTransfer = Boolean(lastTransferOut);
     const canUseSavings = cur > 0;
     const canTransfer = cur > 0;
-    const canExtend = !reached && g.deadline && !isFullySettled;
+    const canExtend = !reached && g.deadline && !isFullySettled && !g.dismissed;
+    const canDismiss = !g.dismissed && !reached && !isFullySettled;
+    const safeName = (g.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
     return `
-      <div class="card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="padding:22px; ${cardBorder} ${cardBg}">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
-          <div style="flex:1;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              ${dragHandleHtml()}
-              <h3 class="section-title" style="margin:0; font-size:17px;">${escapeHtml(g.name)}</h3>
-              <span class="badge" style="background:rgba(99,102,241,0.08); color:var(--primary); font-weight:600; font-size:11px; padding:2px 7px;">${escapeHtml((g.type === 'bill' ? 'Bill · ' : 'Savings · ') + (g.category || 'General'))}</span>
-              ${g.paid ? '<span class="badge badge-ok" style="font-weight:700;">Paid</span>' : statusBadge}
+      <div class="sav-goal-card draggable-item" draggable="true" data-reorder-group="savings-goals" data-reorder-key="${escapeHtml(g.id)}" style="${cardBorder}">
+        <!-- Zone 1: Clean Header -->
+        <div class="sav-gc-head">
+          <div class="sav-gc-title-wrap">
+            <div style="margin-top:1px;">${dragHandleHtml()}</div>
+            <div style="min-width:0;">
+              <h3 class="sav-gc-title">${escapeHtml(g.name)}</h3>
+              <div class="sav-gc-meta">${escapeHtml(metaParts.join(' · '))}</div>
             </div>
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:12px; color:var(--muted);">
-              ${g.deadline ? `<span>Target Date: <strong style="color:var(--ink);">${escapeHtml(g.deadline)}</strong></span>` : ''}
-              ${g.deadline ? `<span>•</span>` : ''}
-              <span>Vault / Account: <strong style="color:var(--ink);">${escapeHtml(savingInLabel)}</strong></span>
-              ${pacingBadgeHtml}
-            </div>
-            ${transferBannerHtml}
           </div>
-          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            <span class="figure" style="font-size:18px; font-weight:700; color:${reached || isFullySettled ? 'var(--teal)' : 'var(--primary)'};">${Math.round(pct)}%</span>
-            ${g.dismissed ? `
-              <button type="button" onclick="reactivateGoal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--teal);" title="Reactivate Goal">Reactivate</button>
-            ` : `
-              <button type="button" onclick="openEditGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px;" title="Edit goal">Edit</button>
-              <button type="button" onclick="openDismissGoalModal('${g.id}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--muted-2);" title="Dismiss goal mid-way">Dismiss</button>
-            `}
-            <button type="button" onclick="requestDelete('goal','${g.id}','${escapeHtml(g.name)}')" class="btn-ghost" style="padding:4px 10px; font-size:12px; height:28px; color:var(--rose);" title="Delete goal">Delete</button>
+          <div class="sav-gc-right">
+            ${statusBadge}
+            ${!g.dismissed ? `
+              <button type="button" class="icon-btn" onclick="openEditGoalModal('${g.id}')" title="Edit goal" aria-label="Edit ${escapeHtml(g.name)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            ` : ''}
+            <button type="button" class="icon-btn" onclick="requestDelete('goal','${g.id}','${safeName}')" title="Delete goal" aria-label="Delete ${escapeHtml(g.name)}">✕</button>
           </div>
         </div>
 
-        <div class="progress-track" style="height:8px; border-radius:999px; overflow:hidden; margin-top:12px;">
-          <div class="progress-fill ${reached || isFullySettled ? 'fill-teal' : 'fill-primary'}" style="width:${pct}%; transition:width 0.4s ease;"></div>
+        <!-- Zone 2: Progress & Figures -->
+        <div>
+          <div class="sav-gc-nums">
+            <span class="sav-gc-amt">${fmt(accumulated)} <span class="muted">/ ${fmt(g.targetAmount)}</span></span>
+            ${rightFigureHtml}
+          </div>
+          <div class="progress-track" style="height:6px; border-radius:999px; overflow:hidden;">
+            <div class="progress-fill ${reached || isFullySettled ? 'fill-teal' : 'fill-primary'}" style="width:${pct}%; transition:width 0.35s ease;"></div>
+          </div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px;">
-          <span class="figure">
-            <strong>${fmt(accumulated)}</strong> <span class="muted">/ ${fmt(g.targetAmount)} Target</span>
-          </span>
-          ${rightSideFigure}
-        </div>
+        <!-- Zone 3: Quiet 1-Line Transfer or Pacing Note -->
+        ${noteHtml}
 
-        <!-- Clean Action Buttons with Transfer & Use Savings Options -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <!-- Zone 4: Tidy Footer Actions -->
+        <div class="sav-gc-footer">
+          <div class="sav-gc-actions">
             ${(g.type === 'bill' && reached && !g.paid) ? `
-              <button type="button" onclick="openPayGoalBillModal('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px; background:var(--teal); border-color:var(--teal);">
-                Pay Expense
-              </button>
+              <button type="button" onclick="openPayGoalBillModal('${g.id}')" class="btn-primary" style="padding:0 12px; font-size:12px; height:29px; background:var(--teal); border-color:var(--teal);">Pay Expense</button>
             ` : ''}
             ${canContribute && !g.paid ? `
-              <button type="button" onclick="showContributeRow('${g.id}')" class="btn-primary" style="padding:5px 14px; font-size:12px; height:30px;">
-                Contribute
-              </button>
+              <button type="button" onclick="showContributeRow('${g.id}')" class="btn-primary" style="padding:0 12px; font-size:12px; height:29px;">Contribute</button>
             ` : ''}
-            <button type="button" onclick="openGoalContributionsModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px;">
-              History
-            </button>
+            <button type="button" onclick="openGoalContributionsModal('${g.id}')" class="btn-ghost" style="padding:0 11px; font-size:12px; height:29px;">History</button>
             ${canReverseTransfer ? `
-              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--amber); border-color:var(--amber);" title="Reverse transfer and return funds to this goal">Reverse Transfer</button>
+              <button type="button" onclick="reverseGoalRollover('${lastTransferOut.id}')" class="btn-ghost" style="padding:0 11px; font-size:12px; height:29px; color:#B45309; border-color:rgba(217,119,6,0.4);">Reverse Transfer</button>
             ` : ''}
             ${canUseSavings ? `
-              <button type="button" onclick="openTxModalWithGoal('${escapeHtml(g.name)}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--teal); border-color:var(--teal);" title="Use savings from this goal for expenses.">
-                Use Savings
-              </button>
+              <button type="button" onclick="openTxModalWithGoal('${safeName}')" class="btn-ghost" style="padding:0 11px; font-size:12px; height:29px; color:var(--teal); border-color:rgba(13,148,136,0.35);">Use Savings</button>
             ` : ''}
             ${((g.purpose === 'Household' || g.purpose === 'Personal' || g.purpose === 'bill_reserve') && !isFullySettled && cur > 0) ? `
-              <button type="button" onclick="payBillFromReserve('${g.id}')" class="btn-primary" style="padding:5px 12px; font-size:12px; height:30px; background:#2563EB; border-color:#2563EB;" title="Pay upcoming bill using accumulated reserve (Zero budget deficit)">
-                Pay Bill from Reserve
-              </button>
+              <button type="button" onclick="payBillFromReserve('${g.id}')" class="btn-primary" style="padding:0 11px; font-size:12px; height:29px; background:#2563EB; border-color:#2563EB;">Pay Bill from Reserve</button>
             ` : ''}
             ${canTransfer ? `
-              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:5px 12px; font-size:12px; height:30px; color:var(--primary); border-color:var(--primary);" title="Reallocate funds to income, another goal, or roll over (current balance: ${fmt(cur)})">
-                Reallocate Funds
-              </button>
+              <button type="button" onclick="openSavingsTransferModal('${g.id}')" class="btn-ghost" style="padding:0 11px; font-size:12px; height:29px; color:var(--primary); border-color:rgba(124,58,237,0.35);">Reallocate Funds</button>
             ` : ''}
           </div>
-          ${canExtend ? `
-            <button type="button" onclick="openRolloverGoalModal('${g.id}')" class="link-sm" style="font-size:11.5px; color:var(--muted); background:none; border:none; cursor:pointer;">
-              Extend Date
-            </button>
-          ` : ''}
+          <div class="sav-gc-sub-actions">
+            ${canExtend ? `<button type="button" onclick="openRolloverGoalModal('${g.id}')" class="sav-gc-link">Extend Date</button>` : ''}
+            ${canDismiss ? `<button type="button" onclick="openDismissGoalModal('${g.id}')" class="sav-gc-link">Dismiss</button>` : ''}
+            ${g.dismissed ? `<button type="button" onclick="reactivateGoal('${g.id}')" class="sav-gc-link" style="color:var(--teal);">Reactivate</button>` : ''}
+          </div>
         </div>
 
-        <div id="contribute-row-${g.id}" style="margin-top:10px;"></div>
+        <div id="contribute-row-${g.id}"></div>
       </div>
     `;
   }
 
-  // If in 'All-Time' mode: group chronologically by Month/Year with Section Headers
-  if(allGoalsMode){
+  // Group chronologically by Month/Year whenever viewing All Goals or multi-month ranges
+  if(isGroupedMode){
     const groupsMap = new Map();
     visibleGoals.forEach(g => {
       let key = 'Ongoing / Lifetime';
       let sortKey = '0000-00';
-      if(g.deadline){
-        const parts = g.deadline.split('-');
-        if(parts.length >= 2){
-          const y = parseInt(parts[0], 10);
-          const m = parseInt(parts[1], 10);
-          key = MONTH_NAMES[m - 1] + ' ' + y;
-          sortKey = parts[0] + '-' + parts[1];
-        }
-      } else if(g.startDate){
-        const parts = g.startDate.split('-');
-        if(parts.length >= 2){
-          const y = parseInt(parts[0], 10);
-          const m = parseInt(parts[1], 10);
-          key = MONTH_NAMES[m - 1] + ' ' + y;
-          sortKey = parts[0] + '-' + parts[1];
-        }
+      const eff = getGoalEffectiveMonthYear(g);
+      if(eff && eff.year && eff.month){
+        key = `${MONTH_NAMES[eff.month - 1]} ${eff.year}`;
+        sortKey = `${eff.year}-${String(eff.month).padStart(2, '0')}`;
+      } else if(g.deadline){
+        const p = parseYmFromDateStr(g.deadline);
+        if(p){ key = `${MONTH_NAMES[p.month - 1]} ${p.year}`; sortKey = `${p.year}-${String(p.month).padStart(2, '0')}`; }
       }
-      if(!groupsMap.has(key)){
-        groupsMap.set(key, { sortKey, label: key, goals: [] });
-      }
+      if(!groupsMap.has(key)) groupsMap.set(key, { sortKey, label: key, goals: [] });
       groupsMap.get(key).goals.push(g);
     });
 
     const sortedGroups = Array.from(groupsMap.values()).sort((a,b) => b.sortKey.localeCompare(a.sortKey));
-
     let allHtml = '';
     sortedGroups.forEach(grp => {
       const groupGoals = grp.goals;
       const groupTotalTgt = groupGoals.reduce((s, g) => s + (Number(g.targetAmount) || 0), 0);
-      const groupAchievedCount = groupGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0))).length;
+      const groupAchievedCount = groupGoals.filter(g => (getGoalAccumulatedDeposits(g) >= (Number(g.targetAmount) || 0) && (Number(g.targetAmount) || 0) > 0)).length;
       allHtml += `
-        <div style="grid-column:1 / -1; margin-top:14px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid var(--line); padding-bottom:6px;">
+        <div class="sav-month-group-hdr">
           <div style="display:flex; align-items:center; gap:8px;">
-            <h4 style="margin:0; font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--ink);">${grp.label}</h4>
-            <span class="badge ${groupAchievedCount === groupGoals.length ? 'badge-ok' : 'badge-off'}" style="font-size:11px;">
-              ${groupAchievedCount} of ${groupGoals.length} Achieved
-            </span>
+            <h4 style="margin:0; font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--ink);">${grp.label}</h4>
+            <span class="badge ${groupAchievedCount === groupGoals.length ? 'badge-ok' : 'badge-off'}" style="font-size:11px;">${groupAchievedCount} of ${groupGoals.length} Achieved</span>
           </div>
           <span class="text-xs muted" style="font-weight:600;">${fmt(groupTotalTgt)} Target</span>
         </div>
       `;
-      allHtml += groupGoals.map((g, idx) => renderSingleGoalCard(g, idx)).join('');
+      allHtml += groupGoals.map(g => renderSingleGoalCard(g)).join('');
     });
     grid.innerHTML = allHtml;
   } else {
-    grid.innerHTML = visibleGoals.map((g, gIdx) => renderSingleGoalCard(g, gIdx)).join('');
+    grid.innerHTML = visibleGoals.map(g => renderSingleGoalCard(g)).join('');
   }
 }
 
