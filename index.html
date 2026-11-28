@@ -1955,6 +1955,26 @@
   .rep-item-chip.active { background: var(--line-soft); border-color: var(--muted-2); color: var(--ink); }
   .rep-mod-check { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; background: var(--surface); color: var(--ink); }
   .rep-mod-check.checked { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
+  .rep-reimb-strip { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 18px 20px; }
+  .rep-reimb-right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .rep-reimb-metrics { display: grid; grid-template-columns: repeat(3, minmax(84px, auto)); align-items: center; }
+  .rep-reimb-metric { padding: 0 16px; border-left: 1px solid var(--line); text-align: right; }
+  .rep-reimb-metric:first-child { padding-left: 0; border-left: none; }
+  .rep-reimb-lbl { font-family: var(--font-display); font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 3px; text-transform: capitalize; }
+  .rep-reimb-val { font-family: var(--font-mono); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; white-space: nowrap; }
+  .rep-cf-sublist { margin-top: 8px; padding: 8px 11px; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: 8px; display: flex; flex-direction: column; gap: 5px; }
+  .rep-cf-subrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--muted); }
+  .rep-cf-subrow span:last-child { font-family: var(--font-display); font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rep-cat-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .rep-cat-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 13px 16px; }
+  .rep-cat-stat-lbl { font-family: var(--font-display); font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .rep-cat-stat-val { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .rep-cat-stat-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  @media(max-width: 640px){
+    .rep-reimb-metrics { grid-template-columns: repeat(3, 1fr); width: 100%; }
+    .rep-reimb-metric { padding: 0 10px; text-align: left; }
+    .rep-cat-summary { grid-template-columns: 1fr; }
+  }
   @media(max-width: 1024px){
     .rep-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .rep-grid-2 { grid-template-columns: 1fr; }
@@ -2422,7 +2442,7 @@
               <h2 class="section-title">Top Expenses</h2>
               <p class="section-sub">Highest categories</p>
             </div>
-            <button type="button" onclick="goToReportsFromDashboard('cashflow')" class="btn-ghost btn-small">Reports</button>
+            <button type="button" onclick="goToReportsFromDashboard('budgets')" class="btn-ghost btn-small">Reports</button>
           </div>
           <div style="position:relative; height:120px; width:100%; margin-bottom:12px; display:none;" id="wrap-chart-top-expenses">
             <canvas id="dashboard-chart-top-expenses"></canvas>
@@ -8378,14 +8398,18 @@ function monthFilterOptions(selected){
 let reportActiveTab = 'overview';
 let reportSelMonths = null; // Set<number> 1..12, defaults to current month
 let reportCfBasis = 'gross'; // 'gross' | 'net'
-let reportBudgetMode = 'variance'; // 'variance' | 'cross' | 'items'
+let reportBudgetMode = 'variance'; // 'variance' | 'cross' | 'category'
 let reportExpandedCats = new Set();
 let reportCrossExpandedCats = new Set();
+let reportCfExpandedCats = new Set();
 let reportCrossA = null; // { year, month }
 let reportCrossB = null; // { year, month }
-let reportItemScope = 'category'; // 'category' | 'subcategory'
-let reportSubParent = 'ALL';
-let reportCompareItems = new Set();
+let reportCatMode = 'trend'; // 'trend' | 'yoy'
+let reportCatName = '';
+let reportCatSub = 'ALL';
+let reportCatYear = null;
+let reportCatYearA = null;
+let reportCatYearB = null;
 let _activeRepPopEl = null;
 
 function ensureReportDefaults(){
@@ -8401,6 +8425,9 @@ function ensureReportDefaults(){
   }
   if(!reportCrossA) reportCrossA = { year: curY, month: String(curM) };
   if(!reportCrossB) reportCrossB = { year: curY - 1, month: String(curM) };
+  if(!reportCatYear) reportCatYear = curY;
+  if(!reportCatYearA) reportCatYearA = curY;
+  if(!reportCatYearB) reportCatYearB = curY - 1;
 }
 
 function goToReports(tab = 'overview', periodOpts = null){
@@ -8424,7 +8451,7 @@ function goToReports(tab = 'overview', periodOpts = null){
   goToApp('reports');
 }
 
-function goToReportsFromDashboard(tab = 'cashflow'){
+function goToReportsFromDashboard(tab = 'budgets'){
   let opts = null;
   try {
     if(typeof activePeriod === 'function'){
@@ -8432,6 +8459,7 @@ function goToReportsFromDashboard(tab = 'cashflow'){
       if(p) opts = { all: !!p.all, year: p.year, months: p.months };
     }
   } catch(e){}
+  if(tab === 'budgets') reportBudgetMode = 'variance';
   goToReports(tab, opts);
 }
 
@@ -9003,7 +9031,7 @@ function renderReportOverviewTab(ws, agg){
         badge: `${agg.savingsRate}% Retained`,
         tone: agg.net > 0 ? 'pos' : (agg.net < 0 ? 'neg' : 'neu'),
         accent: 'teal',
-        icon: 'scale',
+        icon: 'activity',
         onclick: "setReportTab('cashflow')"
       })}
       ${renderRepKpiCard({
@@ -9012,7 +9040,7 @@ function renderReportOverviewTab(ws, agg){
         badge: agg.budgetTotal > 0 ? `${budgetPct}% Used · ${overCnt} Over` : 'No Budget Set',
         tone: agg.budgetTotal === 0 ? 'neu' : (budgetVar < 0 ? 'neg' : (budgetPct >= 85 ? 'neu' : 'pos')),
         accent: 'rose',
-        icon: 'down',
+        icon: 'sliders',
         onclick: "setReportTab('budgets')"
       })}
       ${renderRepKpiCard({
@@ -9021,7 +9049,7 @@ function renderReportOverviewTab(ws, agg){
         badge: goals.length ? `${goalPct}% Funded · ${activeGoals} Active` : 'No Goals',
         tone: goals.length && totalGoalSaved > 0 ? 'pos' : 'neu',
         accent: 'amber',
-        icon: 'piggy',
+        icon: 'bookmark',
         onclick: "setReportTab('savings')"
       })}
       ${renderRepKpiCard({
@@ -9030,7 +9058,7 @@ function renderReportOverviewTab(ws, agg){
         badge: invs.length ? `${invGain >= 0 ? '+' : ''}${invRoi}% ROI` : 'No Assets',
         tone: invs.length ? (invGain >= 0 ? 'pos' : 'neg') : 'neu',
         accent: 'primary',
-        icon: 'wallet',
+        icon: 'pieChart',
         onclick: "setReportTab('investments')"
       })}
     </div>
@@ -9125,17 +9153,37 @@ function renderReportOverviewTab(ws, agg){
     </div>
 
     ${showReimb ? `
-      <div class="rep-card" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
-        <div><h2 class="rep-card-title">Reimbursements</h2><p class="rep-card-sub">${escapeHtml(agg.periodLabel)}</p></div>
-        <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
-          <div><div class="rep-kpi-label">Claimable</div><div class="figure" style="font-size:16px; font-weight:600; color:var(--ink);">${fmt(agg.claimable)}</div></div>
-          <div><div class="rep-kpi-label">Recovered</div><div class="figure" style="font-size:16px; font-weight:600; color:var(--teal);">${fmt(agg.recovered)}</div></div>
-          <div><div class="rep-kpi-label">Pending</div><div class="figure" style="font-size:16px; font-weight:600; color:#D97706;">${fmt(agg.pending)}</div></div>
+      <div class="rep-card rep-reimb-strip">
+        <div>
+          <h2 class="rep-card-title">Reimbursements</h2>
+          <p class="rep-card-sub">${escapeHtml(agg.periodLabel)} · ${escapeHtml((DB && DB.currency && DB.currency.code) ? DB.currency.code : 'PKR')}</p>
+        </div>
+        <div class="rep-reimb-right">
+          <div class="rep-reimb-metrics">
+            <div class="rep-reimb-metric">
+              <div class="rep-reimb-lbl">Claimable</div>
+              <div class="rep-reimb-val" style="color:var(--ink);">${fmtPlainNum(agg.claimable)}</div>
+            </div>
+            <div class="rep-reimb-metric">
+              <div class="rep-reimb-lbl">Recovered</div>
+              <div class="rep-reimb-val" style="color:var(--teal);">${fmtPlainNum(agg.recovered)}</div>
+            </div>
+            <div class="rep-reimb-metric">
+              <div class="rep-reimb-lbl">Pending</div>
+              <div class="rep-reimb-val" style="color:#D97706;">${fmtPlainNum(agg.pending)}</div>
+            </div>
+          </div>
           <button type="button" class="btn-ghost btn-small" onclick="goToCompanyBenefitsClaims()">Manage</button>
         </div>
       </div>
     ` : ''}
   `;
+}
+
+function toggleReportCfExpandCat(cat){
+  if(reportCfExpandedCats.has(cat)) reportCfExpandedCats.delete(cat);
+  else reportCfExpandedCats.add(cat);
+  renderReports();
 }
 
 /* ==================== 2. CASH FLOW TAB ==================== */
@@ -9177,7 +9225,7 @@ function renderReportCashFlowTab(ws, agg){
         badge: `${incEntries.length} Source${incEntries.length === 1 ? '' : 's'}`,
         tone: agg.income > 0 ? 'pos' : 'neu',
         accent: 'teal',
-        icon: 'wallet'
+        icon: 'arrowDownLeft'
       })}
       ${renderRepKpiCard({
         label: reportCfBasis === 'net' ? 'Net Outflow' : 'Total Outflow',
@@ -9185,7 +9233,7 @@ function renderReportCashFlowTab(ws, agg){
         badge: `${burnPct}% of Inflow`,
         tone: burnPct > 90 ? 'neg' : (burnPct > 0 ? 'neu' : 'pos'),
         accent: 'rose',
-        icon: 'down'
+        icon: 'arrowUpRight'
       })}
       ${renderRepKpiCard({
         label: 'Net Surplus',
@@ -9193,7 +9241,7 @@ function renderReportCashFlowTab(ws, agg){
         badge: `${effRate}% Retained`,
         tone: effNet > 0 ? 'pos' : (effNet < 0 ? 'neg' : 'neu'),
         accent: 'primary',
-        icon: 'scale'
+        icon: 'barChart'
       })}
       ${renderRepKpiCard({
         label: 'Claims Pending',
@@ -9201,7 +9249,7 @@ function renderReportCashFlowTab(ws, agg){
         badge: agg.recovered > 0 ? `Recovered ${fmt(agg.recovered)}` : (agg.pending > 0 ? 'Awaiting Recovery' : 'No Pending Claims'),
         tone: agg.pending > 0 ? 'neu' : 'pos',
         accent: 'amber',
-        icon: 'piggy'
+        icon: 'receipt'
       })}
     </div>
 
@@ -9248,12 +9296,11 @@ function renderReportCashFlowTab(ws, agg){
       <div class="rep-card">
         <div class="rep-card-head">
           <div><h2 class="rep-card-title">Income Sources</h2><p class="rep-card-sub">Inflow composition</p></div>
-          <button type="button" class="btn-ghost btn-small" onclick="openTransactionsForReportFilter('income', null)">Ledger</button>
         </div>
         ${incEntries.length ? incEntries.map(([src, amt]) => {
           const pct = agg.income > 0 ? Math.round((amt / agg.income) * 100) : 0;
           return `
-            <div class="rep-row-item clickable" onclick="openTransactionsForReportFilter('income', '${src.replace(/'/g,"\\'")}')">
+            <div class="rep-row-item">
               <div style="display:flex; justify-content:space-between; font-size:12.5px; gap:8px;">
                 <strong>${escapeHtml(src)}</strong>
                 <span class="figure" style="font-weight:600; color:var(--teal); white-space:nowrap;">${fmt(amt)} <span class="muted" style="font-weight:400;">(${pct}%)</span></span>
@@ -9271,13 +9318,25 @@ function renderReportCashFlowTab(ws, agg){
         </div>
         ${expEntries.length ? expEntries.slice(0, 6).map(([cat, amt]) => {
           const pct = agg.expense > 0 ? Math.round((amt / agg.expense) * 100) : 0;
+          const subs = Object.entries(agg.subByCat[cat] || {}).sort((a,b)=>b[1]-a[1]);
+          const hasSubs = subs.length > 0;
+          const isExp = hasSubs && reportCfExpandedCats.has(cat);
+          const safeCat = cat.replace(/'/g, "\\'");
           return `
-            <div class="rep-row-item clickable" onclick="openTransactionsForReportFilter('expense', '${cat.replace(/'/g,"\\'")}')">
+            <div class="rep-row-item ${hasSubs ? 'clickable' : ''}" ${hasSubs ? `onclick="toggleReportCfExpandCat('${safeCat}')"` : ''}>
               <div style="display:flex; justify-content:space-between; font-size:12.5px; gap:8px;">
-                <strong>${escapeHtml(cat)}</strong>
+                <strong>${hasSubs ? `<span style="color:var(--muted); margin-right:4px;">${isExp ? '▾' : '▸'}</span>` : ''}${escapeHtml(cat)}</strong>
                 <span class="figure" style="font-weight:600; white-space:nowrap;">${fmt(amt)} <span class="muted" style="font-weight:400;">(${pct}%)</span></span>
               </div>
               <div class="rep-progress-track"><div class="rep-progress-fill" style="width:${pct}%; background:var(--rose);"></div></div>
+              ${isExp ? `
+                <div class="rep-cf-sublist" onclick="event.stopPropagation()">
+                  ${subs.map(([sName, sVal]) => {
+                    const sPct = amt > 0 ? Math.round((sVal / amt) * 100) : 0;
+                    return `<div class="rep-cf-subrow"><span>${escapeHtml(sName)}</span><span>${fmt(sVal)} <span class="muted" style="font-weight:400;">(${sPct}%)</span></span></div>`;
+                  }).join('')}
+                </div>
+              ` : ''}
             </div>
           `;
         }).join('') : `<p class="muted text-xs" style="margin:24px 0; text-align:center;">No expenses logged for this period.</p>`}
@@ -9290,17 +9349,29 @@ function renderReportCashFlowTab(ws, agg){
 function setReportBudgetMode(mode){ reportBudgetMode = mode; hideReportPopover(); renderReports(); }
 function toggleReportExpandCat(cat){ if(reportExpandedCats.has(cat)) reportExpandedCats.delete(cat); else reportExpandedCats.add(cat); renderReports(); }
 function toggleReportCrossExpandCat(cat){ if(reportCrossExpandedCats.has(cat)) reportCrossExpandedCats.delete(cat); else reportCrossExpandedCats.add(cat); renderReports(); }
-function switchReportItemScope(scope){ reportItemScope = scope; reportSubParent = 'ALL'; reportCompareItems = new Set(); renderReports(); }
-function toggleReportCompareItem(k){
-  if(reportCompareItems.has(k)){
-    if(reportCompareItems.size > 1) reportCompareItems.delete(k);
-  } else if(reportCompareItems.size < 5){
-    reportCompareItems.add(k);
-  } else {
-    showToast('Compare up to 5 items at once', 'info');
-    return;
-  }
-  renderReports();
+
+function getReportCategoryMonthlySeries(category, subFilter, yearNum){
+  const byMonth = Array.from({ length: 12 }, (_, idx) => ({ m: idx + 1, total: 0, subs: {} }));
+  (DB.transactions || []).forEach(t => {
+    if(!t || t.type !== 'expense' || t.category !== category) return;
+    const pd = parseTxDate(t.date);
+    if(pd.year !== Number(yearNum) || !pd.month) return;
+    const amt = Number(t.amount) || 0;
+    const parts = (t.subCategory || '').split(',').map(s => s.trim()).filter(Boolean);
+    if(subFilter && subFilter !== 'ALL'){
+      if(!parts.includes(subFilter)) return;
+      const contrib = parts.length > 1 ? (amt / parts.length) : amt;
+      byMonth[pd.month - 1].total += contrib;
+      byMonth[pd.month - 1].subs[subFilter] = (byMonth[pd.month - 1].subs[subFilter] || 0) + contrib;
+    } else {
+      byMonth[pd.month - 1].total += amt;
+      if(parts.length){
+        const key = parts.join(', ');
+        byMonth[pd.month - 1].subs[key] = (byMonth[pd.month - 1].subs[key] || 0) + amt;
+      }
+    }
+  });
+  return byMonth;
 }
 
 function renderReportBudgetsTab(ws, agg){
@@ -9309,7 +9380,7 @@ function renderReportBudgetsTab(ws, agg){
       <div class="rep-mode-pills">
         <button type="button" class="rep-mode-pill ${reportBudgetMode==='variance'?'active':''}" onclick="setReportBudgetMode('variance')">Plan vs Actual</button>
         <button type="button" class="rep-mode-pill ${reportBudgetMode==='cross'?'active':''}" onclick="setReportBudgetMode('cross')">Cross-Period</button>
-        <button type="button" class="rep-mode-pill ${reportBudgetMode==='items'?'active':''}" onclick="setReportBudgetMode('items')">Category / Subcategory</button>
+        <button type="button" class="rep-mode-pill ${reportBudgetMode==='category'?'active':''}" onclick="setReportBudgetMode('category')">Category Analysis</button>
       </div>
       <button type="button" class="btn-ghost btn-small" onclick="goToApp('budgets')">Manage</button>
     </div>
@@ -9331,7 +9402,7 @@ function renderReportBudgetsTab(ws, agg){
           badge: `${agg.budgetRows.length} Categor${agg.budgetRows.length === 1 ? 'y' : 'ies'}`,
           tone: 'neu',
           accent: 'primary',
-          icon: 'wallet'
+          icon: 'gauge'
         })}
         ${renderRepKpiCard({
           label: 'Actual Spend',
@@ -9339,7 +9410,7 @@ function renderReportBudgetsTab(ws, agg){
           badge: `${agg.budgetTotal ? Math.round((spent / agg.budgetTotal) * 100) : 0}% Utilized`,
           tone: spent > agg.budgetTotal && agg.budgetTotal > 0 ? 'neg' : 'neu',
           accent: 'rose',
-          icon: 'down'
+          icon: 'flame'
         })}
         ${renderRepKpiCard({
           label: 'Net Variance',
@@ -9347,7 +9418,7 @@ function renderReportBudgetsTab(ws, agg){
           badge: totalVar < 0 ? 'Over Plan' : 'Remaining',
           tone: totalVar < 0 ? 'neg' : 'pos',
           accent: 'teal',
-          icon: 'scale'
+          icon: 'gitCompare'
         })}
         ${renderRepKpiCard({
           label: 'Over Limit',
@@ -9355,7 +9426,7 @@ function renderReportBudgetsTab(ws, agg){
           badge: overRows.length ? 'Flagged Categories' : 'All On Track',
           tone: overRows.length ? 'neg' : 'pos',
           accent: 'amber',
-          icon: 'piggy'
+          icon: 'alertTriangle'
         })}
       </div>
 
@@ -9427,13 +9498,13 @@ function renderReportBudgetsTab(ws, agg){
                       <td style="text-align:right;"><span class="badge ${bCls}">${st}</span></td>
                     </tr>
                     ${isExp ? (subs.length ? subs.map(([sub, val]) => `
-                      <tr class="rep-sub-row clickable" onclick="openTransactionsForReportFilter('expense','${safeCat}','${sub.replace(/'/g,"\\'")}')">
+                      <tr class="rep-sub-row">
                         <td>${escapeHtml(sub)}</td>
                         <td class="rep-num">—</td>
                         <td class="rep-num" style="color:var(--ink);">${fmt(val)}</td>
                         <td class="rep-num">—</td>
                         <td class="rep-num">${r.actual ? Math.round((val / r.actual) * 100) : 0}% of cat</td>
-                        <td style="text-align:right;">View Bills</td>
+                        <td style="text-align:right;" class="muted">—</td>
                       </tr>
                     `).join('') : `<tr class="rep-sub-row"><td colspan="6">No subcategories recorded for this category.</td></tr>`) : ''}
                   `;
@@ -9558,109 +9629,278 @@ function renderReportBudgetsTab(ws, agg){
       </div>
     `;
   } else {
-    const allCatsList = Object.keys(agg.expByCat).sort((a,b)=>agg.expByCat[b]-agg.expByCat[a]);
-    const pool = [];
-    if(reportItemScope === 'category'){
-      allCatsList.forEach(c => pool.push({ key: c, label: c, parent: c, amount: agg.expByCat[c] || 0, subs: agg.subByCat[c] || {} }));
-    } else {
-      Object.entries(agg.subByCat).forEach(([cat, subs]) => {
-        if(reportSubParent !== 'ALL' && cat !== reportSubParent) return;
-        Object.entries(subs).forEach(([sub, v]) => pool.push({ key: `${cat}::${sub}`, label: sub, parent: cat, amount: v, subs: null }));
-      });
-      pool.sort((a,b)=>b.amount-a.amount);
+    ensureReportDefaults();
+    const curY = new Date().getFullYear();
+    const yrs = [...new Set([...reportYearOptions(), curY, curY - 1])].sort((a,b)=>a-b);
+    const shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    // Collect every expense category across all history (ordered by active period spend, then lifetime spend)
+    const lifeCatTotals = {};
+    (DB.transactions || []).forEach(t => {
+      if(t && t.type === 'expense' && t.category){
+        lifeCatTotals[t.category] = (lifeCatTotals[t.category] || 0) + (Number(t.amount) || 0);
+      }
+    });
+    const allCatsList = Object.keys(lifeCatTotals).sort((a, b) => (agg.expByCat[b] || 0) - (agg.expByCat[a] || 0) || (lifeCatTotals[b] - lifeCatTotals[a]));
+    if(!reportCatName || !allCatsList.includes(reportCatName)){
+      reportCatName = allCatsList[0] || '';
+      reportCatSub = 'ALL';
     }
-    const validKeys = new Set(pool.map(p => p.key));
-    reportCompareItems = new Set([...reportCompareItems].filter(k => validKeys.has(k)));
-    if(!reportCompareItems.size && pool.length) pool.slice(0, 4).forEach(p => reportCompareItems.add(p.key));
 
-    const chosen = pool.filter(p => reportCompareItems.has(p.key));
-    const totalChosen = chosen.reduce((s, p) => s + p.amount, 0);
-    const maxI = Math.max(...chosen.map(p => p.amount), 1);
-    const grads = [
-      ['linear-gradient(180deg,#FB7185,#E11D48)', 'var(--rose)', 'rgba(244,63,94,0.52)', 'rgba(244,63,94,0.92)'],
-      ['linear-gradient(180deg,#FBBF24,#D97706)', '#D97706', 'rgba(245,158,11,0.52)', 'rgba(245,158,11,0.92)'],
-      ['linear-gradient(180deg,#A78BFA,#7C3AED)', 'var(--primary)', 'rgba(124,58,237,0.52)', 'rgba(124,58,237,0.92)'],
-      ['linear-gradient(180deg,#14B8A6,#0D9488)', 'var(--teal)', 'rgba(20,184,166,0.52)', 'rgba(20,184,166,0.92)'],
-      ['linear-gradient(180deg,#60A5FA,#2563EB)', '#2563EB', 'rgba(37,99,235,0.52)', 'rgba(37,99,235,0.92)']
-    ];
+    // Subcategories strictly scoped to the selected category only
+    const subTotalsForCat = {};
+    (DB.transactions || []).forEach(t => {
+      if(t && t.type === 'expense' && t.category === reportCatName && t.subCategory){
+        t.subCategory.split(',').map(s => s.trim()).filter(Boolean).forEach(sub => {
+          subTotalsForCat[sub] = (subTotalsForCat[sub] || 0) + (Number(t.amount) || 0);
+        });
+      }
+    });
+    const subList = Object.keys(subTotalsForCat).sort((a,b) => subTotalsForCat[b] - subTotalsForCat[a]);
+    if(reportCatSub !== 'ALL' && !subList.includes(reportCatSub)) reportCatSub = 'ALL';
 
-    ws.innerHTML = `
-      ${headerModes}
+    const yearOpts = sel => yrs.map(y => `<option value="${y}" ${Number(sel)===y?'selected':''}>${y}</option>`).join('');
+    const scopeLabel = reportCatSub === 'ALL' ? reportCatName : `${reportCatName} · ${reportCatSub}`;
+
+    const filterBar = `
       <div class="rep-compare-panel">
         <div class="rep-compare-row">
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div class="rep-mode-pills">
-              <button type="button" class="rep-mode-pill ${reportItemScope==='category'?'active':''}" onclick="switchReportItemScope('category')">Category vs Category</button>
-              <button type="button" class="rep-mode-pill ${reportItemScope==='subcategory'?'active':''}" onclick="switchReportItemScope('subcategory')">Subcategory vs Subcategory</button>
-            </div>
-            ${reportItemScope === 'subcategory' ? `
-              <select class="rep-select" onchange="reportSubParent=this.value; reportCompareItems=new Set(); renderReports()">
-                <option value="ALL" ${reportSubParent==='ALL'?'selected':''}>All Categories</option>
-                ${allCatsList.map(c => `<option value="${escapeHtml(c)}" ${reportSubParent===c?'selected':''}>${escapeHtml(c)}</option>`).join('')}
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <select class="rep-select" id="rep-cat-select" onchange="reportCatName=this.value; reportCatSub='ALL'; renderReports()">
+              ${allCatsList.length ? allCatsList.map(c => `<option value="${escapeHtml(c)}" ${reportCatName===c?'selected':''}>${escapeHtml(c)}</option>`).join('') : '<option value="">No Categories</option>'}
+            </select>
+            ${subList.length ? `
+              <select class="rep-select" id="rep-cat-sub-select" onchange="reportCatSub=this.value; renderReports()">
+                <option value="ALL" ${reportCatSub==='ALL'?'selected':''}>All Subcategories</option>
+                ${subList.map(s => `<option value="${escapeHtml(s)}" ${reportCatSub===s?'selected':''}>${escapeHtml(s)}</option>`).join('')}
               </select>
             ` : ''}
+            <div class="rep-mode-pills">
+              <button type="button" class="rep-mode-pill ${reportCatMode==='trend'?'active':''}" onclick="reportCatMode='trend'; renderReports()">Monthly Trend</button>
+              <button type="button" class="rep-mode-pill ${reportCatMode==='yoy'?'active':''}" onclick="reportCatMode='yoy'; renderReports()">Year vs Year</button>
+            </div>
           </div>
-          <span class="badge badge-off">${chosen.length} / 5 Selected</span>
-        </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          ${pool.length ? pool.slice(0, 14).map(p => `
-            <button type="button" class="rep-item-chip ${reportCompareItems.has(p.key)?'active':''}" onclick="toggleReportCompareItem('${p.key.replace(/'/g,"\\'")}')">${escapeHtml(p.label)}${reportItemScope==='subcategory' && reportSubParent==='ALL' ? ` <span style="opacity:0.65; font-weight:500;">· ${escapeHtml(p.parent.split(' ')[0])}</span>` : ''}</button>
-          `).join('') : `<span class="text-xs muted">No items recorded in ${escapeHtml(agg.periodLabel)}.</span>`}
-        </div>
-      </div>
-
-      <div class="rep-grid-2">
-        <div class="rep-card">
-          <div class="rep-card-head"><div><h2 class="rep-card-title">Head-to-Head</h2><p class="rep-card-sub">${escapeHtml(agg.periodLabel)}</p></div></div>
-          ${chosen.length ? `
-            <div class="rep-vbar-stage">
-              <div class="rep-vbar-track">
-                ${chosen.slice(0, 5).map((p, idx) => {
-                  const g = grads[idx % grads.length];
-                  const grpShare = totalChosen ? Math.round((p.amount / totalChosen) * 100) : 0;
-                  const expShare = agg.expense ? Math.round((p.amount / agg.expense) * 100) : 0;
-                  const pop = reportItemScope === 'category'
-                    ? `<div class="rep-pop-head" style="margin-bottom:6px;"><span class="badge badge-off">${grpShare}% of Compared</span></div>${buildRepSubcatPopRows(p.subs, false) || '<div class="rep-pop-row"><span class="rep-pop-k">No subcategories</span></div>'}`
-                    : `<div class="rep-pop-sub-lbl">${escapeHtml(p.parent)}</div><div class="rep-pop-row"><span class="rep-pop-k">Group Share</span><span class="rep-pop-v">${grpShare}%</span></div><div class="rep-pop-row"><span class="rep-pop-k">Total Spend Share</span><span class="rep-pop-v">${expShare}%</span></div>`;
-                  return `
-                    <div class="rep-vbar-col" data-rep-pop="${escapeHtml(pop)}">
-                      <div class="rep-vbar-plot">
-                        <div class="rep-vbar-stack">
-                          <span class="rep-vbar-num" style="color:${g[1]};">${fmtPlainNum(p.amount)}</span>
-                          <div class="rep-vbar-stick" style="height:${Math.max(14, Math.round((p.amount/maxI)*108))}px; background:${g[0]}; --bar-glow:${g[2]}; --bar-ring:${g[3]};"></div>
-                        </div>
-                      </div>
-                      <div class="rep-vbar-cat">${escapeHtml(p.label)}</div>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-          ` : `<p class="muted text-xs" style="margin:24px 0; text-align:center;">Select items above to compare.</p>`}
-        </div>
-
-        <div class="rep-card">
-          <div class="rep-card-head"><div><h2 class="rep-card-title">Comparison Table</h2><p class="rep-card-sub">Ranked by spend</p></div></div>
-          ${chosen.length ? `
-            <div style="overflow-x:auto;">
-              <table class="rep-table">
-                <thead><tr><th>${reportItemScope==='category'?'Category':'Subcategory'}</th>${reportItemScope==='subcategory'?'<th>Category</th>':''}<th style="text-align:right;">Spend</th><th style="text-align:right;">Share</th></tr></thead>
-                <tbody>
-                  ${chosen.map(p => `
-                    <tr class="expandable" onclick="openTransactionsForReportFilter('expense','${p.parent.replace(/'/g,"\\'")}','${reportItemScope==='subcategory'?p.label.replace(/'/g,"\\'"):''}')">
-                      <td><strong>${escapeHtml(p.label)}</strong></td>
-                      ${reportItemScope==='subcategory' ? `<td class="muted">${escapeHtml(p.parent)}</td>` : ''}
-                      <td class="rep-num">${fmt(p.amount)}</td>
-                      <td class="rep-num" style="color:var(--primary);">${totalChosen ? Math.round((p.amount / totalChosen) * 100) : 0}%</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : `<p class="muted text-xs" style="margin:24px 0; text-align:center;">No items selected.</p>`}
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            ${reportCatMode === 'trend' ? `
+              <select class="rep-select" onchange="reportCatYear=Number(this.value); renderReports()">${yearOpts(reportCatYear)}</select>
+            ` : `
+              <select class="rep-select" onchange="reportCatYearA=Number(this.value); renderReports()">${yearOpts(reportCatYearA)}</select>
+              <span style="font-weight:700; color:var(--muted); font-size:12px;">vs</span>
+              <select class="rep-select" onchange="reportCatYearB=Number(this.value); renderReports()">${yearOpts(reportCatYearB)}</select>
+            `}
+          </div>
         </div>
       </div>
     `;
+
+    if(!reportCatName){
+      ws.innerHTML = `${headerModes}${filterBar}<div class="rep-card" style="text-align:center; padding:32px 20px;"><p class="muted text-xs" style="margin:0;">No expense categories recorded yet.</p></div>`;
+      return;
+    }
+
+    if(reportCatMode === 'trend'){
+      const seriesAll = getReportCategoryMonthlySeries(reportCatName, reportCatSub, reportCatYear);
+      const activeMonths = seriesAll.filter(x => x.total > 0);
+      const yrTotal = activeMonths.reduce((s, x) => s + x.total, 0);
+      const avgSpend = activeMonths.length ? Math.round(yrTotal / activeMonths.length) : 0;
+      const peak = activeMonths.slice().sort((a, b) => b.total - a.total)[0] || null;
+      const maxVal = Math.max(...activeMonths.map(x => x.total), 1);
+
+      ws.innerHTML = `
+        ${headerModes}
+        ${filterBar}
+        <div class="rep-cat-summary">
+          <div class="rep-cat-stat">
+            <div class="rep-cat-stat-lbl">${reportCatYear} Total</div>
+            <div class="rep-cat-stat-val">${fmt(yrTotal)}</div>
+            <div class="rep-cat-stat-sub">${activeMonths.length} active month${activeMonths.length===1?'':'s'}</div>
+          </div>
+          <div class="rep-cat-stat">
+            <div class="rep-cat-stat-lbl">Monthly Average</div>
+            <div class="rep-cat-stat-val">${fmt(avgSpend)}</div>
+            <div class="rep-cat-stat-sub">Across active months</div>
+          </div>
+          <div class="rep-cat-stat">
+            <div class="rep-cat-stat-lbl">Highest Month</div>
+            <div class="rep-cat-stat-val" style="font-family:var(--font-display); font-weight:700; color:${peak?'var(--rose)':'var(--ink)'};">${peak ? MONTH_NAMES[peak.m - 1] : '—'}</div>
+            <div class="rep-cat-stat-sub">${peak ? fmt(peak.total) : 'No spend recorded'}</div>
+          </div>
+        </div>
+
+        <div class="rep-grid-2">
+          <div class="rep-card">
+            <div class="rep-card-head">
+              <div><h2 class="rep-card-title">${escapeHtml(scopeLabel)}</h2><p class="rep-card-sub">Monthly spend in ${reportCatYear}</p></div>
+            </div>
+            ${activeMonths.length ? `
+              <div class="rep-vbar-stage">
+                <div class="rep-vbar-track">
+                  ${activeMonths.slice(-6).map(pt => {
+                    const share = yrTotal > 0 ? Math.round((pt.total / yrTotal) * 100) : 0;
+                    const isPeak = peak && pt.m === peak.m && activeMonths.length > 1;
+                    const grad = isPeak ? 'linear-gradient(180deg,#FB7185,#E11D48)' : 'linear-gradient(180deg,#A78BFA,#7C3AED)';
+                    const col = isPeak ? 'var(--rose)' : 'var(--primary)';
+                    const glow = isPeak ? 'rgba(244,63,94,0.52)' : 'rgba(124,58,237,0.48)';
+                    const ring = isPeak ? 'rgba(244,63,94,0.92)' : 'rgba(124,58,237,0.9)';
+                    const pop = `
+                      <div class="rep-pop-head" style="margin-bottom:6px;"><span class="rep-pop-title">${MONTH_NAMES[pt.m - 1]} ${reportCatYear}</span><span class="badge ${isPeak?'badge-over':'badge-off'}">${share}% of Year</span></div>
+                      ${reportCatSub === 'ALL' ? buildRepSubcatPopRows(pt.subs, false) : `<div class="rep-pop-row"><span class="rep-pop-k">Spend</span><span class="rep-pop-v">${fmt(pt.total)}</span></div>`}
+                    `;
+                    return `
+                      <div class="rep-vbar-col" data-rep-pop="${escapeHtml(pop)}">
+                        <div class="rep-vbar-plot">
+                          <div class="rep-vbar-stack">
+                            <span class="rep-vbar-num" style="color:${col};">${fmtPlainNum(pt.total)}</span>
+                            <div class="rep-vbar-stick" style="height:${Math.max(14, Math.round((pt.total / maxVal) * 108))}px; background:${grad}; --bar-glow:${glow}; --bar-ring:${ring};"></div>
+                          </div>
+                        </div>
+                        <div class="rep-vbar-cat">${shortM[pt.m - 1]}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            ` : `<p class="muted text-xs" style="margin:28px 0; text-align:center;">No spend for ${escapeHtml(scopeLabel)} in ${reportCatYear}.</p>`}
+          </div>
+
+          <div class="rep-card">
+            <div class="rep-card-head"><div><h2 class="rep-card-title">Monthly Breakdown</h2><p class="rep-card-sub">Ranked by spend</p></div></div>
+            ${activeMonths.length ? `
+              <div style="overflow-x:auto;">
+                <table class="rep-table">
+                  <thead><tr><th>Month</th><th style="text-align:right;">Spend</th><th style="text-align:right;">Share</th></tr></thead>
+                  <tbody>
+                    ${activeMonths.slice().sort((a,b) => b.total - a.total).map(pt => {
+                      const share = yrTotal > 0 ? Math.round((pt.total / yrTotal) * 100) : 0;
+                      return `
+                        <tr>
+                          <td><strong>${MONTH_NAMES[pt.m - 1]} ${reportCatYear}</strong></td>
+                          <td class="rep-num">${fmt(pt.total)}</td>
+                          <td class="rep-num" style="color:var(--primary);">${share}%</td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : `<p class="muted text-xs" style="margin:28px 0; text-align:center;">No monthly records for ${reportCatYear}.</p>`}
+          </div>
+        </div>
+      `;
+    } else {
+      const serA = getReportCategoryMonthlySeries(reportCatName, reportCatSub, reportCatYearA);
+      const serB = getReportCategoryMonthlySeries(reportCatName, reportCatSub, reportCatYearB);
+      const rows = [];
+      for(let m = 0; m < 12; m++){
+        const a = serA[m].total, b = serB[m].total;
+        if(a > 0 || b > 0){
+          const diff = a - b;
+          const pct = b > 0 ? Math.round((diff / b) * 100) : (a > 0 ? 100 : 0);
+          rows.push({ m: m + 1, label: shortM[m], full: MONTH_NAMES[m], a, b, diff, pct, subsA: serA[m].subs, subsB: serB[m].subs });
+        }
+      }
+      const totA = rows.reduce((s, r) => s + r.a, 0);
+      const totB = rows.reduce((s, r) => s + r.b, 0);
+      const totDiff = totA - totB;
+      const totPct = totB > 0 ? Math.round((totDiff / totB) * 100) : (totA > 0 ? 100 : 0);
+      const maxY = Math.max(...rows.flatMap(r => [r.a, r.b]), 1);
+
+      ws.innerHTML = `
+        ${headerModes}
+        ${filterBar}
+        <div class="rep-cat-summary">
+          <div class="rep-cat-stat">
+            <div class="rep-cat-stat-lbl">${reportCatYearA} Total</div>
+            <div class="rep-cat-stat-val">${fmt(totA)}</div>
+            <div class="rep-cat-stat-sub">${escapeHtml(scopeLabel)}</div>
+          </div>
+          <div class="rep-cat-stat">
+            <div class="rep-cat-stat-lbl">${reportCatYearB} Total</div>
+            <div class="rep-cat-stat-val">${fmt(totB)}</div>
+            <div class="rep-cat-stat-sub">${escapeHtml(scopeLabel)}</div>
+          </div>
+          <div class="rep-cat-stat">
+            <div class="rep-cat-stat-lbl">Annual Change</div>
+            <div class="rep-cat-stat-val" style="color:${totDiff>0?'var(--rose)':(totDiff<0?'var(--teal)':'var(--ink)')};">${totDiff>=0?'+':'-'}${fmt(Math.abs(totDiff))}</div>
+            <div class="rep-cat-stat-sub">${totDiff>=0?'+':''}${totPct}% vs ${reportCatYearB}</div>
+          </div>
+        </div>
+
+        <div class="rep-grid-2">
+          <div class="rep-card">
+            <div class="rep-card-head">
+              <div><h2 class="rep-card-title">${escapeHtml(scopeLabel)}</h2><p class="rep-card-sub">${reportCatYearA} vs ${reportCatYearB}</p></div>
+              <div style="display:flex; gap:12px; font-size:12px; font-weight:700;">
+                <span style="color:var(--primary);">● ${reportCatYearA}</span>
+                <span style="color:var(--teal);">● ${reportCatYearB}</span>
+              </div>
+            </div>
+            ${rows.length ? `
+              <div class="rep-vbar-stage">
+                <div class="rep-vbar-track">
+                  ${rows.slice(-5).map(r => {
+                    const popA = `
+                      <div class="rep-pop-head" style="margin-bottom:6px;"><span class="badge" style="background:var(--primary-light); color:var(--primary);">${r.full} ${reportCatYearA}</span><span class="rep-pop-v" style="color:${r.diff>0?'var(--rose)':'var(--teal)'};">${r.diff>=0?'+':''}${r.pct}%</span></div>
+                      ${reportCatSub === 'ALL' ? (buildRepSubcatPopRows(r.subsA, false) || `<div class="rep-pop-row"><span class="rep-pop-k">Spend</span><span class="rep-pop-v">${fmt(r.a)}</span></div>`) : `<div class="rep-pop-row"><span class="rep-pop-k">Spend</span><span class="rep-pop-v">${fmt(r.a)}</span></div>`}
+                    `;
+                    const popB = `
+                      <div class="rep-pop-head" style="margin-bottom:6px;"><span class="badge badge-ok">${r.full} ${reportCatYearB}</span></div>
+                      ${reportCatSub === 'ALL' ? (buildRepSubcatPopRows(r.subsB, false) || `<div class="rep-pop-row"><span class="rep-pop-k">Spend</span><span class="rep-pop-v">${fmt(r.b)}</span></div>`) : `<div class="rep-pop-row"><span class="rep-pop-k">Spend</span><span class="rep-pop-v">${fmt(r.b)}</span></div>`}
+                    `;
+                    return `
+                      <div class="rep-vbar-col">
+                        <div class="rep-vbar-plot">
+                          <div class="rep-vbar-stack" data-rep-pop="${escapeHtml(popA)}">
+                            <span class="rep-vbar-num" style="color:var(--primary);">${fmtPlainNum(r.a)}</span>
+                            <div class="rep-vbar-stick" style="height:${Math.max(10, Math.round((r.a/maxY)*104))}px; background:linear-gradient(180deg,#A78BFA,#7C3AED); --bar-glow:rgba(124,58,237,0.48); --bar-ring:rgba(124,58,237,0.92);"></div>
+                          </div>
+                          <div class="rep-vbar-stack" data-rep-pop="${escapeHtml(popB)}">
+                            <span class="rep-vbar-num" style="color:var(--teal);">${fmtPlainNum(r.b)}</span>
+                            <div class="rep-vbar-stick" style="height:${Math.max(10, Math.round((r.b/maxY)*104))}px; background:linear-gradient(180deg,#14B8A6,#0D9488); --bar-glow:rgba(20,184,166,0.48); --bar-ring:rgba(20,184,166,0.92);"></div>
+                          </div>
+                        </div>
+                        <div class="rep-vbar-cat">${r.label}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            ` : `<p class="muted text-xs" style="margin:28px 0; text-align:center;">No spend recorded in ${reportCatYearA} or ${reportCatYearB}.</p>`}
+          </div>
+
+          <div class="rep-card">
+            <div class="rep-card-head"><div><h2 class="rep-card-title">Yearly Delta</h2><p class="rep-card-sub">${reportCatYearA} vs ${reportCatYearB}</p></div></div>
+            ${rows.length ? `
+              <div style="overflow-x:auto;">
+                <table class="rep-table">
+                  <thead><tr><th>Month</th><th style="text-align:right;">${reportCatYearA}</th><th style="text-align:right;">${reportCatYearB}</th><th style="text-align:right;">Change</th><th style="text-align:right;">Delta %</th></tr></thead>
+                  <tbody>
+                    ${rows.map(r => `
+                      <tr>
+                        <td><strong>${r.full}</strong></td>
+                        <td class="rep-num">${fmt(r.a)}</td>
+                        <td class="rep-num muted">${fmt(r.b)}</td>
+                        <td class="rep-num" style="color:${r.diff>0?'var(--rose)':(r.diff<0?'var(--teal)':'var(--muted)')};">${r.diff>=0?'+':'-'}${fmt(Math.abs(r.diff))}</td>
+                        <td style="text-align:right;"><span class="badge ${r.diff>0?'badge-over':'badge-ok'}">${r.diff>=0?'+':''}${r.pct}%</span></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                  <tfoot>
+                    <tr style="background:var(--surface-2); font-weight:700;">
+                      <td><strong>Total</strong></td>
+                      <td class="rep-num">${fmt(totA)}</td>
+                      <td class="rep-num muted">${fmt(totB)}</td>
+                      <td class="rep-num" style="color:${totDiff>0?'var(--rose)':(totDiff<0?'var(--teal)':'var(--muted)')};">${totDiff>=0?'+':'-'}${fmt(Math.abs(totDiff))}</td>
+                      <td style="text-align:right;"><span class="badge ${totDiff>0?'badge-over':'badge-ok'}">${totDiff>=0?'+':''}${totPct}%</span></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            ` : `<p class="muted text-xs" style="margin:28px 0; text-align:center;">Nothing to compare.</p>`}
+          </div>
+        </div>
+      `;
+    }
   }
 }
 
@@ -9696,7 +9936,7 @@ function renderReportInvestmentsTab(ws){
         badge: `${list.length} Active Holding${list.length === 1 ? '' : 's'}`,
         tone: list.length ? 'pos' : 'neu',
         accent: 'primary',
-        icon: 'wallet'
+        icon: 'briefcase'
       })}
       ${renderRepKpiCard({
         label: 'Invested Capital',
@@ -9704,7 +9944,7 @@ function renderReportInvestmentsTab(ws){
         badge: 'Cost Basis',
         tone: 'neu',
         accent: 'amber',
-        icon: 'piggy'
+        icon: 'landmark'
       })}
       ${renderRepKpiCard({
         label: 'Unrealized Gain',
@@ -9712,7 +9952,7 @@ function renderReportInvestmentsTab(ws){
         badge: sold.length ? `Realized ${realizedGain >= 0 ? '+' : '-'}${fmt(Math.abs(realizedGain))}` : 'Net Appreciation',
         tone: gain > 0 ? 'pos' : (gain < 0 ? 'neg' : 'neu'),
         accent: 'teal',
-        icon: 'up'
+        icon: 'trendingUp'
       })}
       ${renderRepKpiCard({
         label: 'Portfolio ROI',
@@ -9720,7 +9960,7 @@ function renderReportInvestmentsTab(ws){
         badge: 'Weighted Return',
         tone: gain > 0 ? 'pos' : (gain < 0 ? 'neg' : 'neu'),
         accent: 'rose',
-        icon: 'scale'
+        icon: 'percent'
       })}
     </div>
 
@@ -9819,7 +10059,7 @@ function renderReportSavingsTab(ws, agg){
         badge: `${goals.length} Goal${goals.length === 1 ? '' : 's'}`,
         tone: totalSaved > 0 ? 'pos' : 'neu',
         accent: 'teal',
-        icon: 'piggy'
+        icon: 'flag'
       })}
       ${renderRepKpiCard({
         label: 'Period Saved',
@@ -9827,7 +10067,7 @@ function renderReportSavingsTab(ws, agg){
         badge: agg.periodLabel,
         tone: agg.savings > 0 ? 'pos' : 'neu',
         accent: 'amber',
-        icon: 'wallet'
+        icon: 'calendarPlus'
       })}
       ${renderRepKpiCard({
         label: 'Funding Progress',
@@ -9835,7 +10075,7 @@ function renderReportSavingsTab(ws, agg){
         badge: `Target ${fmt(totalTgt)}`,
         tone: overallPct >= 50 ? 'pos' : 'neu',
         accent: 'primary',
-        icon: 'up'
+        icon: 'compass'
       })}
       ${renderRepKpiCard({
         label: 'Remaining Gap',
@@ -9843,7 +10083,7 @@ function renderReportSavingsTab(ws, agg){
         badge: totalGap === 0 && goals.length ? 'All Targets Met' : 'To Reach Targets',
         tone: totalGap === 0 && goals.length ? 'pos' : 'neu',
         accent: 'rose',
-        icon: 'scale'
+        icon: 'hourglass'
       })}
     </div>
 
@@ -12551,19 +12791,50 @@ function rowHtml(b){
 }
 function miniIcon(name){
   const map = {
+    /* Dashboard */
     wallet:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5"/><path d="M17 12h4v4h-4a2 2 0 010-4z"/></svg>',
     down:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>',
     up:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
     piggy:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M8 12h8"/></svg>',
     scale:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l-3 6a4 4 0 008 0zM19 8l3 6a4 4 0 01-8 0z"/></svg>',
     info:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    /* Budgets Page */
     target:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
     card:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
-    vault:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="8" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="16"/><line x1="8" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="16" y2="12"/></svg>',
+    shieldCheck:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
     balanceSheet:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    /* Savings Page */
+    vault:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="8" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="16"/><line x1="8" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="16" y2="12"/></svg>',
     calendarCheck:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M12 14v4M10 16h4"/></svg>',
     coins:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>',
     trophy:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M4 3h16v6a8 8 0 0 1-16 0V3z"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>',
+    /* Investments Page */
+    layers:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+    building:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><path d="M9 22v-4h6v4"/></svg>',
+    chartLine:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
+    arrowDownCircle:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>',
+    award:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>',
+    /* Reports Page (dedicated analytics icon family) */
+    activity:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+    sliders:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>',
+    bookmark:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+    pieChart:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
+    arrowDownLeft:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"/><polyline points="17 17 7 17 7 7"/></svg>',
+    arrowUpRight:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>',
+    barChart:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    receipt:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>',
+    gauge:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>',
+    flame:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>',
+    gitCompare:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg>',
+    alertTriangle:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    briefcase:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    landmark:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
+    trendingUp:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+    percent:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>',
+    flag:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+    calendarPlus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>',
+    compass:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
+    hourglass:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>',
   };
   return map[name]||'';
 }
@@ -14836,7 +15107,7 @@ function renderBudgets(){
   const budgetKpis = [
     {label:'Total Budget', amount:fmt(totalBudget), change:catCards.length + ' categor' + (catCards.length===1?'y':'ies'), tone:'neu', accent:'primary', icon:'target'},
     {label:'Spent (Budgeted)', amount:fmt(totalSpent), change:spentPct + '% of total', tone:totalSpent > totalBudget ? 'neg' : 'neu', accent:'rose', icon:'card'},
-    {label:'Remaining', amount:fmt(Math.abs(remaining)), change:remaining < 0 ? 'Over budget' : 'Available', tone:remaining < 0 ? 'neg' : 'pos', accent:'teal', icon:'vault'},
+    {label:'Remaining', amount:fmt(Math.abs(remaining)), change:remaining < 0 ? 'Over budget' : 'Available', tone:remaining < 0 ? 'neg' : 'pos', accent:'teal', icon:'shieldCheck'},
     {label:'Net Balance', amount:netSign + fmt(Math.abs(netBalance)), change:netSub, tone:netBalance < 0 ? 'neg' : (netBalance > 0 ? 'pos' : 'neu'), accent:'amber', icon:'balanceSheet'},
   ];
   const summaryGrid = document.getElementById('budget-summary-grid');
@@ -16980,11 +17251,11 @@ function renderInvestments(){
   const invKpiGrid = document.getElementById('investment-kpi-grid');
   if(invKpiGrid){
     const kpis = [
-      { label: 'Total Invested', amount: fmt(totalInvested), change: 'Cost basis', tone: 'neu', accent: 'primary', icon: 'wallet' },
-      { label: 'Portfolio Value', amount: fmt(totalValue), change: filteredList.length + ' active holding' + (filteredList.length === 1 ? '' : 's'), tone: 'neu', accent: 'teal', icon: 'piggy' },
-      { label: 'Total Returns', amount: (totalReturns >= 0 ? '+' : '') + fmt(totalReturns), change: (totalReturns >= 0 ? '+' : '') + unrealizedRoi.toFixed(1) + '% ROI', tone: totalReturns >= 0 ? 'pos' : 'neg', accent: 'teal', icon: 'up' },
-      { label: 'Total Withdrawals', amount: fmt(totalWithdrawals), change: 'Redemptions & sales', tone: 'neu', accent: 'amber', icon: 'scale' },
-      { label: 'Realized Profit', amount: (totalRealized >= 0 ? '+' : '') + fmt(totalRealized), change: filteredSold.length + ' closed trade' + (filteredSold.length === 1 ? '' : 's'), tone: totalRealized >= 0 ? 'pos' : 'neg', accent: 'rose', icon: 'scale' }
+      { label: 'Total Invested', amount: fmt(totalInvested), change: 'Cost basis', tone: 'neu', accent: 'primary', icon: 'layers' },
+      { label: 'Portfolio Value', amount: fmt(totalValue), change: filteredList.length + ' active holding' + (filteredList.length === 1 ? '' : 's'), tone: 'neu', accent: 'teal', icon: 'building' },
+      { label: 'Total Returns', amount: (totalReturns >= 0 ? '+' : '') + fmt(totalReturns), change: (totalReturns >= 0 ? '+' : '') + unrealizedRoi.toFixed(1) + '% ROI', tone: totalReturns >= 0 ? 'pos' : 'neg', accent: 'teal', icon: 'chartLine' },
+      { label: 'Total Withdrawals', amount: fmt(totalWithdrawals), change: 'Redemptions & sales', tone: 'neu', accent: 'amber', icon: 'arrowDownCircle' },
+      { label: 'Realized Profit', amount: (totalRealized >= 0 ? '+' : '') + fmt(totalRealized), change: filteredSold.length + ' closed trade' + (filteredSold.length === 1 ? '' : 's'), tone: totalRealized >= 0 ? 'pos' : 'neg', accent: 'rose', icon: 'award' }
     ];
     invKpiGrid.innerHTML = kpis.map(c => 
       '<div class="card ov-card">' +
