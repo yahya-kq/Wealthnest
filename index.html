@@ -2733,11 +2733,6 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <!-- Report Deep-Link -->
-          <button type="button" class="btn-ghost" onclick="openBudgetReport()" style="height:38px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; border-color:var(--line);">
-            Report
-          </button>
-
           <!-- Copy Budget Button -->
           <button type="button" class="btn-ghost" onclick="openCopyBudgetModal()" style="height:38px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; border-color:var(--line);">
             Copy Budget
@@ -2789,9 +2784,6 @@
             <p class="dashboard-filter-note" id="savings-filter-note"></p>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" onclick="goToReports('savings')" class="btn-ghost" style="padding:7px 14px; font-size:12px; font-weight:600; border-radius:8px;">
-              Report
-            </button>
             <button type="button" id="btn-savings-all-goals" onclick="toggleSavingsAllGoals()" class="btn-ghost" style="padding:7px 14px; font-size:12px; font-weight:600; border-radius:8px;">
               All Goals
             </button>
@@ -2828,9 +2820,6 @@
           <p id="investments-count-label" class="muted">Holdings, asset allocation, and wealth projections.</p>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
-          <button type="button" onclick="goToReports('investments')" class="btn-ghost" style="display:inline-flex; align-items:center; justify-content:center;">
-            Report
-          </button>
           <button onclick="openInvestmentModal()" class="btn-primary" style="display:inline-flex; align-items:center; justify-content:center;">
             Add Investment
           </button>
