@@ -830,6 +830,14 @@
   .month-select-row select:focus{outline:none;}
   /* Budget Category Box-type Cards Grid */
   #budgets-rows{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; align-items:start;}
+  .budget-cat-dd-wrap{position:relative; display:inline-block;}
+  .budget-cat-dd-trigger{height:32px; min-width:158px; padding:0 10px 0 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font-family:var(--font-display); font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease;}
+  .budget-cat-dd-trigger:hover{border-color:var(--muted-2);}
+  .budget-cat-dd-trigger.open{border-color:var(--primary); box-shadow:0 0 0 3px rgba(124,58,237,0.12);}
+  .budget-cat-dd-panel{position:absolute; top:calc(100% + 6px); right:0; min-width:196px; max-height:230px; overflow-y:auto; z-index:80; background:var(--surface); border:1px solid var(--line); border-radius:10px; box-shadow:0 12px 28px -4px rgba(15,23,42,0.14); padding:5px;}
+  .budget-cat-dd-item{width:100%; text-align:left; border:none; background:transparent; color:var(--ink); font-family:var(--font-display); font-size:12.5px; font-weight:500; padding:7px 10px; border-radius:7px; display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer;}
+  .budget-cat-dd-item:hover{background:var(--surface-2);}
+  .budget-cat-dd-item.active{background:var(--line-soft); color:var(--ink); font-weight:700;}
   .subcat-card{padding:10px 12px; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface-2); margin-top:6px; transition:all .2s ease;}
   .subcat-card.on-track{border:1px solid var(--line-soft); box-shadow:none;}
   .subcat-card.warning-zero{border:1px solid rgba(217, 119, 6, 0.45); box-shadow:0 0 14px -3px rgba(217, 119, 6, 0.12);}
@@ -2750,9 +2758,13 @@
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
           <h2 class="section-title" style="margin:0;">Active Category Budgets</h2>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <select id="budget-category-filter" class="field-input" onchange="onBudgetCategoryFilterChange()" style="width:auto; min-width:155px; height:32px; padding:4px 10px; font-size:12px; font-weight:600;">
-              <option value="all">All Categories</option>
-            </select>
+            <div class="budget-cat-dd-wrap" id="budget-cat-dd-wrap">
+              <button type="button" id="budget-category-filter" class="budget-cat-dd-trigger" onclick="toggleBudgetCategoryMenu(event)" aria-haspopup="listbox" aria-expanded="false">
+                <span id="budget-cat-dd-label">All Categories</span>
+                <svg id="budget-cat-dd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="transition:transform .15s ease; flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div id="budget-cat-dd-panel" class="budget-cat-dd-panel hidden" role="listbox"></div>
+            </div>
             <button type="button" class="btn-ghost btn-small" onclick="openBudgetMonthlyHistory()" style="height:32px; display:inline-flex; align-items:center; font-size:12px; font-weight:600; padding:0 12px;">Monthly History</button>
           </div>
         </div>
@@ -14800,10 +14812,59 @@ function toggleCatBlock(catName){
 
 let budgetCategoryFilter = 'all';
 
-function onBudgetCategoryFilterChange(){
-  const sel = document.getElementById('budget-category-filter');
-  budgetCategoryFilter = sel ? sel.value : 'all';
+function closeBudgetCategoryMenu(){
+  const panel = document.getElementById('budget-cat-dd-panel');
+  const btn = document.getElementById('budget-category-filter');
+  const chev = document.getElementById('budget-cat-dd-chev');
+  if(panel) panel.classList.add('hidden');
+  if(btn){ btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+  if(chev) chev.style.transform = '';
+}
+
+function toggleBudgetCategoryMenu(e){
+  if(e) e.stopPropagation();
+  const panel = document.getElementById('budget-cat-dd-panel');
+  const btn = document.getElementById('budget-category-filter');
+  const chev = document.getElementById('budget-cat-dd-chev');
+  if(!panel) return;
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !opening);
+  if(btn){ btn.classList.toggle('open', opening); btn.setAttribute('aria-expanded', opening ? 'true' : 'false'); }
+  if(chev) chev.style.transform = opening ? 'rotate(180deg)' : '';
+}
+
+function selectBudgetCategoryFilter(val){
+  budgetCategoryFilter = val || 'all';
+  closeBudgetCategoryMenu();
   renderBudgets();
+}
+
+function renderBudgetCategoryFilterMenu(distinctCategories){
+  const list = Array.isArray(distinctCategories) ? distinctCategories : [];
+  if(budgetCategoryFilter !== 'all' && !list.includes(budgetCategoryFilter)){
+    budgetCategoryFilter = 'all';
+  }
+  const lbl = document.getElementById('budget-cat-dd-label');
+  if(lbl) lbl.textContent = budgetCategoryFilter === 'all' ? 'All Categories' : budgetCategoryFilter;
+  const panel = document.getElementById('budget-cat-dd-panel');
+  if(!panel) return;
+  const items = [{ value: 'all', label: 'All Categories' }, ...list.map(cat => ({ value: cat, label: cat }))];
+  panel.innerHTML = items.map(it => {
+    const active = budgetCategoryFilter === it.value;
+    const safeVal = it.value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return `<button type="button" class="budget-cat-dd-item ${active ? 'active' : ''}" role="option" aria-selected="${active ? 'true' : 'false'}" onclick="selectBudgetCategoryFilter('${safeVal}')"><span>${escapeHtml(it.label)}</span></button>`;
+  }).join('');
+}
+
+if(!window._budgetCatMenuListenerBound){
+  window._budgetCatMenuListenerBound = true;
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('budget-cat-dd-wrap');
+    if(wrap && !wrap.contains(e.target)) closeBudgetCategoryMenu();
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') closeBudgetCategoryMenu();
+  });
 }
 
 function openSetBudgetModal(){
@@ -14908,22 +14969,7 @@ function openCopyBudgetModal(){
 
   const rows = budgetProgress(DB.transactions, DB.budgets, budgetSelMonth, budgetSelYear);
   const distinctCategories = [...new Set(rows.map(r => r.category))];
-
-  const filterSelect = document.getElementById('budget-category-filter');
-  if(filterSelect){
-    const currentFilter = budgetCategoryFilter || 'all';
-    let optHtml = '<option value="all">All Categories</option>';
-    distinctCategories.forEach(cat => {
-      optHtml += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
-    });
-    filterSelect.innerHTML = optHtml;
-    if(distinctCategories.includes(currentFilter)){
-      filterSelect.value = currentFilter;
-    } else {
-      budgetCategoryFilter = 'all';
-      filterSelect.value = 'all';
-    }
-  }
+  renderBudgetCategoryFilterMenu(distinctCategories);
 
   const container = document.getElementById('copy-budget-rows-container');
   const countLabel = document.getElementById('copy-budget-count-label');
@@ -15029,22 +15075,7 @@ function renderBudgets(){
 
   const rows = budgetProgress(DB.transactions, DB.budgets, budgetSelMonth, budgetSelYear);
   const distinctCategories = [...new Set(rows.map(r => r.category))];
-
-  const filterSelect = document.getElementById('budget-category-filter');
-  if(filterSelect){
-    const currentFilter = budgetCategoryFilter || 'all';
-    let optHtml = '<option value="all">All Categories</option>';
-    distinctCategories.forEach(cat => {
-      optHtml += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
-    });
-    filterSelect.innerHTML = optHtml;
-    if(distinctCategories.includes(currentFilter)){
-      filterSelect.value = currentFilter;
-    } else {
-      budgetCategoryFilter = 'all';
-      filterSelect.value = 'all';
-    }
-  }
+  renderBudgetCategoryFilterMenu(distinctCategories);
 
   const catCards = distinctCategories.map(catName => {
     const mainRow = rows.find(r => r.category === catName && !r.subCategory);
