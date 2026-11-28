@@ -2096,6 +2096,121 @@
   #investment-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
 
+/* Dedicated Benefits Page */
+.ben-ctrl-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.ben-tabs { display:inline-flex; gap:3px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:3px; }
+.ben-tab-btn { border:none; background:transparent; color:var(--muted); font-size:12.5px; font-weight:600; padding:6.5px 14px; border-radius:7px; cursor:pointer; transition:all .14s; }
+.ben-tab-btn:hover { color:var(--ink); }
+.ben-tab-btn.active { background:var(--ink); color:#fff; }
+.ben-ctrl-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ben-ms-wrap { position:relative; display:inline-block; }
+.ben-ms-trigger { height:34px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font-size:12.5px; font-weight:600; padding:0 11px; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; cursor:pointer; }
+.ben-ms-trigger:hover { border-color:#CBD5E1; background:var(--surface-2); }
+.ben-ms-panel { position:absolute; top:calc(100% + 5px); right:0; min-width:196px; max-height:270px; overflow-y:auto; background:var(--surface); border:1px solid var(--line); border-radius:10px; box-shadow:0 12px 28px rgba(15,23,42,0.14); padding:6px; z-index:70; }
+.ben-ms-opt { display:flex; align-items:center; gap:8px; padding:6.5px 8px; border-radius:7px; font-size:12.5px; font-weight:500; color:var(--ink); cursor:pointer; user-select:none; }
+.ben-ms-opt:hover { background:var(--surface-2); }
+.ben-ms-opt input { accent-color:var(--primary); width:14px; height:14px; margin:0; cursor:pointer; }
+.ben-ms-divider { height:1px; background:var(--line-soft); margin:4px 2px; }
+
+.ben-kpi-row { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; margin-bottom:16px; }
+.ben-kpi-card { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; box-shadow:0 1px 2px rgba(15,23,42,.04); display:flex; flex-direction:column; gap:6px; }
+.ben-kpi-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.ben-kpi-lbl { font-size:11.5px; font-weight:600; color:var(--muted); }
+.ben-kpi-ico { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ben-kpi-ico.p { background:var(--primary-light); color:var(--primary); }
+.ben-kpi-ico.r { background:var(--rose-light); color:var(--rose); }
+.ben-kpi-ico.t { background:var(--teal-light); color:var(--teal); }
+.ben-kpi-ico.a { background:var(--amber-light); color:var(--amber); }
+.ben-kpi-val { font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--ink); letter-spacing:-0.02em; font-variant-numeric:tabular-nums; margin:0; }
+.ben-kpi-sub { font-size:11.5px; color:var(--muted); font-weight:500; }
+
+.ben-panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:0 1px 2px rgba(15,23,42,.04); margin-bottom:16px; overflow:visible; }
+.ben-panel-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 18px; border-bottom:1px solid var(--line-soft); flex-wrap:wrap; }
+.ben-panel-title { margin:0; font-size:14.5px; font-weight:700; color:var(--ink); }
+.ben-panel-sub { font-size:12px; color:var(--muted); margin-left:8px; font-weight:500; }
+.ben-panel-body { padding:16px 18px; }
+
+.ben-row { display:grid; grid-template-columns:minmax(195px, 1.15fr) minmax(240px, 1.6fr) auto; align-items:center; gap:20px; padding:14px 18px; border-bottom:1px solid var(--line-soft); transition:background .12s; }
+.ben-row:last-child { border-bottom:none; border-radius:0 0 12px 12px; }
+.ben-row:hover { background:#FAFBFD; }
+.ben-row.ended { opacity:0.78; background:#FCFDFF; }
+.ben-id-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ben-name { font-size:14px; font-weight:700; color:var(--ink); }
+.ben-dates { font-size:11.5px; color:var(--muted); margin-top:3px; }
+.ben-mid { display:flex; flex-direction:column; gap:6px; }
+.ben-mid-top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; font-size:12.5px; }
+.ben-nums { font-family:var(--font-mono); font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; }
+.ben-nums span { color:var(--muted); font-weight:500; }
+.ben-avail { font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
+.ben-bar-track { height:6px; border-radius:999px; background:var(--line-soft); overflow:hidden; }
+.ben-bar-fill { height:100%; border-radius:999px; transition:width .3s ease; }
+.ben-note { font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.ben-note strong { color:var(--ink); }
+.ben-link-btn { border:none; background:none; padding:0; font-size:11.5px; font-weight:600; color:var(--amber); text-decoration:underline; cursor:pointer; }
+.ben-ops { display:flex; align-items:center; gap:6px; justify-content:flex-end; }
+
+.ben-tbl-wrap { width:100%; overflow-x:auto; }
+table.ben-tbl { width:100%; border-collapse:collapse; font-size:12.5px; }
+table.ben-tbl th { text-align:left; padding:9px 14px; border-bottom:1px solid var(--line); font-size:11px; font-weight:600; color:var(--muted); background:#FAFBFD; white-space:nowrap; }
+table.ben-tbl td { padding:10px 14px; border-bottom:1px solid var(--line-soft); vertical-align:middle; }
+table.ben-tbl tr:last-child td { border-bottom:none; }
+table.ben-tbl .num { text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:600; }
+
+.ben-pill-group { display:inline-flex; gap:2px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:2px; }
+.ben-pill-btn { border:none; background:transparent; color:var(--muted); font-size:11.5px; font-weight:600; padding:4.5px 10px; border-radius:6px; cursor:pointer; }
+.ben-pill-btn.active { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(15,23,42,0.06); }
+.ben-select-sm { height:29px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font-size:12px; font-weight:600; padding:0 10px; cursor:pointer; }
+
+.ben-split-2 { display:grid; grid-template-columns:1.1fr 1fr; gap:16px; margin-bottom:16px; }
+.ben-legend-inline { display:flex; align-items:center; gap:12px; font-size:11.5px; font-weight:600; color:var(--muted); }
+.ben-legend-inline span { display:inline-flex; align-items:center; gap:5px; }
+.ben-dot-sm { width:8px; height:8px; border-radius:3px; display:inline-block; }
+
+.ben-donut-wrap { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+.ben-donut-svg-box { position:relative; width:148px; height:148px; flex-shrink:0; }
+.ben-donut-arc { transition:stroke-width .16s; cursor:pointer; }
+.ben-donut-arc:hover { stroke-width:21; }
+.ben-donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
+.ben-donut-center .dc-val { font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--ink); line-height:1.1; }
+.ben-donut-center .dc-lbl { font-size:10.5px; font-weight:600; color:var(--muted); margin-top:3px; }
+.ben-donut-legend { flex:1; min-width:170px; display:flex; flex-direction:column; gap:7px; }
+.ben-leg-item { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; padding:6px 9px; border-radius:8px; cursor:pointer; transition:background .14s; }
+.ben-leg-item:hover { background:var(--surface-2); }
+.ben-leg-left { display:flex; align-items:center; gap:9px; min-width:0; }
+.ben-leg-dot { width:9px; height:9px; border-radius:3px; flex-shrink:0; }
+.ben-leg-pct { font-family:var(--font-mono); font-weight:700; font-size:12.5px; color:var(--ink); white-space:nowrap; }
+
+.ben-vbar-stage { height:174px; display:flex; align-items:flex-end; justify-content:space-around; gap:12px; padding:12px 6px 4px; }
+.ben-vbar-group { display:flex; flex-direction:column; align-items:center; gap:8px; flex:1; padding:8px 10px 6px; border-radius:10px; transition:background .16s; }
+.ben-vbar-group:hover { background:#F8FAFC; }
+.ben-vbar-sticks { height:118px; display:flex; align-items:flex-end; gap:8px; }
+.ben-vbar-col { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.ben-vbar-num { font-family:var(--font-mono); font-size:10.5px; font-weight:600; color:var(--muted); }
+.ben-vbar-bar { width:24px; border-radius:6px 6px 3px 3px; transition:transform .18s ease, box-shadow .18s ease; }
+.ben-vbar-group:hover .ben-vbar-bar { transform:translateY(-2px); box-shadow:0 5px 12px rgba(15,23,42,0.1); }
+.ben-vbar-lbl { font-size:12px; font-weight:600; color:var(--ink); text-align:center; }
+
+.ben-chart-tip { position:fixed; z-index:1200; pointer-events:none; background:#0F172A; color:#F8FAFC; border-radius:10px; padding:10px 13px; min-width:185px; max-width:255px; box-shadow:0 12px 28px rgba(15,23,42,0.28); font-size:12px; opacity:0; transform:translateY(4px); transition:opacity .12s ease, transform .12s ease; }
+.ben-chart-tip.show { opacity:1; transform:translateY(0); }
+.ben-tip-title { font-weight:700; font-size:12.5px; margin-bottom:5px; color:#FFFFFF; }
+.ben-tip-row { display:flex; justify-content:space-between; gap:14px; margin-bottom:3px; color:#CBD5E1; }
+.ben-tip-row strong { font-family:var(--font-mono); color:#FFFFFF; font-weight:600; }
+.ben-tip-src { margin-top:6px; padding-top:5px; border-top:1px solid rgba(255,255,255,0.12); font-size:11px; color:#94A3B8; line-height:1.45; }
+.ben-tip-src span { color:#E2E8F0; font-weight:600; }
+
+.ben-dest-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+.ben-dest-opt { border:1px solid var(--line); border-radius:8px; padding:8px 6px; text-align:center; font-size:12px; font-weight:600; color:var(--muted); background:var(--surface); cursor:pointer; transition:all .14s; }
+.ben-dest-opt.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
+
+@media (max-width: 1020px) {
+  .ben-kpi-row { grid-template-columns:repeat(2, 1fr); }
+  .ben-row { grid-template-columns:1fr; gap:10px; }
+  .ben-split-2 { grid-template-columns:1fr; }
+}
+@media (max-width: 640px) {
+  .ben-kpi-row { grid-template-columns:1fr; }
+}
+
 </style>
 </head>
 <body>
@@ -2965,6 +3080,51 @@
 
 
 
+    <!-- ---- BENEFITS ---- -->
+    <section id="page-benefits" class="page hidden">
+      <div class="topbar">
+        <div>
+          <h1>Benefits</h1>
+          <p>Manage allowances, track benefit usage, and settle reimbursements.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="topbar-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications & Alerts" aria-label="Open notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-badge hidden" id="topbar-bell-badge">0</span>
+          </button>
+          <div class="avatar topbar-avatar" onclick="toggleUserMenu(event)" title="Account menu">D</div>
+        </div>
+      </div>
+
+      <div class="ben-ctrl-bar">
+        <div class="ben-tabs">
+          <button type="button" class="ben-tab-btn active" data-ben-tab="allowances" onclick="setBenefitsTab('allowances')">Allowances</button>
+          <button type="button" class="ben-tab-btn" data-ben-tab="reimbursements" onclick="setBenefitsTab('reimbursements')">Reimbursements</button>
+          <button type="button" class="ben-tab-btn" data-ben-tab="insights" onclick="setBenefitsTab('insights')">Insights</button>
+        </div>
+        <div class="ben-ctrl-right">
+          <div class="ben-ms-wrap" id="ben-yr-dd">
+            <button type="button" class="ben-ms-trigger" onclick="toggleBenefitsDD('ben-yr-dd', event)">
+              <span id="ben-yr-lbl">Year</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="ben-ms-panel hidden" id="ben-yr-panel" onclick="event.stopPropagation()"></div>
+          </div>
+          <div class="ben-ms-wrap" id="ben-mo-dd">
+            <button type="button" class="ben-ms-trigger" onclick="toggleBenefitsDD('ben-mo-dd', event)">
+              <span id="ben-mo-lbl">Month</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="ben-ms-panel hidden" id="ben-mo-panel" onclick="event.stopPropagation()"></div>
+          </div>
+          <button type="button" class="btn-primary" id="ben-top-cta" style="height:34px; padding:0 14px; font-size:12.5px;" onclick="handleBenefitsTopCta()">Add Benefit</button>
+        </div>
+      </div>
+
+      <div id="benefits-workspace"></div>
+      <div class="ben-chart-tip" id="benefits-donut-tip"></div>
+    </section>
+
     <!-- ---- SETTINGS ---- -->
     <section id="page-settings" class="page hidden">
       <div class="topbar"><div><h1>Settings</h1><p>Manage categories, currency, and preferences.</p></div><div style="display:flex; align-items:center; gap:10px;">
@@ -3284,7 +3444,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div>
             <label class="field-label" for="tx-claimable-amount" style="font-size:11.5px; margin:0; color:var(--teal);">Claimable Amount (Reimbursable)</label>
-            <span class="text-xs muted" style="font-size:11px;">Will be tracked under Settings → Company Benefit</span>
+            <span class="text-xs muted" style="font-size:11px;">Tracked under Benefits Reimbursements</span>
           </div>
           <input type="number" step="any" min="0" id="tx-claimable-amount" placeholder="" class="field-input figure" style="width:130px; padding:4px 8px; font-size:13px;">
         </div>
@@ -4856,16 +5016,9 @@
 
 <!-- ============ ALLOWANCE MODAL ============ -->
 <div id="allowance-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeAllowanceModal()">
-  <div class="modal" style="max-width:440px;">
-    <button class="modal-close" onclick="closeAllowanceModal()" aria-label="Close">✕</button>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
-      <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      </div>
-      <div>
-        <h2 id="allowance-modal-title" style="margin:0; font-size:18px;">Company Benefit</h2>
-      </div>
-    </div>
+  <div class="modal" style="max-width:430px;">
+    <button class="modal-close" onclick="closeAllowanceModal()" aria-label="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2 id="allowance-modal-title" style="margin:0 0 14px; font-size:17px;">Benefit</h2>
 
     <form onsubmit="handleSaveAllowance(event)">
       <div style="margin-bottom:12px;">
@@ -4876,38 +5029,35 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
           <label class="field-label" for="allowance-limit">Quota Limit <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="0" step="any" id="allowance-limit" class="field-input figure" required>
+          <input type="number" min="1" step="any" id="allowance-limit" class="field-input figure" required>
         </div>
         <div>
-          <label class="field-label" for="allowance-period">Quota Period</label>
+          <label class="field-label" for="allowance-period">Period</label>
           <select id="allowance-period" class="field-input">
-            <option value="month">Monthly Quota</option>
-            <option value="year">Annual Quota</option>
+            <option value="month">Monthly</option>
+            <option value="year">Annual</option>
           </select>
         </div>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" for="allowance-start-date">Cycle Start Date <span class="text-xs muted">(Optional)</span></label>
+          <label class="field-label" for="allowance-start-date">Start Date</label>
           <input type="date" id="allowance-start-date" class="field-input figure">
         </div>
         <div>
-          <label class="field-label" for="allowance-end-date">Cycle End Date <span class="text-xs muted">(Optional)</span></label>
+          <label class="field-label" for="allowance-end-date">End Date</label>
           <input type="date" id="allowance-end-date" class="field-input figure">
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--surface-2); border-radius:8px; margin-bottom:16px;">
-        <input type="checkbox" id="allowance-active" checked style="width:16px; height:16px; cursor:pointer;">
-        <label for="allowance-active" style="font-size:12.5px; cursor:pointer; margin:0;">
-          <strong>Active Benefit</strong>
-          <span class="text-xs muted" style="display:block;">Available for selection when logging expenses</span>
-        </label>
-      </div>
+      <label for="allowance-active" style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--surface-2); border-radius:8px; margin-bottom:16px; cursor:pointer; font-size:13px; font-weight:600; color:var(--ink);">
+        <input type="checkbox" id="allowance-active" checked style="width:16px; height:16px; cursor:pointer; accent-color:var(--primary);">
+        <span>Active</span>
+      </label>
 
       <div style="display:flex; justify-content:flex-end; gap:8px;">
         <button type="button" class="btn-ghost" onclick="closeAllowanceModal()">Cancel</button>
-        <button type="submit" class="btn-primary">Save Benefit</button>
+        <button type="submit" class="btn-primary">Save</button>
       </div>
     </form>
   </div>
@@ -4916,31 +5066,23 @@
 <!-- ============ TRANSFER ALLOWANCE MODAL ============ -->
 <div id="transfer-allowance-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeTransferAllowanceModal()">
   <div class="modal" style="max-width:440px;">
-    <button class="modal-close" onclick="closeTransferAllowanceModal()" aria-label="Close">✕</button>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-      <div style="width:36px; height:36px; border-radius:10px; background:rgba(16,185,129,0.12); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-      </div>
-      <div>
-        <h2 style="margin:0; font-size:18px;">Transfer Surplus Quota</h2>
-        <p class="text-xs muted" style="margin:2px 0 0;">Move remaining allowance balance to personal Income or Savings</p>
-      </div>
-    </div>
+    <button class="modal-close" onclick="closeTransferAllowanceModal()" aria-label="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2 style="margin:0 0 14px; font-size:17px;">Transfer Quota</h2>
 
     <form onsubmit="handleConfirmTransferAllowance(event)">
       <input type="hidden" id="transfer-allowance-id">
+      <input type="hidden" id="transfer-allowance-dest-type" value="income">
 
-      <!-- Balance Info Box -->
-      <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+      <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px 14px; margin-bottom:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:13.5px; font-weight:600; color:var(--ink);" id="transfer-allowance-name">Food Card</span>
-          <span style="font-size:12px; color:var(--muted-2);">Available: <strong style="color:var(--teal); font-size:14px;" id="transfer-allowance-available">PKR 5,000</strong></span>
+          <span style="font-size:13.5px; font-weight:700; color:var(--ink);" id="transfer-allowance-name">Benefit</span>
+          <span style="font-size:12px; color:var(--muted);">Available <strong class="figure" style="color:var(--teal); font-size:13.5px;" id="transfer-allowance-available">PKR 0</strong></span>
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div>
-          <label class="field-label" for="transfer-allowance-amount">Transfer Amount <span style="color:var(--rose);">*</span></label>
+          <label class="field-label" for="transfer-allowance-amount">Amount <span style="color:var(--rose);">*</span></label>
           <input type="number" min="1" step="any" id="transfer-allowance-amount" placeholder="0" class="field-input figure" required>
         </div>
         <div>
@@ -4950,29 +5092,30 @@
       </div>
 
       <div style="margin-bottom:12px;">
-        <label class="field-label">Transfer Destination</label>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <label style="display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; font-size:12.5px; background:var(--surface);">
-            <input type="radio" name="transfer-allowance-dest-type" value="income" checked onchange="toggleTransferAllowanceDest('income')">
-            <span>To Income (Bank)</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; cursor:pointer; font-size:12.5px; background:var(--surface);">
-            <input type="radio" name="transfer-allowance-dest-type" value="savings" onchange="toggleTransferAllowanceDest('savings')">
-            <span>To Savings Goal</span>
-          </label>
+        <label class="field-label">Destination</label>
+        <div class="ben-dest-grid">
+          <button type="button" class="ben-dest-opt active" data-dest="income" onclick="toggleTransferAllowanceDest('income')">Income</button>
+          <button type="button" class="ben-dest-opt" data-dest="savings" onclick="toggleTransferAllowanceDest('savings')">Savings Goal</button>
+          <button type="button" class="ben-dest-opt" data-dest="benefit" onclick="toggleTransferAllowanceDest('benefit')">Another Benefit</button>
         </div>
       </div>
 
-      <!-- Income Destination Options -->
-      <div id="transfer-allowance-income-wrap" style="margin-bottom:14px;">
-        <label class="field-label" for="transfer-allowance-dest-account">Deposit Account</label>
-        <select id="transfer-allowance-dest-account" class="field-input"></select>
+      <!-- Income Destination Options (With Target Month Picker) -->
+      <div id="transfer-allowance-income-wrap" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div>
+          <label class="field-label" for="transfer-allowance-dest-month">Target Month</label>
+          <select id="transfer-allowance-dest-month" class="field-input"></select>
+        </div>
+        <div>
+          <label class="field-label" for="transfer-allowance-dest-account">Deposit Account</label>
+          <select id="transfer-allowance-dest-account" class="field-input"></select>
+        </div>
       </div>
 
       <!-- Savings Destination Options -->
       <div id="transfer-allowance-savings-wrap" class="hidden" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
         <div>
-          <label class="field-label" for="transfer-allowance-dest-goal">Target Goal</label>
+          <label class="field-label" for="transfer-allowance-dest-goal">Open Savings Goal</label>
           <select id="transfer-allowance-dest-goal" class="field-input"></select>
         </div>
         <div>
@@ -4986,9 +5129,68 @@
         </div>
       </div>
 
+      <!-- Another Benefit Destination Options -->
+      <div id="transfer-allowance-benefit-wrap" class="hidden" style="margin-bottom:14px;">
+        <label class="field-label" for="transfer-allowance-dest-benefit">Target Active Benefit</label>
+        <select id="transfer-allowance-dest-benefit" class="field-input"></select>
+      </div>
+
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
         <button type="button" class="btn-ghost" onclick="closeTransferAllowanceModal()">Cancel</button>
         <button type="submit" class="btn-primary">Confirm Transfer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ ADD / EDIT REIMBURSEMENT CLAIM MODAL ============ -->
+<div id="reimbursement-claim-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeReimbursementClaimModal()">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeReimbursementClaimModal()" aria-label="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2 id="reimb-claim-modal-title" style="margin:0 0 14px; font-size:17px;">Add Claim</h2>
+    <form onsubmit="handleSaveReimbursementClaim(event)">
+      <input type="hidden" id="reimb-claim-id">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
+        <div>
+          <label class="field-label" for="reimb-claim-date">Date <span style="color:var(--rose);">*</span></label>
+          <input type="date" id="reimb-claim-date" class="field-input figure" required>
+        </div>
+        <div>
+          <label class="field-label" for="reimb-claim-tag">Benefit Tag <span style="color:var(--rose);">*</span></label>
+          <select id="reimb-claim-tag" class="field-input" required></select>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
+        <div>
+          <label class="field-label" for="reimb-claim-category">Category <span style="color:var(--rose);">*</span></label>
+          <select id="reimb-claim-category" class="field-input" onchange="onReimbClaimCategoryChange()" required></select>
+        </div>
+        <div>
+          <label class="field-label" for="reimb-claim-subcategory">Subcategory <span style="color:var(--rose);">*</span></label>
+          <select id="reimb-claim-subcategory" class="field-input" required></select>
+        </div>
+      </div>
+      <div style="margin-bottom:11px;">
+        <label class="field-label" for="reimb-claim-desc">Description</label>
+        <input type="text" id="reimb-claim-desc" class="field-input" autocomplete="off">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
+        <div>
+          <label class="field-label" for="reimb-claim-bill">Bill Total <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="1" step="any" id="reimb-claim-bill" class="field-input figure" required>
+        </div>
+        <div>
+          <label class="field-label" for="reimb-claim-amount">Claimable Amount <span style="color:var(--rose);">*</span></label>
+          <input type="number" min="1" step="any" id="reimb-claim-amount" class="field-input figure" required>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="field-label" for="reimb-claim-payment">Payment Method</label>
+        <select id="reimb-claim-payment" class="field-input"></select>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn-ghost" onclick="closeReimbursementClaimModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Claim</button>
       </div>
     </form>
   </div>
@@ -5120,6 +5322,7 @@ const ICONS = {
   transactions: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>',
   budgets: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h4M7 16h8"/></svg>',
   savings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  benefits: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18"/><path d="M12 8H7.5a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8Z"/><path d="M12 8h4.5a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8Z"/></svg>',
   investments: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 7-7 7-4-4-5 5"/><circle cx="19" cy="7" r="2"/></svg>',
   warnings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   settings: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -5134,6 +5337,7 @@ const NAV_BOTTOM = [
   { id: "budgets", label: "Budgets" },
   { id: "investments", label: "Investments" },
   { id: "savings", label: "Savings" },
+  { id: "benefits", label: "Benefits" },
 ];
 const NAV_SETTINGS = [
   { id: "settings", label: "Settings" },
@@ -7035,10 +7239,26 @@ function downloadTransactionsExcel(){
 }
 
 /* ============================================================
-   COMPANY BENEFITS & ALLOWANCES SYSTEM (CLEAN & DYNAMIC)
+   BENEFITS, ALLOWANCES & REIMBURSEMENTS SYSTEM
    ============================================================ */
 function getAllowanceAccounts(){ return Array.isArray(DB.allowanceAccounts) ? DB.allowanceAccounts : []; }
-function getActiveAllowanceAccounts(){ return getAllowanceAccounts().filter(function(a){ return a.active; }); }
+function getBenefitTransfers(){ return Array.isArray(DB.benefitTransfers) ? DB.benefitTransfers : []; }
+
+function isAllowanceActiveOnDate(acc, dateStr){
+  if(!acc || acc.active === false) return false;
+  const ds = dateStr || ymd(new Date());
+  if(acc.startDate && ds < acc.startDate) return false;
+  if(acc.endDate && ds > acc.endDate) return false;
+  return true;
+}
+
+function getActiveAllowanceAccounts(refDateStr){
+  return getAllowanceAccounts().filter(function(a){
+    if(a.active === false) return false;
+    if(refDateStr) return isAllowanceActiveOnDate(a, refDateStr);
+    return true;
+  });
+}
 
 function sanitizePaymentMethods(){
   if(Array.isArray(DB.paymentMethods)){
@@ -7047,40 +7267,98 @@ function sanitizePaymentMethods(){
   }
 }
 
-function getAllowanceMonthUsed(acc, month, year){
+function getTxAllowanceEffectiveDate(t){
+  return (t && (t.allowanceCycleDate || t.date)) || '';
+}
+
+function getAllowanceMonthBonusIn(acc, month, year){
+  if(!acc) return 0;
+  var trs = getBenefitTransfers();
+  return trs.filter(function(tr){
+    if(tr.toAllowanceId !== acc.id) return false;
+    var pd = parseTxDate(tr.date);
+    if(acc.period === 'year') return pd.year === year;
+    return pd.month === month && pd.year === year;
+  }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+}
+
+function getAllowanceMonthUsed(acc, month, year, excludeTxId){
   if(!acc) return 0;
   var txs = DB.transactions || [];
-  if(acc.period === 'year'){
-    return txs.filter(function(t){ return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
-              .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
-  }
-  return txs.filter(function(t){ return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && inMonth(t,month,year); })
-             .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
+  var txUsed = txs.filter(function(t){
+    if(excludeTxId && t.id === excludeTxId) return false;
+    if(!(t.companyCovered || t.isAllowanceTransfer) || t.allowanceId !== acc.id) return false;
+    var pd = parseTxDate(getTxAllowanceEffectiveDate(t));
+    if(acc.period === 'year') return pd.year === year;
+    return pd.month === month && pd.year === year;
+  }).reduce(function(s, t){
+    var amt = t.isAllowanceTransfer ? (parseFloat(t.amount) || 0) : (t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0));
+    return s + amt;
+  }, 0);
+
+  var trOut = getBenefitTransfers().filter(function(tr){
+    if(tr.fromAllowanceId !== acc.id) return false;
+    var pd = parseTxDate(tr.date);
+    if(acc.period === 'year') return pd.year === year;
+    return pd.month === month && pd.year === year;
+  }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+
+  return txUsed + trOut;
 }
-function getAllowanceYearUsed(acc, year){
+
+function getAllowanceYearUsed(acc, year, excludeTxId){
   if(!acc) return 0;
-  return (DB.transactions||[]).filter(function(t){ return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && new Date(t.date||'').getFullYear()===year; })
-                              .reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
+  var txUsed = (DB.transactions || []).filter(function(t){
+    if(excludeTxId && t.id === excludeTxId) return false;
+    if(!(t.companyCovered || t.isAllowanceTransfer) || t.allowanceId !== acc.id) return false;
+    return parseTxDate(getTxAllowanceEffectiveDate(t)).year === year;
+  }).reduce(function(s, t){
+    var amt = t.isAllowanceTransfer ? (parseFloat(t.amount) || 0) : (t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0));
+    return s + amt;
+  }, 0);
+  var trOut = getBenefitTransfers().filter(function(tr){
+    return tr.fromAllowanceId === acc.id && parseTxDate(tr.date).year === year;
+  }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+  return txUsed + trOut;
 }
-function computeAllowanceAvailable(acc, refDate){
+
+function computeAllowanceAvailable(acc, refDate, excludeTxId){
   if(!acc) return 0;
-  var d = refDate ? new Date(refDate) : new Date();
-  if(isNaN(d.getTime())) d = new Date();
+  var refStr = typeof refDate === 'string' && refDate ? refDate : ymd(refDate instanceof Date && !isNaN(refDate.getTime()) ? refDate : new Date());
+  var pd = parseTxDate(refStr);
+  var yr = pd.year || new Date().getFullYear();
+  var mo = pd.month || (new Date().getMonth() + 1);
+
   if(acc.startDate && acc.endDate){
-    var txs = (DB.transactions||[]).filter(function(t){
-      return (t.companyCovered || t.isAllowanceTransfer) && t.allowanceId===acc.id && t.date >= acc.startDate && t.date <= acc.endDate;
-    });
-    var used = txs.reduce(function(s,t){ return s+(t.companyCoveredAmount!==undefined ? t.companyCoveredAmount : t.amount||0); }, 0);
-    return Math.max(0, (acc.limit||0)-used);
+    var txUsed = (DB.transactions || []).filter(function(t){
+      if(excludeTxId && t.id === excludeTxId) return false;
+      if(!(t.companyCovered || t.isAllowanceTransfer) || t.allowanceId !== acc.id) return false;
+      var eff = getTxAllowanceEffectiveDate(t);
+      return eff >= acc.startDate && eff <= acc.endDate;
+    }).reduce(function(s, t){
+      var amt = t.isAllowanceTransfer ? (parseFloat(t.amount) || 0) : (t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0));
+      return s + amt;
+    }, 0);
+    var trOut = getBenefitTransfers().filter(function(tr){
+      return tr.fromAllowanceId === acc.id && tr.date >= acc.startDate && tr.date <= acc.endDate;
+    }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+    var trIn = getBenefitTransfers().filter(function(tr){
+      return tr.toAllowanceId === acc.id && tr.date >= acc.startDate && tr.date <= acc.endDate;
+    }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+    return Math.max(0, (parseFloat(acc.limit) || 0) + trIn - (txUsed + trOut));
   }
-  var used = acc.period==='year' ? getAllowanceYearUsed(acc, d.getFullYear()) : getAllowanceMonthUsed(acc, d.getMonth()+1, d.getFullYear());
-  return Math.max(0, (acc.limit||0)-used);
+
+  var used = acc.period === 'year' ? getAllowanceYearUsed(acc, yr, excludeTxId) : getAllowanceMonthUsed(acc, mo, yr, excludeTxId);
+  var bonusIn = getAllowanceMonthBonusIn(acc, mo, yr);
+  return Math.max(0, (parseFloat(acc.limit) || 0) + bonusIn - used);
 }
-function calculateAllowanceSplit(acc, amount, refDate){
-  var available = computeAllowanceAvailable(acc, refDate);
+
+function calculateAllowanceSplit(acc, amount, refDate, excludeTxId){
+  var available = computeAllowanceAvailable(acc, refDate, excludeTxId);
   var covered = Math.min(available, amount);
-  return { coveredAmount: covered, overflowAmount: amount-covered };
+  return { coveredAmount: covered, overflowAmount: amount - covered };
 }
+
 function processAllowanceForTransaction(txData){
   if(!txData.allowanceId){
     txData.companyCovered = false;
@@ -7088,8 +7366,8 @@ function processAllowanceForTransaction(txData){
     txData.personalShare = 0;
     return txData;
   }
-  var acc = getAllowanceAccounts().find(function(a){ return a.active && a.id === txData.allowanceId; });
-  if(!acc){
+  var acc = getAllowanceAccounts().find(function(a){ return a.active !== false && a.id === txData.allowanceId; });
+  if(!acc || !isAllowanceActiveOnDate(acc, txData.date)){
     txData.companyCovered = false;
     txData.companyCoveredAmount = 0;
     txData.personalShare = 0;
@@ -7111,263 +7389,692 @@ function processAllowanceForTransaction(txData){
   return txData;
 }
 
-function renderAllowancesSettings(){
-  var el = document.getElementById('settings-allowances');
-  if(!el) return;
-  var accounts = getAllowanceAccounts();
+/* Shared global helper: strictly unfinished, non-achieved, non-settled, non-paid, non-dismissed savings goals */
+function isSavingsGoalOpen(g){
+  if(!g || g.isAssumption || g.dismissed || g.paid) return false;
+  var target = parseFloat(g.targetAmount) || 0;
+  var acc = (typeof getGoalAccumulatedDeposits === 'function') ? getGoalAccumulatedDeposits(g) : (parseFloat(g.currentAmount) || 0);
+  if(target > 0 && acc >= target) return false;
+  var cur = (typeof getGoalCurrentAmount === 'function') ? getGoalCurrentAmount(g) : (parseFloat(g.currentAmount) || 0);
+  var rolledOut = (DB.goalRollovers || []).filter(function(r){
+    if(r.targetGoalId && r.targetGoalId === g.id) return false;
+    if(r.goalId) return r.goalId === g.id;
+    return r.goalName === g.name;
+  }).reduce(function(s, r){ return s + (parseFloat(r.amount) || 0); }, 0);
+  if(rolledOut > 0 && cur <= 0) return false;
+  return true;
+}
+
+function getOpenSavingsGoals(targetMonth, targetYear){
+  var openAll = (DB.savingsGoals || []).filter(isSavingsGoalOpen);
+  if(!targetMonth || !targetYear) return openAll;
+  var inPeriod = openAll.filter(function(g){
+    if(typeof goalActiveInPeriod === 'function') return goalActiveInPeriod(g, targetMonth, targetYear);
+    return true;
+  });
+  return inPeriod.length ? inPeriod : openAll;
+}
+
+/* ============================================================
+   DEDICATED ALL-IN-ONE BENEFITS PAGE RENDERER
+   ============================================================ */
+var benefitsTab = 'allowances';
+var benefitsSelYears = null;
+var benefitsSelMonths = null;
+var benefitsTxFilter = 'ALL';
+var benefitsSpendFilter = 'ALL';
+var benefitsHistFilter = 'ALL';
+var benefitsReimbFilter = 'all';
+var _benefitsDonutTips = {};
+
+function initBenefitsFilters(){
   var now = new Date();
-  var m = now.getMonth()+1, y = now.getFullYear();
+  if(!(benefitsSelYears instanceof Set)) benefitsSelYears = new Set([String(now.getFullYear())]);
+  if(!(benefitsSelMonths instanceof Set)) benefitsSelMonths = new Set([now.getMonth() + 1]);
+}
 
-  var cardsHtml = accounts.length ? accounts.map(function(acc, idx){
-    var used = acc.period==='year' ? getAllowanceYearUsed(acc,y) : getAllowanceMonthUsed(acc,m,y);
-    var available = Math.max(0, acc.limit - used);
-    var pct = acc.limit > 0 ? Math.min(100, Math.round((used/acc.limit)*100)) : 0;
-    var isOver = used > acc.limit;
-    var isWarn = pct >= 85 && !isOver;
-    var barColor = isOver ? 'var(--rose)' : (isWarn ? '#D97706' : 'var(--primary)');
-    var statusText = isOver ? 'Over Limit' : (isWarn ? 'Near Limit' : 'Within Quota');
-    var badgeClass = isOver ? 'badge-over' : (isWarn ? 'badge-warn' : 'badge-ok');
-    var pLabel = acc.period==='year' ? 'year' : 'month';
-
-    return '<div class="card draggable-item" draggable="true" data-reorder-group="allowances" data-reorder-key="' + escapeHtml(acc.id) + '" style="padding:18px 20px; margin-bottom:12px; border:1px solid var(--line);">'
-      + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">'
-      + '  <div style="display:flex; align-items:center; gap:10px;">'
-      +      dragHandleHtml()
-      + '    <div>'
-      + '      <div style="font-weight:700; font-size:16px; color:var(--ink); line-height:1.2;">' + escapeHtml(acc.name) + '</div>'
-      + '      <div style="font-size:12px; color:var(--muted-2); margin-top:3px;">Limit: ' + fmt(acc.limit) + ' / ' + pLabel + ' &bull; <span class="badge ' + badgeClass + '" style="font-size:10.5px; padding:2px 8px;">' + statusText + '</span></div>'
-      + '    </div>'
-      + '  </div>'
-      + '  <div style="display:flex; align-items:center; gap:8px;">'
-      +      reorderArrowsHtml('allowances', acc.id, idx === 0, idx === accounts.length - 1)
-      + '    <button type="button" onclick="openTransferAllowanceModal(\'' + acc.id + '\')" class="btn-ghost" style="height:32px; font-size:12.5px; padding:0 12px; border:1px solid var(--line); border-radius:6px; color:var(--teal); font-weight:600; display:inline-flex; align-items:center; gap:5px;" ' + (available <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : '') + '>'
-      + '      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Transfer'
-      + '    </button>'
-      + (function(){
-          var lastTrans = (DB.transactions||[]).find(function(t){ return t.isAllowanceTransfer && t.allowanceId === acc.id; });
-          return lastTrans ? ' <button type="button" onclick="reverseAllowanceTransfer(\'' + lastTrans.id + '\')" class="btn-ghost" style="height:32px; font-size:12px; padding:0 10px; color:var(--amber); border-color:var(--amber); font-weight:600;" title="Reverse surplus transfer of ' + fmt(lastTrans.amount) + '">Reverse Transfer</button>' : '';
-        })()
-      + '    <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--muted-2); margin-left:4px;">'
-      + '      <input type="checkbox" ' + (acc.active ? 'checked' : '') + ' onchange="toggleAllowanceActive(\'' + acc.id + '\', this.checked)" style="width:15px; height:15px; cursor:pointer;">Active'
-      + '    </label>'
-      + '    <button onclick="openEditAllowanceModal(\'' + acc.id + '\')" class="icon-btn icon-btn-edit" title="Edit Benefit" aria-label="Edit Benefit">'
-      + '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
-      + '    </button>'
-      + '    <button onclick="deleteAllowanceAccount(\'' + acc.id + '\')" class="icon-btn icon-btn-delete" title="Delete Benefit" aria-label="Delete Benefit">'
-      + '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
-      + '    </button>'
-      + '  </div>'
-      + '</div>'
-      + '<div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; margin-bottom:10px;">'
-      + '  <div style="height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden;">'
-      + '    <div style="width:' + pct + '%; height:100%; background:' + barColor + '; border-radius:6px; transition:width .4s;"></div>'
-      + '  </div>'
-      + '  <div style="font-size:12.5px; font-weight:700; color:' + barColor + '; font-family:var(--font-mono);">' + pct + '%</div>'
-      + '</div>'
-      + '<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">'
-      + '  <div style="text-align:center; padding:10px; background:var(--surface-2); border-radius:8px;">'
-      + '    <div style="font-size:11px; text-transform:uppercase; color:var(--muted-2); font-weight:600; letter-spacing:0.04em;">Limit</div>'
-      + '    <div style="font-size:14px; font-weight:700; color:var(--ink); font-family:var(--font-mono); margin-top:2px;">' + fmt(acc.limit) + '</div>'
-      + '  </div>'
-      + '  <div style="text-align:center; padding:10px; background:var(--surface-2); border-radius:8px;">'
-      + '    <div style="font-size:11px; text-transform:uppercase; color:var(--muted-2); font-weight:600; letter-spacing:0.04em;">Used</div>'
-      + '    <div style="font-size:14px; font-weight:700; color:var(--rose); font-family:var(--font-mono); margin-top:2px;">' + fmt(used) + '</div>'
-      + '  </div>'
-      + '  <div style="text-align:center; padding:10px; background:var(--surface-2); border-radius:8px;">'
-      + '    <div style="font-size:11px; text-transform:uppercase; color:var(--muted-2); font-weight:600; letter-spacing:0.04em;">Available</div>'
-      + '    <div style="font-size:14px; font-weight:700; color:var(--teal); font-family:var(--font-mono); margin-top:2px;">' + fmt(available) + '</div>'
-      + '  </div>'
-      + '</div>'
-      + '</div>';
-  }).join('') : '<div style="text-align:center; padding:44px 20px; color:var(--muted-2); background:var(--surface); border:1px dashed var(--line); border-radius:12px;">'
-    + '<div style="width:44px; height:44px; margin:0 auto 12px; border-radius:12px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--muted-2);">'
-    + '  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>'
-    + '</div>'
-    + '<div style="font-weight:600; font-size:15px; color:var(--ink); margin-bottom:4px;">No Company Benefits Configured</div>'
-    + '<p style="font-size:13px; line-height:1.5; margin:0 0 16px;">Add company allowances like Food Card, Fuel Allowance, or Health Insurance.</p>'
-    + '<button onclick="openAddAllowanceModal()" class="btn-primary" style="height:36px; padding:0 20px;">Add First Benefit</button>'
-    + '</div>';
-
-    // Reimbursements Hub (Permanent history — open & settled claims stay manageable)
-  var allClaims = (DB.transactions || []).filter(function(t){
-    return Boolean(t.isReimbursable);
+function getBenefitsAvailableYears(){
+  var ys = new Set([String(new Date().getFullYear())]);
+  (DB.transactions || []).forEach(function(t){
+    var pd = parseTxDate(t.date);
+    if(pd.year) ys.add(String(pd.year));
   });
-  var openClaims = allClaims.filter(function(t){
-    return t.recoveryStatus !== 'settled';
+  getBenefitTransfers().forEach(function(tr){
+    var pd = parseTxDate(tr.date);
+    if(pd.year) ys.add(String(pd.year));
   });
-  var settledClaims = allClaims.filter(function(t){
-    return t.recoveryStatus === 'settled';
+  getAllowanceAccounts().forEach(function(a){
+    if(a.startDate){ var p = parseTxDate(a.startDate); if(p.year) ys.add(String(p.year)); }
+    if(a.endDate){ var p2 = parseTxDate(a.endDate); if(p2.year) ys.add(String(p2.year)); }
   });
-  if(typeof window._reimbFilter === 'undefined') window._reimbFilter = 'all';
-  var visibleClaims = window._reimbFilter === 'open'
-    ? openClaims
-    : (window._reimbFilter === 'settled' ? settledClaims : openClaims.concat(settledClaims));
+  return Array.from(ys).sort();
+}
 
-  var filterPillsHtml = '<div style="display:inline-flex; gap:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:3px;">'
-    + '<button type="button" onclick="setReimbFilter(\'all\')" class="btn-chip ' + (window._reimbFilter === 'all' ? 'active' : '') + '" style="padding:3px 10px; font-size:11.5px;">All (' + allClaims.length + ')</button>'
-    + '<button type="button" onclick="setReimbFilter(\'open\')" class="btn-chip ' + (window._reimbFilter === 'open' ? 'active' : '') + '" style="padding:3px 10px; font-size:11.5px;">Open (' + openClaims.length + ')</button>'
-    + '<button type="button" onclick="setReimbFilter(\'settled\')" class="btn-chip ' + (window._reimbFilter === 'settled' ? 'active' : '') + '" style="padding:3px 10px; font-size:11.5px;">Settled (' + settledClaims.length + ')</button>'
-    + '</div>';
+function getBenefitsActiveYearList(){
+  initBenefitsFilters();
+  var allY = getBenefitsAvailableYears();
+  return benefitsSelYears.size ? Array.from(benefitsSelYears).sort() : allY;
+}
+function getBenefitsActiveMonthList(){
+  initBenefitsFilters();
+  return benefitsSelMonths.size ? Array.from(benefitsSelMonths).sort(function(a,b){ return a - b; }) : [1,2,3,4,5,6,7,8,9,10,11,12];
+}
+function benefitsPeriodMatches(dateStr){
+  initBenefitsFilters();
+  var pd = parseTxDate(dateStr);
+  if(!pd.year) return false;
+  if(benefitsSelYears.size && !benefitsSelYears.has(String(pd.year))) return false;
+  if(benefitsSelMonths.size && !benefitsSelMonths.has(pd.month)) return false;
+  return true;
+}
 
-  var claimsHtml = '';
-  if(!visibleClaims.length){
-    claimsHtml = '<div style="text-align:center; padding:32px 20px; color:var(--muted-2); background:var(--surface); border:1px dashed var(--line); border-radius:12px;">'
-      + '<div style="font-weight:600; font-size:14px; color:var(--ink); margin-bottom:4px;">No Reimbursements</div>'
-      + '<p style="font-size:12.5px; color:var(--muted); margin:0;">' + (window._reimbFilter === 'open' ? 'No open claims right now.' : (window._reimbFilter === 'settled' ? 'No settled reimbursements yet.' : 'Tagged reimbursable expenses will appear here.')) + '</p>'
-      + '</div>';
-  } else {
-    var getDestSummary = function(t){
-      var notes = Array.isArray(t.recoveryNotes) ? t.recoveryNotes : [];
-      if(!notes.length) return '';
-      var last = notes[notes.length - 1];
-      if(last.destination === 'mark_reimbursed' || last.destination === 'deduct') return 'Settled against Bill';
-      if(last.destination === 'next_income' || last.addedToIncome) return 'Added to Next Month Income';
-      return 'Settled';
-    };
+function toggleBenefitsDD(id, e){
+  if(e) e.stopPropagation();
+  var panel = document.querySelector('#' + id + ' .ben-ms-panel');
+  if(!panel) return;
+  var wasHidden = panel.classList.contains('hidden');
+  document.querySelectorAll('#page-benefits .ben-ms-panel').forEach(function(el){ el.classList.add('hidden'); });
+  if(wasHidden) panel.classList.remove('hidden');
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.ben-ms-wrap')){
+    document.querySelectorAll('#page-benefits .ben-ms-panel').forEach(function(el){ el.classList.add('hidden'); });
+  }
+});
 
-    var claimsRows = visibleClaims.map(function(t){
-      var origBill = (t.originalBillAmount !== undefined && t.originalBillAmount !== null) ? (parseFloat(t.originalBillAmount) || 0) : (parseFloat(t.amount) || 0);
-      var claimable = t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0 ? parseFloat(t.claimableAmount) : origBill;
-      var recovered = parseFloat(t.recoveredAmount) || 0;
-      var pending = Math.max(0, claimable - recovered);
-      var isSettled = (t.recoveryStatus === 'settled');
-      var isPartial = (!isSettled && (t.recoveryStatus === 'partial' || recovered > 0));
-      var statusBadge = isSettled
-        ? '<span class="badge badge-ok" style="font-size:11px; font-weight:700;">Reimbursed</span>'
-        : (isPartial
-          ? '<span class="badge" style="font-size:11px; font-weight:700; background:var(--primary-light); color:var(--primary);">Partial</span>'
-          : '<span class="badge badge-warn" style="font-size:11px; font-weight:700;">Pending</span>');
-      var tagBadge = t.tag ? renderTagBadgeHtml(t.tag) : '<span style="color:var(--muted-2); font-size:12px;">-</span>';
-      var claimTitle = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
-      var destTxt = getDestSummary(t);
-      var actionBtns = '';
-      if(!isSettled){
-        actionBtns += '<button type="button" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')" class="btn-primary" style="height:28px; font-size:12px; padding:0 12px;">Log Recovery</button>';
-      }
-      if(recovered > 0 || isSettled){
-        actionBtns += '<button type="button" onclick="undoReimbursementRecovery(\'' + escapeHtml(t.id) + '\')" class="btn-ghost" style="height:28px; font-size:12px; padding:0 10px; margin-left:' + (isSettled ? '0' : '6px') + ';">Undo</button>';
-      }
-
-      return '<tr style="border-bottom:1px solid var(--line-soft);">'
-        + '<td style="padding:10px 12px; font-size:12.5px; color:var(--muted); white-space:nowrap;">' + formatTxDateDisplay(t.date) + '</td>'
-        + '<td style="padding:10px 12px; font-size:13px; font-weight:600; color:var(--ink);">'
-        + '  <div>' + claimTitle + '</div>'
-        + (destTxt ? '<div style="font-size:11px; font-weight:500; color:var(--muted); margin-top:2px;">' + escapeHtml(destTxt) + '</div>' : '')
-        + '</td>'
-        + '<td style="padding:10px 12px;">' + tagBadge + '</td>'
-        + '<td class="figure" style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--muted); text-align:right; white-space:nowrap;">' + fmt(origBill) + '</td>'
-        + '<td class="figure" style="padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--ink); text-align:right; white-space:nowrap;">' + fmt(claimable) + '</td>'
-        + '<td class="figure" style="padding:10px 12px; font-size:13px; font-weight:700; color:' + (pending > 0 ? 'var(--rose)' : 'var(--teal)') + '; text-align:right; white-space:nowrap;">' + fmt(pending) + '</td>'
-        + '<td style="padding:10px 12px; text-align:center; white-space:nowrap;">' + statusBadge + '</td>'
-        + '<td style="padding:10px 12px; text-align:right; white-space:nowrap;">' + actionBtns + '</td>'
-        + '</tr>';
-    }).join('');
-
-    var mobileClaimCards = visibleClaims.map(function(t){
-      var origBill = (t.originalBillAmount !== undefined && t.originalBillAmount !== null) ? (parseFloat(t.originalBillAmount) || 0) : (parseFloat(t.amount) || 0);
-      var claimable = t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0 ? parseFloat(t.claimableAmount) : origBill;
-      var recovered = parseFloat(t.recoveredAmount) || 0;
-      var pending = Math.max(0, claimable - recovered);
-      var isSettled = (t.recoveryStatus === 'settled');
-      var isPartial = (!isSettled && (t.recoveryStatus === 'partial' || recovered > 0));
-      var statusBadge = isSettled
-        ? '<span class="badge badge-ok" style="font-size:10.5px; font-weight:700;">Reimbursed</span>'
-        : (isPartial
-          ? '<span class="badge" style="font-size:10.5px; font-weight:700; background:var(--primary-light); color:var(--primary);">Partial</span>'
-          : '<span class="badge badge-warn" style="font-size:10.5px; font-weight:700;">Pending</span>');
-      var tagBadge = t.tag ? renderTagBadgeHtml(t.tag, '10.5px') : '';
-      var claimTitle = t.description ? escapeHtml(t.description) : (t.category ? escapeHtml(t.category) : '-');
-      var destTxt = getDestSummary(t);
-
-      return '<div style="background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:12px 14px;">'
-        + '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">'
-        + '  <div style="min-width:0; flex:1;">'
-        + '    <div style="font-size:13.5px; font-weight:700; color:var(--ink);">' + claimTitle + '</div>'
-        + '    <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">' + formatTxDateDisplay(t.date) + (destTxt ? ' · ' + escapeHtml(destTxt) : '') + '</div>'
-        + '  </div>'
-        + '  <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">' + tagBadge + statusBadge + '</div>'
-        + '</div>'
-        + '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; padding:8px 0; border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); margin-bottom:10px;">'
-        + '  <div><div style="font-size:10.5px; color:var(--muted);">Bill Total</div><div class="figure" style="font-size:12px; font-weight:600; color:var(--muted);">' + fmt(origBill) + '</div></div>'
-        + '  <div><div style="font-size:10.5px; color:var(--muted);">Claimable</div><div class="figure" style="font-size:12px; font-weight:600; color:var(--ink);">' + fmt(claimable) + '</div></div>'
-        + '  <div style="text-align:right;"><div style="font-size:10.5px; color:var(--muted);">Pending</div><div class="figure" style="font-size:12.5px; font-weight:700; color:' + (pending > 0 ? 'var(--rose)' : 'var(--teal)') + ';">' + fmt(pending) + '</div></div>'
-        + '</div>'
-        + '<div style="display:flex; gap:8px;">'
-        + (!isSettled ? '<button type="button" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')" class="btn-primary" style="flex:1; height:34px; font-size:12.5px;">Log Recovery</button>' : '')
-        + ((recovered > 0 || isSettled) ? '<button type="button" onclick="undoReimbursementRecovery(\'' + escapeHtml(t.id) + '\')" class="btn-ghost" style="flex:' + (isSettled ? '1' : '0 0 auto') + '; height:34px; font-size:12.5px; padding:0 14px;">Undo</button>' : '')
-        + '</div>'
-        + '</div>';
-    }).join('');
-
-    claimsHtml = '<div class="cb-claims-table-wrap">'
-      + '<table style="width:100%; border-collapse:collapse; text-align:left;">'
-      + '<thead>'
-      + '  <tr style="border-bottom:1px solid var(--line); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);">'
-      + '    <th style="padding:8px 12px;">Date</th>'
-      + '    <th style="padding:8px 12px;">Claim</th>'
-      + '    <th style="padding:8px 12px;">Tag</th>'
-      + '    <th style="padding:8px 12px; text-align:right;">Bill Total</th>'
-      + '    <th style="padding:8px 12px; text-align:right;">Claimable</th>'
-      + '    <th style="padding:8px 12px; text-align:right;">Pending</th>'
-      + '    <th style="padding:8px 12px; text-align:center;">Status</th>'
-      + '    <th style="padding:8px 12px; text-align:right;">Action</th>'
-      + '  </tr>'
-      + '</thead>'
-      + '<tbody>' + claimsRows + '</tbody>'
-      + '</table>'
-      + '</div>'
-      + '<div class="cb-claims-mobile-list">' + mobileClaimCards + '</div>';
+function renderBenefitsPeriodDropdowns(){
+  initBenefitsFilters();
+  var allYears = getBenefitsAvailableYears();
+  var shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var yrAll = benefitsSelYears.size === 0 || (allYears.length > 1 && benefitsSelYears.size >= allYears.length);
+  var yrLbl = document.getElementById('ben-yr-lbl');
+  if(yrLbl) yrLbl.textContent = yrAll ? 'All Years' : Array.from(benefitsSelYears).sort().join(', ');
+  var yrPanel = document.getElementById('ben-yr-panel');
+  if(yrPanel){
+    yrPanel.innerHTML = '<label class="ben-ms-opt"><input type="checkbox" ' + (yrAll ? 'checked' : '') + ' onchange="toggleBenefitsAllYears()"><strong>All Years</strong></label>'
+      + '<div class="ben-ms-divider"></div>'
+      + allYears.map(function(y){
+          return '<label class="ben-ms-opt"><input type="checkbox" ' + (benefitsSelYears.has(y) ? 'checked' : '') + ' onchange="toggleBenefitsYear(\'' + y + '\')">' + y + '</label>';
+        }).join('');
   }
 
-  var claimsSection = '<div id="company-benefits-pending-claims-section" class="card" style="padding:22px; margin-top:18px;">'
-    + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">'
-    + '  <div>'
-    + '    <h3 class="section-title" style="margin:0;">Reimbursements</h3>'
-    + '  </div>'
-    + filterPillsHtml
-    + '</div>'
-    + claimsHtml
+  var moAll = benefitsSelMonths.size === 0 || benefitsSelMonths.size === 12;
+  var sortedMo = Array.from(benefitsSelMonths).sort(function(a,b){ return a - b; });
+  var moLbl = document.getElementById('ben-mo-lbl');
+  if(moLbl){
+    moLbl.textContent = moAll ? 'All Months'
+      : (sortedMo.length === 1 ? MONTH_NAMES[sortedMo[0] - 1]
+        : (sortedMo.length <= 3 ? sortedMo.map(function(m){ return shortM[m - 1]; }).join(', ') : (sortedMo.length + ' Months')));
+  }
+  var moPanel = document.getElementById('ben-mo-panel');
+  if(moPanel){
+    moPanel.innerHTML = '<label class="ben-ms-opt"><input type="checkbox" ' + (moAll ? 'checked' : '') + ' onchange="toggleBenefitsAllMonths()"><strong>All Months</strong></label>'
+      + '<div class="ben-ms-divider"></div>'
+      + MONTH_NAMES.map(function(name, idx){
+          return '<label class="ben-ms-opt"><input type="checkbox" ' + (benefitsSelMonths.has(idx + 1) ? 'checked' : '') + ' onchange="toggleBenefitsMonth(' + (idx + 1) + ')">' + name + '</label>';
+        }).join('');
+  }
+}
+
+function toggleBenefitsAllYears(){
+  initBenefitsFilters();
+  var nowY = String(new Date().getFullYear());
+  if(benefitsSelYears.size === 0) benefitsSelYears = new Set([nowY]);
+  else benefitsSelYears.clear();
+  renderBenefitsPage();
+}
+function toggleBenefitsYear(y){
+  initBenefitsFilters();
+  var allYears = getBenefitsAvailableYears();
+  if(benefitsSelYears.has(y)) benefitsSelYears.delete(y);
+  else benefitsSelYears.add(y);
+  if(allYears.length > 1 && benefitsSelYears.size >= allYears.length) benefitsSelYears.clear();
+  renderBenefitsPage();
+}
+function toggleBenefitsAllMonths(){
+  initBenefitsFilters();
+  var nowM = new Date().getMonth() + 1;
+  if(benefitsSelMonths.size === 0) benefitsSelMonths = new Set([nowM]);
+  else benefitsSelMonths.clear();
+  renderBenefitsPage();
+}
+function toggleBenefitsMonth(m){
+  initBenefitsFilters();
+  if(benefitsSelMonths.has(m)) benefitsSelMonths.delete(m);
+  else benefitsSelMonths.add(m);
+  if(benefitsSelMonths.size === 12) benefitsSelMonths.clear();
+  renderBenefitsPage();
+}
+
+function setBenefitsTab(tab){
+  hideBenefitsDonutTip();
+  benefitsTab = tab || 'allowances';
+  renderBenefitsPage();
+}
+
+function handleBenefitsTopCta(){
+  if(benefitsTab === 'reimbursements') openReimbursementClaimModal(null);
+  else openAddAllowanceModal();
+}
+
+function showBenefitsDonutTip(e, key){
+  var html = _benefitsDonutTips[key];
+  var el = document.getElementById('benefits-donut-tip');
+  if(!html || !el) return;
+  el.innerHTML = html;
+  el.classList.add('show');
+  moveBenefitsDonutTip(e);
+}
+function moveBenefitsDonutTip(e){
+  var el = document.getElementById('benefits-donut-tip');
+  if(!el || !el.classList.contains('show')) return;
+  var pad = 14;
+  var x = e.clientX + pad, y = e.clientY + pad;
+  if(x + el.offsetWidth > window.innerWidth - 10) x = e.clientX - el.offsetWidth - pad;
+  if(y + el.offsetHeight > window.innerHeight - 10) y = e.clientY - el.offsetHeight - pad;
+  el.style.left = Math.max(8, x) + 'px';
+  el.style.top = Math.max(8, y) + 'px';
+}
+function hideBenefitsDonutTip(){
+  var el = document.getElementById('benefits-donut-tip');
+  if(el) el.classList.remove('show');
+}
+
+function formatBenefitsDateShort(ds){
+  if(!ds) return '';
+  var pd = parseTxDate(ds);
+  if(!pd.year) return ds;
+  var shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return shortM[pd.month - 1] + ' ' + pd.day + ', ' + pd.year;
+}
+
+function getBenefitsCardStats(acc){
+  var yrs = getBenefitsActiveYearList();
+  var mos = getBenefitsActiveMonthList();
+  var singleMonthSelected = benefitsSelYears.size === 1 && benefitsSelMonths.size === 1;
+  var refY = yrs[yrs.length - 1], refM = mos[mos.length - 1];
+  var refStr = refY + '-' + String(refM).padStart(2, '0') + '-15';
+  var todayStr = ymd(new Date());
+  var checkDate = singleMonthSelected ? refStr : todayStr;
+  var isEnded = Boolean(acc.endDate && checkDate > acc.endDate);
+
+  var expTxs = (DB.transactions || []).filter(function(t){
+    return t.type === 'expense' && t.companyCovered && t.allowanceId === acc.id && benefitsPeriodMatches(t.date);
+  });
+  var txTransfersOut = (DB.transactions || []).filter(function(t){
+    return t.isAllowanceTransfer && t.allowanceId === acc.id && benefitsPeriodMatches(getTxAllowanceEffectiveDate(t));
+  });
+  var benTransfersOut = getBenefitTransfers().filter(function(tr){
+    return tr.fromAllowanceId === acc.id && benefitsPeriodMatches(tr.date);
+  });
+  var benTransfersIn = getBenefitTransfers().filter(function(tr){
+    return tr.toAllowanceId === acc.id && benefitsPeriodMatches(tr.date);
+  });
+
+  var spent = expTxs.reduce(function(s, t){
+    return s + (t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0));
+  }, 0);
+  var outTxAmt = txTransfersOut.reduce(function(s, t){ return s + (parseFloat(t.amount) || 0); }, 0);
+  var outBenAmt = benTransfersOut.reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+  var inBenAmt = benTransfersIn.reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+
+  var baseLimit = parseFloat(acc.limit) || 0;
+  var periodCount = acc.period === 'year' ? Math.max(1, yrs.length) : Math.max(1, yrs.length * mos.length);
+  var effLimit = (baseLimit * periodCount) + inBenAmt;
+  var outAmt = outTxAmt + outBenAmt;
+  var used = spent + outAmt;
+  var avail = Math.max(0, effLimit - used);
+  var pct = effLimit > 0 ? Math.min(100, Math.round((used / effLimit) * 100)) : 0;
+  var isFull = effLimit > 0 && avail <= 0;
+
+  var allOutTransfers = txTransfersOut.map(function(t){
+    var dest = t.type === 'income' ? (formatBenefitsDateShort(t.date).replace(/ \d+,/, '') + ' Income') : (t.category || 'Savings Goal');
+    return { id: t.id, amount: parseFloat(t.amount) || 0, destLabel: dest, isBenefitTransfer: false };
+  }).concat(benTransfersOut.map(function(tr){
+    var targetAcc = getAllowanceAccounts().find(function(a){ return a.id === tr.toAllowanceId; });
+    return { id: tr.id, amount: parseFloat(tr.amount) || 0, destLabel: targetAcc ? targetAcc.name : 'Another Benefit', isBenefitTransfer: true };
+  }));
+
+  return {
+    expTxs: expTxs,
+    spent: spent,
+    outAmt: outAmt,
+    inBenAmt: inBenAmt,
+    effLimit: effLimit,
+    used: used,
+    avail: avail,
+    pct: pct,
+    isEnded: isEnded,
+    isFull: isFull,
+    allOutTransfers: allOutTransfers
+  };
+}
+
+function buildBenefitsDonutHtml(txList, quotaRef){
+  var palette = ['#7C3AED', '#0D9488', '#2563EB', '#D97706', '#E11D48', '#6366F1'];
+  var map = {};
+  txList.forEach(function(t){
+    var cat = t.category || 'Other';
+    var amt = t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0);
+    if(amt <= 0) return;
+    if(!map[cat]) map[cat] = { total: 0, subs: new Set(), bens: new Set() };
+    map[cat].total += amt;
+    if(t.subCategory) map[cat].subs.add(t.subCategory);
+    var acc = getAllowanceAccounts().find(function(a){ return a.id === t.allowanceId; });
+    if(acc) map[cat].bens.add(acc.name);
+  });
+  var entries = Object.entries(map).sort(function(a, b){ return b[1].total - a[1].total; });
+  var total = entries.reduce(function(s, pair){ return s + pair[1].total; }, 0);
+  if(!total || !entries.length){
+    return '<div style="text-align:center; color:var(--muted); padding:28px 0; font-size:13px;">No benefit spending in this period.</div>';
+  }
+
+  var centerVal = quotaRef > 0 ? (Math.min(100, Math.round((total / quotaRef) * 100)) + '%') : String(entries.length);
+  var centerLbl = quotaRef > 0 ? 'Quota Used' : (entries.length === 1 ? 'Category' : 'Categories');
+  var r = 54, cx = 74, cy = 74, C = 2 * Math.PI * r, offset = 0;
+
+  var arcs = entries.map(function(pair, i){
+    var cat = pair[0], info = pair[1];
+    var frac = info.total / total;
+    var pct = Math.round(frac * 100);
+    var dash = Math.max(0, frac * C - (entries.length > 1 ? 2 : 0));
+    var tipKey = 'ben_cat_' + i;
+    var subsArr = Array.from(info.subs);
+    var bensArr = Array.from(info.bens);
+    _benefitsDonutTips[tipKey] = '<div class="ben-tip-title">' + escapeHtml(cat) + '</div>'
+      + '<div class="ben-tip-row"><span>Share</span><strong>' + pct + '%</strong></div>'
+      + '<div class="ben-tip-row"><span>Amount</span><strong>' + fmt(info.total) + '</strong></div>'
+      + '<div class="ben-tip-src">Sources: <span>' + escapeHtml(bensArr.join(', ') || 'Benefit') + '</span>'
+      + (subsArr.length ? '<br>Subcategories: <span>' + escapeHtml(subsArr.join(', ')) + '</span>' : '')
+      + '</div>';
+    var arc = '<circle class="ben-donut-arc" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + palette[i % palette.length] + '" stroke-width="18" stroke-dasharray="' + dash.toFixed(2) + ' ' + C.toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')" onmouseenter="showBenefitsDonutTip(event,\'' + tipKey + '\')" onmousemove="moveBenefitsDonutTip(event)" onmouseleave="hideBenefitsDonutTip()"/>';
+    offset += frac * C;
+    return arc;
+  }).join('');
+
+  var legend = entries.map(function(pair, i){
+    var cat = pair[0], info = pair[1];
+    var pct = Math.round((info.total / total) * 100);
+    var tipKey = 'ben_cat_' + i;
+    return '<div class="ben-leg-item" onmouseenter="showBenefitsDonutTip(event,\'' + tipKey + '\')" onmousemove="moveBenefitsDonutTip(event)" onmouseleave="hideBenefitsDonutTip()">'
+      + '<div class="ben-leg-left"><span class="ben-leg-dot" style="background:' + palette[i % palette.length] + ';"></span><strong>' + escapeHtml(cat) + '</strong></div>'
+      + '<span class="ben-leg-pct">' + pct + '%</span>'
+      + '</div>';
+  }).join('');
+
+  return '<div class="ben-donut-wrap">'
+    + '<div class="ben-donut-svg-box"><svg width="148" height="148" viewBox="0 0 148 148"><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#F1F5F9" stroke-width="18"/>' + arcs + '</svg>'
+    + '<div class="ben-donut-center"><span class="dc-val">' + centerVal + '</span><span class="dc-lbl">' + centerLbl + '</span></div></div>'
+    + '<div class="ben-donut-legend">' + legend + '</div>'
+    + '</div>';
+}
+
+function renderBenefitsPage(){
+  initBenefitsFilters();
+  hideBenefitsDonutTip();
+  renderBenefitsPeriodDropdowns();
+
+  document.querySelectorAll('#page-benefits .ben-tab-btn').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-ben-tab') === benefitsTab);
+  });
+  var cta = document.getElementById('ben-top-cta');
+  if(cta){
+    if(benefitsTab === 'reimbursements'){ cta.textContent = 'Add Claim'; cta.classList.remove('hidden'); }
+    else if(benefitsTab === 'allowances'){ cta.textContent = 'Add Benefit'; cta.classList.remove('hidden'); }
+    else { cta.classList.add('hidden'); }
+  }
+
+  var ws = document.getElementById('benefits-workspace');
+  if(!ws) return;
+
+  var accounts = getAllowanceAccounts();
+  var allStats = accounts.map(function(acc){ return { acc: acc, s: getBenefitsCardStats(acc) }; });
+  var periodClaims = (DB.transactions || []).filter(function(t){ return Boolean(t.isReimbursable) && benefitsPeriodMatches(t.date); });
+
+  if(benefitsTab === 'allowances') renderBenefitsAllowancesTab(ws, allStats, periodClaims);
+  else if(benefitsTab === 'reimbursements') renderBenefitsReimbursementsTab(ws, periodClaims);
+  else renderBenefitsInsightsTab(ws, allStats);
+}
+
+function renderBenefitsAllowancesTab(ws, allStats, periodClaims){
+  var activeStats = allStats.filter(function(x){ return x.acc.active !== false && !x.s.isEnded; });
+  var totalQuota = activeStats.reduce(function(s, x){ return s + x.s.effLimit; }, 0);
+  var totalUsed = allStats.reduce(function(s, x){ return s + x.s.used; }, 0);
+  var totalAvail = activeStats.reduce(function(s, x){ return s + x.s.avail; }, 0);
+  var openClaims = periodClaims.filter(function(c){ return c.recoveryStatus !== 'settled'; });
+  var pendAmt = openClaims.reduce(function(s, t){
+    var orig = (t.originalBillAmount !== undefined && t.originalBillAmount !== null) ? (parseFloat(t.originalBillAmount) || 0) : (parseFloat(t.amount) || 0);
+    var cl = (t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0) ? parseFloat(t.claimableAmount) : orig;
+    return s + Math.max(0, cl - (parseFloat(t.recoveredAmount) || 0));
+  }, 0);
+  var utilPct = totalQuota > 0 ? Math.round((totalUsed / totalQuota) * 100) : 0;
+
+  var kpiHtml = '<div class="ben-kpi-row">'
+    + '<div class="ben-kpi-card"><div class="ben-kpi-top"><span class="ben-kpi-lbl">Total Quota</span><div class="ben-kpi-ico p">' + miniIcon('benQuota') + '</div></div><p class="ben-kpi-val">' + fmt(totalQuota) + '</p><span class="ben-kpi-sub">' + activeStats.length + ' active benefit' + (activeStats.length === 1 ? '' : 's') + '</span></div>'
+    + '<div class="ben-kpi-card"><div class="ben-kpi-top"><span class="ben-kpi-lbl">Quota Used</span><div class="ben-kpi-ico r">' + miniIcon('benUsed') + '</div></div><p class="ben-kpi-val">' + fmt(totalUsed) + '</p><span class="ben-kpi-sub">' + utilPct + '% utilized</span></div>'
+    + '<div class="ben-kpi-card"><div class="ben-kpi-top"><span class="ben-kpi-lbl">Available</span><div class="ben-kpi-ico t">' + miniIcon('benAvail') + '</div></div><p class="ben-kpi-val">' + fmt(totalAvail) + '</p><span class="ben-kpi-sub">Spend or transfer</span></div>'
+    + '<div class="ben-kpi-card"><div class="ben-kpi-top"><span class="ben-kpi-lbl">Pending Claims</span><div class="ben-kpi-ico a">' + miniIcon('benClaims') + '</div></div><p class="ben-kpi-val">' + fmt(pendAmt) + '</p><span class="ben-kpi-sub">' + (openClaims.length ? (openClaims.length + ' open claim' + (openClaims.length === 1 ? '' : 's')) : 'All settled') + '</span></div>'
     + '</div>';
 
-  el.innerHTML = '<div class="card" style="padding:22px; margin-bottom:18px;">'
-    + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">'
-    + '  <div>'
-    + '    <h2 class="section-title">Company Benefit</h2>'
+  var rowsHtml = allStats.length ? allStats.map(function(item){
+    var acc = item.acc, s = item.s;
+    var dates = (acc.startDate && acc.endDate)
+      ? (formatBenefitsDateShort(acc.startDate) + ' to ' + formatBenefitsDateShort(acc.endDate))
+      : (acc.startDate ? ('From ' + formatBenefitsDateShort(acc.startDate)) : (acc.endDate ? ('Until ' + formatBenefitsDateShort(acc.endDate)) : (acc.period === 'year' ? 'Annual' : 'Monthly')));
+    var badge = '<span class="badge badge-ok" style="font-size:11px; padding:2px 8px;">Active</span>';
+    var barCol = 'var(--teal)';
+    if(s.isEnded){ badge = '<span class="badge badge-off" style="font-size:11px; padding:2px 8px;">Cycle Ended</span>'; barCol = '#94A3B8'; }
+    else if(acc.active === false){ badge = '<span class="badge badge-off" style="font-size:11px; padding:2px 8px;">Inactive</span>'; barCol = '#94A3B8'; }
+    else if(s.isFull){ badge = '<span class="badge badge-over" style="font-size:11px; padding:2px 8px;">Quota Full</span>'; barCol = 'var(--rose)'; }
+    else if(s.pct >= 80){ badge = '<span class="badge badge-warn" style="font-size:11px; padding:2px 8px;">Near Limit</span>'; barCol = 'var(--amber)'; }
+
+    var lastTr = s.allOutTransfers.length ? s.allOutTransfers[s.allOutTransfers.length - 1] : null;
+    var noteHtml = '';
+    if(lastTr){
+      noteHtml = '<div class="ben-note">Transferred <strong>' + fmt(lastTr.amount) + '</strong> to <strong>' + escapeHtml(lastTr.destLabel) + '</strong> <button type="button" class="ben-link-btn" onclick="reverseAllowanceTransfer(\'' + escapeHtml(lastTr.id) + '\',' + (lastTr.isBenefitTransfer ? 'true' : 'false') + ')">Reverse</button></div>';
+    } else if(s.inBenAmt > 0){
+      noteHtml = '<div class="ben-note">Includes <strong>+' + fmt(s.inBenAmt) + '</strong> transferred from another benefit</div>';
+    } else if(s.isFull && !s.isEnded && acc.active !== false){
+      noteHtml = '<div class="ben-note">Quota exhausted. Locked in Transactions until next cycle.</div>';
+    } else if(s.isEnded){
+      noteHtml = '<div class="ben-note">Hidden from Transactions after ' + escapeHtml(formatBenefitsDateShort(acc.endDate)) + '</div>';
+    }
+
+    return '<div class="ben-row ' + (s.isEnded ? 'ended' : '') + '">'
+      + '<div><div class="ben-id-top"><span class="ben-name">' + escapeHtml(acc.name) + '</span>' + badge + '</div>'
+      + '<div class="ben-dates">' + (acc.period === 'year' ? 'Annual' : 'Monthly') + ' &middot; ' + escapeHtml(dates) + '</div></div>'
+      + '<div class="ben-mid">'
+      + '  <div class="ben-mid-top"><span class="ben-nums">' + fmt(s.used) + ' <span>/ ' + fmt(s.effLimit) + '</span></span><span class="ben-avail" style="color:' + barCol + ';">' + (s.isFull ? (fmt(0) + ' left') : (fmt(s.avail) + ' left')) + '</span></div>'
+      + '  <div class="ben-bar-track"><div class="ben-bar-fill" style="width:' + s.pct + '%; background:' + barCol + ';"></div></div>'
+      + noteHtml
+      + '</div>'
+      + '<div class="ben-ops">'
+      + '  <button type="button" class="btn-ghost" style="height:30px; padding:0 11px; font-size:12px;' + (s.avail <= 0 ? ' opacity:0.4; cursor:not-allowed;' : '') + '" ' + (s.avail <= 0 ? 'disabled' : '') + ' onclick="openTransferAllowanceModal(\'' + escapeHtml(acc.id) + '\')">Transfer</button>'
+      + '  <button type="button" class="icon-btn icon-btn-edit" title="Edit Benefit" onclick="openEditAllowanceModal(\'' + escapeHtml(acc.id) + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+      + '  <button type="button" class="icon-btn icon-btn-delete" title="Delete Benefit" onclick="deleteAllowanceAccount(\'' + escapeHtml(acc.id) + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+      + '</div>'
+      + '</div>';
+  }).join('') : '<div style="padding:36px 20px; text-align:center; color:var(--muted);">No benefits configured yet.</div>';
+
+  var benTxs = (DB.transactions || []).filter(function(t){
+    if(t.type !== 'expense' || !t.companyCovered || !t.allowanceId) return false;
+    if(!benefitsPeriodMatches(t.date)) return false;
+    if(benefitsTxFilter !== 'ALL' && t.allowanceId !== benefitsTxFilter) return false;
+    return true;
+  }).sort(function(a, b){ return String(b.date || '').localeCompare(String(a.date || '')); });
+
+  var benNameMap = {};
+  getAllowanceAccounts().forEach(function(a){ benNameMap[a.id] = a.name; });
+
+  var txTableHtml = benTxs.length
+    ? '<div class="ben-tbl-wrap"><table class="ben-tbl"><thead><tr><th>Date</th><th>Benefit</th><th>Category</th><th>Subcategory</th><th class="num">Amount</th></tr></thead><tbody>'
+      + benTxs.map(function(t){
+          var cov = t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0);
+          return '<tr>'
+            + '<td style="color:var(--muted); white-space:nowrap;">' + escapeHtml(formatBenefitsDateShort(t.date)) + '</td>'
+            + '<td><span class="badge" style="background:var(--primary-light); color:var(--primary); font-size:11px; padding:2px 8px;">' + escapeHtml(benNameMap[t.allowanceId] || 'Benefit') + '</span></td>'
+            + '<td><strong>' + escapeHtml(t.category || 'Other') + '</strong></td>'
+            + '<td style="color:var(--muted);">' + escapeHtml(t.subCategory || '') + '</td>'
+            + '<td class="num">' + fmt(cov) + '</td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table></div>'
+    : '<div style="padding:26px; text-align:center; color:var(--muted); font-size:12.5px;">No benefit expenses in this period.</div>';
+
+  ws.innerHTML = kpiHtml
+    + '<div class="ben-panel"><div class="ben-panel-head"><span class="ben-panel-title">Active Allowances</span></div><div>' + rowsHtml + '</div></div>'
+    + '<div class="ben-panel"><div class="ben-panel-head"><div><span class="ben-panel-title">Benefit Expenses</span><span class="ben-panel-sub">Excluded from personal expenses</span></div>'
+    + '<select class="ben-select-sm" onchange="benefitsTxFilter=this.value; renderBenefitsPage()">'
+    + '<option value="ALL"' + (benefitsTxFilter === 'ALL' ? ' selected' : '') + '>All Benefits</option>'
+    + getAllowanceAccounts().map(function(a){ return '<option value="' + escapeHtml(a.id) + '"' + (benefitsTxFilter === a.id ? ' selected' : '') + '>' + escapeHtml(a.name) + '</option>'; }).join('')
+    + '</select></div>' + txTableHtml + '</div>';
+}
+
+function renderBenefitsReimbursementsTab(ws, periodClaims){
+  var open = periodClaims.filter(function(t){ return t.recoveryStatus !== 'settled'; });
+  var settled = periodClaims.filter(function(t){ return t.recoveryStatus === 'settled'; });
+  var pendAmt = open.reduce(function(s, t){
+    var orig = (t.originalBillAmount !== undefined && t.originalBillAmount !== null) ? (parseFloat(t.originalBillAmount) || 0) : (parseFloat(t.amount) || 0);
+    var cl = (t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0) ? parseFloat(t.claimableAmount) : orig;
+    return s + Math.max(0, cl - (parseFloat(t.recoveredAmount) || 0));
+  }, 0);
+  var list = benefitsReimbFilter === 'open' ? open : (benefitsReimbFilter === 'settled' ? settled : periodClaims);
+
+  var rows = list.sort(function(a,b){ return String(b.date || '').localeCompare(String(a.date || '')); }).map(function(t){
+    var origBill = (t.originalBillAmount !== undefined && t.originalBillAmount !== null) ? (parseFloat(t.originalBillAmount) || 0) : (parseFloat(t.amount) || 0);
+    var claimable = (t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount > 0) ? parseFloat(t.claimableAmount) : origBill;
+    var recovered = parseFloat(t.recoveredAmount) || 0;
+    var pending = Math.max(0, claimable - recovered);
+    var isSettled = t.recoveryStatus === 'settled';
+    var isPartial = !isSettled && (t.recoveryStatus === 'partial' || recovered > 0);
+    var statusBadge = isSettled
+      ? '<span class="badge badge-ok" style="font-size:11px;">Settled</span>'
+      : (isPartial
+        ? '<span class="badge" style="font-size:11px; background:var(--primary-light); color:var(--primary);">Partial</span>'
+        : '<span class="badge badge-warn" style="font-size:11px;">Pending</span>');
+    var tagBadge = t.tag ? renderTagBadgeHtml(t.tag) : '<span style="color:var(--muted);">None</span>';
+    var title = t.description ? escapeHtml(t.description) : escapeHtml(t.category || 'Claim');
+    var subMeta = escapeHtml((t.category || '') + (t.subCategory ? (' · ' + t.subCategory) : ''));
+
+    return '<tr>'
+      + '<td style="color:var(--muted); white-space:nowrap;">' + escapeHtml(formatBenefitsDateShort(t.date)) + '</td>'
+      + '<td><strong>' + title + '</strong><div style="font-size:11px; color:var(--muted);">' + subMeta + '</div></td>'
+      + '<td>' + tagBadge + '</td>'
+      + '<td class="num" style="color:var(--muted);">' + fmt(origBill) + '</td>'
+      + '<td class="num">' + fmt(claimable) + '</td>'
+      + '<td class="num" style="color:' + (pending > 0 ? 'var(--rose)' : 'var(--teal)') + ';">' + fmt(pending) + '</td>'
+      + '<td style="text-align:right;">' + statusBadge + '</td>'
+      + '<td style="text-align:right; white-space:nowrap;"><div style="display:inline-flex; align-items:center; gap:6px;">'
+      + '  <button type="button" class="icon-btn icon-btn-edit" title="Edit Claim" onclick="openReimbursementClaimModal(\'' + escapeHtml(t.id) + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+      + (!isSettled ? '<button type="button" class="btn-primary" style="height:27px; padding:0 10px; font-size:11.5px;" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')">Log Recovery</button>' : '')
+      + ((recovered > 0 || isSettled) ? '<button type="button" class="btn-ghost" style="height:27px; padding:0 10px; font-size:11.5px;" onclick="undoReimbursementRecovery(\'' + escapeHtml(t.id) + '\')">Undo</button>' : '')
+      + '</div></td>'
+      + '</tr>';
+  }).join('');
+
+  ws.innerHTML = '<div class="ben-panel">'
+    + '<div class="ben-panel-head">'
+    + '  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span class="ben-panel-title">Reimbursements</span>'
+    + (pendAmt > 0 ? '<span class="badge badge-warn" style="font-size:11px;">Pending: ' + fmt(pendAmt) + '</span>' : '<span class="badge badge-ok" style="font-size:11px;">All Settled</span>')
     + '  </div>'
-    + '  <button onclick="openAddAllowanceModal()" class="btn-primary" style="height:34px; padding:0 14px; font-size:13px;">Add Benefit</button>'
+    + '  <div class="ben-pill-group">'
+    + '    <button type="button" class="ben-pill-btn ' + (benefitsReimbFilter === 'all' ? 'active' : '') + '" onclick="benefitsReimbFilter=\'all\'; renderBenefitsPage()">All (' + periodClaims.length + ')</button>'
+    + '    <button type="button" class="ben-pill-btn ' + (benefitsReimbFilter === 'open' ? 'active' : '') + '" onclick="benefitsReimbFilter=\'open\'; renderBenefitsPage()">Open (' + open.length + ')</button>'
+    + '    <button type="button" class="ben-pill-btn ' + (benefitsReimbFilter === 'settled' ? 'active' : '') + '" onclick="benefitsReimbFilter=\'settled\'; renderBenefitsPage()">Settled (' + settled.length + ')</button>'
+    + '  </div>'
     + '</div>'
-    + '<div style="display:flex; flex-direction:column; gap:0;">' + cardsHtml + '</div>'
+    + (list.length
+      ? '<div class="ben-tbl-wrap"><table class="ben-tbl"><thead><tr><th>Date</th><th>Claim</th><th>Tag</th><th class="num">Bill</th><th class="num">Claimable</th><th class="num">Pending</th><th style="text-align:right;">Status</th><th style="text-align:right;">Action</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<div style="padding:28px; text-align:center; color:var(--muted); font-size:12.5px;">No reimbursement claims in this period.</div>')
+    + '</div>';
+}
+
+function renderBenefitsInsightsTab(ws, allStats){
+  _benefitsDonutTips = {};
+  var accounts = getAllowanceAccounts();
+  var shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  var txs = (DB.transactions || []).filter(function(t){
+    return t.type === 'expense' && t.companyCovered && t.allowanceId
+      && benefitsPeriodMatches(t.date)
+      && (benefitsSpendFilter === 'ALL' || t.allowanceId === benefitsSpendFilter);
+  });
+  var quotaRef = benefitsSpendFilter === 'ALL'
+    ? allStats.filter(function(x){ return x.acc.active !== false && !x.s.isEnded; }).reduce(function(s, x){ return s + x.s.effLimit; }, 0)
+    : ((allStats.find(function(x){ return x.acc.id === benefitsSpendFilter; }) || { s: { effLimit: 0 } }).s.effLimit || 0);
+
+  var maxBar = Math.max.apply(null, allStats.map(function(x){ return Math.max(x.s.effLimit, x.s.used); }).concat([1]));
+
+  // Build selected month keys
+  var selectedKeys = [];
+  getBenefitsActiveYearList().forEach(function(y){
+    getBenefitsActiveMonthList().forEach(function(m){
+      selectedKeys.push({
+        year: Number(y),
+        month: m,
+        key: y + '-' + String(m).padStart(2, '0'),
+        short: shortM[m - 1] + ' ' + y,
+        full: MONTH_NAMES[m - 1] + ' ' + y
+      });
+    });
+  });
+
+  // Trend months: if 1 month selected, show previous, current, next month for comparison; else up to last 6 selected months
+  var trendSource = selectedKeys.length > 1 ? selectedKeys.slice(-6) : (function(){
+    var base = selectedKeys[0] || { year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
+    var out = [];
+    for(var d = -1; d <= 1; d++){
+      var dt = new Date(base.year, base.month - 1 + d, 1);
+      var yy = dt.getFullYear(), mm = dt.getMonth() + 1;
+      out.push({ year: yy, month: mm, key: yy + '-' + String(mm).padStart(2, '0'), short: shortM[mm - 1] + ' ' + yy, full: MONTH_NAMES[mm - 1] + ' ' + yy });
+    }
+    return out;
+  })();
+
+  var trendMonths = trendSource.map(function(m){
+    var bens = accounts.filter(function(a){ return (benefitsSpendFilter === 'ALL' || a.id === benefitsSpendFilter) && a.active !== false; });
+    var quota = bens.reduce(function(s, a){ return s + (parseFloat(a.limit) || 0); }, 0);
+    var spent = (DB.transactions || []).filter(function(t){
+      if(t.type !== 'expense' || !t.companyCovered || !t.allowanceId) return false;
+      if(benefitsSpendFilter !== 'ALL' && t.allowanceId !== benefitsSpendFilter) return false;
+      var pd = parseTxDate(t.date);
+      return pd.year === m.year && pd.month === m.month;
+    }).reduce(function(s, t){
+      return s + (t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0));
+    }, 0);
+    var trTx = (DB.transactions || []).filter(function(t){
+      if(!t.isAllowanceTransfer || !t.allowanceId) return false;
+      if(benefitsSpendFilter !== 'ALL' && t.allowanceId !== benefitsSpendFilter) return false;
+      var pd = parseTxDate(getTxAllowanceEffectiveDate(t));
+      return pd.year === m.year && pd.month === m.month;
+    }).reduce(function(s, t){ return s + (parseFloat(t.amount) || 0); }, 0);
+    var trBen = getBenefitTransfers().filter(function(tr){
+      if(benefitsSpendFilter !== 'ALL' && tr.fromAllowanceId !== benefitsSpendFilter) return false;
+      var pd = parseTxDate(tr.date);
+      return pd.year === m.year && pd.month === m.month;
+    }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+    return { short: m.short, quota: quota, spent: spent, transferred: trTx + trBen };
+  });
+  var maxTrend = Math.max.apply(null, trendMonths.map(function(x){ return Math.max(x.quota, x.spent + x.transferred); }).concat([1]));
+
+  // Monthly Benefit History rows (defaults to current selected month, expands when multi-selected!)
+  var nowKey = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
+  var histRows = [];
+  selectedKeys.slice().reverse().forEach(function(hm){
+    accounts.filter(function(a){ return benefitsHistFilter === 'ALL' || a.id === benefitsHistFilter; }).forEach(function(a){
+      var sp = (DB.transactions || []).filter(function(t){
+        if(t.type !== 'expense' || !t.companyCovered || t.allowanceId !== a.id) return false;
+        var pd = parseTxDate(t.date);
+        return pd.year === hm.year && pd.month === hm.month;
+      }).reduce(function(s, t){
+        return s + (t.companyCoveredAmount !== undefined ? (parseFloat(t.companyCoveredAmount) || 0) : (parseFloat(t.amount) || 0));
+      }, 0);
+      var trTx = (DB.transactions || []).filter(function(t){
+        if(!t.isAllowanceTransfer || t.allowanceId !== a.id) return false;
+        var pd = parseTxDate(getTxAllowanceEffectiveDate(t));
+        return pd.year === hm.year && pd.month === hm.month;
+      }).reduce(function(s, t){ return s + (parseFloat(t.amount) || 0); }, 0);
+      var trBen = getBenefitTransfers().filter(function(tr){
+        if(tr.fromAllowanceId !== a.id) return false;
+        var pd = parseTxDate(tr.date);
+        return pd.year === hm.year && pd.month === hm.month;
+      }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+      var trIn = getBenefitTransfers().filter(function(tr){
+        if(tr.toAllowanceId !== a.id) return false;
+        var pd = parseTxDate(tr.date);
+        return pd.year === hm.year && pd.month === hm.month;
+      }).reduce(function(s, tr){ return s + (parseFloat(tr.amount) || 0); }, 0);
+      var trTotal = trTx + trBen;
+      var qLimit = (parseFloat(a.limit) || 0) + trIn;
+      if(selectedKeys.length <= 6 || sp > 0 || trTotal > 0 || hm.key === nowKey){
+        histRows.push({ month: hm.full, name: a.name, quota: qLimit, spent: sp, transferred: trTotal, unused: Math.max(0, qLimit - sp - trTotal) });
+      }
+    });
+  });
+
+  var qvuHtml = allStats.length
+    ? '<div class="ben-vbar-stage">' + allStats.map(function(item){
+        var acc = item.acc, s = item.s;
+        return '<div class="ben-vbar-group"><div class="ben-vbar-sticks">'
+          + '<div class="ben-vbar-col"><span class="ben-vbar-num">' + Math.round(s.effLimit).toLocaleString() + '</span><div class="ben-vbar-bar" style="height:' + Math.max(10, Math.round((s.effLimit / maxBar) * 94)) + 'px; background:#CBD5E1;"></div></div>'
+          + '<div class="ben-vbar-col"><span class="ben-vbar-num" style="color:' + (s.isFull ? 'var(--rose)' : 'var(--teal)') + ';">' + Math.round(s.used).toLocaleString() + '</span><div class="ben-vbar-bar" style="height:' + Math.max(6, Math.round((s.used / maxBar) * 94)) + 'px; background:' + (s.isFull ? 'var(--rose)' : 'var(--teal)') + ';"></div></div>'
+          + '</div><span class="ben-vbar-lbl">' + escapeHtml(acc.name) + '</span></div>';
+      }).join('') + '</div>'
+    : '<div style="padding:26px; text-align:center; color:var(--muted);">No benefits configured.</div>';
+
+  var trendHtml = '<div class="ben-vbar-stage" style="height:158px;">' + trendMonths.map(function(m){
+    return '<div class="ben-vbar-group"><div class="ben-vbar-sticks" style="height:106px;">'
+      + '<div class="ben-vbar-col"><span class="ben-vbar-num">' + Math.round(m.quota).toLocaleString() + '</span><div class="ben-vbar-bar" style="height:' + Math.max(8, Math.round((m.quota / maxTrend) * 84)) + 'px; background:#E2E8F0;"></div></div>'
+      + '<div class="ben-vbar-col"><span class="ben-vbar-num" style="color:var(--primary);">' + Math.round(m.spent).toLocaleString() + '</span><div class="ben-vbar-bar" style="height:' + Math.max(4, Math.round((m.spent / maxTrend) * 84)) + 'px; background:var(--primary);"></div></div>'
+      + '<div class="ben-vbar-col"><span class="ben-vbar-num" style="color:var(--teal);">' + Math.round(m.transferred).toLocaleString() + '</span><div class="ben-vbar-bar" style="height:' + Math.max(3, Math.round((m.transferred / maxTrend) * 84)) + 'px; background:var(--teal);"></div></div>'
+      + '</div><span class="ben-vbar-lbl">' + escapeHtml(m.short) + '</span></div>';
+  }).join('') + '</div>';
+
+  var histTableHtml = histRows.length
+    ? '<div class="ben-tbl-wrap"><table class="ben-tbl"><thead><tr><th>Month</th><th>Benefit</th><th class="num">Quota</th><th class="num">Spent</th><th class="num">Transferred</th><th class="num">Unused</th></tr></thead><tbody>'
+      + histRows.map(function(r){
+          return '<tr><td style="font-weight:600;">' + escapeHtml(r.month) + '</td><td>' + escapeHtml(r.name) + '</td><td class="num" style="color:var(--muted);">' + fmt(r.quota) + '</td><td class="num">' + fmt(r.spent) + '</td><td class="num" style="color:var(--primary);">' + fmt(r.transferred) + '</td><td class="num" style="color:var(--teal);">' + fmt(r.unused) + '</td></tr>';
+        }).join('')
+      + '</tbody></table></div>'
+    : '<div style="padding:26px; text-align:center; color:var(--muted);">No benefit history for the selected period.</div>';
+
+  ws.innerHTML = '<div class="ben-split-2">'
+    + '<div class="ben-panel" style="margin-bottom:0;"><div class="ben-panel-head"><span class="ben-panel-title">Where Benefits Were Spent</span>'
+    + '<select class="ben-select-sm" onchange="benefitsSpendFilter=this.value; renderBenefitsPage()"><option value="ALL"' + (benefitsSpendFilter === 'ALL' ? ' selected' : '') + '>All Benefits</option>'
+    + accounts.map(function(a){ return '<option value="' + escapeHtml(a.id) + '"' + (benefitsSpendFilter === a.id ? ' selected' : '') + '>' + escapeHtml(a.name) + '</option>'; }).join('')
+    + '</select></div><div class="ben-panel-body">' + buildBenefitsDonutHtml(txs, quotaRef) + '</div></div>'
+    + '<div class="ben-panel" style="margin-bottom:0;"><div class="ben-panel-head"><span class="ben-panel-title">Quota vs Used</span>'
+    + '<div class="ben-legend-inline"><span><i class="ben-dot-sm" style="background:#CBD5E1;"></i>Quota</span><span><i class="ben-dot-sm" style="background:var(--teal);"></i>Used</span></div></div>'
+    + '<div class="ben-panel-body" style="padding-top:10px;">' + qvuHtml + '</div></div>'
     + '</div>'
-    + claimsSection;
+    + '<div class="ben-panel"><div class="ben-panel-head"><span class="ben-panel-title">Monthly Utilization Trend</span>'
+    + '<div class="ben-legend-inline"><span><i class="ben-dot-sm" style="background:#CBD5E1;"></i>Quota</span><span><i class="ben-dot-sm" style="background:var(--primary);"></i>Spent</span><span><i class="ben-dot-sm" style="background:var(--teal);"></i>Transferred</span></div></div>'
+    + '<div class="ben-panel-body" style="padding-top:8px;">' + trendHtml + '</div></div>'
+    + '<div class="ben-panel"><div class="ben-panel-head"><span class="ben-panel-title">Monthly Benefit History</span>'
+    + '<select class="ben-select-sm" onchange="benefitsHistFilter=this.value; renderBenefitsPage()"><option value="ALL"' + (benefitsHistFilter === 'ALL' ? ' selected' : '') + '>All Benefits</option>'
+    + accounts.map(function(a){ return '<option value="' + escapeHtml(a.id) + '"' + (benefitsHistFilter === a.id ? ' selected' : '') + '>' + escapeHtml(a.name) + '</option>'; }).join('')
+    + '</select></div>' + histTableHtml + '</div>';
+}
+
+function renderAllowancesSettings(){
+  if(currentPage === 'benefits') renderBenefitsPage();
 }
 
 function renderAllowanceTrackerWidget(){
-  // Decoupled from dashboard; company benefits live strictly inside Settings -> Company Benefit
   return;
 }
 
+/* --- Add / Edit Benefit Modal --- */
 var _editAllowanceId = null;
 function openAddAllowanceModal(){
   _editAllowanceId = null;
-  document.getElementById('allowance-modal-title').textContent = 'Add Company Benefit';
+  document.getElementById('allowance-modal-title').textContent = 'Add Benefit';
   document.getElementById('allowance-name').value = '';
   document.getElementById('allowance-limit').value = '';
   document.getElementById('allowance-period').value = 'month';
+  var sEl = document.getElementById('allowance-start-date');
+  var eEl = document.getElementById('allowance-end-date');
+  if(sEl) sEl.value = '';
+  if(eEl) eEl.value = '';
   document.getElementById('allowance-active').checked = true;
   document.getElementById('allowance-modal-backdrop').classList.remove('hidden');
-  setTimeout(function(){ var el=document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
+  setTimeout(function(){ var el = document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
 }
 function openEditAllowanceModal(id){
-  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  var acc = getAllowanceAccounts().find(function(a){ return a.id === id; });
   if(!acc) return;
   _editAllowanceId = id;
-  document.getElementById('allowance-modal-title').textContent = 'Edit Company Benefit';
-  document.getElementById('allowance-name').value = acc.name;
-  document.getElementById('allowance-limit').value = acc.limit||'';
-  document.getElementById('allowance-period').value = acc.period||'month';
-  document.getElementById('allowance-active').checked = acc.active!==false;
+  document.getElementById('allowance-modal-title').textContent = 'Edit Benefit';
+  document.getElementById('allowance-name').value = acc.name || '';
+  document.getElementById('allowance-limit').value = acc.limit || '';
+  document.getElementById('allowance-period').value = acc.period || 'month';
+  var sEl = document.getElementById('allowance-start-date');
+  var eEl = document.getElementById('allowance-end-date');
+  if(sEl) sEl.value = acc.startDate || '';
+  if(eEl) eEl.value = acc.endDate || '';
+  document.getElementById('allowance-active').checked = acc.active !== false;
   document.getElementById('allowance-modal-backdrop').classList.remove('hidden');
-  setTimeout(function(){ var el=document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
+  setTimeout(function(){ var el = document.getElementById('allowance-name'); if(el) el.focus(); }, 60);
 }
 function closeAllowanceModal(){
   document.getElementById('allowance-modal-backdrop').classList.add('hidden');
@@ -7378,91 +8085,109 @@ function handleSaveAllowance(e){
   var limit = parseFloat(document.getElementById('allowance-limit').value) || 0;
   var period = document.getElementById('allowance-period').value;
   var active = document.getElementById('allowance-active').checked;
-  var startDate = document.getElementById('allowance-start-date')?.value || null;
-  var endDate = document.getElementById('allowance-end-date')?.value || null;
+  var startDate = (document.getElementById('allowance-start-date')?.value || '').trim() || null;
+  var endDate = (document.getElementById('allowance-end-date')?.value || '').trim() || null;
   if(!name){ showToast('Please enter a benefit name', 'error'); return; }
   if(limit <= 0){ showToast('Please enter a valid quota limit', 'error'); return; }
+  if(startDate && endDate && endDate < startDate){
+    showToast('End Date cannot be earlier than Start Date', 'error');
+    return;
+  }
   if(!Array.isArray(DB.allowanceAccounts)) DB.allowanceAccounts = [];
   if(_editAllowanceId){
-    var accE = DB.allowanceAccounts.find(function(a){ return a.id===_editAllowanceId; });
-    if(accE){ accE.name=name; accE.limit=limit; accE.period=period; accE.active=active; accE.startDate=startDate; accE.endDate=endDate; }
+    var accE = DB.allowanceAccounts.find(function(a){ return a.id === _editAllowanceId; });
+    if(accE){ accE.name = name; accE.limit = limit; accE.period = period; accE.active = active; accE.startDate = startDate; accE.endDate = endDate; }
   } else {
-    var newId = 'allw-'+Date.now().toString(36);
-    DB.allowanceAccounts.push({ id:newId, name:name, limit:limit, period:period, active:active, startDate:startDate, endDate:endDate });
+    var newId = 'allw-' + Date.now().toString(36);
+    DB.allowanceAccounts.push({ id: newId, name: name, limit: limit, period: period, active: active, startDate: startDate, endDate: endDate });
   }
   sanitizePaymentMethods();
   saveDB(true);
   closeAllowanceModal();
-  renderAllowancesSettings();
-  if(typeof renderAllowanceTrackerWidget === 'function') renderAllowanceTrackerWidget();
-  showToast((_editAllowanceId ? 'Updated' : 'Added')+' "'+name+'"');
+  renderAllForCurrentPage();
+  showToast((_editAllowanceId ? 'Updated' : 'Added') + ' "' + name + '"');
   _editAllowanceId = null;
 }
 function toggleAllowanceActive(id, active){
-  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
-  if(acc){ acc.active=active; saveDB(true); renderAllowancesSettings(); if(typeof renderAllowanceTrackerWidget === 'function') renderAllowanceTrackerWidget(); }
+  var acc = getAllowanceAccounts().find(function(a){ return a.id === id; });
+  if(acc){ acc.active = active; saveDB(true); renderAllForCurrentPage(); }
 }
 function deleteAllowanceAccount(id){
   var acc = (DB.allowanceAccounts || []).find(function(a){ return a.id === id; });
   if(!acc) return;
-  requestDelete('allowance', id, acc.name || 'Company Benefit');
+  requestDelete('allowance', id, acc.name || 'Benefit');
 }
 
-/* --- Allowance Surplus Transfer Flow --- */
+/* --- Upgraded 3-Destination Allowance Surplus Transfer Flow --- */
+function populateTransferTargetMonths(refDateStr){
+  var sel = document.getElementById('transfer-allowance-dest-month');
+  if(!sel) return;
+  var pd = parseTxDate(refDateStr || ymd(new Date()));
+  var baseY = pd.year || new Date().getFullYear();
+  var baseM = pd.month || (new Date().getMonth() + 1);
+  var opts = [];
+  for(var d = -1; d <= 6; d++){
+    var dt = new Date(baseY, baseM - 1 + d, 1);
+    var yy = dt.getFullYear(), mm = dt.getMonth() + 1;
+    var val = yy + '-' + String(mm).padStart(2, '0');
+    opts.push('<option value="' + val + '"' + (d === 1 ? ' selected' : '') + '>' + MONTH_NAMES[mm - 1] + ' ' + yy + '</option>');
+  }
+  sel.innerHTML = opts.join('');
+}
+
+function populateTransferTargetBenefits(sourceId, refDateStr){
+  var sel = document.getElementById('transfer-allowance-dest-benefit');
+  if(!sel) return;
+  var others = getAllowanceAccounts().filter(function(a){
+    return a.id !== sourceId && isAllowanceActiveOnDate(a, refDateStr);
+  });
+  if(!others.length){
+    sel.innerHTML = '<option value="">No other active benefit available</option>';
+    return;
+  }
+  sel.innerHTML = others.map(function(a){
+    return '<option value="' + escapeHtml(a.id) + '">' + escapeHtml(a.name) + ' (Limit: ' + fmt(a.limit) + ')</option>';
+  }).join('');
+}
+
 function onTransferAllowanceDateChange(){
   var id = document.getElementById('transfer-allowance-id')?.value;
-  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  var acc = getAllowanceAccounts().find(function(a){ return a.id === id; });
   var dateVal = document.getElementById('transfer-allowance-date')?.value || ymd(new Date());
   if(acc){
-    var avail = computeAllowanceAvailable ? computeAllowanceAvailable(acc, dateVal) : (acc.limit || 0);
+    var avail = computeAllowanceAvailable(acc, dateVal);
     var availEl = document.getElementById('transfer-allowance-available');
     if(availEl) availEl.textContent = fmt(avail);
     var amtInp = document.getElementById('transfer-allowance-amount');
     if(amtInp) amtInp.max = avail;
   }
-  var parts = dateVal.split('-');
-  var targetYear = parseInt(parts[0], 10);
-  var targetMonth = parseInt(parts[1], 10);
-  populateTransferSavingsGoals(targetMonth, targetYear);
+  var pd = parseTxDate(dateVal);
+  populateTransferTargetMonths(dateVal);
+  populateTransferSavingsGoals(pd.month, pd.year);
+  populateTransferTargetBenefits(id, dateVal);
 }
 
 function populateTransferSavingsGoals(targetMonth, targetYear){
   var goalSel = document.getElementById('transfer-allowance-dest-goal');
   if(!goalSel) return;
-  var allGoals = DB.savingsGoals || [];
-  
-  // Filter goals that are active for the target month & year and not dismissed
-  var activeGoals = allGoals.filter(function(g){
-    if(g.dismissed) return false;
-    if(typeof goalActiveInPeriod === 'function'){
-      return goalActiveInPeriod(g, targetMonth, targetYear);
-    }
-    return true;
-  });
-
-  // Fallback to active non-dismissed goals if none strictly match the month
-  if(!activeGoals.length){
-    activeGoals = allGoals.filter(function(g){ return !g.dismissed; });
-  }
-
-  if(!activeGoals.length){
-    goalSel.innerHTML = '<option value="">(No active goals found)</option>';
+  var openGoals = getOpenSavingsGoals(targetMonth, targetYear);
+  if(!openGoals.length){
+    goalSel.innerHTML = '<option value="">No open unfinished goals available</option>';
     return;
   }
-
-  goalSel.innerHTML = activeGoals.map(function(g){
-    var cur = (typeof getGoalCurrentAmount === 'function') ? getGoalCurrentAmount(g) : (g.currentAmount || 0);
-    return '<option value="' + escapeHtml(g.name) + '" data-goal-id="' + escapeHtml(g.id) + '">' 
-      + escapeHtml(g.name) + ' (Target: ' + fmt(g.targetAmount) + ' &bull; Saved: ' + fmt(cur) + ')'
+  goalSel.innerHTML = openGoals.map(function(g){
+    var acc = (typeof getGoalAccumulatedDeposits === 'function') ? getGoalAccumulatedDeposits(g) : (g.currentAmount || 0);
+    return '<option value="' + escapeHtml(g.name) + '" data-goal-id="' + escapeHtml(g.id) + '">'
+      + escapeHtml(g.name) + ' (' + fmt(acc) + ' / ' + fmt(g.targetAmount) + ')'
       + '</option>';
   }).join('');
 }
 
 function openTransferAllowanceModal(id){
-  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  var acc = getAllowanceAccounts().find(function(a){ return a.id === id; });
   if(!acc) return;
   var todayVal = ymd(new Date());
-  var avail = computeAllowanceAvailable ? computeAllowanceAvailable(acc, todayVal) : (acc.limit || 0);
+  var avail = computeAllowanceAvailable(acc, todayVal);
   if(avail <= 0){
     showToast('No remaining quota available to transfer for ' + acc.name, 'warning');
     return;
@@ -7471,43 +8196,48 @@ function openTransferAllowanceModal(id){
   document.getElementById('transfer-allowance-name').textContent = acc.name;
   document.getElementById('transfer-allowance-available').textContent = fmt(avail);
   var amtInp = document.getElementById('transfer-allowance-amount');
-  if(amtInp){
-    amtInp.value = '';
-    amtInp.max = avail;
-  }
+  if(amtInp){ amtInp.value = avail; amtInp.max = avail; }
   var dateInp = document.getElementById('transfer-allowance-date');
   if(dateInp) dateInp.value = todayVal;
 
-  // Populate deposit account options
   var accSel = document.getElementById('transfer-allowance-dest-account');
   if(accSel){
     var methods = getPaymentMethods();
     accSel.innerHTML = methods.map(function(m){ return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>'; }).join('');
   }
 
-  // Populate savings goals filtered by the selected date's month/year
-  var parts = todayVal.split('-');
-  populateTransferSavingsGoals(parseInt(parts[1], 10), parseInt(parts[0], 10));
-
-  // Reset destination to income
-  var radios = document.querySelectorAll('input[name="transfer-allowance-dest-type"]');
-  radios.forEach(function(r){ if(r.value === 'income') r.checked = true; });
+  var pd = parseTxDate(todayVal);
+  populateTransferTargetMonths(todayVal);
+  populateTransferSavingsGoals(pd.month, pd.year);
+  populateTransferTargetBenefits(id, todayVal);
   toggleTransferAllowanceDest('income');
 
   var backdrop = document.getElementById('transfer-allowance-modal-backdrop');
   if(backdrop) backdrop.classList.remove('hidden');
 }
 
-
-function reverseAllowanceTransfer(txId){
-  const tx = (DB.transactions || []).find(t => t.id === txId);
+function reverseAllowanceTransfer(txId, isBenefitTransfer){
+  if(isBenefitTransfer){
+    var tr = getBenefitTransfers().find(function(x){ return x.id === txId; });
+    if(!tr) return;
+    if(!confirm('Reverse quota transfer of ' + fmt(tr.amount) + '?')) return;
+    DB.benefitTransfers = getBenefitTransfers().filter(function(x){ return x.id !== txId; });
+    saveDB(true);
+    renderAllForCurrentPage();
+    showToast('Benefit transfer reversed and quota restored.', 'success');
+    return;
+  }
+  var tx = (DB.transactions || []).find(function(t){ return t.id === txId; });
   if(!tx) return;
-  const confirmed = confirm('Reverse surplus allowance transfer of ' + fmt(tx.amount) + '? This will restore the quota to the benefit account.');
-  if(!confirmed) return;
-  DB.transactions = (DB.transactions || []).filter(t => t.id !== txId);
+  if(!confirm('Reverse surplus allowance transfer of ' + fmt(tx.amount) + '? This will restore the quota to the benefit account.')) return;
+  DB.transactions = (DB.transactions || []).filter(function(t){ return t.id !== txId; });
+  if(tx.type === 'savings'){
+    var goal = (DB.savingsGoals || []).find(function(g){ return (tx.goalId && g.id === tx.goalId) || g.name === tx.category; });
+    if(goal && typeof getGoalCurrentAmount === 'function') goal.currentAmount = getGoalCurrentAmount(goal);
+  }
   saveDB(true);
   renderAllForCurrentPage();
-  showToast('Allowance transfer reversed successfully. Quota restored!', 'success');
+  showToast('Allowance transfer reversed and quota restored.', 'success');
 }
 
 function closeTransferAllowanceModal(){
@@ -7516,35 +8246,40 @@ function closeTransferAllowanceModal(){
 }
 
 function toggleTransferAllowanceDest(type){
+  var hiddenType = document.getElementById('transfer-allowance-dest-type');
+  if(hiddenType) hiddenType.value = type;
+  document.querySelectorAll('#transfer-allowance-modal-backdrop .ben-dest-opt').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-dest') === type);
+  });
   var incWrap = document.getElementById('transfer-allowance-income-wrap');
   var savWrap = document.getElementById('transfer-allowance-savings-wrap');
+  var benWrap = document.getElementById('transfer-allowance-benefit-wrap');
   if(incWrap) incWrap.classList.toggle('hidden', type !== 'income');
   if(savWrap) savWrap.classList.toggle('hidden', type !== 'savings');
+  if(benWrap) benWrap.classList.toggle('hidden', type !== 'benefit');
 }
 
 function handleConfirmTransferAllowance(e){
   e.preventDefault();
   var id = document.getElementById('transfer-allowance-id').value;
-  var acc = getAllowanceAccounts().find(function(a){ return a.id===id; });
+  var acc = getAllowanceAccounts().find(function(a){ return a.id === id; });
   if(!acc) return;
   var transferDate = document.getElementById('transfer-allowance-date').value || ymd(new Date());
   var amount = parseFloat(document.getElementById('transfer-allowance-amount').value);
-  var avail = computeAllowanceAvailable ? computeAllowanceAvailable(acc, transferDate) : (acc.limit || 0);
-  if(isNaN(amount) || amount <= 0){
-    showToast('Please enter a valid transfer amount', 'error');
-    return;
-  }
-  if(amount > avail){
-    showToast('Amount exceeds available quota of ' + fmt(avail), 'error');
-    return;
-  }
-  var destType = document.querySelector('input[name="transfer-allowance-dest-type"]:checked')?.value || 'income';
+  var avail = computeAllowanceAvailable(acc, transferDate);
+  if(isNaN(amount) || amount <= 0){ showToast('Please enter a valid transfer amount', 'error'); return; }
+  if(amount > avail){ showToast('Amount exceeds available quota of ' + fmt(avail), 'error'); return; }
+
+  var destType = document.getElementById('transfer-allowance-dest-type')?.value || 'income';
 
   if(destType === 'income'){
     var destAccount = document.getElementById('transfer-allowance-dest-account')?.value || 'Bank Transfer';
+    var destYm = document.getElementById('transfer-allowance-dest-month')?.value || transferDate.slice(0, 7);
+    var txDate = (transferDate.slice(0, 7) === destYm) ? transferDate : (destYm + '-01');
     DB.transactions.unshift({
       id: uid(),
-      date: transferDate,
+      date: txDate,
+      allowanceCycleDate: transferDate,
       type: 'income',
       category: 'Company Benefits',
       subCategory: 'Allowance Payout',
@@ -7555,26 +8290,20 @@ function handleConfirmTransferAllowance(e){
       isAllowanceTransfer: true,
       createdAt: new Date().toISOString()
     });
-    showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' to ' + destAccount + ' as Income!', 'success');
-  } else {
+    showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' to Income', 'success');
+  } else if(destType === 'savings'){
     var goalSel = document.getElementById('transfer-allowance-dest-goal');
     var goalName = goalSel?.value;
-    if(!goalName){
-      showToast('Please select a valid savings goal', 'error');
-      return;
-    }
+    if(!goalName){ showToast('No open unfinished savings goal selected', 'error'); return; }
     var selOpt = goalSel.options[goalSel.selectedIndex];
     var selGoalId = selOpt?.getAttribute('data-goal-id');
     var goal = (DB.savingsGoals || []).find(function(g){ return (selGoalId && g.id === selGoalId) || g.name === goalName; });
+    if(goal && !isSavingsGoalOpen(goal)){ showToast('Selected goal is already completed or settled', 'error'); return; }
     var holdingAccount = document.getElementById('transfer-allowance-dest-holding')?.value || (goal ? goal.savingIn : 'Bank Account') || 'Bank Account';
-    
-    if(goal){
-      goal.currentAmount = (parseFloat(goal.currentAmount) || 0) + amount;
-    }
-
     DB.transactions.unshift({
       id: uid(),
       date: transferDate,
+      allowanceCycleDate: transferDate,
       type: 'savings',
       category: goalName,
       goalId: goal ? goal.id : undefined,
@@ -7585,7 +8314,22 @@ function handleConfirmTransferAllowance(e){
       isAllowanceTransfer: true,
       createdAt: new Date().toISOString()
     });
-    showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' into "' + goalName + '"!', 'success');
+    if(goal && typeof getGoalCurrentAmount === 'function') goal.currentAmount = getGoalCurrentAmount(goal);
+    showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' into "' + goalName + '"', 'success');
+  } else {
+    var targetBenId = document.getElementById('transfer-allowance-dest-benefit')?.value;
+    var targetBen = getAllowanceAccounts().find(function(a){ return a.id === targetBenId && a.id !== acc.id; });
+    if(!targetBen){ showToast('Please select another active benefit', 'error'); return; }
+    if(!Array.isArray(DB.benefitTransfers)) DB.benefitTransfers = [];
+    DB.benefitTransfers.push({
+      id: 'btr-' + Date.now().toString(36),
+      fromAllowanceId: acc.id,
+      toAllowanceId: targetBen.id,
+      date: transferDate,
+      amount: amount,
+      createdAt: new Date().toISOString()
+    });
+    showToast('Transferred ' + fmt(amount) + ' from ' + acc.name + ' to ' + targetBen.name, 'success');
   }
 
   saveDB(true);
@@ -7593,18 +8337,165 @@ function handleConfirmTransferAllowance(e){
   renderAllForCurrentPage();
 }
 
-function populateTxAllowanceSelect(selectedId){
-  setTimeout(() => { if(typeof onTxAllowanceChange === 'function') onTxAllowanceChange(); }, 50);
+/* --- Centralized Add / Edit Reimbursement Claim Modal (Synced with Transactions) --- */
+function populateReimbClaimTags(selectedTag){
+  var sel = document.getElementById('reimb-claim-tag');
+  if(!sel) return;
+  var baseTags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags.slice() : ['OPD', 'Travel', 'Equipment', 'Internet'];
+  if(selectedTag && !baseTags.includes(selectedTag)) baseTags.unshift(selectedTag);
+  sel.innerHTML = baseTags.map(function(t){
+    return '<option value="' + escapeHtml(t) + '"' + (t === selectedTag ? ' selected' : '') + '>' + escapeHtml(t) + '</option>';
+  }).join('');
+}
+
+function onReimbClaimCategoryChange(presetSub){
+  var catSel = document.getElementById('reimb-claim-category');
+  var subSel = document.getElementById('reimb-claim-subcategory');
+  if(!catSel || !subSel) return;
+  var catObj = findExpenseCategory(catSel.value);
+  var subs = (catObj && Array.isArray(catObj.subcategories) && catObj.subcategories.length) ? catObj.subcategories.slice() : ['General'];
+  if(presetSub && !subs.includes(presetSub)) subs.unshift(presetSub);
+  subSel.innerHTML = subs.map(function(s){
+    return '<option value="' + escapeHtml(s) + '"' + (s === presetSub ? ' selected' : '') + '>' + escapeHtml(s) + '</option>';
+  }).join('');
+}
+
+function openReimbursementClaimModal(txId){
+  var tx = txId ? (DB.transactions || []).find(function(t){ return t.id === txId; }) : null;
+  document.getElementById('reimb-claim-modal-title').textContent = tx ? 'Edit Claim' : 'Add Claim';
+  document.getElementById('reimb-claim-id').value = tx ? tx.id : '';
+  document.getElementById('reimb-claim-date').value = tx ? (tx.date || ymd(new Date())) : ymd(new Date());
+
+  populateReimbClaimTags(tx ? (tx.tag || 'OPD') : 'OPD');
+
+  var catSel = document.getElementById('reimb-claim-category');
+  var expCats = (DB.categories && Array.isArray(DB.categories.expense) ? DB.categories.expense : []).map(function(c){ return c.name || c; });
+  if(tx && tx.category && !expCats.includes(tx.category)) expCats.unshift(tx.category);
+  if(catSel){
+    catSel.innerHTML = expCats.map(function(c){
+      return '<option value="' + escapeHtml(c) + '"' + (tx && tx.category === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>';
+    }).join('');
+  }
+  onReimbClaimCategoryChange(tx ? (tx.subCategory || '') : '');
+
+  var paySel = document.getElementById('reimb-claim-payment');
+  if(paySel){
+    var methods = getPaymentMethods();
+    var txPay = tx && tx.paymentMethod ? String(tx.paymentMethod).split(',')[0].trim() : (methods[0] || 'Bank Transfer');
+    if(txPay && !methods.includes(txPay)) methods = [txPay].concat(methods);
+    paySel.innerHTML = methods.map(function(m){
+      return '<option value="' + escapeHtml(m) + '"' + (m === txPay ? ' selected' : '') + '>' + escapeHtml(m) + '</option>';
+    }).join('');
+  }
+
+  var origBill = tx ? ((tx.originalBillAmount !== undefined && tx.originalBillAmount !== null) ? parseFloat(tx.originalBillAmount) : parseFloat(tx.amount)) : '';
+  var claimable = tx ? ((tx.claimableAmount !== undefined && tx.claimableAmount !== null) ? parseFloat(tx.claimableAmount) : origBill) : '';
+  document.getElementById('reimb-claim-desc').value = tx ? (tx.description || '') : '';
+  document.getElementById('reimb-claim-bill').value = origBill;
+  document.getElementById('reimb-claim-amount').value = claimable;
+
+  document.getElementById('reimbursement-claim-modal-backdrop').classList.remove('hidden');
+}
+
+function closeReimbursementClaimModal(){
+  var el = document.getElementById('reimbursement-claim-modal-backdrop');
+  if(el) el.classList.add('hidden');
+}
+
+function handleSaveReimbursementClaim(e){
+  e.preventDefault();
+  var id = document.getElementById('reimb-claim-id').value;
+  var dateVal = document.getElementById('reimb-claim-date').value || ymd(new Date());
+  var tagVal = document.getElementById('reimb-claim-tag').value || 'OPD';
+  var catVal = document.getElementById('reimb-claim-category').value;
+  var subVal = document.getElementById('reimb-claim-subcategory').value;
+  var descVal = document.getElementById('reimb-claim-desc').value.trim();
+  var billVal = parseFloat(document.getElementById('reimb-claim-bill').value) || 0;
+  var claimVal = parseFloat(document.getElementById('reimb-claim-amount').value) || 0;
+  var payVal = document.getElementById('reimb-claim-payment').value || 'Bank Transfer';
+
+  if(billVal <= 0 || claimVal <= 0){ showToast('Enter valid bill and claimable amounts', 'error'); return; }
+  if(claimVal > billVal){ showToast('Claimable amount cannot exceed Bill Total', 'error'); return; }
+
+  if(id){
+    var idx = (DB.transactions || []).findIndex(function(t){ return t.id === id; });
+    if(idx === -1){ showToast('Linked transaction not found', 'error'); return; }
+    var existing = DB.transactions[idx];
+    var recAmt = parseFloat(existing.recoveredAmount) || 0;
+    if(claimVal < recAmt){
+      showToast('Claimable amount cannot be lower than already recovered ' + fmt(recAmt), 'error');
+      return;
+    }
+    var wasDeducted = existing.originalBillAmount !== undefined && existing.originalBillAmount !== null && existing.amount !== existing.originalBillAmount;
+    var nextAmount = wasDeducted ? Math.max(0, billVal - recAmt) : billVal;
+    var nextStatus = recAmt >= claimVal ? 'settled' : (recAmt > 0 ? 'partial' : 'pending');
+    DB.transactions[idx] = Object.assign({}, existing, {
+      date: dateVal,
+      category: catVal,
+      subCategory: subVal,
+      description: descVal || undefined,
+      paymentMethod: payVal,
+      tag: tagVal,
+      originalBillAmount: billVal,
+      claimableAmount: claimVal,
+      amount: nextAmount,
+      isReimbursable: true,
+      recoveryStatus: nextStatus
+    });
+    showToast('Claim and linked Transaction updated', 'success');
+  } else {
+    DB.transactions.unshift({
+      id: uid(),
+      date: dateVal,
+      type: 'expense',
+      category: catVal,
+      subCategory: subVal,
+      description: descVal || undefined,
+      paymentMethod: payVal,
+      amount: billVal,
+      originalBillAmount: billVal,
+      claimableAmount: claimVal,
+      recoveredAmount: 0,
+      recoveryStatus: 'pending',
+      recoveryNotes: [],
+      tag: tagVal,
+      isReimbursable: true,
+      createdAt: new Date().toISOString()
+    });
+    showToast('Claim added and synced to Transactions', 'success');
+  }
+
+  saveDB(true);
+  closeReimbursementClaimModal();
+  renderAllForCurrentPage();
+}
+
+function populateTxAllowanceSelect(selectedId, txDateStr, excludeTxId){
+  setTimeout(function(){ if(typeof onTxAllowanceChange === 'function') onTxAllowanceChange(); }, 50);
   var sel = document.getElementById('tx-allowance');
   if(!sel) return;
-  var accounts = getActiveAllowanceAccounts();
+  var dateStr = txDateStr || document.getElementById('tx-date')?.value || ymd(new Date());
+  var exId = excludeTxId !== undefined ? excludeTxId : (typeof editingTxId !== 'undefined' ? editingTxId : null);
+
+  var accounts = getAllowanceAccounts().filter(function(a){
+    if(selectedId && a.id === selectedId) return true;
+    if(!isAllowanceActiveOnDate(a, dateStr)) return false;
+    return computeAllowanceAvailable(a, dateStr, exId) > 0;
+  });
+
   var html = '<option value="">None</option>';
   accounts.forEach(function(a){
+    var avail = computeAllowanceAvailable(a, dateStr, exId);
+    var suffix = avail <= 0 ? ' (Quota Full)' : (' (' + fmt(avail) + ' left)');
     html += '<option value="' + escapeHtml(a.id) + '" ' + (a.id === selectedId ? 'selected' : '') + '>'
-      + escapeHtml(a.name) + '</option>';
+      + escapeHtml(a.name + suffix) + '</option>';
   });
   sel.innerHTML = html;
-  if(selectedId) sel.value = selectedId;
+  if(selectedId && accounts.some(function(a){ return a.id === selectedId; })){
+    sel.value = selectedId;
+  } else {
+    sel.value = '';
+  }
 }
 
 function triggerImportFinancesJSON(){
@@ -8201,7 +9092,7 @@ function goToApp(page){
     page = 'settings';
     settingsTab = 'warnings';
   }
-  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'investments', 'settings'];
+  const validPages = ['dashboard', 'reports', 'transactions', 'budgets', 'savings', 'benefits', 'investments', 'settings'];
   if(!validPages.includes(page)) page = 'dashboard';
 
   const pageTitles = {
@@ -8210,6 +9101,7 @@ function goToApp(page){
     transactions: 'Transactions – WealthNest',
     budgets: 'Budgets – WealthNest',
     savings: 'Savings – WealthNest',
+    benefits: 'Benefits – WealthNest',
     investments: 'Investments & Projections – WealthNest',
     settings: 'Settings – WealthNest'
   };
@@ -8852,18 +9744,19 @@ function reportCategoryRows(month, year, customTxs, customBudgets){
   const names = new Set([...expenses.map(t => t.category), ...periodBudgets.map(b => b.category)]);
   return [...names].map(category => {
     const catExpenses = expenses.filter(t => t.category === category);
-    const actual = catExpenses.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const actual = catExpenses.reduce((s, t) => s + getTransactionPersonalAmount(t), 0);
     const budget = effectiveCatBudget[category] || 0;
 
     // Group subcategory spend without double-counting multi-tag bills (keep combined label intact so sub-rows reconcile 100% to parent actual)
     const subSpendMap = new Map();
     const subCountMap = new Map();
     catExpenses.forEach(t => {
-      if(!t.subCategory) return;
+      const pAmt = getTransactionPersonalAmount(t);
+      if(pAmt <= 0 || !t.subCategory) return;
       const parts = t.subCategory.split(',').map(s => s.trim()).filter(Boolean);
       if(!parts.length) return;
       const key = parts.join(', ');
-      subSpendMap.set(key, (subSpendMap.get(key) || 0) + (Number(t.amount) || 0));
+      subSpendMap.set(key, (subSpendMap.get(key) || 0) + pAmt);
       subCountMap.set(key, (subCountMap.get(key) || 0) + 1);
     });
 
@@ -8932,16 +9825,19 @@ function getReportAggregate(yearChoice, monthSet){
       const src = t.category || 'Other Income';
       incomeBySource[src] = (incomeBySource[src] || 0) + amt;
     } else if(t.type === 'expense'){
-      expense += amt;
+      const pAmt = getTransactionPersonalAmount(t);
+      expense += pAmt;
       const cat = t.category || 'Other';
-      expByCat[cat] = (expByCat[cat] || 0) + amt;
-      if(!subByCat[cat]) subByCat[cat] = {};
-      if(t.subCategory){
-        const parts = t.subCategory.split(',').map(s => s.trim()).filter(Boolean);
-        const splitAmt = parts.length > 1 ? (amt / parts.length) : amt;
-        parts.forEach(sub => {
-          subByCat[cat][sub] = (subByCat[cat][sub] || 0) + splitAmt;
-        });
+      if(pAmt > 0){
+        expByCat[cat] = (expByCat[cat] || 0) + pAmt;
+        if(!subByCat[cat]) subByCat[cat] = {};
+        if(t.subCategory){
+          const parts = t.subCategory.split(',').map(s => s.trim()).filter(Boolean);
+          const splitAmt = parts.length > 1 ? (pAmt / parts.length) : pAmt;
+          parts.forEach(sub => {
+            subByCat[cat][sub] = (subByCat[cat][sub] || 0) + splitAmt;
+          });
+        }
       }
       if(t.isReimbursable){
         const cl = parseFloat(t.claimableAmount !== undefined && t.claimableAmount !== null && t.claimableAmount !== '' ? t.claimableAmount : t.amount) || 0;
@@ -11861,14 +12757,9 @@ function renderDashboardClaimsAlert(){
 }
 
 function goToCompanyBenefitsClaims(){
-  goToApp('settings');
-  setSettingsTab('allowances');
-  setTimeout(function(){
-    const claimsSection = document.getElementById('company-benefits-pending-claims-section');
-    if(claimsSection){
-      claimsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, 60);
+  if(typeof benefitsTab !== 'undefined') benefitsTab = 'reimbursements';
+  goToApp('benefits');
+  if(typeof setBenefitsTab === 'function') setBenefitsTab('reimbursements');
 }
 
 function renderDashboard(){
@@ -12898,6 +13789,11 @@ function miniIcon(name){
     calendarPlus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>',
     compass:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
     hourglass:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>',
+    /* Benefits Page (dedicated unique icon set) */
+    benQuota:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18"/><path d="M12 8H7.5a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8Z"/><path d="M12 8h4.5a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8Z"/></svg>',
+    benUsed:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>',
+    benAvail:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg>',
+    benClaims:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>',
   };
   return map[name]||'';
 }
@@ -14362,7 +15258,7 @@ function openTxModal(editId = null){
 
       const payVals = tx.paymentMethod ? tx.paymentMethod.split(',').map(s => s.trim()).filter(Boolean) : ['Cash'];
       renderModalPaymentMethods(payVals);
-      populateTxAllowanceSelect(tx.allowanceId || '');
+      populateTxAllowanceSelect(tx.allowanceId || '', tx.date || ymd(new Date()), editingTxId);
 
       const savingInEl = document.getElementById('tx-saving-in');
       if(savingInEl) savingInEl.value = tx.savingIn || 'Bank Account';
@@ -14385,7 +15281,7 @@ function openTxModal(editId = null){
   setTxType('expense');
   renderModalSubcategories([]);
   renderModalPaymentMethods(['Cash']);
-  populateTxAllowanceSelect('');
+  populateTxAllowanceSelect('', ymd(new Date()), null);
   populateTxTagSelect('');
   const claimInput = document.getElementById('tx-claimable-amount');
   if(claimInput) claimInput.value = '';
@@ -14426,10 +15322,14 @@ function evaluateTxAmountInput(input){
 
 /* ---------- Goal Architecture & Monthly Active Helper ---------- */
 function isGoalActiveInMonthYear(goal, month, year){
-  if(!goal || goal.dismissed || goal.paid) return false;
-  const acc = typeof getGoalAccumulatedDeposits === 'function' ? getGoalAccumulatedDeposits(goal) : (goal.currentAmount || 0);
-  const target = Number(goal.targetAmount) || 0;
-  if(target > 0 && acc >= target) return false;
+  if(typeof isSavingsGoalOpen === 'function'){
+    if(!isSavingsGoalOpen(goal)) return false;
+  } else {
+    if(!goal || goal.dismissed || goal.paid) return false;
+    const acc = typeof getGoalAccumulatedDeposits === 'function' ? getGoalAccumulatedDeposits(goal) : (goal.currentAmount || 0);
+    const target = Number(goal.targetAmount) || 0;
+    if(target > 0 && acc >= target) return false;
+  }
 
   const targetYm = Number(year) * 12 + Number(month);
   let startYm = targetYm;
@@ -14461,6 +15361,10 @@ function getTxActiveGoals(txDateStr){
 function onTxDateChange(){
   if(typeof txType !== 'undefined' && txType === 'savings'){
     setTxType('savings');
+  } else if(typeof txType !== 'undefined' && txType === 'expense'){
+    const curSel = document.getElementById('tx-allowance')?.value || '';
+    const dtVal = document.getElementById('tx-date')?.value || ymd(new Date());
+    populateTxAllowanceSelect(curSel, dtVal, editingTxId);
   }
 }
 
@@ -14682,9 +15586,17 @@ function handleSaveTransaction(e){
   let finalPersonalShare = 0;
   
   if(txType === 'expense' && allwAcc){
+    if(typeof isAllowanceActiveOnDate === 'function' && !isAllowanceActiveOnDate(allwAcc, dateVal)){
+      showToast(allwAcc.name + ' is not active for ' + dateVal, 'error');
+      return;
+    }
     const covVal = parseFloat(document.getElementById('tx-allowance-covered-input')?.value) || 0;
     const persVal = parseFloat(document.getElementById('tx-allowance-personal-input')?.value) || 0;
     const avail = computeAllowanceAvailable ? computeAllowanceAvailable(allwAcc, dateVal, editingTxId) : (allwAcc.limit || 0);
+    if(covVal > 0 && avail <= 0){
+      showToast(allwAcc.name + ' quota is full for this cycle', 'error');
+      return;
+    }
     if(covVal > avail){
       showToast('Company covered amount exceeds available ' + fmt(avail), 'error');
       return;
@@ -16353,7 +17265,7 @@ function renderSavings(){
   const periodSaved = periodTxs.filter(t => t.type === 'savings' && !t.isGoalRolloverIn)
     .reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const monthIncome = isSingleMonth ? periodTxs.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0) : 0;
-  const monthExpense = isSingleMonth ? periodTxs.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0) : 0;
+  const monthExpense = isSingleMonth ? periodTxs.filter(t => t.type === 'expense').reduce((s, t) => s + getTransactionPersonalAmount(t), 0) : 0;
   const rawRemaining = monthIncome - monthExpense - periodSaved;
   const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const curMonthName = SHORT_MONTHS[curM - 1];
@@ -18911,10 +19823,9 @@ let settingsRulesSubTab = 'warnings';
 let settingsSystemSubTab = 'account';
 
 function renderSettingsTabs(){
-  // 5 Clean One-Word Headings
+  if(settingsTab === 'allowances') settingsTab = 'categories';
   const tabs = [
     {id:'categories', label:'Categories'},
-    {id:'allowances', label:'Company Benefit'},
     {id:'payment-methods', label:'Payment Methods'},
     {id:'rules', label:'Rules'},
     {id:'system', label:'System'}
@@ -20603,6 +21514,7 @@ function renderPage(page){
   }
   else if(page==='budgets') renderBudgets();
   else if(page==='savings') renderSavings();
+  else if(page==='benefits') renderBenefitsPage();
   else if(page==='investments') renderInvestments();
   else if(page==='settings') renderSettings();
 }
@@ -20818,10 +21730,19 @@ function getSystemNotifications(targetMonth, targetYear){
   }
   // 2. Company Benefits Surplus Alerts for Month m, Year y
   if(cfg.benefitsAlerts !== false){
-    (getAllowanceAccounts() || []).filter(a => a.active).forEach(acc => {
-      const avail = computeAllowanceAvailable(acc);
-      const cycleEnded = acc.endDate ? (acc.endDate <= monthEndStr) : (!isCurrentOrFuture || now.getDate() >= 25);
-      if(avail > 0 && cycleEnded){
+    const todayIso = ymd(now);
+    const threeDaysAhead = ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3));
+    (getAllowanceAccounts() || []).filter(a => a.active !== false).forEach(acc => {
+      const refStr = `${y}-${String(m).padStart(2, '0')}-15`;
+      const avail = computeAllowanceAvailable(acc, refStr);
+      let nearOrEnded = false;
+      if(acc.endDate){
+        const endInMonth = acc.endDate.startsWith(`${y}-${String(m).padStart(2, '0')}`);
+        nearOrEnded = endInMonth && (acc.endDate <= threeDaysAhead);
+      } else {
+        nearOrEnded = !isCurrentOrFuture || now.getDate() >= 25;
+      }
+      if(avail > 0 && nearOrEnded){
         const id = `notif-benefit-surplus-${acc.id}-${y}-${m}`;
         const baseId = `notif-benefit-surplus-${acc.id}`;
         if(!dismissed.has(id) && !dismissed.has(baseId)){
@@ -20833,26 +21754,28 @@ function getSystemNotifications(targetMonth, targetYear){
             type: 'alert',
             priority: 'teal',
             title: 'Surplus Allowance: ' + acc.name,
-            desc: 'You have ' + fmt(avail) + ' unspent quota available. Transfer it to your personal Income or Savings Goal!',
+            desc: 'You have ' + fmt(avail) + ' unspent quota available to transfer.',
             date: eventDate,
             month: m,
             year: y,
             read: isNotificationRead(id),
             actionLabel: 'Transfer Quota',
-            actionFn: "openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
+            actionFn: "goToApp('benefits'); openTransferAllowanceModal('" + acc.id + "'); closeNotificationDrawer();"
           });
         }
       }
     });
   }
 
-  // 3. Savings Goal Milestones & Deadlines (Interactive Sinking Fund Actions)
+  // 3. Savings Goal Milestones & Deadlines (Skip already settled, paid, or dismissed goals)
   if(cfg.goalsAlerts !== false){
     (DB.savingsGoals || []).forEach(g => {
+      if(!g || g.dismissed || g.paid || g.isAssumption) return;
       const cur = getGoalCurrentAmount(g);
       const acc = getGoalAccumulatedDeposits(g);
       const reached = acc >= (Number(g.targetAmount) || 0) && g.targetAmount > 0;
       if(reached){
+        if(cur <= 0) return; // Already settled — stop nagging
         const id = `notif-goal-reached-${g.id}-${y}-${m}`;
         const baseId = `notif-goal-reached-${g.id}`;
         if(!dismissed.has(id) && !dismissed.has(baseId)){
@@ -20862,15 +21785,15 @@ function getSystemNotifications(targetMonth, targetYear){
             type: 'reminder',
             priority: 'teal',
             title: 'Goal Achieved: ' + g.name,
-            desc: 'Congratulations! You reached your savings target of ' + fmt(g.targetAmount) + (cur > 0 ? '. You have ' + fmt(cur) + ' ready to spend or reallocate.' : '. Goal is fully settled.'),
+            desc: 'You reached your savings target of ' + fmt(g.targetAmount) + '. You have ' + fmt(cur) + ' ready to spend or reallocate.',
             date: eventDate,
             month: m,
             year: y,
             read: isNotificationRead(id),
-            actionLabel: cur > 0 ? 'Pay Bill / Use Savings' : 'View Goal',
-            actionFn: cur > 0 ? `openTxModalWithGoal('${escapeHtml(g.name)}', ${cur}); closeNotificationDrawer();` : `goToApp('savings'); closeNotificationDrawer();`,
-            secondaryActionLabel: cur > 0 ? 'Transfer Funds' : null,
-            secondaryActionFn: cur > 0 ? `openSavingsTransferModal('${g.id}'); closeNotificationDrawer();` : null
+            actionLabel: 'Pay Bill / Use Savings',
+            actionFn: `openTxModalWithGoal('${escapeHtml(g.name)}', ${cur}); closeNotificationDrawer();`,
+            secondaryActionLabel: 'Transfer Funds',
+            secondaryActionFn: `openSavingsTransferModal('${g.id}'); closeNotificationDrawer();`
           });
         }
       } else if(g.deadline && g.deadline.startsWith(`${y}-${String(m).padStart(2,'0')}`)){
@@ -21205,7 +22128,10 @@ function openCarryForwardModal(amount, fromMonth, fromYear){
 
   const goalSelect = document.getElementById('carry-forward-goal-select');
   if(goalSelect){
-    goalSelect.innerHTML = (DB.savingsGoals || []).map(g => '<option value="' + escapeHtml(g.id) + '">' + escapeHtml(g.name) + '</option>').join('');
+    const openGoals = typeof getOpenSavingsGoals === 'function' ? getOpenSavingsGoals(fromMonth, fromYear) : (DB.savingsGoals || []).filter(g => !g.dismissed && !g.paid);
+    goalSelect.innerHTML = openGoals.length
+      ? openGoals.map(g => '<option value="' + escapeHtml(g.id) + '">' + escapeHtml(g.name) + '</option>').join('')
+      : '<option value="">No open savings goals available</option>';
   }
 
   const incomeRadio = document.querySelector('input[name="carry-forward-dest"][value="income"]');
@@ -21634,7 +22560,10 @@ function populateDestGoalsDropdown(destM, destY, currentGoalId){
   const goalSelect = document.getElementById('roll-goal-dest-goal');
   if(!goalSelect) return;
   const currentGoal = (DB.savingsGoals || []).find(g => g.id === currentGoalId);
-  const activeGoals = (DB.savingsGoals || []).filter(g => goalActiveInPeriod(g, destM, destY));
+  const activeGoals = (DB.savingsGoals || []).filter(g => {
+    if(typeof isSavingsGoalOpen === 'function' && !isSavingsGoalOpen(g)) return false;
+    return goalActiveInPeriod(g, destM, destY);
+  });
   
   let options = [];
   const currentInDest = activeGoals.find(g => g.id === currentGoalId);
@@ -22125,6 +23054,8 @@ window.addEventListener('keydown', (e) => {
     if (transferAllwEl && !transferAllwEl.classList.contains('hidden')) closeTransferAllowanceModal();
     const allwModalEl = document.getElementById('allowance-modal-backdrop');
     if (allwModalEl && !allwModalEl.classList.contains('hidden')) closeAllowanceModal();
+    const reimbClaimEl = document.getElementById('reimbursement-claim-modal-backdrop');
+    if (reimbClaimEl && !reimbClaimEl.classList.contains('hidden')) closeReimbursementClaimModal();
     const authEl = document.getElementById('auth-modal-backdrop');
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
     const cfEl = document.getElementById('carry-forward-modal-backdrop');
