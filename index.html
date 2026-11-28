@@ -829,13 +829,13 @@
   .month-select-row select{border:none; background:none; font-size:13px; font-weight:600; padding:6px 6px;}
   .month-select-row select:focus{outline:none;}
   /* Budget Category Box-type Cards Grid */
-  #budgets-rows{display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:16px; align-items:start;}
+  #budgets-rows{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; align-items:start;}
   .subcat-card{padding:10px 12px; border:1px solid var(--line-soft); border-radius:8px; background:var(--surface-2); margin-top:6px; transition:all .2s ease;}
   .subcat-card.on-track{border:1px solid var(--line-soft); box-shadow:none;}
   .subcat-card.warning-zero{border:1px solid rgba(217, 119, 6, 0.45); box-shadow:0 0 14px -3px rgba(217, 119, 6, 0.12);}
   .subcat-card.warning-over{border:1px solid rgba(225, 29, 72, 0.45); box-shadow:0 0 14px -3px rgba(225, 29, 72, 0.14);}
   .subcat-card:hover{border-color:var(--line);}
-  @media(max-width:600px){ #budgets-rows{grid-template-columns:1fr;} }
+  @media(max-width:760px){ #budgets-rows{grid-template-columns:1fr;} }
 
   .budget-box-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:all .2s ease; display:flex; flex-direction:column;}
   .budget-box-card.on-track{border:1px solid var(--line); box-shadow:0 1px 3px rgba(0,0,0,0.03);}
@@ -2725,13 +2725,8 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <!-- Category Filter Dropdown -->
-          <select id="budget-category-filter" class="field-input" onchange="onBudgetCategoryFilterChange()" style="width:auto; min-width:170px; height:38px; padding:6px 12px; font-size:13px; font-weight:600;">
-            <option value="all">All Categories</option>
-          </select>
-
           <!-- Report Deep-Link -->
-          <button type="button" class="btn-ghost" onclick="goToReports('budgets')" style="height:38px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; border-color:var(--line);">
+          <button type="button" class="btn-ghost" onclick="openBudgetReport()" style="height:38px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; border-color:var(--line);">
             Report
           </button>
 
@@ -2752,9 +2747,14 @@
 
       <!-- Active Category Budgets Card -->
       <div class="card" style="padding:22px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
           <h2 class="section-title" style="margin:0;">Active Category Budgets</h2>
-          <button type="button" class="btn-ghost btn-small" onclick="openBudgetMonthlyHistory()" style="font-size:12px; font-weight:600; padding:5px 12px;">Monthly History</button>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <select id="budget-category-filter" class="field-input" onchange="onBudgetCategoryFilterChange()" style="width:auto; min-width:155px; height:32px; padding:4px 10px; font-size:12px; font-weight:600;">
+              <option value="all">All Categories</option>
+            </select>
+            <button type="button" class="btn-ghost btn-small" onclick="openBudgetMonthlyHistory()" style="height:32px; display:inline-flex; align-items:center; font-size:12px; font-weight:600; padding:0 12px;">Monthly History</button>
+          </div>
         </div>
         <div id="budgets-rows"></div>
       </div>
@@ -15136,14 +15136,14 @@ function renderBudgets(){
 
       return `
       <div class="budget-box-card ${cardWarningClass} draggable-item" draggable="true" data-reorder-group="budgets-cat" data-reorder-key="${escapeHtml(b.category)}">
-        <!-- Card Header (Clean title without dot icon, wraps gracefully) -->
+        <!-- Card Header (Clean title on left, status pill & actions on right) -->
         <div class="bbc-head">
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             ${dragHandleHtml()}
             <span class="bbc-title" title="${escapeHtml(b.category)}">${escapeHtml(b.category)}</span>
-            ${renderBudgetWarningBadgeHtml(b)}
           </div>
-          <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            ${renderBudgetWarningBadgeHtml(b)}
             ${b.hasMainBudget ? `
               <button class="icon-btn" onclick="event.stopPropagation(); openEditBudgetModal('${b.id}')" title="Edit category budget" aria-label="Edit ${b.category} budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
               <button class="icon-btn" onclick="event.stopPropagation(); requestDelete('budget','${b.id}','${b.category.replace(/'/g,"\\'")} category budget')" title="Delete category budget" aria-label="Delete ${b.category} budget">✕</button>
@@ -15271,16 +15271,28 @@ function renderBudgets(){
   }
 }
 
+function openBudgetReport(){
+  ensureReportDefaults();
+  reportBudgetMode = 'variance';
+  goToReports('budgets', { year: budgetSelYear, month: budgetSelMonth });
+}
+
 function openBudgetMonthlyHistory(){
-  reportSelYear = budgetSelYear;
-  reportSelMonth = budgetSelMonth;
-  reportBudgetExpanded = true;
-  reportBudgetStatusFilter = 'all';
-  goToApp('reports');
-  setTimeout(() => {
-    const cardEl = document.getElementById('report-budget-card');
-    if(cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 60);
+  ensureReportDefaults();
+  if(budgetCategoryFilter && budgetCategoryFilter !== 'all'){
+    reportBudgetMode = 'category';
+    reportCatMode = 'trend';
+    reportCatName = budgetCategoryFilter;
+    reportCatSub = 'ALL';
+    reportCatYear = budgetSelYear;
+  } else {
+    reportBudgetMode = 'cross';
+    reportCrossA = { year: budgetSelYear, month: String(budgetSelMonth) };
+    reportCrossB = Number(budgetSelMonth) === 1
+      ? { year: budgetSelYear - 1, month: '12' }
+      : { year: budgetSelYear, month: String(budgetSelMonth - 1) };
+  }
+  goToReports('budgets', { year: budgetSelYear, month: budgetSelMonth });
 }
 let openBudgetHistoryKey = null;
 let budgetHistoryFilterState = {};
