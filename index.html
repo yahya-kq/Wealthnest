@@ -5143,59 +5143,6 @@ table.ben-tbl .num { text-align:right; font-family:var(--font-mono); font-varian
   </div>
 </div>
 
-<!-- ============ ADD / EDIT REIMBURSEMENT CLAIM MODAL ============ -->
-<div id="reimbursement-claim-modal-backdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeReimbursementClaimModal()">
-  <div class="modal" style="max-width:440px;">
-    <button class="modal-close" onclick="closeReimbursementClaimModal()" aria-label="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <h2 id="reimb-claim-modal-title" style="margin:0 0 14px; font-size:17px;">Add Claim</h2>
-    <form onsubmit="handleSaveReimbursementClaim(event)">
-      <input type="hidden" id="reimb-claim-id">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
-        <div>
-          <label class="field-label" for="reimb-claim-date">Date <span style="color:var(--rose);">*</span></label>
-          <input type="date" id="reimb-claim-date" class="field-input figure" required>
-        </div>
-        <div>
-          <label class="field-label" for="reimb-claim-tag">Benefit Tag <span style="color:var(--rose);">*</span></label>
-          <select id="reimb-claim-tag" class="field-input" required></select>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
-        <div>
-          <label class="field-label" for="reimb-claim-category">Category <span style="color:var(--rose);">*</span></label>
-          <select id="reimb-claim-category" class="field-input" onchange="onReimbClaimCategoryChange()" required></select>
-        </div>
-        <div>
-          <label class="field-label" for="reimb-claim-subcategory">Subcategory <span style="color:var(--rose);">*</span></label>
-          <select id="reimb-claim-subcategory" class="field-input" required></select>
-        </div>
-      </div>
-      <div style="margin-bottom:11px;">
-        <label class="field-label" for="reimb-claim-desc">Description</label>
-        <input type="text" id="reimb-claim-desc" class="field-input" autocomplete="off">
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;">
-        <div>
-          <label class="field-label" for="reimb-claim-bill">Bill Total <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="1" step="any" id="reimb-claim-bill" class="field-input figure" required>
-        </div>
-        <div>
-          <label class="field-label" for="reimb-claim-amount">Claimable Amount <span style="color:var(--rose);">*</span></label>
-          <input type="number" min="1" step="any" id="reimb-claim-amount" class="field-input figure" required>
-        </div>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label class="field-label" for="reimb-claim-payment">Payment Method</label>
-        <select id="reimb-claim-payment" class="field-input"></select>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button type="button" class="btn-ghost" onclick="closeReimbursementClaimModal()">Cancel</button>
-        <button type="submit" class="btn-primary">Save Claim</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <!-- ============ USER MENU DROPDOWN ============ -->
 <div id="user-menu-dropdown" class="user-menu-dropdown hidden" onclick="event.stopPropagation()">
   <div class="user-menu-header">
@@ -7553,7 +7500,7 @@ function setBenefitsTab(tab){
 }
 
 function handleBenefitsTopCta(){
-  if(benefitsTab === 'reimbursements') openReimbursementClaimModal(null);
+  if(benefitsTab === 'reimbursements') openTxModalForClaim();
   else openAddAllowanceModal();
 }
 
@@ -7865,7 +7812,7 @@ function renderBenefitsReimbursementsTab(ws, periodClaims){
       + '<td class="num" style="color:' + (pending > 0 ? 'var(--rose)' : 'var(--teal)') + ';">' + fmt(pending) + '</td>'
       + '<td style="text-align:right;">' + statusBadge + '</td>'
       + '<td style="text-align:right; white-space:nowrap;"><div style="display:inline-flex; align-items:center; gap:6px;">'
-      + '  <button type="button" class="icon-btn icon-btn-edit" title="Edit Claim" onclick="openReimbursementClaimModal(\'' + escapeHtml(t.id) + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+      + '  <button type="button" class="icon-btn icon-btn-edit" title="Edit Claim" onclick="openTxModal(\'' + escapeHtml(t.id) + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
       + (!isSettled ? '<button type="button" class="btn-primary" style="height:27px; padding:0 10px; font-size:11.5px;" onclick="openLogRecoveryModal(\'' + escapeHtml(t.id) + '\')">Log Recovery</button>' : '')
       + ((recovered > 0 || isSettled) ? '<button type="button" class="btn-ghost" style="height:27px; padding:0 10px; font-size:11.5px;" onclick="undoReimbursementRecovery(\'' + escapeHtml(t.id) + '\')">Undo</button>' : '')
       + '</div></td>'
@@ -8337,137 +8284,38 @@ function handleConfirmTransferAllowance(e){
   renderAllForCurrentPage();
 }
 
-/* --- Centralized Add / Edit Reimbursement Claim Modal (Synced with Transactions) --- */
-function populateReimbClaimTags(selectedTag){
-  var sel = document.getElementById('reimb-claim-tag');
-  if(!sel) return;
-  var baseTags = Array.isArray(DB.tags) && DB.tags.length ? DB.tags.slice() : ['OPD', 'Travel', 'Equipment', 'Internet'];
-  if(selectedTag && !baseTags.includes(selectedTag)) baseTags.unshift(selectedTag);
-  sel.innerHTML = baseTags.map(function(t){
-    return '<option value="' + escapeHtml(t) + '"' + (t === selectedTag ? ' selected' : '') + '>' + escapeHtml(t) + '</option>';
-  }).join('');
+/* --- Unified Claim Launch (Linked Directly to Transactions & Settings -> Rules -> Tags) --- */
+function getReimbursableTags(){
+  var allTags = (Array.isArray(DB.tags) && DB.tags.length) ? DB.tags : (typeof DEFAULT_TAGS !== 'undefined' ? DEFAULT_TAGS : []);
+  return allTags.filter(function(t){ return t && typeof t === 'object' && Boolean(t.isReimbursement); });
 }
 
-function onReimbClaimCategoryChange(presetSub){
-  var catSel = document.getElementById('reimb-claim-category');
-  var subSel = document.getElementById('reimb-claim-subcategory');
-  if(!catSel || !subSel) return;
-  var catObj = findExpenseCategory(catSel.value);
-  var subs = (catObj && Array.isArray(catObj.subcategories) && catObj.subcategories.length) ? catObj.subcategories.slice() : ['General'];
-  if(presetSub && !subs.includes(presetSub)) subs.unshift(presetSub);
-  subSel.innerHTML = subs.map(function(s){
-    return '<option value="' + escapeHtml(s) + '"' + (s === presetSub ? ' selected' : '') + '>' + escapeHtml(s) + '</option>';
-  }).join('');
+function isTagReimbursable(tagName){
+  if(!tagName) return false;
+  var nameLow = String(tagName).trim().toLowerCase();
+  return getReimbursableTags().some(function(t){ return String(t.name || '').trim().toLowerCase() === nameLow; });
 }
 
-function openReimbursementClaimModal(txId){
-  var tx = txId ? (DB.transactions || []).find(function(t){ return t.id === txId; }) : null;
-  document.getElementById('reimb-claim-modal-title').textContent = tx ? 'Edit Claim' : 'Add Claim';
-  document.getElementById('reimb-claim-id').value = tx ? tx.id : '';
-  document.getElementById('reimb-claim-date').value = tx ? (tx.date || ymd(new Date())) : ymd(new Date());
+function openTxModalForClaim(){
+  var reimbTags = getReimbursableTags();
+  if(!reimbTags.length){
+    showToast('Enable a Reimbursable tag under Settings > Rules > Tags first.', 'warning');
+    return;
+  }
+  openTxModal(null);
+  var modalTitle = document.getElementById('tx-modal-title');
+  var modalSubmit = document.getElementById('tx-modal-submit');
+  if(modalTitle) modalTitle.textContent = 'Add Claim';
+  if(modalSubmit) modalSubmit.textContent = 'Save Claim';
 
-  populateReimbClaimTags(tx ? (tx.tag || 'OPD') : 'OPD');
-
-  var catSel = document.getElementById('reimb-claim-category');
-  var expCats = (DB.categories && Array.isArray(DB.categories.expense) ? DB.categories.expense : []).map(function(c){ return c.name || c; });
-  if(tx && tx.category && !expCats.includes(tx.category)) expCats.unshift(tx.category);
-  if(catSel){
-    catSel.innerHTML = expCats.map(function(c){
-      return '<option value="' + escapeHtml(c) + '"' + (tx && tx.category === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>';
+  // Restrict Tag selector to Reimbursable tags from Settings -> Rules -> Tags
+  var tagSel = document.getElementById('tx-tag');
+  if(tagSel){
+    tagSel.innerHTML = reimbTags.map(function(t, i){
+      return '<option value="' + escapeHtml(t.name) + '"' + (i === 0 ? ' selected' : '') + '>' + escapeHtml(t.name) + '</option>';
     }).join('');
+    onTxTagChange();
   }
-  onReimbClaimCategoryChange(tx ? (tx.subCategory || '') : '');
-
-  var paySel = document.getElementById('reimb-claim-payment');
-  if(paySel){
-    var methods = getPaymentMethods();
-    var txPay = tx && tx.paymentMethod ? String(tx.paymentMethod).split(',')[0].trim() : (methods[0] || 'Bank Transfer');
-    if(txPay && !methods.includes(txPay)) methods = [txPay].concat(methods);
-    paySel.innerHTML = methods.map(function(m){
-      return '<option value="' + escapeHtml(m) + '"' + (m === txPay ? ' selected' : '') + '>' + escapeHtml(m) + '</option>';
-    }).join('');
-  }
-
-  var origBill = tx ? ((tx.originalBillAmount !== undefined && tx.originalBillAmount !== null) ? parseFloat(tx.originalBillAmount) : parseFloat(tx.amount)) : '';
-  var claimable = tx ? ((tx.claimableAmount !== undefined && tx.claimableAmount !== null) ? parseFloat(tx.claimableAmount) : origBill) : '';
-  document.getElementById('reimb-claim-desc').value = tx ? (tx.description || '') : '';
-  document.getElementById('reimb-claim-bill').value = origBill;
-  document.getElementById('reimb-claim-amount').value = claimable;
-
-  document.getElementById('reimbursement-claim-modal-backdrop').classList.remove('hidden');
-}
-
-function closeReimbursementClaimModal(){
-  var el = document.getElementById('reimbursement-claim-modal-backdrop');
-  if(el) el.classList.add('hidden');
-}
-
-function handleSaveReimbursementClaim(e){
-  e.preventDefault();
-  var id = document.getElementById('reimb-claim-id').value;
-  var dateVal = document.getElementById('reimb-claim-date').value || ymd(new Date());
-  var tagVal = document.getElementById('reimb-claim-tag').value || 'OPD';
-  var catVal = document.getElementById('reimb-claim-category').value;
-  var subVal = document.getElementById('reimb-claim-subcategory').value;
-  var descVal = document.getElementById('reimb-claim-desc').value.trim();
-  var billVal = parseFloat(document.getElementById('reimb-claim-bill').value) || 0;
-  var claimVal = parseFloat(document.getElementById('reimb-claim-amount').value) || 0;
-  var payVal = document.getElementById('reimb-claim-payment').value || 'Bank Transfer';
-
-  if(billVal <= 0 || claimVal <= 0){ showToast('Enter valid bill and claimable amounts', 'error'); return; }
-  if(claimVal > billVal){ showToast('Claimable amount cannot exceed Bill Total', 'error'); return; }
-
-  if(id){
-    var idx = (DB.transactions || []).findIndex(function(t){ return t.id === id; });
-    if(idx === -1){ showToast('Linked transaction not found', 'error'); return; }
-    var existing = DB.transactions[idx];
-    var recAmt = parseFloat(existing.recoveredAmount) || 0;
-    if(claimVal < recAmt){
-      showToast('Claimable amount cannot be lower than already recovered ' + fmt(recAmt), 'error');
-      return;
-    }
-    var wasDeducted = existing.originalBillAmount !== undefined && existing.originalBillAmount !== null && existing.amount !== existing.originalBillAmount;
-    var nextAmount = wasDeducted ? Math.max(0, billVal - recAmt) : billVal;
-    var nextStatus = recAmt >= claimVal ? 'settled' : (recAmt > 0 ? 'partial' : 'pending');
-    DB.transactions[idx] = Object.assign({}, existing, {
-      date: dateVal,
-      category: catVal,
-      subCategory: subVal,
-      description: descVal || undefined,
-      paymentMethod: payVal,
-      tag: tagVal,
-      originalBillAmount: billVal,
-      claimableAmount: claimVal,
-      amount: nextAmount,
-      isReimbursable: true,
-      recoveryStatus: nextStatus
-    });
-    showToast('Claim and linked Transaction updated', 'success');
-  } else {
-    DB.transactions.unshift({
-      id: uid(),
-      date: dateVal,
-      type: 'expense',
-      category: catVal,
-      subCategory: subVal,
-      description: descVal || undefined,
-      paymentMethod: payVal,
-      amount: billVal,
-      originalBillAmount: billVal,
-      claimableAmount: claimVal,
-      recoveredAmount: 0,
-      recoveryStatus: 'pending',
-      recoveryNotes: [],
-      tag: tagVal,
-      isReimbursable: true,
-      createdAt: new Date().toISOString()
-    });
-    showToast('Claim added and synced to Transactions', 'success');
-  }
-
-  saveDB(true);
-  closeReimbursementClaimModal();
-  renderAllForCurrentPage();
 }
 
 function populateTxAllowanceSelect(selectedId, txDateStr, excludeTxId){
@@ -15033,12 +14881,26 @@ function populateTxTagSelect(selectedTag = ''){
 function onTxTagChange(){
   const tagSel = document.getElementById('tx-tag');
   const claimWrap = document.getElementById('tx-claimable-wrap');
+  const claimInput = document.getElementById('tx-claimable-amount');
   if(!tagSel || !claimWrap) return;
   const val = tagSel.value;
-  if(val && txType === 'expense'){
+  const isReimb = Boolean(val && txType === 'expense' && (typeof isTagReimbursable === 'function' ? isTagReimbursable(val) : true));
+  if(isReimb){
     claimWrap.classList.remove('hidden');
+    // For OPD/IPD medical claims in Add mode, auto-select Health & Medical if no subcategories are chosen yet
+    if(!editingTxId && /^(opd|ipd)$/i.test(val) && (!selectedModalSubcategories || selectedModalSubcategories.length === 0)){
+      const catSel = document.getElementById('tx-category');
+      if(catSel){
+        const medOpt = Array.from(catSel.options).find(o => /health|medical/i.test(o.value));
+        if(medOpt && catSel.value !== medOpt.value){
+          catSel.value = medOpt.value;
+          onTxCategoryChange();
+        }
+      }
+    }
   } else {
     claimWrap.classList.add('hidden');
+    if(claimInput) claimInput.value = '';
   }
 }
 
@@ -15645,15 +15507,32 @@ function handleSaveTransaction(e){
   const savingInVal = (txType === 'savings') ? (document.getElementById('tx-saving-in')?.value || 'Bank Account') : undefined;
   const descVal = document.getElementById('tx-description').value.trim() || undefined;
   const tagVal = (txType === 'expense') ? (document.getElementById('tx-tag')?.value || undefined) : undefined;
-  const rawClaimVal = (txType === 'expense') ? parseFloat(document.getElementById('tx-claimable-amount')?.value) : undefined;
-  const claimableVal = (!isNaN(rawClaimVal) && rawClaimVal > 0) ? rawClaimVal : (tagVal ? finalAmount : undefined);
-  const isReimbursableVal = Boolean(tagVal || claimableVal);
+  const tagIsReimb = Boolean(tagVal && (typeof isTagReimbursable === 'function' ? isTagReimbursable(tagVal) : true));
+  const rawClaimVal = (txType === 'expense' && tagIsReimb) ? parseFloat(document.getElementById('tx-claimable-amount')?.value) : undefined;
+  const claimableVal = tagIsReimb ? ((!isNaN(rawClaimVal) && rawClaimVal > 0) ? rawClaimVal : finalAmount) : undefined;
+  const isReimbursableVal = tagIsReimb;
+  if(isReimbursableVal && claimableVal > finalAmount){
+    showToast('Claimable amount cannot exceed total bill amount', 'error');
+    return;
+  }
 
   if(editingTxId){
     const index = DB.transactions.findIndex(t => t.id === editingTxId);
     if(index !== -1){
+      const prevTx = DB.transactions[index];
+      const prevRec = parseFloat(prevTx?.recoveredAmount) || 0;
+      if(isReimbursableVal && claimableVal < prevRec){
+        showToast('Claimable amount cannot be lower than already recovered ' + fmt(prevRec), 'error');
+        return;
+      }
+      const nextRecStatus = isReimbursableVal
+        ? (prevRec >= claimableVal ? 'settled' : (prevRec > 0 ? 'partial' : 'pending'))
+        : undefined;
+      const nextOrigBill = isReimbursableVal
+        ? (prevRec > 0 && prevTx.originalBillAmount ? prevTx.originalBillAmount : finalAmount)
+        : undefined;
       let updatedTx = {
-        ...DB.transactions[index],
+        ...prevTx,
         date: dateVal,
         type: txType,
         category: catVal,
@@ -15667,11 +15546,12 @@ function handleSaveTransaction(e){
         personalShare: (txType === 'expense' && allwAcc ? finalPersonalShare : 0),
         subCategoryBreakdown: subCategoryBreakdown || undefined,
         amount: finalAmount,
+        originalBillAmount: nextOrigBill,
         tag: tagVal || undefined,
         claimableAmount: claimableVal !== undefined ? claimableVal : undefined,
         isReimbursable: isReimbursableVal,
-        recoveryStatus: isReimbursableVal ? (DB.transactions[index]?.recoveryStatus || 'pending') : undefined,
-        recoveredAmount: isReimbursableVal ? (DB.transactions[index]?.recoveredAmount || 0) : undefined
+        recoveryStatus: nextRecStatus,
+        recoveredAmount: isReimbursableVal ? prevRec : undefined
       };
       DB.transactions[index] = updatedTx;
       highlightedTxId = editingTxId;
@@ -15694,6 +15574,7 @@ function handleSaveTransaction(e){
       personalShare: (txType === 'expense' && allwAcc ? finalPersonalShare : 0),
       subCategoryBreakdown: subCategoryBreakdown || undefined,
       amount: finalAmount,
+      originalBillAmount: isReimbursableVal ? finalAmount : undefined,
       tag: tagVal || undefined,
       claimableAmount: claimableVal !== undefined ? claimableVal : undefined,
       isReimbursable: isReimbursableVal,
@@ -20014,7 +19895,6 @@ function renderTagsSettings(){
     <div class="card" style="padding:22px; margin-bottom:18px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <h2 class="section-title" style="margin:0;">Short Tags</h2>
-        <span class="badge badge-ok">${tags.length} Active</span>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;" id="settings-tags-list">
@@ -20162,12 +20042,22 @@ function handleSaveEditTag(e){
   tag.color = newColor;
   tag.isReimbursement = newReimb;
 
-  // Sync updated tag name across all transactions
-  if(oldName !== cleanName){
-    (DB.transactions || []).forEach(tx => {
-      if(tx.tag === oldName) tx.tag = cleanName;
-    });
-  }
+  // Sync updated tag name and reimbursable flag across linked transactions
+  (DB.transactions || []).forEach(tx => {
+    if(tx.tag === oldName) tx.tag = cleanName;
+    if(tx.tag === cleanName && tx.type === 'expense'){
+      if(newReimb){
+        tx.isReimbursable = true;
+        if(!tx.originalBillAmount) tx.originalBillAmount = parseFloat(tx.amount) || 0;
+        if(!tx.claimableAmount) tx.claimableAmount = parseFloat(tx.amount) || 0;
+        if(!tx.recoveryStatus) tx.recoveryStatus = 'pending';
+      } else if(!(parseFloat(tx.recoveredAmount) > 0)){
+        tx.isReimbursable = false;
+        tx.claimableAmount = undefined;
+        tx.recoveryStatus = undefined;
+      }
+    }
+  });
 
   saveDB(true);
   closeEditTagModal();
@@ -23054,8 +22944,6 @@ window.addEventListener('keydown', (e) => {
     if (transferAllwEl && !transferAllwEl.classList.contains('hidden')) closeTransferAllowanceModal();
     const allwModalEl = document.getElementById('allowance-modal-backdrop');
     if (allwModalEl && !allwModalEl.classList.contains('hidden')) closeAllowanceModal();
-    const reimbClaimEl = document.getElementById('reimbursement-claim-modal-backdrop');
-    if (reimbClaimEl && !reimbClaimEl.classList.contains('hidden')) closeReimbursementClaimModal();
     const authEl = document.getElementById('auth-modal-backdrop');
     if (authEl && !authEl.classList.contains('hidden')) closeAuthModal();
     const cfEl = document.getElementById('carry-forward-modal-backdrop');
